@@ -226,28 +226,58 @@ struct DenseAntipode
     using Scalar = S;
     static constexpr npy_intp CoreDims = 1;
 
+    CallConfig const *config_;
 
+    explicit constexpr DenseAntipode(CallConfig const &config)
+        : config_(&config) {}
 
-    template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter, CallConfig const& config) const
-    {
+    template<typename OutIter, typename ArgIter>
+    void operator()(OutIter out_iter, ArgIter arg_iter) const {
+        auto const *basis = static_cast<TensorBasis const *>(config_->basis_data);
 
+        DenseTensorView<OutIter> out(out_iter, *basis, config_->out_min_degree, config_->out_max_degree);
+        DenseTensorView<ArgIter> arg(arg_iter, *basis, config_->rhs_min_degree, config_->rhs_max_degree);
 
+        basic::ft_antipode(out, arg, basic::BasicAntipodeConfig{}, basic::DefaultSigner{});
+    }
+};
+} //namespace
 
+PyObject *py_dense_antipode(PyObject * self [[maybe_unused]], PyObject *args, PyObject *kwargs) {
 
+    static constexpr char const *const kwords[] = {
+        "out", "arg", "basis", "out_depth", "arg_depth", nullptr
+    };
+
+    PyObject *out_obj, *arg_obj;
+    PyObject *basis_obj = nullptr;
+
+    CallConfig config;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|ii", kwords, &out_obj, &arg_obj, &basis_obj, &config.rhs_max_degree)) {
+        return nullptr;
     }
 
+    TensorBasis basis;
+    auto handle = to_basis(basis_obj, basis);
+    if (!handle) {
+        // error already set
+        return nullptr;
+    }
 
-};
+    config.basis_data = &basis;
 
-}//namespace
+    if (!update_algebra_params(config)) {
+        // error already set
+        return nullptr;
+    }
 
-PyObject* py_dense_antipode(PyObject*, PyObject*, PyObject*) {
-    Py_RETURN_NOTIMPLEMENTED;
+    return binary_function_outer<DenseAntipode>(out_obj, arg_obj, config);
+
+    Py_RETURN_NONE;
 }
 
-PyObject* py_dense_st_fma(PyObject*, PyObject*, PyObject*)
-{
+PyObject *py_dense_st_fma(PyObject *, PyObject *, PyObject *) {
     Py_RETURN_NOTIMPLEMENTED;
 }
 
