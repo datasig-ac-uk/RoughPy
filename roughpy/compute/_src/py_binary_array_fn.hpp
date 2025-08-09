@@ -8,7 +8,6 @@
 #include "call_config.hpp"
 #include "check_dims.hpp"
 
-#include <pytypedefs.h>
 
 namespace rpy::compute {
 
