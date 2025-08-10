@@ -10,20 +10,18 @@
 
 
 namespace rpy::compute {
-
-template <typename Fn>
+template<typename Fn>
 RPY_NO_EXPORT
-PyObject* outer_loop_binary(
-    PyArrayObject* out,
-    PyArrayObject* arg,
-    Fn&& fn
-)
-{
+PyObject *outer_loop_binary(
+    PyArrayObject *out,
+    PyArrayObject *arg,
+    Fn &&fn
+) {
     using Scalar = typename Fn::Scalar;
     npy_intp ndims = PyArray_NDIM(out);
 
     npy_intp n_elements = 1;
-    auto* shape = PyArray_SHAPE(out);
+    auto *shape = PyArray_SHAPE(out);
     for (npy_intp i = 0; i < ndims - Fn::CoreDims; ++i) {
         n_elements *= shape[i];
     }
@@ -44,24 +42,30 @@ PyObject* outer_loop_binary(
     auto const arg_stride = PyArray_STRIDE(arg, ndims - 1) / sizeof(Scalar);
 
     for (npy_intp i = 0; i < n_elements; ++i, advance()) {
-        auto* out_ptr = static_cast<Scalar*>(PyArray_GetPtr(out, index.data()));
-        auto const* arg_ptr = static_cast<Scalar const*>(PyArray_GetPtr(
+        auto *out_ptr = static_cast<Scalar *>(PyArray_GetPtr(out, index.data()));
+        auto const *arg_ptr = static_cast<Scalar const *>(PyArray_GetPtr(
             arg,
             index.data()));
-        fn(
-            StridedDenseIterator<Scalar*>(out_ptr, out_stride),
-            StridedDenseIterator<Scalar const*>(arg_ptr, arg_stride));
+
+        // if the stride is one then pass the raw pointer instead so we can
+        // benefit from contiguous iteration.
+        if (out_stride == 1 && arg_stride == 1) {
+            fn(out_ptr, arg_ptr);
+        } else {
+            fn(
+                StridedDenseIterator<Scalar *>(out_ptr, out_stride),
+                StridedDenseIterator<Scalar const *>(arg_ptr, arg_stride));
+        }
     }
 
     Py_RETURN_NONE;
 }
 
-template <template <typename> class Fn>
+template<template <typename> class Fn>
 [[gnu::always_inline]] RPY_NO_EXPORT inline
-PyObject* binary_function_outer(PyObject* out_obj,
-                                PyObject* arg_obj,
-                                CallConfig const& config)
-{
+PyObject *binary_function_outer(PyObject *out_obj,
+                                PyObject *arg_obj,
+                                CallConfig const &config) {
     // static constexpr char const* const kwords[] = {
     //         "out", "arg", "basis", "rhs_max_degree", nullptr
     // };
@@ -86,12 +90,12 @@ PyObject* binary_function_outer(PyObject* out_obj,
         return nullptr;
     }
 
-    auto* out_arr = reinterpret_cast<PyArrayObject*>(out_obj);
+    auto *out_arr = reinterpret_cast<PyArrayObject *>(out_obj);
 
     auto const n_dims = PyArray_NDIM(out_arr);
     auto const dtype = PyArray_TYPE(out_arr);
 
-    auto const* shape = PyArray_DIMS(out_arr);
+    auto const *shape = PyArray_DIMS(out_arr);
     if (n_dims < core_dims) {
         PyErr_SetString(PyExc_ValueError, "invalid shape");
         return nullptr;
@@ -102,14 +106,14 @@ PyObject* binary_function_outer(PyObject* out_obj,
         return nullptr;
     }
 
-    auto* arg_arr = reinterpret_cast<PyArrayObject*>(arg_obj);
+    auto *arg_arr = reinterpret_cast<PyArrayObject *>(arg_obj);
     if (PyArray_TYPE(arg_arr) != dtype) {
         PyErr_SetString(PyExc_TypeError, "arg must have the same dtype as out");
         return nullptr;
     }
 
     auto const arg_ndims = PyArray_NDIM(arg_arr);
-    auto const* arg_shape = PyArray_DIMS(arg_arr);
+    auto const *arg_shape = PyArray_DIMS(arg_arr);
 
     if (!check_dims(arg_shape,
                     arg_ndims - core_dims,
@@ -135,8 +139,6 @@ PyObject* binary_function_outer(PyObject* out_obj,
             return nullptr;
     }
 }
-
-
-}// namespace rpy::compute
+} // namespace rpy::compute
 
 #endif //ROUGHPY_COMPUTE__SRC_PY_BINARY_ARARY_FN_HPP

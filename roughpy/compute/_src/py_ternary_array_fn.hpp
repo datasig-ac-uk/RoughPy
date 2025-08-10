@@ -9,22 +9,19 @@
 #include "check_dims.hpp"
 
 namespace rpy::compute {
-
-
-template <typename Fn>
+template<typename Fn>
 RPY_NO_EXPORT
-PyObject* outer_loop_ternary(
-    PyArrayObject* out,
-    PyArrayObject* lhs,
-    PyArrayObject* rhs,
-    Fn&& fn
-)
-{
+PyObject *outer_loop_ternary(
+    PyArrayObject *out,
+    PyArrayObject *lhs,
+    PyArrayObject *rhs,
+    Fn &&fn
+) {
     using Scalar = typename Fn::Scalar;
     npy_intp ndims = PyArray_NDIM(out);
 
     npy_intp n_elements = 1;
-    auto* shape = PyArray_SHAPE(out);
+    auto *shape = PyArray_SHAPE(out);
     for (npy_intp i = 0; i < ndims - Fn::CoreDims; ++i) {
         n_elements *= shape[i];
     }
@@ -46,33 +43,37 @@ PyObject* outer_loop_ternary(
     auto const rhs_stride = PyArray_STRIDE(rhs, ndims - 1) / sizeof(Scalar);
 
     for (npy_intp i = 0; i < n_elements; ++i, advance()) {
-        auto* out_ptr = static_cast<Scalar*>(PyArray_GetPtr(out, index.data()));
-        auto const* lhs_ptr = static_cast<Scalar const*>(PyArray_GetPtr(
+        auto *out_ptr = static_cast<Scalar *>(PyArray_GetPtr(out, index.data()));
+        auto const *lhs_ptr = static_cast<Scalar const *>(PyArray_GetPtr(
             lhs,
             index.data()));
-        auto const* rhs_ptr = static_cast<Scalar const*>(PyArray_GetPtr(
+        auto const *rhs_ptr = static_cast<Scalar const *>(PyArray_GetPtr(
             rhs,
             index.data()));
-        fn(
-            StridedDenseIterator<Scalar*>(out_ptr, out_stride),
-            StridedDenseIterator<Scalar const*>(lhs_ptr, lhs_stride),
-            StridedDenseIterator<Scalar const*>(rhs_ptr, rhs_stride));
+
+        // if the stride is one then pass the raw pointer instead so we can
+        // benefit from contiguous iteration.
+        if (out_stride == 1 && lhs_stride == 1 && rhs_stride == 1) {
+            fn(out_ptr, lhs_ptr, rhs_ptr);
+        } else {
+            fn(
+                StridedDenseIterator<Scalar *>(out_ptr, out_stride),
+                StridedDenseIterator<Scalar const *>(lhs_ptr, lhs_stride),
+                StridedDenseIterator<Scalar const *>(rhs_ptr, rhs_stride));
+        }
     }
 
     Py_RETURN_NONE;
 }
 
 
-template <template <typename> class Fn>
+template<template <typename> class Fn>
 [[gnu::always_inline]] RPY_NO_EXPORT inline
-PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
-                                 PyObject* lhs_obj,
-                                 PyObject* rhs_obj,
-                                 CallConfig const& config
-                                 )
-{
-
-
+PyObject *ternary_function_outer(PyObject *out_obj [[maybe_unused]],
+                                 PyObject *lhs_obj,
+                                 PyObject *rhs_obj,
+                                 CallConfig const &config
+) {
     constexpr auto core_dims = Fn<double>::CoreDims;
 
     if (!PyArray_Check(out_obj)) {
@@ -80,12 +81,12 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    auto* out_arr = reinterpret_cast<PyArrayObject*>(out_obj);
+    auto *out_arr = reinterpret_cast<PyArrayObject *>(out_obj);
 
     auto const n_dims = PyArray_NDIM(out_arr);
     auto const dtype = PyArray_TYPE(out_arr);
 
-    auto const* shape = PyArray_DIMS(out_arr);
+    auto const *shape = PyArray_DIMS(out_arr);
 
     if (n_dims < core_dims) {
         PyErr_SetString(PyExc_ValueError, "invalid shape");
@@ -97,7 +98,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    auto* lhs_arr = reinterpret_cast<PyArrayObject*>(lhs_obj);
+    auto *lhs_arr = reinterpret_cast<PyArrayObject *>(lhs_obj);
 
     if (PyArray_TYPE(lhs_arr) != dtype) {
         PyErr_SetString(PyExc_TypeError, "lhs must have the same dtype as out");
@@ -105,9 +106,9 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
     }
 
     auto const lhs_ndims = PyArray_NDIM(lhs_arr);
-    auto const* lhs_shape = PyArray_DIMS(lhs_arr);
+    auto const *lhs_shape = PyArray_DIMS(lhs_arr);
 
-    if (!check_dims(lhs_shape, lhs_ndims-core_dims, shape, n_dims - core_dims)) {
+    if (!check_dims(lhs_shape, lhs_ndims - core_dims, shape, n_dims - core_dims)) {
         PyErr_SetString(PyExc_ValueError,
                         "lhs and out must have the same shape");
         return nullptr;
@@ -118,7 +119,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    auto* rhs_arr = reinterpret_cast<PyArrayObject*>(rhs_obj);
+    auto *rhs_arr = reinterpret_cast<PyArrayObject *>(rhs_obj);
 
     if (PyArray_TYPE(rhs_arr) != dtype) {
         PyErr_SetString(PyExc_TypeError, "rhs must have the same dtype as out");
@@ -126,7 +127,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
     }
 
     auto const rhs_ndims = PyArray_NDIM(rhs_arr);
-    auto const* rhs_shape = PyArray_DIMS(rhs_arr);
+    auto const *rhs_shape = PyArray_DIMS(rhs_arr);
 
     if (!check_dims(rhs_shape,
                     rhs_ndims - core_dims,
@@ -154,8 +155,6 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
             return nullptr;
     }
 }
-
-
-}// namespace rpy::compute
+} // namespace rpy::compute
 
 #endif //ROUGHPY_COMPUTE__SRC_PY_TERNARY_ARRAY_FN_HPP
