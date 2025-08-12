@@ -119,7 +119,6 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor, **kwargs):
     _internals.dense_ft_fma(a.data, b.data, c.data, b.basis, c.basis.depth)
 
 
-
 @_api("1.0.0")
 def ft_mul(a: FreeTensor, b: FreeTensor, **kwargs) -> FreeTensor:
     """
@@ -138,6 +137,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor, **kwargs) -> FreeTensor:
     _internals.dense_ft_fma(result, a.data, b.data, a.basis, rhs_depth=b.basis.depth)
 
     return DenseFreeTensor(result, a.basis)
+
 
 @_api("1.0.0")
 def ft_inplace_mul(a: FreeTensor, b: FreeTensor, **kwargs):
@@ -158,6 +158,23 @@ def ft_inplace_mul(a: FreeTensor, b: FreeTensor, **kwargs):
     _internals.dense_ft_inplace_mul(a.data, b.data, a.basis, b.basis.depth)
 
 
+@_api("1.0.0")
+def antipode(a: FreeTensor, **kwargs) -> FreeTensor:
+    """
+    Antipode of a free tensor.
+
+
+    :param a: argument
+    :return: new tensor with antipode of `a`
+    """
+
+    result = np.zeros_like(a.data)
+    _internals.dense_ft_antipode(result, a.data, a.basis)
+
+    return FreeTensor(result, a.basis)
+
+
+
 def st_fma(*args, **kwargs):
     ...
 
@@ -175,3 +192,27 @@ def tensor_to_lie(*args, **kwargs):
     ...
 
 
+
+
+def ft_exp(x: FreeTensor) -> FreeTensor:
+    """
+    Exponential of a free tensor.
+
+    :param x: argument
+    :return:
+    """
+
+    result = np.zeros_like(x.data)
+
+    # This is a pure python implementation that will be
+    # replaced by a C++ implementation once available.
+    depth = x.basis.depth
+    result[0] = 1
+
+    for deg in range(0, depth):
+        z = x.data / (depth - deg)
+        _internals.dense_ft_inplace_mul(result, z, x.basis)
+
+        result[0] += 1
+
+    return FreeTensor(result, x.basis)
