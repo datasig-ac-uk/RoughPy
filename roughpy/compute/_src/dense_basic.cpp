@@ -99,12 +99,13 @@ PyObject* py_dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObj
 
     if (!PyArg_ParseTupleAndKeywords(args,
                                      kwargs,
-                                     "OOOO|ii",
+                                     "OOOO|iii",
                                      kwords,
                                      &out_obj,
                                      &lhs_obj,
                                      &rhs_obj,
                                      &basis_obj,
+                                     &config.out_max_degree,
                                      &config.lhs_max_degree,
                                      &config.rhs_max_degree
                                      )) {
