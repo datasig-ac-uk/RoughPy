@@ -89,7 +89,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    if (PyArray_Check(lhs_obj)) {
+    if (!PyArray_Check(lhs_obj)) {
         PyErr_SetString(PyExc_TypeError, "lhs must be a numpy array");
         return nullptr;
     }
@@ -110,7 +110,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    if (PyArray_Check(rhs_obj)) {
+    if (!PyArray_Check(rhs_obj)) {
         PyErr_SetString(PyExc_TypeError, "rhs must be a numpy array");
         return nullptr;
     }
