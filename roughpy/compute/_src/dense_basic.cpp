@@ -183,7 +183,7 @@ struct DenseFTInplaceMul
 PyObject* py_dense_ft_inplace_mul(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static constexpr char const* const kwords[] = {
-        "out", "lhs", "rhs", "basis", "out_depth", "rhs_depth",
+        "lhs", "rhs", "basis", "out_depth", "rhs_depth",
         nullptr
     };
 
