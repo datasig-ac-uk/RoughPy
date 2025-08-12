@@ -129,6 +129,8 @@ static int construct_lie_basis(PyLieBasis* self)
     memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
 
     Py_SETREF(self->data, resized_data);
+    // resized_data is now a borrowed reference, clear it to avoid misuse
+    resized_data = NULL;
     // Py_XDECREF(self->data);
     // self->data = tmp;
     // tmp = NULL;
@@ -139,6 +141,13 @@ static int construct_lie_basis(PyLieBasis* self)
     // self->degree_begin = degree_begin;
     // degree_begin = NULL;
     Py_SETREF(self->degree_begin, degree_begin);
+    /*
+     * At this point we have transferred owneship of degree_begin to the struct
+     * where it rightfully belongs, so the degree_begin variable now does not
+     * hold a strong reference. To avoid a use-after-free bug caused by the
+     * Py_XDECREF below, we clear this reference.
+     */
+    degree_begin = NULL;
 
     ret = 0;
 
