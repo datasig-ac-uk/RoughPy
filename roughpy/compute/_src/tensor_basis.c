@@ -127,7 +127,11 @@ static PyObject* tensor_basis_truncate(PyObject* self,
 
     new_obj->width = self_->width;
     new_obj->depth = new_depth;
-    new_obj->degree_begin = Py_NewRef(self_->degree_begin);
+
+    // We want to do this, but the Py_NewRef was added in 3.10
+    // new_obj->degree_begin = Py_NewRef(self_->degree_begin);
+    Py_INCREF(self_->degree_begin);
+    new_obj->degree_begin = self_->degree_begin;
 
     return (PyObject*) new_obj;
 }
