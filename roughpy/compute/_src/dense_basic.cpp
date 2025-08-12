@@ -18,8 +18,6 @@
 // #include <roughpy_compute/dense/basic/vector_scalar_multiply.hpp>
 
 
-#include <build/Debug/_deps/pybind11-src/include/pybind11/pytypes.h>
-
 #include "call_config.hpp"
 
 #include "py_obj_handle.hpp"
