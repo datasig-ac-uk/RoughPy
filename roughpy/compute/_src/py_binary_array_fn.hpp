@@ -94,7 +94,7 @@ PyObject* binary_function_outer(PyObject* out_obj,
         return nullptr;
     }
 
-    if (PyArray_Check(arg_obj)) {
+    if (!PyArray_Check(arg_obj)) {
         PyErr_SetString(PyExc_TypeError, "arg must be a numpy array");
         return nullptr;
     }
