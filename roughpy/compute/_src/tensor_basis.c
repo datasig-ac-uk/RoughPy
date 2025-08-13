@@ -71,17 +71,20 @@ static int tensor_basis_init(PyTensorBasis* self,
         Py_XSETREF(self->degree_begin, Py_NewRef(degree_begin));
     } else {
         npy_intp const shape[1] = {self->depth + 2};
-        Py_XSETREF(self->degree_begin, PyArray_SimpleNew(1, shape, NPY_INTP));
+        PyObject* arr = PyArray_SimpleNew(1, shape, NPY_INTP);
+        // Py_XSETREF(self->degree_begin, PyArray_SimpleNew(1, shape, NPY_INTP));
 
-        if (!self->degree_begin) { return -1; }
+        if (!arr) { return -1; }
 
         npy_intp* data = (npy_intp*) PyArray_DATA(
-            (PyArrayObject*) self->degree_begin);
+            (PyArrayObject*) arr);
 
         data[0] = 0;
         for (npy_intp i = 1; i < self->depth + 2; ++i) {
             data[i] = 1 + data[i - 1] * self->width;
         }
+
+        Py_XSETREF(self->degree_begin, arr);
     }
 
     return 0;
@@ -124,7 +127,11 @@ static PyObject* tensor_basis_truncate(PyObject* self,
 
     new_obj->width = self_->width;
     new_obj->depth = new_depth;
-    new_obj->degree_begin = Py_NewRef(self_->degree_begin);
+
+    // We want to do this, but the Py_NewRef was added in 3.10
+    // new_obj->degree_begin = Py_NewRef(self_->degree_begin);
+    Py_INCREF(self_->degree_begin);
+    new_obj->degree_begin = self_->degree_begin;
 
     return (PyObject*) new_obj;
 }

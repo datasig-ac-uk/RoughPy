@@ -30,6 +30,9 @@ PyObject* outer_loop_ternary(
     }
 
     CacheArray<npy_intp, Fn::CoreDims + 1> index(ndims);
+    for (npy_intp i = 0; i < ndims; ++i) {
+        index[i] = 0;
+    }
 
     auto advance = [&index, &ndims, &shape] {
         for (npy_intp pos = ndims - 1 - Fn::CoreDims; pos >= 0; --pos) {
@@ -89,7 +92,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    if (PyArray_Check(lhs_obj)) {
+    if (!PyArray_Check(lhs_obj)) {
         PyErr_SetString(PyExc_TypeError, "lhs must be a numpy array");
         return nullptr;
     }
@@ -110,7 +113,7 @@ PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
         return nullptr;
     }
 
-    if (PyArray_Check(rhs_obj)) {
+    if (!PyArray_Check(rhs_obj)) {
         PyErr_SetString(PyExc_TypeError, "rhs must be a numpy array");
         return nullptr;
     }

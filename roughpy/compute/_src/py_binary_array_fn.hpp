@@ -30,6 +30,10 @@ PyObject* outer_loop_binary(
     }
 
     CacheArray<npy_intp, Fn::CoreDims + 1> index(ndims);
+    for (npy_intp i = 0; i < ndims; ++i) {
+        index[i] = 0;
+    }
+
     auto advance = [&index, &ndims, &shape] {
         for (npy_intp pos = ndims - 1 - Fn::CoreDims; pos >= 0; --pos) {
             index[pos] += 1;
@@ -94,7 +98,7 @@ PyObject* binary_function_outer(PyObject* out_obj,
         return nullptr;
     }
 
-    if (PyArray_Check(arg_obj)) {
+    if (!PyArray_Check(arg_obj)) {
         PyErr_SetString(PyExc_TypeError, "arg must be a numpy array");
         return nullptr;
     }
