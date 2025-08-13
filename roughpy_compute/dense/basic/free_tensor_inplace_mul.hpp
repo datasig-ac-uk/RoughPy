@@ -19,7 +19,7 @@ void ft_inplace_mul(DenseTensorView<LhsIter> lhs, DenseTensorView<RhsIter> rhs, 
 
 
     for (Degree out_degree = lhs.max_degree();
-         out_degree >= lhs.min_degree();
+         out_degree >= std::max(Degree{1}, lhs.min_degree());
          --out_degree) {
 
         const auto lhs_deg_min = std::max(lhs.min_degree(), out_degree - rhs.max_degree());
@@ -43,13 +43,13 @@ void ft_inplace_mul(DenseTensorView<LhsIter> lhs, DenseTensorView<RhsIter> rhs, 
          * be accumulated into this out_frag after this first assign operation.
          */
         if (rhs.min_degree() == 0) {
-            for (Index i = 0; i < lhs.size(); ++i) {
+            for (Index i = 0; i < out_frag.size(); ++i) {
                 out_frag[i] = op(out_frag[i] * rhs[0]);
             }
         } else {
             // if rhs_min_degree > 0 then the unit is implicitly zero, so the
             // lhs unit should be set to zero too.
-            for (Index i = 0; i < lhs.size(); ++i) {
+            for (Index i = 0; i < out_frag.size(); ++i) {
                 out_frag[i] = Scalar { 0 };
             }
         }
@@ -61,9 +61,9 @@ void ft_inplace_mul(DenseTensorView<LhsIter> lhs, DenseTensorView<RhsIter> rhs, 
             auto lhs_frag = lhs.at_level(lhs_degree);
             auto rhs_frag = rhs.at_level(rhs_degree);
 
-            for (Index i = 0; i < lhs.size(); ++i) {
-                for (Index j = 0; j < rhs.size(); ++j) {
-                    out_frag[i * rhs.size() + j] += op(
+            for (Index i = 0; i < lhs_frag.size(); ++i) {
+                for (Index j = 0; j < rhs_frag.size(); ++j) {
+                    out_frag[i * rhs_frag.size() + j] += op(
                         lhs_frag[i] * rhs_frag[j]);
                 }
             }

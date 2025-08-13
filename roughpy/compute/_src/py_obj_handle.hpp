@@ -23,6 +23,18 @@ public:
         Py_XDECREF(ptr);
     }
 
+    PyObjHandle(PyObjHandle&& other) noexcept : ptr(other.ptr)
+    {
+        other.ptr = nullptr;
+    }
+
+    PyObjHandle& operator=(PyObjHandle&& other) noexcept
+    {
+        Py_XSETREF(ptr, other.ptr);
+        other.ptr = nullptr;
+        return *this;
+    }
+
     // Must be followed by inc_ref if the object should be preserved
     constexpr PyObject*& obj() { return ptr; }
     void drop() noexcept
@@ -47,9 +59,11 @@ public:
 
     PyObjHandle& operator=(PyObject* obj) noexcept
     {
-        Py_XDECREF(ptr);
-        ptr = obj;
-        Py_INCREF(ptr);
+        Py_INCREF(obj);
+        Py_XSETREF(ptr, obj);
+        // Py_XDECREF(ptr);
+        // ptr = obj;
+        // Py_INCREF(ptr);
         return *this;
     }
 };
