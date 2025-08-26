@@ -5,6 +5,7 @@
 #include <roughpy_compute/dense/views.hpp>
 
 #include <roughpy_compute/dense/basic/free_tensor_antipode.hpp>
+#include <roughpy_compute/dense/basic/free_tensor_adjoint_left_mul.hpp>
 #include <roughpy_compute/dense/basic/free_tensor_fma.hpp>
 #include <roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp>
 #include <roughpy_compute/dense/basic/shuffle_tensor_product.hpp>
