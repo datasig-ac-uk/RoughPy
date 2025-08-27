@@ -69,7 +69,7 @@ void ft_antipode(
 
     // The level one elements are mapped to the corresponding level one
     // elements, with signing
-    if (min_degree >= 1) {
+    if (min_degree <= 1) {
         signer.for_degree(1);
         auto arg_level = arg.at_level(1);
         auto out_level = out.at_level(1);
