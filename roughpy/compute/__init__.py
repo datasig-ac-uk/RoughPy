@@ -116,7 +116,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor, **kwargs):
 
     # In the future, we will need to handle alternative prototype tensors here.
 
-    _internals.dense_ft_fma(a.data, b.data, c.data, b.basis.depth, c.basis.depth)
+    _internals.dense_ft_fma(a.data, b.data, c.data, b.basis, c.basis.depth)
 
 
 

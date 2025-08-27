@@ -72,8 +72,6 @@ PyObjHandle degree_begin_from_obj(PyObject* basis_obj, int32_t depth) noexcept
         degree_begin = PyObject_GetAttrString(basis_obj, "degree_begin");
 
         if (!PyArray_Check(degree_begin.obj())) {
-            PyErr_SetString(PyExc_TypeError,
-                            "degree_begin must be a numpy array");
             return PyObjHandle();
         }
 
@@ -82,15 +80,12 @@ PyObjHandle degree_begin_from_obj(PyObject* basis_obj, int32_t depth) noexcept
         auto const ndim = PyArray_NDIM(degree_begin_arr);
 
         if (ndim != 1) {
-            PyErr_SetString(PyExc_TypeError, "degree_begin must be a 1D array");
             return PyObjHandle();
         }
 
         auto const* shape = PyArray_DIMS(degree_begin_arr);
 
         if (shape[0] <= depth + 2) {
-            PyErr_SetString(PyExc_ValueError,
-                            "degree_begin must have at least depth + 2 elements");
             return PyObjHandle();
         }
     }
