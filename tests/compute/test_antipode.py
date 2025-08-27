@@ -1,5 +1,3 @@
-from dis import deoptmap
-
 import numpy as np
 import pytest
 
