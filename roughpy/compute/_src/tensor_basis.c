@@ -72,7 +72,6 @@ static int tensor_basis_init(PyTensorBasis* self,
     } else {
         npy_intp const shape[1] = {self->depth + 2};
         PyObject* arr = PyArray_SimpleNew(1, shape, NPY_INTP);
-        // Py_XSETREF(self->degree_begin, PyArray_SimpleNew(1, shape, NPY_INTP));
 
         if (!arr) { return -1; }
 
