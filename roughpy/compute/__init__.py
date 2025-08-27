@@ -199,7 +199,7 @@ def ft_exp(x: FreeTensor) -> FreeTensor:
     Exponential of a free tensor.
 
     :param x: argument
-    :return:
+    :return: tensor exponential of `x`
     """
 
     result = np.zeros_like(x.data)
