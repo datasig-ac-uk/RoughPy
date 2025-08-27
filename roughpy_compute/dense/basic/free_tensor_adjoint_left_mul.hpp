@@ -16,8 +16,16 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
     using Degree = typename DenseTensorView<OutIter>::Degree;
     using Index = typename DenseTensorView<OutIter>::Index;
 
+    auto out_max_degree = out.max_degree();
+    auto out_min_degree = out.min_degree();
 
-    for (Degree op_degree=0; op_degree <= op.max_degree(); ++op_degree) {
+    for (Degree out_degree=out_max_degree; out_degree >= out_min_degree; --out_degree) {
+        auto op_min_degree = std::max(Degree{0}, out_degree - op.max_degree());
+        auto op_max_degree = std::min(out_degree, op.max_degree() - arg.min_degree());
+
+
+        for ()
+
 
     }
 
