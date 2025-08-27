@@ -10,7 +10,6 @@ namespace rpy::compute::basic {
 inline namespace v1 {
 
 struct BasicAntipodeConfig {
-    using LetterType = int16_t;
     static constexpr int32_t tile_letters = 1;
     static constexpr int32_t max_width = 5;
 };
