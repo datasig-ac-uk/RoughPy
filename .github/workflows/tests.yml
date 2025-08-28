@@ -95,6 +95,7 @@ jobs:
       shell: bash
       run: |
         brew install autoconf automake libtool m4 ninja
+        ninja --version
 
     - name: Install Ninja (Linux)
       if: runner.os == 'Linux'
