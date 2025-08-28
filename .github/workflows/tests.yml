@@ -132,6 +132,11 @@ jobs:
         LOG="build/vcpkg-bootstrap.log"
         test -f "$LOG" && { echo "==== $LOG ===="; sed -n '1,200p' "$LOG"; } || echo "No bootstrap log found."
 
+    - name: Create vcpkg cache directory
+      run: |
+        mkdir ${{ github.workspace }}/_vcpkg_cache
+        mkdir ${{ github.workspace }}/_vcpkg_downloads
+        
     - name: Cache vcpkg binaries + downloads
       uses: actions/cache@v4
       with:
