@@ -72,13 +72,6 @@ jobs:
       with:
         python-version: 3.13
 
-    - name: Setup gha caching for vcpkg
-      uses: actions/github-script@v7
-      with:
-        script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
     - name: Setup msbuild on Windows
       if: runner.os == 'Windows'
       uses: microsoft/setup-msbuild@v2
@@ -98,20 +91,34 @@ jobs:
 #        choco install pkgconfiglite
 
     - name: install autoconf on macos
-      if: runner.os == 'macOs'
+      if: runner.os == 'macOS'
       shell: bash
       run: |
         brew install autoconf automake libtool m4 ninja
 
+    - name: Install Ninja (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y ninja-build
+
     - name: Python dependencies
       shell: bash
       run: |
-        python -m pip install numpy ninja pytest "pybind11<3.0.0"
+        python -m pip install numpy pytest "pybind11<3.0.0"
 
     - name: setup vcpkg
       shell: bash
       run: |
-        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
+        git clone --depth=1 https://github.com/Microsoft/vcpkg.git tools/vcpkg
+
+    - name: Cache vcpkg binaries + downloads
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/_vcpkg_cache
+          ${{ github.workspace }}/_vcpkg_downloads
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+        restore-keys: |
+          vcpkg-${{ runner.os }}-
 
 
 # This probably requires the intervention of a package manager because of boost and gmp deps.
@@ -138,6 +145,8 @@ jobs:
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
+        VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/_vcpkg_cache
+        VCPKG_DOWNLOADS: ${{ github.workspace }}/_vcpkg_downloads
         VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
         # Disable embedded tests on Windows to avoid runner path issues on CI
