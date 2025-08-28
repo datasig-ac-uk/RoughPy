@@ -85,7 +85,9 @@ PyObjHandle degree_begin_from_obj(PyObject* basis_obj, int32_t depth) noexcept
 
         auto const* shape = PyArray_DIMS(degree_begin_arr);
 
-        if (shape[0] <= depth + 2) {
+        if (shape[0] < depth + 2) {
+            PyErr_SetString(PyExc_ValueError,
+                            "degree_begin must have at least depth + 2 elements");
             return PyObjHandle();
         }
     }
