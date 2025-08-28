@@ -118,7 +118,6 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor, **kwargs):
 
     _internals.dense_ft_fma(a.data, b.data, c.data, b.basis, c.basis.depth)
 
-
 @_api("1.0.0")
 def ft_mul(a: FreeTensor, b: FreeTensor, **kwargs) -> FreeTensor:
     """
