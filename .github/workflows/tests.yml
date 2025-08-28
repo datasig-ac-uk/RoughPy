@@ -111,6 +111,27 @@ jobs:
       run: |
         git clone --depth=1 https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
+
+    - name: Bootstrap vcpkg (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        ./tools/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        ./tools/vcpkg/vcpkg version
+
+    - name: Bootstrap vcpkg (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        .\tools\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+        .\tools\vcpkg\vcpkg version
+
+    - name: Show vcpkg bootstrap log (if any)
+      if: always()
+      shell: bash
+      run: |
+        LOG="build/vcpkg-bootstrap.log"
+        test -f "$LOG" && { echo "==== $LOG ===="; sed -n '1,200p' "$LOG"; } || echo "No bootstrap log found."
+
     - name: Cache vcpkg binaries + downloads
       uses: actions/cache@v4
       with:
