@@ -174,7 +174,8 @@ jobs:
           -DCMAKE_MAKE_PROGRAM="$NINJA_BIN" \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DROUGHPY_BUILD_TEST_PYTHON_EMBED=ON
+          -DROUGHPY_BUILD_TEST_PYTHON_EMBED=ON \
+          -DVCPKG_BUILD_TYPE=release
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
@@ -187,7 +188,7 @@ jobs:
       if: runner.os == 'Windows'
       # Disable embedded tests (ROUGHPY_BUILD_TEST_PYTHON_EMBED) on Windows to avoid runner path issues on CI
       run: |
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=OFF
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=OFF -DVCPKG_BUILD_TYPE=release
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/_vcpkg_cache
