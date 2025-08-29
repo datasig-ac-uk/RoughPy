@@ -1,7 +1,6 @@
 #include "dense_basic.h"
 
 
-
 #include <roughpy_compute/common/cache_array.hpp>
 #include <roughpy_compute/dense/views.hpp>
 
@@ -27,9 +26,7 @@
 #include "py_ternary_array_fn.hpp"
 
 
-
 using namespace rpy::compute;
-
 
 
 /*******************************************************************************
@@ -46,16 +43,15 @@ struct DenseFTFma
     CallConfig const* config_;
 
     explicit DenseFTFma(CallConfig const& config)
-        : config_(&config)
-    {
-    }
+        : config_(&config) {}
 
     template <typename OutIter, typename LhsIter, typename RhsIter>
     void operator()(OutIter out_iter,
                     LhsIter lhs_iter,
                     RhsIter rhs_iter) const
     {
-        auto const* basis = static_cast<TensorBasis const*>(config_->basis_data);
+        auto const* basis = static_cast<TensorBasis const*>(config_->
+            basis_data);
 
         DenseTensorView<OutIter> out_view(
             out_iter,
@@ -85,16 +81,18 @@ struct DenseFTFma
 }// namespace
 
 
-PyObject* py_dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObject* kwargs)
+PyObject* py_dense_ft_fma(PyObject* self [[maybe_unused]],
+                          PyObject* args,
+                          PyObject* kwargs)
 {
 
     static constexpr char const* const kwords[] = {
-        "out", "lhs", "rhs", "basis", "out_depth", "lhs_depth", "rhs_depth",
-        nullptr
+            "out", "lhs", "rhs", "basis", "out_depth", "lhs_depth", "rhs_depth",
+            nullptr
     };
 
     PyObject *out_obj, *lhs_obj, *rhs_obj;
-    PyObject *basis_obj=nullptr;
+    PyObject* basis_obj = nullptr;
 
     CallConfig config;
 
@@ -109,9 +107,7 @@ PyObject* py_dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObj
                                      &config.out_max_degree,
                                      &config.lhs_max_degree,
                                      &config.rhs_max_degree
-                                     )) {
-        return nullptr;
-                                     }
+    )) { return nullptr; }
 
     // if (!update_depth_params(config)) {
     //     PyErr_SetString(PyExc_ValueError, "incompatible depth parameters");
@@ -128,11 +124,10 @@ PyObject* py_dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObj
 
     config.basis_data = &basis;
 
-    if (!update_algebra_params(config)) {
-        return nullptr;
-    }
+    if (!update_algebra_params(config)) { return nullptr; }
 
-    return ternary_function_outer<DenseFTFma>(out_obj, lhs_obj, rhs_obj, config);
+    return ternary_function_outer<
+        DenseFTFma>(out_obj, lhs_obj, rhs_obj, config);
 }
 
 
@@ -150,15 +145,14 @@ struct DenseFTInplaceMul
     CallConfig const* config_;
 
     explicit DenseFTInplaceMul(CallConfig const& config)
-        : config_(&config)
-    {
-    }
+        : config_(&config) {}
 
     template <typename OutIter, typename RhsIter>
     void operator()(OutIter out_iter,
                     RhsIter rhs_iter) const
     {
-        auto const* basis = static_cast<TensorBasis const*>(config_->basis_data);
+        auto const* basis = static_cast<TensorBasis const*>(config_->
+            basis_data);
 
         DenseTensorView<OutIter> out_view(
             out_iter,
@@ -181,20 +175,28 @@ struct DenseFTInplaceMul
 }// namespace
 
 
-PyObject* py_dense_ft_inplace_mul(PyObject* self, PyObject* args, PyObject* kwargs)
+PyObject* py_dense_ft_inplace_mul(PyObject* self,
+                                  PyObject* args,
+                                  PyObject* kwargs)
 {
     static constexpr char const* const kwords[] = {
-        "lhs", "rhs", "basis", "out_depth", "rhs_depth",
-        nullptr
+            "lhs", "rhs", "basis", "out_depth", "rhs_depth",
+            nullptr
     };
 
     PyObject *out_obj, *rhs_obj;
-    PyObject *basis_obj=nullptr;
+    PyObject* basis_obj = nullptr;
 
     CallConfig config;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|ii", kwords,
-        &out_obj, &rhs_obj, &basis_obj, &config.rhs_max_degree)) {
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwargs,
+                                     "OOO|ii",
+                                     kwords,
+                                     &out_obj,
+                                     &rhs_obj,
+                                     &basis_obj,
+                                     &config.rhs_max_degree)) {
         return nullptr;
     }
 
@@ -228,23 +230,107 @@ struct DenseAntipode
     static constexpr npy_intp CoreDims = 1;
 
 
-
     template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter, CallConfig const& config) const
-    {
-
-
-
-
-    }
+    void operator()(OutIter out_iter,
+                    ArgIter arg_iter,
+                    CallConfig const& config) const {}
 
 
 };
 
 }//namespace
 
-PyObject* py_dense_antipode(PyObject*, PyObject*, PyObject*) {
+
+PyObject* py_dense_antipode(PyObject*, PyObject*, PyObject*)
+{
     Py_RETURN_NOTIMPLEMENTED;
+}
+
+
+/*******************************************************************************
+ * Free tensor left multiplication adjoint
+ ******************************************************************************/
+
+namespace {
+
+template <typename S>
+struct DenseFTAdjLMul
+{
+    using Scalar = S;
+    static constexpr npy_intp CoreDims = 1;
+
+    const CallConfig* config_;
+
+    explicit DenseFTAdjLMul(CallConfig const& config)
+        : config_(&config) {}
+
+    template <typename OutIter, typename OpIter, typename ArgIter>
+    void operator()(OutIter out_iter, OpIter op_iter, ArgIter arg_iter) const
+    {
+        DenseTensorView<OutIter> out(
+            out_iter,
+            *config_->basis_data,
+            config_->out_min_degree,
+            config_->out_max_degree
+        );
+
+        DenseTensorView<OpIter> op(
+            op_iter,
+            *config_->basis_data,
+            config_->lhs_min_degree,
+            config_->lhs_max_degree);
+
+        DenseTensorView<ArgIter> arg(
+            arg_iter,
+            *config_->basis_data,
+            config_->rhs_min_degree,
+            config_->rhs_max_degree);
+
+        basic::ft_adj_lmul(out, op, arg);
+    }
+};
+
+}// namespace
+
+
+PyObject* py_dense_ft_adj_lmul(PyObject* self [[maybe_unused]],
+                               PyObject* args,
+                               PyObject* kwargs)
+{
+    static constexpr char const* const kwords[] = {
+            "out", "operator", "argument", "basis", "out_depth", "lhs_depth",
+            "rhs_depth", nullptr
+    };
+
+    PyObject *out_obj, *op_obj, *arg_obj;
+
+    CallConfig config;
+
+    if (PyArg_ParseTupleAndKeywords(args,
+                                    kwargs,
+                                    "OOOO|iii",
+                                    kwords,
+                                    &out_obj,
+                                    &op_obj,
+                                    &arg_obj,
+                                    &config.out_max_degree,
+                                    &config.lhs_min_degree,
+                                    &config.rhs_max_degree)) {
+        return nullptr;
+    }
+
+    TensorBasis basis;
+    auto handle = to_basis(out_obj, basis);
+    if (!handle) {
+        return nullptr;
+    }
+
+    if (!update_algebra_params(config)) {
+        return nullptr;
+    }
+
+    return ternary_function_outer<DenseFTAdjLMul>(out_obj, op_obj, arg_obj, config);
+
 }
 
 PyObject* py_dense_st_fma(PyObject*, PyObject*, PyObject*)
