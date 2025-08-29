@@ -39,8 +39,8 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
      * as those operations do.
      */
 
-    const auto arg_max_degree = std::min(arg.max_degree - op.min_degree(), out.max_degree());
-    auto arg_min_degree = std::max(arg.min_degree - op.max_degree(), out.min_degree());
+    const auto arg_max_degree = std::min(arg.max_degree() - op.min_degree(), out.max_degree());
+    auto arg_min_degree = std::max(arg.min_degree() - op.max_degree(), out.min_degree());
 
     for (Degree arg_degree = arg_max_degree; arg_degree >= arg_min_degree; --
          arg_degree)
@@ -48,7 +48,7 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
         auto out_min_degree = std::max(arg_degree - op.max_degree(), out.min_degree());
         auto out_max_degree = std::min(arg_degree - op.min_degree(), out.max_degree());
 
-        auto arg_frag = out.at_level(arg_degree);
+        auto arg_frag = arg.at_level(arg_degree);
 
         for (Degree out_degree = out_max_degree;
             out_degree >= out_min_degree;
@@ -57,7 +57,7 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
             const auto op_degree = arg_degree - out_degree ;
 
             auto op_frag = op.at_level(op_degree);
-            auto out_frag = arg.at_level(out_degree);
+            auto out_frag = out.at_level(out_degree);
 
 
             // ReSharper disable CppDFANullDereference
