@@ -267,22 +267,25 @@ struct DenseFTAdjLMul
     template <typename OutIter, typename OpIter, typename ArgIter>
     void operator()(OutIter out_iter, OpIter op_iter, ArgIter arg_iter) const
     {
+        auto const* basis = static_cast<TensorBasis const*>(config_->
+            basis_data);
+
         DenseTensorView<OutIter> out(
             out_iter,
-            *config_->basis_data,
+            *basis,
             config_->out_min_degree,
             config_->out_max_degree
         );
 
         DenseTensorView<OpIter> op(
             op_iter,
-            *config_->basis_data,
+            *basis,
             config_->lhs_min_degree,
             config_->lhs_max_degree);
 
         DenseTensorView<ArgIter> arg(
             arg_iter,
-            *config_->basis_data,
+            *basis,
             config_->rhs_min_degree,
             config_->rhs_max_degree);
 
