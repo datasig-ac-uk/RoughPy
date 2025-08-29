@@ -131,7 +131,7 @@ jobs:
 
     - name: "conan install deps"
       shell: bash
-      run: conan install . --build=missing -s build_type=${{env.BUILD_TYPE}}
+      run: conan install . --build=missing -s build_type=${{env.BUILD_TYPE}} -c tools.cmake.cmaketoolchain:generator=Ninja
 
 # This probably requires the intervention of a package manager because of boost and gmp deps.
 #    - name: Build and test roughpy_compute
