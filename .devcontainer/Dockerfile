@@ -1,15 +1,9 @@
 FROM ubuntu:24.04
 
-# Install python
-RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     python3 \
     python3-venv \
-    python3-pip
-
-# Dev tools require an additional update
-RUN apt-get update
-RUN apt-get install -y \
+    python3-pip \
     git \
     gdb \
     curl \
@@ -19,7 +13,12 @@ RUN apt-get install -y \
     autoconf \
     libtool \
     libtool-bin \
-    pkg-config
+    pkg-config \
+    nvidia-cuda-toolkit \
+    nvidia-driver-535-server \
+    nanobind-dev
+
+# FIXME if nanobind not used in final JAX interface, remove from apt installs
 
 WORKDIR /tools
 
@@ -30,8 +29,10 @@ RUN pip install --upgrade pip setuptools wheel
 RUN pip install \
     cmake \
     ninja \
-    pybind11 \
-    numpy \
+    "pybind11<3.0.0" \
+    "numpy>=2.0.0" \
+    "jax[cuda12]" \
+    absl-py \
     pytest \
     pytest-cov
 
