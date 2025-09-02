@@ -47,7 +47,7 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
 {
     PyObject* width_obj = PyObject_GetAttrString(basis_obj, "width");
     if (width_obj == nullptr) { return false; }
-    width = PyLong_AsInt(width_obj);
+    width = PyLong_AsLong(width_obj);
     if (width == -1) {
         // Error already set
         return false;
@@ -55,7 +55,7 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
 
     PyObject* data_obj = PyObject_GetAttrString(basis_obj, "depth");
     if (data_obj == nullptr) { return false; }
-    depth = PyLong_AsInt(data_obj);
+    depth = PyLong_AsLong(data_obj);
     if (depth == -1) {
         // Error already set
         return false;

@@ -98,7 +98,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 if (MSVC)
     ## Disable non-compliant behaviour on windows... Comon MS>
     add_compile_options("/permissive-")
-endif()
+else ()
+    # FIXME review: this was required to avoid ‘const char* const*’ to ‘char**’
+    # errors in PyArg_ParseTupleAndKeywords when building in devcontainer
+    add_compile_options("-fpermissive")
+endif ()
 
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
