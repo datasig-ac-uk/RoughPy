@@ -35,7 +35,8 @@ classifiers = [
     "Operating System :: MacOS"
 ]
 dependencies = [
-    "numpy >= 1.23.5"
+    "numpy >= 1.23.5",
+    "jax"
 ]
 #dependencies=[
 #    "intel-openmp; platform_system!='Windows'"
