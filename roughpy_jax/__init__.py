@@ -4,13 +4,14 @@ import jax.numpy as jnp
 import jax.lax as lax
 from typing import NamedTuple
 
-# try:
-#     import _roughpy_jax_cpu
-# except ImportError as e:
-#     _roughpy_jax_cpu = None
-#     raise ImportError("RoughPy JAX CPU backend is not installed correctly") from e
-# else:
-#     jax.ffi.register_ffi_target("cpu_dense_ft_fma", "cpu")
+try:
+    from . import _rpy_jax_internals
+except ImportError as e:
+    _rpy_jax_internals = None
+    raise ImportError("RoughPy JAX CPU backend is not installed correctly") from e
+else:
+    #jax.ffi.register_ffi_target("cpu_dense_ft_fma", "cpu")
+    jax.ffi.register_ffi_target("RmsNorm", "cpu")
 
 
 @dataclass

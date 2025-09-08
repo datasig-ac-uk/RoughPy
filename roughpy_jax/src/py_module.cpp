@@ -1,6 +1,11 @@
+#include "cpu/dense_ft_fma.hpp"
+
+#include "xla/ffi/api/ffi.h"
+#include "nanobind/nanobind.h"
+
 namespace {
 
-namespace cpu = rpy::jax::cpu;
+namespace nb = nanobind;
 
 // Validate function is an XLA FFI handler and return nanobind capsule
 template <typename Fn>
@@ -12,12 +17,10 @@ nb::capsule encapsulate_handler(Fn* fn) {
     return nb::capsule(reinterpret_cast<void*>(fn));
 }
 
-}
+} // namespace
 
-NB_MODULE(_roughpy_jax, m) {
-    m.def("registrations", []() {
-        nb::dict registrations;
-        // registrations["cpu_dense_ft_fma"] = encapsulate_handler(cpu::dense_ft_fma);
-        return registrations;
-    });
+NB_MODULE(_rpy_jax_internals, m) {
+    // FIXME remove rms_norm
+    m.def("rms_norm", []() { return encapsulate_handler(RmsNorm); });
+    // registrations["cpu_dense_ft_fma"] = encapsulate_handler(cpu::dense_ft_fma);
 }

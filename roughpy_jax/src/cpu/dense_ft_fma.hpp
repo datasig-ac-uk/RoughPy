@@ -1,8 +1,8 @@
 #ifndef ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP
 #define ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP
 
-namespace rpy::jax::cpu {
+#include "xla_includes.hpp"
 
-} // namespace rpy::jax::cpu
+XLA_FFI_DECLARE_HANDLER_SYMBOL(RmsNorm); // FIXME cpu_dense_ft_fma;
 
 #endif // ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP

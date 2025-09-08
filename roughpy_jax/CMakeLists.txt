@@ -1,6 +1,4 @@
-project(RoughPy-JAX LANGUAGES CXX)
-
-message(STATUS "Enabling roughpy_jax")
+project(RoughPyJaxModule LANGUAGES CXX)
 
 # Optionally enable CUDA build
 include(CheckLanguage)
@@ -11,8 +9,6 @@ if (ROUGHPY_JAX_CUDA)
         message(FATAL_ERROR "CMAKE_CUDA_COMPILER must be available for ROUGHPY_JAX_CUDA")
     endif()
 
-    message(STATUS "Enabling CUDA support for roughpy_jax")
-
     enable_language(CUDA)
     set(CMAKE_CUDA_STANDARD 17)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
@@ -20,6 +16,8 @@ if (ROUGHPY_JAX_CUDA)
     if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
         set(CMAKE_CUDA_ARCHITECTURES 80 86 90 120)
     endif()
+
+    find_package(CUDAToolkit REQUIRED)
 endif()
 
 # Get XLA includes via jax lib
@@ -31,4 +29,20 @@ execute_process(
 )
 message(STATUS "XLA include directory: ${XLA_DIR}")
 
-add_subdirectory(src)
+# FIXME for review whether to use nanobind or native python bindings
+find_package(nanobind CONFIG REQUIRED)
+
+nanobind_add_module(RoughPyJaxModule NB_STATIC 
+    src/cpu/dense_ft_fma.cpp
+    src/py_module.cpp
+)
+
+target_include_directories(RoughPyJaxModule PRIVATE
+    ${XLA_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/src
+)
+
+set_target_properties(RoughPyJaxModule PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    LIBRARY_OUTPUT_NAME _rpy_jax_internals
+)
