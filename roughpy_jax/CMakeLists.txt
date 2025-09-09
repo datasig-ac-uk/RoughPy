@@ -37,9 +37,15 @@ nanobind_add_module(RoughPyJaxModule NB_STATIC
     src/py_module.cpp
 )
 
+# Ensure that XLA FFI definitions are visible in genreated .so 
+set_target_properties(RoughPyJaxModule PROPERTIES
+    CXX_VISIBILITY_PRESET default
+)
+
 target_include_directories(RoughPyJaxModule PRIVATE
     ${XLA_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
 set_target_properties(RoughPyJaxModule PROPERTIES

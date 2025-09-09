@@ -10,8 +10,12 @@ except ImportError as e:
     _rpy_jax_internals = None
     raise ImportError("RoughPy JAX CPU backend is not installed correctly") from e
 else:
-    #jax.ffi.register_ffi_target("cpu_dense_ft_fma", "cpu")
-    jax.ffi.register_ffi_target("RmsNorm", "cpu")
+    # FIXME create using register
+    jax.ffi.register_ffi_target(
+        "cpu_dense_ft_fma",
+        _rpy_jax_internals.cpu_dense_ft_fma(),
+        "cpu"
+    )
 
 
 @dataclass
@@ -34,10 +38,56 @@ class TensorBasis:
 
         self.degree_begin = degree_begin
 
+    def __eq__(self, rhs: "TensorBasis"):
+        if self.width != rhs.width:
+            return False
+        if self.depth != rhs.depth:
+            return False
+        if self.degree_begin != rhs.degree_begin:
+            return False
+        return True
+
 
 class DenseFreeTensor(NamedTuple):
     data: jnp.ndarray
     basis: TensorBasis
+
+
+def dense_ft_fma(
+    a: DenseFreeTensor,
+    b: DenseFreeTensor,
+    c: DenseFreeTensor
+) -> DenseFreeTensor:
+    if a.data.dtype != jnp.float32:
+        raise ValueError("cpu_dense_ft_fma a array only supports float32 dtype")
+  
+    if b.data.dtype != jnp.float32:
+        raise ValueError("cpu_dense_ft_fma b array only supports float32 dtype")
+
+    if c.data.dtype != jnp.float32:
+        raise ValueError("cpu_dense_ft_fma c array only supports float32 dtype")
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_fma",
+
+        # FIXME which tensor drives result's shape?
+        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
+    )
+
+    return call(
+        a.basis.degree_begin,
+        b.basis.degree_begin,
+        c.basis.degree_begin,
+        a.data,
+        b.data,
+        c.data,
+        a_width=a.basis.width,
+        a_depth=a.basis.depth,
+        b_width=b.basis.width,
+        b_depth=b.basis.depth,
+        c_width=c.basis.width,
+        c_depth=c.basis.depth,
+    )
 
 
 # Tensor aliases

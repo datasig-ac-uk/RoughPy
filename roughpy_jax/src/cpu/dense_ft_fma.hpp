@@ -3,6 +3,6 @@
 
 #include "xla_includes.hpp"
 
-XLA_FFI_DECLARE_HANDLER_SYMBOL(RmsNorm); // FIXME cpu_dense_ft_fma;
+XLA_FFI_DECLARE_HANDLER_SYMBOL(cpu_dense_ft_fma);
 
 #endif // ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP

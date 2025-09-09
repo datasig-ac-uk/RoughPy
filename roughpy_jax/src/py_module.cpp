@@ -20,7 +20,5 @@ nb::capsule encapsulate_handler(Fn* fn) {
 } // namespace
 
 NB_MODULE(_rpy_jax_internals, m) {
-    // FIXME remove rms_norm
-    m.def("rms_norm", []() { return encapsulate_handler(RmsNorm); });
-    // registrations["cpu_dense_ft_fma"] = encapsulate_handler(cpu::dense_ft_fma);
+    m.def("cpu_dense_ft_fma", []() { return encapsulate_handler(cpu_dense_ft_fma); });
 }
