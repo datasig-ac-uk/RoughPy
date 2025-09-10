@@ -214,7 +214,7 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
 
     result = np.zeros(shape, dtype=dtype)
 
-    _internals.dense_ft_exp(result, x.data, x.basis, out_basis)
+    _internals.dense_ft_exp(result, x.data, out_basis)
 
     return FreeTensor(result, out_basis)
 
@@ -240,7 +240,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
 
     result = np.zeros(shape, dtype=dtype)
 
-    _internals.dense_ft_log(result, x.data, x.basis, out_basis)
+    _internals.dense_ft_log(result, x.data, out_basis)
 
     return FreeTensor(result, out_basis)
 
