@@ -22,6 +22,7 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/check_dims.hpp
         _src/dense_basic.cpp
         _src/dense_basic.h
+        _src/dense_intermediate.cpp
         _src/dense_intermediate.h
         _src/lie_basis.c
         _src/lie_basis.h
