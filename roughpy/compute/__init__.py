@@ -215,3 +215,28 @@ def ft_exp(x: FreeTensor) -> FreeTensor:
         result[0] += 1
 
     return FreeTensor(result, x.basis)
+
+
+@_api("1.0.0")
+def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
+    """
+    Compute the adjoint of a free tensor left-multiplication.
+
+    The operator L_A: T -> T defined by L_A(X) = A * X (where * denotes
+    free tensor multiplication) is a well-defined linear operator on the
+    free tensor algebra. The adjoint of this function L_A* is a linear
+    operator on the shuffle algebra. This operator aggregates the
+    coefficients of S according to their prefix in A.
+
+    :param op: The operand of the left multiplication L_A
+    :param arg: The shuffle tensor argument on which to apply the adjoint
+    :return: The result of L_A*(S)
+    """
+
+    _check_basis_compat(op.basis, arg.basis)
+
+    result = np.zeros_like(arg.data)
+
+    _internals.dense_ft_adjoint_left_mul(result, op.data, arg.data, op.basis, arg.basis)
+
+    return ShuffleTensor(result, arg.basis)
