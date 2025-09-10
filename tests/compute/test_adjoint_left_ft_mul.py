@@ -21,7 +21,7 @@ def test_adjoint_left_ft_mul_identity():
 
     R = rpc.ft_adjoint_left_mul(A, S)
 
-    assert_array_equal(A.data, R.data)
+    assert_array_equal(R.data, S.data)
 
 
 def test_adjoint_left_ft_mul_letter():
