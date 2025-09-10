@@ -5,7 +5,7 @@ import roughpy_jax as rpj
 # FIXME first draft copied from tests/compute/test_ft_fma.py
 def test_dense_ft_fma():
     basis = rpj.TensorBasis(2, 2)
-    a_data = jnp.zeros(basis.degree_begin.size, dtype=jnp.float32)
+    a_data = jnp.zeros(basis.size(), dtype=jnp.float32)
     b_data = jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=jnp.float32)
     c_data = jnp.array([-1, 4, 0, 1, 1, 0, 2], dtype=jnp.float32)
     a = rpj.FreeTensor(a_data, basis)

@@ -1,8 +1,10 @@
-from dataclasses import dataclass
 import jax
 import jax.numpy as jnp
 import jax.lax as lax
+
+from dataclasses import dataclass
 from typing import NamedTuple
+
 
 try:
     from . import _rpy_jax_internals
@@ -20,6 +22,11 @@ else:
 
 @dataclass
 class TensorBasis:
+    """
+    Tensor basis with width and depth and array of indexes that specify where
+    degree data begins in tensor. If degree_begin is not specified, a default
+    free tensor lookup is initialised from width and depth.
+    """
     width: int
     depth: int
     degree_begin: jnp.ndarray
@@ -35,25 +42,28 @@ class TensorBasis:
                 new_degree = 1 + last_degree * width 
                 return new_degree, last_degree
             
-            # FIXME JAX_ENABLE_X64 necessary to ensure final array is int64
-            init = jnp.array(0, dtype=jnp.int64)
-            _, degree_begin = lax.scan(degree_begin_fn, init, length=depth + 2)
+            _, degree_begin = lax.scan(degree_begin_fn, 0, length=depth + 2)
 
         self.degree_begin = degree_begin
 
-    def __eq__(self, rhs: "TensorBasis"):
-        if self.width != rhs.width:
-            return False
-        if self.depth != rhs.depth:
-            return False
-        if self.degree_begin != rhs.degree_begin:
-            return False
-        return True
+    def size(self):
+        return self.degree_begin.size + 1
 
 
 class DenseFreeTensor(NamedTuple):
+    """
+    Dense free tensor class built from basis and associated ndarray of data.
+    """
     data: jnp.ndarray
     basis: TensorBasis
+
+
+def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
+    out_width = out_basis.width
+
+    for i, basis in enumerate(other_bases):
+        if basis.width != out_width:
+            raise ValueError(f"Incompatible width for basis {i}")
 
 
 def dense_ft_fma(
@@ -61,16 +71,24 @@ def dense_ft_fma(
     b: DenseFreeTensor,
     c: DenseFreeTensor
 ) -> DenseFreeTensor:
-    # FIXME JAX_ENABLE_X64 separate method for 64?
-    # if a.data.dtype != jnp.float64:
-    #     raise ValueError("cpu_dense_ft_fma a array only supports float64 dtype")
-  
-    # if b.data.dtype != jnp.float64:
-    #     raise ValueError("cpu_dense_ft_fma b array only supports float64 dtype")
+    """
+    Free tensor fused multiply-add.
 
-    # if c.data.dtype != jnp.float64:
-    #     raise ValueError("cpu_dense_ft_fma c array only supports float64 dtype")
+    This function is equivalent to `d = b * c + a`.
 
+    Currently only floating point scalars (np.float32) are supported.
+
+    The roughpy compute equivalent is ternary and mutates the first operand a
+    to be the output. In JAX arrays are immutable so this version differs by
+    copying `a` and returing a new result with its size and shape.
+
+    The basis is taken from `b`.
+
+    :param a: addition operand
+    :param b: left-hand multiply operand
+    :param c: right-hand multiple operand
+    :return: result
+    """
     if a.data.dtype != jnp.float32:
         raise ValueError("cpu_dense_ft_fma a array only supports float32 dtype")
   
@@ -80,31 +98,29 @@ def dense_ft_fma(
     if c.data.dtype != jnp.float32:
         raise ValueError("cpu_dense_ft_fma c array only supports float32 dtype")
 
+    _check_basis_compat(a.basis, b.basis, c.basis)
+
+    # FIXME review default basis, this is worked from ft_fma in roughpy/compute/__init__.py
+    basis = b.basis
+    out_depth = c.basis.depth
+    lhs_depth = -1
+    rhs_depth = -1
+
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_fma",
-
-        # FIXME which tensor drives result's shape?
         jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
     )
 
-    # FIXME experimental passing all bases whilst getting linkage working. Change
-    # to arguments of py_dense_ft_fma in roughpy/compute/_src/dense_basic.cpp
-    # using one basis and max degrees.
     return call(
-        a.basis.degree_begin,
-        b.basis.degree_begin,
-        c.basis.degree_begin,
+        basis.degree_begin,
         a.data,
         b.data,
         c.data,
-        a_width=a.basis.width,
-        a_depth=a.basis.depth,
-        b_width=b.basis.width,
-        b_depth=b.basis.depth,
-        c_width=c.basis.width,
-        c_depth=c.basis.depth,
+        width=basis.width,
+        depth=basis.depth,
+        out_depth=out_depth,
+        lhs_depth=lhs_depth,
+        rhs_depth=rhs_depth
     )
 
-
-# Tensor aliases
 FreeTensor = DenseFreeTensor

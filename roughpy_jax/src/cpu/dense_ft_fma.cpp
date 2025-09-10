@@ -8,24 +8,10 @@
 namespace {
 
 namespace ffi = xla::ffi;
-using namespace rpy::compute;
 
-// Defensive check that indexing types match as we cast data from JAX into C++
-// FIXME 32 or 64 bit index type?
-using RpyIndexType = TensorBasis::Index;
-inline constexpr ffi::DataType XlaIndexType = ffi::DataType::S64;
-static_assert(
-    std::is_same_v<
-        RpyIndexType,
-        ffi::NativeType<XlaIndexType>
-    >,
-    "XlaIndexType must match TensorBasis::Index type for degree_begin"
-);
-
-// FIXME investigating JAX_ENABLE_X64 32/64 errors
-// https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision 
-// FIXME float type hard-coded, use template type instead?
+// FIXME split into 32 and 64 variants with templates?
 using RpyFloatType = float;
+inline constexpr ffi::DataType XlaIndexType = ffi::DataType::S32;
 inline constexpr ffi::DataType XlaFloatType = ffi::DataType::F32;
 static_assert(
     std::is_same_v<
@@ -49,81 +35,132 @@ std::pair<int64_t, int64_t> GetDims(const ffi::Buffer<T>& buffer)
     return std::make_pair(buffer.element_count(), dims.back());
 }
 
+// FIXME This reworked/duplicate from roughpy/compute/_src/call_config.cpp, can
+// We reuse private CallConfig to centralise this behaviour?
+std::optional<ffi::Error> update_algebra_params(
+    int width,
+    int depth,
+    int& out_min_degree,
+    int& lhs_min_degree,
+    int& rhs_min_degree,
+    int& out_max_degree,
+    int& lhs_max_degree,
+    int& rhs_max_degree
+)
+{
+    if (lhs_max_degree == -1 || lhs_max_degree >= depth) {
+        lhs_max_degree = depth;
+    }
+    if (lhs_max_degree < lhs_min_degree) {
+        return ffi::Error::InvalidArgument("lhs_min_degree must be less than lhs_max_degree");
+    }
+
+    if (rhs_max_degree == -1 || rhs_max_degree >= depth) {
+        rhs_max_degree = depth;
+    }
+    if (rhs_max_degree < rhs_min_degree) {
+        return ffi::Error::InvalidArgument("rhs_min_degree must be less than rhs_max_degree");
+    }
+
+    if (out_max_degree == -1 || out_max_degree >= depth) {
+        out_max_degree = depth;
+    }
+    if (out_max_degree < out_min_degree) {
+        return ffi::Error::InvalidArgument("out_min_degree must be less than out_max_degree");
+    }
+
+    return std::nullopt;
+}
+
 ffi::Error cpu_dense_ft_fma_impl(
-    long int a_width,
-    long int a_depth,
-    long int b_width,
-    long int b_depth,
-    long int c_width,
-    long int c_depth,
-    ffi::Buffer<XlaIndexType> a_degree_begin,
-    ffi::Buffer<XlaIndexType> b_degree_begin,
-    ffi::Buffer<XlaIndexType> c_degree_begin,
-    ffi::Buffer<XlaFloatType> a,
-    ffi::Buffer<XlaFloatType> b,
-    ffi::Buffer<XlaFloatType> c,
+    long width,
+    long depth,
+    long out_depth, // FIXME review name as 'out' not strictly correct in JAX
+    long lhs_depth,
+    long rhs_depth,
+    ffi::Buffer<XlaIndexType> degree_begin,
+    ffi::Buffer<XlaFloatType> out,
+    ffi::Buffer<XlaFloatType> lhs,
+    ffi::Buffer<XlaFloatType> rhs,
     ffi::ResultBuffer<XlaFloatType> result
 ) {
-    auto [a_size, a_dim] = GetDims(a);
-    auto [a_db_size, a_db_dim] = GetDims(a_degree_begin);
-    if (a_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma a must be an array");
-    }
-    if (a_db_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin must be an array");
-    }
-    if (a_db_size != a_depth + 2) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin size must be depth + 2");
+    using namespace rpy::compute;
+
+    auto [out_size, out_dim] = GetDims(out);
+    if (out_dim == 0) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_fma out must be an array");
     }
 
-    auto [b_size, b_dim] = GetDims(b);
-    auto [b_db_size, b_db_dim] = GetDims(b_degree_begin);
-    if (b_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma a must be an array");
-    }
-    if (b_db_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin must be an array");
-    }
-    if (b_db_size != b_depth + 2) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin size must be depth + 2");
+    auto [lhs_size, lhs_dim] = GetDims(lhs);
+    if (lhs_dim == 0) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_fma lhs must be an array");
     }
 
-    auto [c_size, c_dim] = GetDims(c);
-    auto [c_db_size, c_db_dim] = GetDims(c_degree_begin);
-    if (c_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma a must be an array");
+    auto [rhs_size, rhs_dim] = GetDims(rhs);
+    if (rhs_dim == 0) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_fma rhs must be an array");
     }
-    if (c_db_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin must be an array");
-    }
-    if (c_db_size != c_depth + 2) {
+
+    auto [degree_begin_size, degree_begin_dim] = GetDims(degree_begin);
+    if (degree_begin_size != depth + 2) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin size must be depth + 2");
     }
 
     auto [result_size, result_dim] = GetDims(*result);
-    if (result_dim != a_dim) {
+    if (result_dim != out_dim) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma result array must match a array");
     }
-    if (result_size != a_size) {
+
+    if (result_size != out_size) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma result size must match a size");
     }
 
-    TensorBasis a_basis = { a_degree_begin.typed_data(), a_width, a_depth };
-    TensorBasis b_basis = { b_degree_begin.typed_data(), b_width, b_depth };
-    TensorBasis c_basis = { c_degree_begin.typed_data(), c_width, c_depth };
+    // The internal tensor basis degree_begin array is 64 bit ptrdiffs, so copy
+    // the int32 index data over to a temporary array on the heap.
+    std::vector<TensorBasis::BasisBase::Index> degree_begin_i64;
+    degree_begin_i64.reserve(degree_begin_size);
+    std::copy(
+        degree_begin.typed_data(),
+        degree_begin.typed_data() + degree_begin_size,
+        std::back_inserter(degree_begin_i64)
+    );
+
+    // FIXME for review: narrowing conversion on width and depth, underlying types
+    TensorBasis basis = { degree_begin_i64.data(), width, depth };
 
     // JAX array are immutable so rather than the ternary ft_fma call where the
-    // first argument is overwritten, this is a quaternary method producing a
-    // new result, so to supports ft_fma's behaviour of overwriting 'out'
-    // buffer, 'a' contents are copied into result buffer to operate on it.
-    std::memcpy(result->typed_data(), a.typed_data(), a.size_bytes());
+    // first argument is overwritten, this is a quaternary method preserving
+    // `out` and returning new result. To use old interface, `result` is mutable
+    // buffer copied from `out` that that ft_fma can work on.
+    std::memcpy(result->typed_data(), out.typed_data(), out.size_bytes());
 
-    // FIXME change behaviour/basis/depths to match _internals.dense_ft_fma
-    // FIXME hardcoded to float: use correct type
-    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), a_basis, 0, 0);
-    DenseTensorView<const RpyFloatType*> lhs_view(b.typed_data(), b_basis, 0, 0);
-    DenseTensorView<const RpyFloatType*> rhs_view(c.typed_data(), c_basis, 0, 0);
+    // FIXME for review: this is hardcoded to match roughpy compute. Should
+    // these be set via args universally? Also centralise code.
+    int out_min_degree = 0;
+    int lhs_min_degree = 0;
+    int rhs_min_degree = 0;
+    int out_max_degree = out_depth;
+    int lhs_max_degree = lhs_depth;
+    int rhs_max_degree = rhs_depth;
+    auto depth_check_error = update_algebra_params(
+        width,
+        depth,
+        out_min_degree,
+        lhs_min_degree,
+        rhs_min_degree,
+        out_max_degree,
+        lhs_max_degree,
+        rhs_max_degree
+    );
+    if (depth_check_error.has_value()) {
+        return *depth_check_error;
+    }
 
+    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, out_min_degree, out_max_degree);
+    DenseTensorView<const RpyFloatType*> lhs_view(lhs.typed_data(), basis, lhs_min_degree, lhs_max_degree);
+    DenseTensorView<const RpyFloatType*> rhs_view(rhs.typed_data(), basis, rhs_min_degree, rhs_max_degree);
+
+    // Compute fma into result originally copied from out array
     basic::v1::ft_fma(result_view, lhs_view, rhs_view);
 
     return ffi::Error::Success();
@@ -135,14 +172,11 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
     cpu_dense_ft_fma,
     rpy::jax::cpu::cpu_dense_ft_fma_impl,
     xla::ffi::Ffi::Bind()
-        .Attr<long int>("a_width") // FIXME JAX_ENABLE_X64 forces long int?
-        .Attr<long int>("a_depth")
-        .Attr<long int>("b_width")
-        .Attr<long int>("b_depth")
-        .Attr<long int>("c_width")
-        .Attr<long int>("c_depth")
-        .Arg<ffi::Buffer<XlaIndexType>>()
-        .Arg<ffi::Buffer<XlaIndexType>>()
+        .Attr<long>("width")
+        .Attr<long>("depth")
+        .Attr<long>("out_depth")
+        .Attr<long>("lhs_depth")
+        .Attr<long>("rhs_depth")
         .Arg<ffi::Buffer<XlaIndexType>>()
         .Arg<ffi::Buffer<XlaFloatType>>()
         .Arg<ffi::Buffer<XlaFloatType>>()

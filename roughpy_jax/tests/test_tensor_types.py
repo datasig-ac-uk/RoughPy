@@ -19,7 +19,7 @@ def test_tensor_basis_degree_begin(width, depth, expected):
     # Absolute check that the degree begin matches sample
     np.testing.assert_array_equal(
         tensor_basis.degree_begin,
-        np.array(expected, dtype=np.int64)
+        np.array(expected, dtype=np.int32)
     )
 
     # Defensive check that generated degree begin array has right size
