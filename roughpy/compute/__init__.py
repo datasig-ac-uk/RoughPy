@@ -193,25 +193,79 @@ def tensor_to_lie(*args, **kwargs):
 
 
 
-def ft_exp(x: FreeTensor) -> FreeTensor:
+def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     """
     Exponential of a free tensor.
 
     :param x: argument
+    :param out_basis: optional output basis. If not specified, the same basis as `x` is used.
     :return: tensor exponential of `x`
     """
 
-    result = np.zeros_like(x.data)
+    out_basis = out_basis or x.basis
 
-    # This is a pure python implementation that will be
-    # replaced by a C++ implementation once available.
-    depth = x.basis.depth
-    result[0] = 1
+    _check_basis_compat(out_basis, x.basis)
 
-    for deg in range(0, depth):
-        z = x.data / (depth - deg)
-        _internals.dense_ft_inplace_mul(result, z, x.basis)
+    dtype = x.data.dtype
+    if dtype not in (np.float32, np.float64):
+        raise ValueError(f"Unsupported dtype {dtype}")
 
-        result[0] += 1
+    shape = (*x.data.shape[:-1], out_basis.size())
 
-    return FreeTensor(result, x.basis)
+    result = np.zeros(shape, dtype=dtype)
+
+    _internals.dense_ft_exp(result, x.data, x.basis, out_basis)
+
+    return FreeTensor(result, out_basis)
+
+
+def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Logarithm of a free tensor.
+
+
+    :param x: tensor to take logarithm of
+    :param out_basis: optional output basis. If not specified, the same basis as `x` is used.
+    :return: tensor logarithm of `x`
+    """
+
+    out_basis = out_basis or x.basis
+    _check_basis_compat(out_basis, x.basis)
+
+    dtype = x.data.dtype
+    if dtype not in (np.float32, np.float64):
+        raise ValueError(f"Unsupported dtype {dtype}")
+
+    shape = (*x.data.shape[:-1], out_basis.size())
+
+    result = np.zeros(shape, dtype=dtype)
+
+    _internals.dense_ft_log(result, x.data, x.basis, out_basis)
+
+    return FreeTensor(result, out_basis)
+
+
+def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Fused multiply-exponential of two free tensors.
+
+    Computes the fused product A*exp(X) where A is `multiplier` and X is `exponent`.
+
+    :param multiplier: Multiplier free tensor
+    :param exponent: Free tensor to exponential
+    :param out_basis: Optional output basis. If not specified, the same basis as `multiplier` is used.
+    :return: The result of fused multiply-exponential of `multiplier` and `exponent`
+    """
+
+    out_basis = out_basis or multiplier.basis
+    _check_basis_compat(out_basis, multiplier.basis, exponent.basis)
+
+    dtype = multiplier.data.dtype
+    if dtype not in (np.float32, np.float64):
+        raise ValueError(f"Unsupported dtype {dtype}")
+
+    shape = (*multiplier.data.shape[:-1], out_basis.size())
+
+    result = np.zeros(shape, dtype=dtype)
+
+    _internals.dense_ft_fmexp(result, multiplier.data, exponent.data, multiplier.basis, exponent.basis, out_basis)
