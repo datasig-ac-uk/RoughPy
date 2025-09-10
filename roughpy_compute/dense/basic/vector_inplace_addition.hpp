@@ -9,14 +9,15 @@ namespace rpy::compute::basic {
 inline namespace v1 {
 
 
-template <typename S, typename Basis, typename Op=ops::Identity>
+template <typename LhsIter, typename RhsIter, typename Basis, typename Op=ops::Identity>
 void vector_inplace_addition(
-    DenseVectorView<S*, Basis> lhs,
-    DenseVectorView<S const*, Basis> rhs,
+    DenseVectorView<LhsIter, Basis> lhs,
+    DenseVectorView<RhsIter, Basis> rhs,
     Op&& op=Op{}
 )
 {
-    using Index = typename DenseVectorView<S*, Basis>::Index;
+    using LhsView = DenseVectorView<LhsIter, Basis>;
+    using Index = typename LhsView::Index;
 
     // We don't respect min_degree here, but we might want to add this support
     // later.
