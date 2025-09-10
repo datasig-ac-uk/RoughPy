@@ -359,7 +359,7 @@ PyObject* py_dense_ft_adj_lmul(PyObject* self [[maybe_unused]],
                                     &arg_obj,
                                     &basis_obj,
                                     &config.out_max_degree,
-                                    &config.lhs_min_degree,
+                                    &config.lhs_max_degree,
                                     &config.rhs_max_degree)) {
         return nullptr;
     }
