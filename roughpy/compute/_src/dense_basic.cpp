@@ -283,6 +283,8 @@ PyObject *py_dense_antipode(PyObject * self [[maybe_unused]], PyObject *args, Py
         // error already set
         return nullptr;
     }
+
+    return binary_function_outer<DenseAntipode>(out_obj, arg_obj, config);
 }
 
 /*******************************************************************************
@@ -379,14 +381,17 @@ PyObject* py_dense_st_fma(PyObject*, PyObject*, PyObject*)
     Py_RETURN_NOTIMPLEMENTED;
 }
 
-PyObject *py_dense_st_inplace_mul(PyObject *, PyObject *, PyObject *) {
+PyObject* py_dense_st_inplace_mul(PyObject*, PyObject*, PyObject*)
+{
     Py_RETURN_NOTIMPLEMENTED;
 }
 
-PyObject *py_dense_lie_to_tensor(PyObject *, PyObject *, PyObject *) {
+PyObject* py_dense_lie_to_tensor(PyObject*, PyObject*, PyObject*)
+{
     Py_RETURN_NOTIMPLEMENTED;
 }
 
-PyObject *py_dense_tensor_to_lie(PyObject *, PyObject *, PyObject *) {
+PyObject* py_dense_tensor_to_lie(PyObject*, PyObject*, PyObject*)
+{
     Py_RETURN_NOTIMPLEMENTED;
 }
