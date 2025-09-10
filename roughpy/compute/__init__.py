@@ -109,7 +109,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor, **kwargs):
     :param b: left-hand operand
     :param c: right-hand operand
     """
-    _check_basis_compat(a.basis, b.basis, b.basis)
+    _check_basis_compat(a.basis, b.basis, c.basis)
 
     # In the future, we will need to handle alternative prototype tensors here.
 
