@@ -9,12 +9,15 @@
 namespace rpy::compute::intermediate {
 inline namespace v1 {
 
-template <typename S>
-void ft_log(DenseTensorView<S*> out, DenseTensorView<S const*> arg)
+template <typename OutIter, typename ArgIter>
+void ft_log(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
 {
-    using Degree = typename DenseTensorView<S*>::Degree;
+    using OutView = DenseTensorView<OutIter>;
+    using Degree = typename OutView::Degree;
+    using Scalar = typename OutView::Scalar;
 
-    constexpr S unit { 1 };
+
+    constexpr Scalar unit { 1 };
 
 
     auto const max_degree = out.max_degree();
@@ -30,7 +33,7 @@ void ft_log(DenseTensorView<S*> out, DenseTensorView<S const*> arg)
         basic::ft_inplace_mul(
             out.truncte(max_level),
             arg.truncate(max_level, 1),
-            ops::DivideBy<S>(static_cast<S>(deg))
+            ops::DivideBy<Scalar>(static_cast<Scalar>(deg))
         );
 
     }

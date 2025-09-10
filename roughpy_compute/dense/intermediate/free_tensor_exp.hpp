@@ -23,7 +23,7 @@ void ft_exp(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
     out[0] = unit;
 
     auto const max_degree = out.max_degree();
-    for (Degree deg=max_degree(); deg > 0; --deg) {
+    for (Degree deg=max_degree; deg > 0; --deg) {
         auto const max_level = max_degree - deg + 1;
 
         basic::ft_inplace_mul(
