@@ -21,7 +21,7 @@ void ft_log(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
 
 
     auto const max_degree = out.max_degree();
-    for (Degree deg=max_degree(); deg > 0; --deg) {
+    for (Degree deg=max_degree; deg > 0; --deg) {
         auto const max_level = max_degree - deg + 1;
 
         if (deg % 2 == 0) {
@@ -31,7 +31,7 @@ void ft_log(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
         }
 
         basic::ft_inplace_mul(
-            out.truncte(max_level),
+            out.truncate(max_level),
             arg.truncate(max_level, 1),
             ops::DivideBy<Scalar>(static_cast<Scalar>(deg))
         );
