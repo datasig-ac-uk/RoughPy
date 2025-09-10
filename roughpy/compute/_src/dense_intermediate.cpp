@@ -54,7 +54,7 @@ struct DenseFTExp
 }
 
 
-PyObject* py_ft_dense_exp(PyObject* unused_self [[maybe_unused]],
+PyObject* py_dense_ft_exp(PyObject* unused_self [[maybe_unused]],
                           PyObject* args,
                           PyObject* kwargs)
 {
@@ -139,7 +139,7 @@ struct FtFMExp
 
 }
 
-PyObject* py_ft_dense_fmexp(PyObject* unused_self [[maybe_unused]],
+PyObject* py_dense_ft_fmexp(PyObject* unused_self [[maybe_unused]],
                             PyObject* args,
                             PyObject* kwargs)
 {
@@ -227,7 +227,37 @@ struct FTLog
 
 }
 
-PyObject* py_ft_dense_log(PyObject*, PyObject*, PyObject*)
+PyObject* py_dense_ft_log(PyObject* unused_self [[maybe_unused]], PyObject* args, PyObject* kwargs)
 {
-    Py_RETURN_NOTIMPLEMENTED;
+    static constexpr char const* const kwords[] = {
+            "out", "arg", "basis", "out_depth", "arg_depth",
+            nullptr
+    };
+
+    PyObject *out_obj, *arg_obj;
+    PyObject* basis_obj = nullptr;
+
+    CallConfig config;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|ii", kwords,
+                                     &out_obj, &arg_obj, &basis_obj, &config.out_max_degree,
+                                     &config.rhs_max_degree)) {
+        return nullptr;
+    }
+
+    TensorBasis basis;
+    auto handle = to_basis(basis_obj, basis);
+    if (!handle) {
+        // error already set
+        return nullptr;
+    }
+    config.basis_data = &basis;
+
+    if (!update_algebra_params(config)) {
+        // error already set
+        return nullptr;
+    }
+
+    return binary_function_outer<FTLog>(out_obj, arg_obj, config);
+
 }
