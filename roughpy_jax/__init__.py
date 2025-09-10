@@ -34,7 +34,10 @@ class TensorBasis:
             def degree_begin_fn(last_degree, _):
                 new_degree = 1 + last_degree * width 
                 return new_degree, last_degree
-            _, degree_begin = lax.scan(degree_begin_fn, 0, length=depth + 2)
+            
+            # FIXME JAX_ENABLE_X64 necessary to ensure final array is int64
+            init = jnp.array(0, dtype=jnp.int64)
+            _, degree_begin = lax.scan(degree_begin_fn, init, length=depth + 2)
 
         self.degree_begin = degree_begin
 
@@ -58,6 +61,16 @@ def dense_ft_fma(
     b: DenseFreeTensor,
     c: DenseFreeTensor
 ) -> DenseFreeTensor:
+    # FIXME JAX_ENABLE_X64 separate method for 64?
+    # if a.data.dtype != jnp.float64:
+    #     raise ValueError("cpu_dense_ft_fma a array only supports float64 dtype")
+  
+    # if b.data.dtype != jnp.float64:
+    #     raise ValueError("cpu_dense_ft_fma b array only supports float64 dtype")
+
+    # if c.data.dtype != jnp.float64:
+    #     raise ValueError("cpu_dense_ft_fma c array only supports float64 dtype")
+
     if a.data.dtype != jnp.float32:
         raise ValueError("cpu_dense_ft_fma a array only supports float32 dtype")
   
@@ -74,6 +87,9 @@ def dense_ft_fma(
         jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
     )
 
+    # FIXME experimental passing all bases whilst getting linkage working. Change
+    # to arguments of py_dense_ft_fma in roughpy/compute/_src/dense_basic.cpp
+    # using one basis and max degrees.
     return call(
         a.basis.degree_begin,
         b.basis.degree_begin,

@@ -11,13 +11,28 @@ namespace ffi = xla::ffi;
 using namespace rpy::compute;
 
 // Defensive check that indexing types match as we cast data from JAX into C++
-inline constexpr ffi::DataType FfiIndexType = ffi::DataType::S64;
+// FIXME 32 or 64 bit index type?
+using RpyIndexType = TensorBasis::Index;
+inline constexpr ffi::DataType XlaIndexType = ffi::DataType::S64;
 static_assert(
     std::is_same_v<
-        TensorBasis::Index,
-        ffi::NativeType<FfiIndexType>
+        RpyIndexType,
+        ffi::NativeType<XlaIndexType>
     >,
-    "TensorBasis::Index size must match byte width for degree_begin"
+    "XlaIndexType must match TensorBasis::Index type for degree_begin"
+);
+
+// FIXME investigating JAX_ENABLE_X64 32/64 errors
+// https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision 
+// FIXME float type hard-coded, use template type instead?
+using RpyFloatType = float;
+inline constexpr ffi::DataType XlaFloatType = ffi::DataType::F32;
+static_assert(
+    std::is_same_v<
+        RpyFloatType,
+        ffi::NativeType<XlaFloatType>
+    >,
+    "XlaFloatType must match underlying float type"
 );
 
 } // namespace
@@ -35,19 +50,19 @@ std::pair<int64_t, int64_t> GetDims(const ffi::Buffer<T>& buffer)
 }
 
 ffi::Error cpu_dense_ft_fma_impl(
-    int a_width,
-    int a_depth,
-    int b_width,
-    int b_depth,
-    int c_width,
-    int c_depth,
-    ffi::Buffer<FfiIndexType> a_degree_begin,
-    ffi::Buffer<FfiIndexType> b_degree_begin,
-    ffi::Buffer<FfiIndexType> c_degree_begin,
-    ffi::Buffer<ffi::F32> a,
-    ffi::Buffer<ffi::F32> b,
-    ffi::Buffer<ffi::F32> c,
-    ffi::ResultBuffer<ffi::F32> result
+    long int a_width,
+    long int a_depth,
+    long int b_width,
+    long int b_depth,
+    long int c_width,
+    long int c_depth,
+    ffi::Buffer<XlaIndexType> a_degree_begin,
+    ffi::Buffer<XlaIndexType> b_degree_begin,
+    ffi::Buffer<XlaIndexType> c_degree_begin,
+    ffi::Buffer<XlaFloatType> a,
+    ffi::Buffer<XlaFloatType> b,
+    ffi::Buffer<XlaFloatType> c,
+    ffi::ResultBuffer<XlaFloatType> result
 ) {
     auto [a_size, a_dim] = GetDims(a);
     auto [a_db_size, a_db_dim] = GetDims(a_degree_begin);
@@ -105,9 +120,9 @@ ffi::Error cpu_dense_ft_fma_impl(
 
     // FIXME change behaviour/basis/depths to match _internals.dense_ft_fma
     // FIXME hardcoded to float: use correct type
-    DenseTensorView<float*> result_view(result->typed_data(), a_basis, 0, 0);
-    DenseTensorView<const float*> lhs_view(b.typed_data(), b_basis, 0, 0);
-    DenseTensorView<const float*> rhs_view(c.typed_data(), c_basis, 0, 0);
+    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), a_basis, 0, 0);
+    DenseTensorView<const RpyFloatType*> lhs_view(b.typed_data(), b_basis, 0, 0);
+    DenseTensorView<const RpyFloatType*> rhs_view(c.typed_data(), c_basis, 0, 0);
 
     basic::v1::ft_fma(result_view, lhs_view, rhs_view);
 
@@ -120,17 +135,17 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
     cpu_dense_ft_fma,
     rpy::jax::cpu::cpu_dense_ft_fma_impl,
     xla::ffi::Ffi::Bind()
-        .Attr<int>("a_width")
-        .Attr<int>("a_depth")
-        .Attr<int>("b_width")
-        .Attr<int>("b_depth")
-        .Attr<int>("c_width")
-        .Attr<int>("c_depth")
-        .Arg<ffi::Buffer<FfiIndexType>>()
-        .Arg<ffi::Buffer<FfiIndexType>>()
-        .Arg<ffi::Buffer<FfiIndexType>>()
-        .Arg<ffi::Buffer<ffi::F32>>()
-        .Arg<ffi::Buffer<ffi::F32>>()
-        .Arg<ffi::Buffer<ffi::F32>>()
-        .Ret<ffi::Buffer<ffi::F32>>()
+        .Attr<long int>("a_width") // FIXME JAX_ENABLE_X64 forces long int?
+        .Attr<long int>("a_depth")
+        .Attr<long int>("b_width")
+        .Attr<long int>("b_depth")
+        .Attr<long int>("c_width")
+        .Attr<long int>("c_depth")
+        .Arg<ffi::Buffer<XlaIndexType>>()
+        .Arg<ffi::Buffer<XlaIndexType>>()
+        .Arg<ffi::Buffer<XlaIndexType>>()
+        .Arg<ffi::Buffer<XlaFloatType>>()
+        .Arg<ffi::Buffer<XlaFloatType>>()
+        .Arg<ffi::Buffer<XlaFloatType>>()
+        .Ret<ffi::Buffer<XlaFloatType>>()
 );
