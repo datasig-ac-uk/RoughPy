@@ -255,8 +255,6 @@ PyObject *py_dense_antipode(PyObject * self [[maybe_unused]], PyObject *args, Py
     }
 
     return binary_function_outer<DenseAntipode>(out_obj, arg_obj, config);
-
-    Py_RETURN_NONE;
 }
 
 PyObject *py_dense_st_fma(PyObject *, PyObject *, PyObject *) {
