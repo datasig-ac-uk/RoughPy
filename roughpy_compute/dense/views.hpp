@@ -301,7 +301,7 @@ public:
         return {
                 this->data(),
                 this->basis(),
-                std::max(this->min_degree_, new_min_degree),
+                std::max(this->min_degree(), new_min_degree),
                 std::min(this->max_degree(), new_max_degree)
         };
     }
