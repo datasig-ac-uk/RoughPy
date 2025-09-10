@@ -348,14 +348,16 @@ PyObject* py_dense_ft_adj_lmul(PyObject* self [[maybe_unused]],
     PyObject *out_obj, *op_obj, *arg_obj;
 
     CallConfig config;
+    PyObject* basis_obj = nullptr;
 
-    if (PyArg_ParseTupleAndKeywords(args,
+    if (!PyArg_ParseTupleAndKeywords(args,
                                     kwargs,
                                     "OOOO|iii",
                                     kwords,
                                     &out_obj,
                                     &op_obj,
                                     &arg_obj,
+                                    &basis_obj,
                                     &config.out_max_degree,
                                     &config.lhs_min_degree,
                                     &config.rhs_max_degree)) {
@@ -363,10 +365,11 @@ PyObject* py_dense_ft_adj_lmul(PyObject* self [[maybe_unused]],
     }
 
     TensorBasis basis;
-    auto handle = to_basis(out_obj, basis);
+    auto handle = to_basis(basis_obj, basis);
     if (!handle) {
         return nullptr;
     }
+    config.basis_data = &basis;
 
     if (!update_algebra_params(config)) {
         return nullptr;
