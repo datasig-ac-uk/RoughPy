@@ -50,6 +50,7 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
 
         auto arg_frag = arg.at_level(arg_degree);
 
+
         for (Degree out_degree = out_max_degree;
             out_degree >= out_min_degree;
             --out_degree)
@@ -68,12 +69,8 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
                 for (Index i=0; i < out_frag.size(); ++i) {
                     out_frag[i] += op_val * arg_frag[i + op_offset];
                 }
-
-
             }
             // ReSharper restore CppDFANullDereference
-
-
 
         }
     }
