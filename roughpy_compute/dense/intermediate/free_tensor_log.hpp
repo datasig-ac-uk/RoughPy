@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_COMPUTE_DENSE_INTERMEDIATE_FREE_TENSOR_LOG_HPP
 #define ROUGHPY_COMPUTE_DENSE_INTERMEDIATE_FREE_TENSOR_LOG_HPP
 
-#include "roughpy_compute/commmon/operations.hpp"
+#include "roughpy_compute/common/operations.hpp"
 
 #include "roughpy_compute/dense/views.hpp"
 #include "roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp"
@@ -28,7 +28,7 @@ void ft_log(DenseTensorView<S*> out, DenseTensorView<S const*> arg)
         }
 
         basic::ft_inplace_mul(
-            out.truncte(max_level,
+            out.truncte(max_level),
             arg.truncate(max_level, 1),
             ops::DivideBy<S>(static_cast<S>(deg))
         );
