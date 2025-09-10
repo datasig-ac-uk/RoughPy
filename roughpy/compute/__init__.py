@@ -268,4 +268,6 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
 
     result = np.zeros(shape, dtype=dtype)
 
-    _internals.dense_ft_fmexp(result, multiplier.data, exponent.data, multiplier.basis, exponent.basis, out_basis)
+    _internals.dense_ft_fmexp(result, multiplier.data, exponent.data, out_basis)
+
+    return FreeTensor(result, out_basis)
