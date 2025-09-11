@@ -117,22 +117,15 @@ ffi::Error cpu_dense_ft_fma_impl(
 
     // The internal tensor basis degree_begin array is 64 bit ptrdiffs, so copy
     // the int32 index data over to a temporary array on the heap.
-    std::vector<TensorBasis::BasisBase::Index> degree_begin_i64;
-    degree_begin_i64.reserve(degree_begin_size);
+    std::vector<TensorBasis::BasisBase::Index> degree_begin_i64(degree_begin_size);
     std::copy(
         degree_begin.typed_data(),
         degree_begin.typed_data() + degree_begin_size,
-        std::back_inserter(degree_begin_i64)
+        degree_begin_i64.begin()
     );
 
     // FIXME for review: narrowing conversion on width and depth, underlying types
     TensorBasis basis = { degree_begin_i64.data(), width, depth };
-
-    // JAX array are immutable so rather than the ternary ft_fma call where the
-    // first argument is overwritten, this is a quaternary method preserving
-    // `out` and returning new result. To use old interface, `result` is mutable
-    // buffer copied from `out` that that ft_fma can work on.
-    std::memcpy(result->typed_data(), out.typed_data(), out.size_bytes());
 
     // FIXME for review: this is hardcoded to match roughpy compute. Should
     // these be set via args universally? Also centralise code.
@@ -156,12 +149,27 @@ ffi::Error cpu_dense_ft_fma_impl(
         return *depth_check_error;
     }
 
+    // JAX array are immutable so rather than the ternary ft_fma call where the
+    // first argument is overwritten, this is a quaternary method preserving
+    // `out` and returning new result. To use old interface, `result` is mutable
+    // buffer copied from `out` that that ft_fma can work on.
+    std::copy_n(out.typed_data(), out_size, result->typed_data());
+
+    // FIXME for discussion in review: during weekly catch-up we changed size
+    // from out_size to out_max_degree, but for now I have left as out_size
+    // because result dims are set by the calling JAX code, so in order to init
+    // the array as we do below, we would need to move the out/lhs/rhs min/max
+    // degree calculations out into Python too. Also, I think we would also need
+    // checks that buffers passed into this method are safe, i.e. the call to
+    // basic::ft_fma will not go outside bounds.
+    // std::copy_n(out.typed_data(), out_max_degree, result->typed_data());
+
     DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, out_min_degree, out_max_degree);
     DenseTensorView<const RpyFloatType*> lhs_view(lhs.typed_data(), basis, lhs_min_degree, lhs_max_degree);
     DenseTensorView<const RpyFloatType*> rhs_view(rhs.typed_data(), basis, rhs_min_degree, rhs_max_degree);
 
     // Compute fma into result originally copied from out array
-    basic::v1::ft_fma(result_view, lhs_view, rhs_view);
+    basic::ft_fma(result_view, lhs_view, rhs_view);
 
     return ffi::Error::Success();
 }
