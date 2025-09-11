@@ -10,7 +10,7 @@ import pytest
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 
-def test_ft_exp_zero():
+def test_dense_ft_exp_zero():
 
     basis = rpc.TensorBasis(2, 2)
 
@@ -24,7 +24,7 @@ def test_ft_exp_zero():
     assert_array_equal(exp_a.data, expected_data)
 
 
-def test_ft_exp_letter():
+def test_dense_ft_exp_letter():
 
     basis = rpc.TensorBasis(2, 2)
     a = rpc.FreeTensor(np.array([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
@@ -36,7 +36,7 @@ def test_ft_exp_letter():
     assert_array_equal(exp_a.data, expected_data)
 
 
-def test_ft_log_identity():
+def test_dense_ft_log_identity():
     basis = rpc.TensorBasis(2, 2)
     a = rpc.FreeTensor(np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
 
@@ -46,7 +46,7 @@ def test_ft_log_identity():
     assert_array_equal(log_a.data, expected)
 
 
-def test_ft_exp_log_roundtrip():
+def test_dense_ft_exp_log_roundtrip():
 
     basis = rpc.TensorBasis(2, 2)
     a = rpc.FreeTensor(np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
@@ -60,7 +60,7 @@ def test_ft_exp_log_roundtrip():
     assert_array_almost_equal(log_exp_a.data, a.data)
 
 
-def test_ft_exp_and_fmexp():
+def test_dense_ft_exp_and_fmexp():
 
     basis = rpc.TensorBasis(2, 2)
     e = rpc.FreeTensor(np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
@@ -77,3 +77,15 @@ def test_ft_exp_and_fmexp():
     assert_array_almost_equal(e_exp_b.data, exp_b.data)
 
 
+def test_dense_ft_fmexp():
+    basis = rpc.TensorBasis(2, 2)
+    a = rpc.FreeTensor(np.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0]), basis)
+
+    rng = np.random.default_rng()
+    x = rpc.FreeTensor(np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
+    x.data[1:basis.width+1] = rng.normal(size=(basis.width,))
+
+    b = rpc.ft_fmexp(a, x)
+
+    expected = rpc.ft_mul(a, rpc.ft_exp(x))
+    assert_array_almost_equal(b.data, expected.data)
