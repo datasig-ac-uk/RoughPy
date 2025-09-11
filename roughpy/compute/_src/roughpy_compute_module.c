@@ -48,6 +48,11 @@ static PyMethodDef roughpy_compute_methods[] = {
                 "dense_ft_log", (PyCFunction) py_dense_ft_log,
                 METH_VARARGS | METH_KEYWORDS,
                 "dense free tensor logarithm"
+        }, 
+        {
+                "dense_ft_adjoint_left_mul", (PyCFunction) py_dense_ft_adj_lmul,
+                METH_VARARGS | METH_KEYWORDS,
+                "dense free tensor adjoint left multiply"
         },
         {NULL, NULL, 0, NULL}
 };
