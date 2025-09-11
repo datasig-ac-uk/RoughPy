@@ -5,6 +5,7 @@
 #include "tensor_basis.h"
 #include "lie_basis.h"
 #include "dense_basic.h"
+#include "dense_intermediate.h"
 
 
 static int init_module(PyObject* module)
@@ -32,6 +33,22 @@ static PyMethodDef roughpy_compute_methods[] = {
                 METH_VARARGS | METH_KEYWORDS,
                 "dense free tensor antipode"
         },
+        {
+                "dense_ft_exp", (PyCFunction) py_dense_ft_exp,
+                METH_VARARGS | METH_KEYWORDS,
+                "dense free tensor exponential"
+        },
+        {
+                "dense_ft_fmexp", (PyCFunction) py_dense_ft_fmexp,
+                METH_VARARGS | METH_KEYWORDS,
+                "dense free tensor fused-multiply exponential"
+        },
+
+        {
+                "dense_ft_log", (PyCFunction) py_dense_ft_log,
+                METH_VARARGS | METH_KEYWORDS,
+                "dense free tensor logarithm"
+        }, 
         {
                 "dense_ft_adjoint_left_mul", (PyCFunction) py_dense_ft_adj_lmul,
                 METH_VARARGS | METH_KEYWORDS,
