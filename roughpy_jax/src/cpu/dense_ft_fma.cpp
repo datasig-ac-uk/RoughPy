@@ -73,11 +73,11 @@ std::optional<ffi::Error> update_algebra_params(
 }
 
 ffi::Error cpu_dense_ft_fma_impl(
-    long width,
-    long depth,
-    long out_depth, // FIXME review name as 'out' not strictly correct in JAX
-    long lhs_depth,
-    long rhs_depth,
+    int width,
+    int depth,
+    int out_depth, // FIXME should we keep roughpy_compute 'out' naming? Not strictly correct in JAX
+    int lhs_depth,
+    int rhs_depth,
     ffi::Buffer<XlaIndexType> degree_begin,
     ffi::Buffer<XlaFloatType> out,
     ffi::Buffer<XlaFloatType> lhs,
@@ -172,11 +172,11 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
     cpu_dense_ft_fma,
     rpy::jax::cpu::cpu_dense_ft_fma_impl,
     xla::ffi::Ffi::Bind()
-        .Attr<long>("width")
-        .Attr<long>("depth")
-        .Attr<long>("out_depth")
-        .Attr<long>("lhs_depth")
-        .Attr<long>("rhs_depth")
+        .Attr<int>("width")
+        .Attr<int>("depth")
+        .Attr<int>("out_depth")
+        .Attr<int>("lhs_depth")
+        .Attr<int>("rhs_depth")
         .Arg<ffi::Buffer<XlaIndexType>>()
         .Arg<ffi::Buffer<XlaFloatType>>()
         .Arg<ffi::Buffer<XlaFloatType>>()

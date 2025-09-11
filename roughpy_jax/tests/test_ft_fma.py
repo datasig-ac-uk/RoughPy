@@ -2,8 +2,8 @@ import jax.numpy as jnp
 import roughpy_jax as rpj
 
 
-# FIXME first draft copied from tests/compute/test_ft_fma.py
 def test_dense_ft_fma():
+    # Note, this test is a duplicate of tests/compute/test_ft_fma.py but for JAX
     basis = rpj.TensorBasis(2, 2)
     a_data = jnp.zeros(basis.size(), dtype=jnp.float32)
     b_data = jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=jnp.float32)
@@ -12,15 +12,11 @@ def test_dense_ft_fma():
     b = rpj.FreeTensor(b_data, basis)
     c = rpj.FreeTensor(c_data, basis)
 
-    # FIXME remove dense_ prefix as in compute variant? e.g. compute.ft_fma(a, b, c)
+    # FIXME Should this be named dense_ft_fma or just ft_fma as in roughpy_compute?
     d = rpj.dense_ft_fma(a, b, c)
-    print(d)
 
-    # FIXME currently not getting same values as compute/test_ft_fma.py
-    # zeroth order term: 2 . - 1
-    # first order term: 2. (4 0) + -1 . (1 3)
-    # and so on
-    # expected = np.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=np.float32)
+    expected = jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=jnp.float32)
+    jnp.allclose(d, expected)
 
 
 def test_dense_ft_fma_compare_compute():

@@ -1,3 +1,4 @@
+import numpy as np
 import jax
 import jax.numpy as jnp
 import jax.lax as lax
@@ -29,7 +30,7 @@ class TensorBasis:
     """
     width: int
     depth: int
-    degree_begin: jnp.ndarray
+    degree_begin: jnp.ndarray # FIXME just use np array?
 
     def __init__(self, width: int, depth: int, degree_begin=None):
         self.width = width
@@ -43,6 +44,11 @@ class TensorBasis:
                 return new_degree, last_degree
             
             _, degree_begin = lax.scan(degree_begin_fn, 0, length=depth + 2)
+        else:
+            # FIXME
+            # - check degree_begin type
+            # - check size of given degree_begin is at least depth + 2
+            pass
 
         self.degree_begin = degree_begin
 
@@ -116,11 +122,11 @@ def dense_ft_fma(
         a.data,
         b.data,
         c.data,
-        width=basis.width,
-        depth=basis.depth,
-        out_depth=out_depth,
-        lhs_depth=lhs_depth,
-        rhs_depth=rhs_depth
+        width=np.int32(basis.width),
+        depth=np.int32(basis.depth),
+        out_depth=np.int32(out_depth),
+        lhs_depth=np.int32(lhs_depth),
+        rhs_depth=np.int32(rhs_depth)
     )
 
 FreeTensor = DenseFreeTensor
