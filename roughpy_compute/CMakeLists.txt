@@ -16,6 +16,7 @@ add_library(roughpy_compute INTERFACE
         common/cache_array.hpp
         common/operations.hpp
         dense/views.hpp
+        dense/basic/free_tensor_adjoint_left_mul.hpp
         dense/basic/free_tensor_antipode.hpp
         dense/basic/free_tensor_fma.hpp
         dense/basic/free_tensor_inplace_mul.hpp
