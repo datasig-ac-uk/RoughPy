@@ -254,6 +254,7 @@ add_library(RoughPy_Compute INTERFACE
         roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp
         roughpy_compute/dense/intermediate/free_tensor_log.hpp
         roughpy_compute/dense/views.hpp
+        roughpy_compute/common/iterators.hpp
 )
 target_include_directories(RoughPy_Compute INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)
