@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import roughpy_jax as rpj
 
-@pytest.mark.parametrize("width,depth,expected", [
+sample_width_depth_degree_begin = [
     (1, 1, [0, 1, 2]),
     (2, 1, [0, 1, 3]),
     (3, 1, [0, 1, 4]),
@@ -12,7 +12,8 @@ import roughpy_jax as rpj
     (1, 3, [0, 1, 2, 3, 4]),
     (2, 3, [0, 1, 3, 7, 15]),
     (3, 3, [0, 1, 4, 13, 40])
-])
+]
+@pytest.mark.parametrize("width,depth,expected", sample_width_depth_degree_begin)
 def test_tensor_basis_degree_begin(width, depth, expected):
     tensor_basis = rpj.TensorBasis(width=width, depth=depth)
 
@@ -26,10 +27,8 @@ def test_tensor_basis_degree_begin(width, depth, expected):
     assert tensor_basis.degree_begin.size == depth + 2
 
 
-
-
-
-
-
-
-
+@pytest.mark.parametrize("width,depth,expected", sample_width_depth_degree_begin)
+def test_tensor_basis_size(width, depth, expected):
+    # Last entry in degree_begin indicates overall size of data
+    tensor_basis = rpj.TensorBasis(width=width, depth=depth)
+    assert tensor_basis.size() == expected[depth + 1]

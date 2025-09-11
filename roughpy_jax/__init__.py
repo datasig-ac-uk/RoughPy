@@ -47,7 +47,7 @@ class TensorBasis:
         self.degree_begin = degree_begin
 
     def size(self):
-        return self.degree_begin.size + 1
+        return self.degree_begin[self.depth + 1]
 
 
 class DenseFreeTensor(NamedTuple):
