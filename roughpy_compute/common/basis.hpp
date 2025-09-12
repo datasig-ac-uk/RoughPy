@@ -3,7 +3,6 @@
 
 #include <algorithm>
 
-#include "architecture.hpp"
 
 namespace rpy::compute {
 
@@ -61,6 +60,12 @@ struct LieBasis : BasisBase
         };
     }
 };
+
+
+
+
+
+
 
 
 } // namespace rpy::compute
