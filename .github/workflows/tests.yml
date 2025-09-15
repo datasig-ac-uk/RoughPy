@@ -218,7 +218,6 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
         VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/_vcpkg_cache
         VCPKG_DOWNLOADS: ${{ github.workspace }}/_vcpkg_downloads
-        VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
 
     - name: Configure CMake (Windows)
