@@ -42,11 +42,17 @@ on:
       - "CITATION.cff"
       - ".gitignore"
 
+permissions:
+  packages: write
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+  # vcpkg binary cache information
+  USERNAME: datasig-ac-uk
+  VCPKG_EXE: ${{ github.workspace }}/tools/vcpkg/vcpkg
+  FEED_URL: https://nuget.pkg.github.com/datasig-ac-uk/index.json
+  VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/datasig-ac-uk/index.json,readwrite"
 
 jobs:
   build:
@@ -99,7 +105,11 @@ jobs:
 
     - name: Install Linux dependencies
       if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install -y ninja-build llvm
+      run: sudo apt-get update && sudo apt-get install -y ninja-build llvm mono-complete
+
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: brew install mono
 
     - name: Python dependencies
       shell: bash
@@ -110,7 +120,6 @@ jobs:
       shell: bash
       run: |
         git clone --depth=1 https://github.com/Microsoft/vcpkg.git tools/vcpkg
-
 
     - name: Bootstrap vcpkg (Linux/macOS)
       if: runner.os != 'Windows'
@@ -147,7 +156,35 @@ jobs:
         restore-keys: |
           vcpkg-${{ runner.os }}-
 
+    - name: Add NuGet sources (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          sources add `
+          -Source "${{ env.FEED_URL }}" `
+          -StorePasswordInClearText `
+          -Name GitHubPackages `
+          -UserName "${{ env.USERNAME }}" `
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          setapikey "${{ secrets.GITHUB_TOKEN }}" `
+          -Source "${{ env.FEED_URL }}"
 
+    - name: Add NuGet sources (Linux/macOS)
+      shell: bash
+      if: runner.os != 'Windows'
+      run: |
+        mono `${{ env.VCPKG_EXE }} fetch nuget | tail -n 1` \
+          sources add \
+          -Source "${{ env.FEED_URL }}" \
+          -StorePasswordInClearText \
+          -Name GitHubPackages \
+          -UserName "${{ env.USERNAME }}" \
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        mono `${{ env.VCPKG_EXE }} fetch nuget | tail -n 1` \
+          setapikey "${{ secrets.GITHUB_TOKEN }}" \
+          -Source "${{ env.FEED_URL }}"
 # This probably requires the intervention of a package manager because of boost and gmp deps.
 #    - name: Build and test roughpy_compute
 #      shell: bash
