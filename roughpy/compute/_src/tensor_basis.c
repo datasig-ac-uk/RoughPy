@@ -63,7 +63,7 @@ static int tensor_basis_init(PyTensorBasis* self,
                             "first two elements should be 0 and 1");
             return -1;
         }
-        if (self->depth >= 1 && data[2] - 1) {
+        if (self->depth >= 1 && data[1] - 1) {
             PyErr_SetString(PyExc_ValueError, "data[2] must match the width");
             return -1;
         }

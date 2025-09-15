@@ -10,18 +10,14 @@ extern "C" {
 #endif
 
 
-typedef struct _PyLieBasis
-{
-    PyObject_HEAD
-    int32_t width;
-    int32_t depth;
-    PyObject* degree_begin;
-    PyObject* data;
-} PyLieBasis;
+typedef struct _PyLieBasis PyLieBasis;
 
 
 extern PyTypeObject PyLieBasis_Type;
 
+
+PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype);
+PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype);
 
 int init_lie_basis(PyObject* module);
 
