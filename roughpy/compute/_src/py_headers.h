@@ -5,7 +5,6 @@
 #include <Python.h>
 
 
-
 #define NPY_NO_DEPRECATED_API NPY_2_0_API_VERSION
 #ifndef NPY_IMPORT_THE_APIS_PLEASE
 #define NO_IMPORT_ARRAY

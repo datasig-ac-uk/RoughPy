@@ -60,6 +60,9 @@ class LieBasis(_internals.LieBasis):
     pass
 
 
+
+SparseMatrix = _api("1.0.0")(_internals.SparseMatrix)
+
 @_api("1.0.0")
 @dataclass()
 class DenseFreeTensor:

@@ -6,12 +6,14 @@
 #include "lie_basis.h"
 #include "dense_basic.h"
 #include "dense_intermediate.h"
+#include "sparse_matrix.h"
 
 
 static int init_module(PyObject* module)
 {
     if (init_lie_basis(module) < 0) { return -1; }
     if (init_tensor_basis(module) < 0) { return -1; }
+    if (init_sparse_matrix(module) < 0) { return -1; }
 
     return 0;
 }

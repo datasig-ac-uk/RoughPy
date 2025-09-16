@@ -4,6 +4,9 @@
 #include <string.h>
 #include <structmember.h>
 
+#include "sparse_matrix.h"
+
+
 struct _PyLieBasis
 {
     PyObject_HEAD
@@ -14,17 +17,6 @@ struct _PyLieBasis
     PyObject* l2t;
     PyObject* t2l;
 };
-
-
-typedef struct _PySparseMatrix
-{
-    PyObject_HEAD
-    PyObject* data;
-    PyObject* indices;
-    PyObject* indptr;
-    npy_intp rows;
-    npy_intp cols;
-} PySparseMatrix;
 
 
 /*
@@ -292,19 +284,6 @@ static PyObject* lie_basis_repr(PyLieBasis* self)
 }
 
 
-static PyMemberDef PyLieBasis_members[] = {
-
-        {"width", Py_T_INT, offsetof(PyLieBasis, width), READONLY,
-         "width of the basis"},
-        {"depth", Py_T_INT, offsetof(PyLieBasis, depth), READONLY,
-         "depth of the basis"},
-        {"degree_begin", Py_T_OBJECT_EX,offsetof(PyLieBasis, degree_begin),
-         READONLY, "array of offsets for each degree"},
-        {"data", Py_T_OBJECT_EX, offsetof(PyLieBasis, data), 0, "basis data"},
-        {NULL}
-};
-
-
 static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
 {
     PyLieBasis* self_ = (PyLieBasis*) self;
@@ -319,153 +298,6 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
     return PyLong_FromLong(size - 1);
 }
 
-PyMethodDef PyLieBasis_methods[] = {
-        {"size", lie_basis_size, METH_NOARGS, "get the size of the Lie basis"},
-        {NULL}
-};
-
-PyTypeObject PyLieBasis_Type = {
-        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(LieBasis),
-        .tp_basicsize = sizeof(PyLieBasis),
-        .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "LieBasis",
-        .tp_methods = PyLieBasis_methods,
-        .tp_members = PyLieBasis_members,
-        .tp_init = (initproc) lie_basis_init,
-        .tp_dealloc = (destructor) lie_basis_dealloc,
-        .tp_repr = (reprfunc) lie_basis_repr,
-        .tp_new = (newfunc) lie_basis_new,
-};
-
-
-/*
- * PySparseMatrix impl
- */
-
-
-static PyObject* sparse_matrix_new(
-    PyTypeObject* type,
-    PyObject* Py_UNUSED(args),
-    PyObject* Py_UNUSED(kwargs))
-{
-    PySparseMatrix* self = (PySparseMatrix*) type->tp_alloc(type, 0);
-    if (!self) { return NULL; }
-
-    Py_INCREF(Py_None);
-    Py_XSETREF(self->data, Py_None);
-    Py_INCREF(Py_None);
-    Py_XSETREF(self->indices, Py_None);
-    Py_INCREF(Py_None);
-    Py_XSETREF(self->indptr, Py_None);
-    self->rows = 0;
-    self->cols = 0;
-
-    return (PyObject*) self;
-}
-
-
-static void sparse_matrix_dealloc(PySparseMatrix* self)
-{
-    Py_XDECREF(self->data);
-    Py_XDECREF(self->indices);
-    Py_XDECREF(self->indptr);
-    Py_TYPE(self)->tp_free((PyObject*) self);
-}
-
-
-static int sparse_matrix_init(PySparseMatrix* self,
-                              PyObject* args,
-                              PyObject* kwargs)
-{
-    static char* kwords[] = {"data", "indices", "indptr", "rows", "cols", NULL};
-    PyObject* data = NULL;
-    PyObject* indices = NULL;
-    PyObject* indptr = NULL;
-    int rows = 0;
-    int cols = 0;
-
-    if (!PyArg_ParseTupleAndKeywords(args,
-                                     kwargs,
-                                     "OOOii",
-                                     kwords,
-                                     &data,
-                                     &indices,
-                                     &indptr,
-                                     &rows,
-                                     &cols)) { return -1; }
-
-    Py_INCREF(data);
-    Py_SETREF(self->data, data);
-    Py_INCREF(indices);
-    Py_SETREF(self->indices, indices);
-    Py_INCREF(indptr);
-    Py_SETREF(self->indptr, indptr);
-    self->rows = rows;
-    self->cols = cols;
-
-    return 0;
-}
-
-
-PyMemberDef PySparseMatrix_members[] = {
-        {"data", Py_T_OBJECT_EX, offsetof(PySparseMatrix, data), 0, "data"},
-        {"indices", Py_T_OBJECT_EX, offsetof(PySparseMatrix, indices), 0,
-         "indices"},
-        {"indptr", Py_T_OBJECT_EX, offsetof(PySparseMatrix, indptr), 0,
-         "indptr"},
-        {"rows", Py_T_PYSSIZET, offsetof(PySparseMatrix, rows), READONLY,
-         "rows"},
-        {"cols", Py_T_PYSSIZET, offsetof(PySparseMatrix, cols), READONLY,
-         "cols"},
-        {NULL}
-};
-
-
-PyTypeObject PySparseMatrix_Type = {
-        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(SparseMatrix),
-        .tp_basicsize = sizeof(PySparseMatrix),
-        .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "SparseMatrix",
-        .tp_new = (newfunc) sparse_matrix_new,
-        .tp_dealloc = (destructor) sparse_matrix_dealloc,
-        .tp_init = (initproc) sparse_matrix_init,
-};
-
-/**
- * @brief Create a new sparse matrix from the components
- *
- * Steals a reference to each of its arguments.
- */
-static PyObject* sparse_matrix_from_components(
-    PyObject* data,
-    PyObject* indices,
-    PyObject* indptr,
-    npy_intp nrows,
-    npy_intp ncols
-)
-{
-    PySparseMatrix* self = (PySparseMatrix*) PySparseMatrix_Type.tp_alloc(
-        &PySparseMatrix_Type,
-        0);
-    if (!self) {
-        Py_XDECREF(data);
-        Py_XDECREF(indices);
-        Py_XDECREF(indptr);
-        return NULL;
-    }
-
-    Py_SETREF(self->data, data);
-    Py_SETREF(self->indices, indices);
-    Py_SETREF(self->indptr, indptr);
-    self->rows = nrows;
-    self->cols = ncols;
-
-    return (PyObject*) self;
-}
 
 /*
  * External methods
@@ -479,214 +311,169 @@ npy_intp lie_basis_size_to_degree(PyLieBasis* lie_basis, int32_t degree)
 
     npy_intp end = *(npy_intp*) PyArray_GETPTR1(
         (PyArrayObject*) lie_basis->degree_begin,
-        degree);
+        degree+1);
 
     return end - 1;
 }
 
-struct L2TFrame
+static npy_intp size_of_degree(PyLieBasis* basis, int32_t degree)
 {
-    void* data;
-    npy_intp* indices;
-    npy_intp size;
-    npy_intp alloc;
-};
+    if (degree < 1) { return 0; }
+    if (degree > basis->depth) { degree = basis->depth; }
 
-struct L2THelper
-{
-    struct L2TFrame* frames;
-    npy_intp size;
-    npy_intp alloc;
-};
+    npy_intp being = *(npy_intp*) PyArray_GETPTR1(
+        (PyArrayObject*) basis->degree_begin,
+        degree);
+    npy_intp end = *(npy_intp*) PyArray_GETPTR1(
+        (PyArrayObject*) basis->degree_begin,
+        degree + 1);
 
-static int init_l2t_helper(struct L2THelper* helper, int32_t size)
-{
-    void* ptr = PyMem_Malloc(size * sizeof(struct L2TFrame));
-
-    if (ptr == NULL) {
-        PyErr_NoMemory();
-        return -1;
-    }
-
-    helper->frames = (struct L2TFrame*) ptr;
-    helper->size = 0;
-    helper->alloc = size;
-    return 0;
+    return end - being;
 }
 
-static void free_l2t_helper(struct L2THelper* helper)
+static int32_t degree_of_key(PyLieBasis* basis, npy_intp key)
 {
-    for (npy_intp i = 0; i < helper->size; ++i) {
-        // Py_XDECREF(helper->frames[i].data);
-        // Py_XDECREF(helper->frames[i].indices);
-        PyMem_Free(helper->frames[i].indices);
-        PyMem_Free(helper->frames[i].data);
+    int32_t diff = basis->depth + 1;
+    int32_t pos = 0;
+    while (diff > 0) {
+        int32_t half = diff / 2;
+        int32_t other = pos + half;
+
+        npy_intp* db_ptr = (npy_intp*) PyArray_GETPTR1(
+            (PyArrayObject*) basis->degree_begin,
+            other);
+
+        if (*db_ptr <= key) {
+            pos = other + 1;
+            diff -= half + 1;
+        } else { diff = half; }
     }
-    PyMem_Free(helper->frames);
+
+    return pos -1 ;
 }
 
-static void insert_one(void* ptr, int typenum)
+static npy_intp get_tensor_size(PyLieBasis* basis)
 {
-    // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
-    switch (typenum) {
-        case NPY_FLOAT: *(npy_float*) ptr = 1.0f;
-            break;
-        case NPY_DOUBLE: *(npy_double*) ptr = 1.0;
-            break;
-        case NPY_LONGDOUBLE: *(npy_longdouble*) ptr = 1.0L;
+    npy_intp size = 1;
+    for (int32_t i = 1; i <= basis->depth; ++i) {
+        size = 1 + basis->width * size;
     }
+    return size;
 }
 
-static void insert_zero(void* ptr, int typenum)
+static npy_intp get_l2t_nnz_max(PyLieBasis* basis)
 {
-    // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
-    switch (typenum) {
-        case NPY_FLOAT: *(npy_float*) ptr = 0.0f;
-            break;
-        case NPY_DOUBLE: *(npy_double*) ptr = 0.0;
-            break;
-        case NPY_LONGDOUBLE: *(npy_longdouble*) ptr = 0.0L;
+    npy_intp nnz_est = 0;
+    for (int32_t degree = 0; degree < basis->depth; ++degree) {
+        npy_intp multiplier = ((npy_intp) 1) << (degree);
+        npy_intp count = size_of_degree(basis, degree + 1);
+
+        nnz_est += multiplier * count;
     }
+    return nnz_est;
 }
 
-static void add_product(void* out,
+static inline void add_product(void* out,
                         void* left,
                         void* right,
                         int typenum,
                         int sign)
 {
-#define LB_DO_PRODUCT(TP) \
-    (*(TP*) out) += ((TP) sign) * ((*(const TP*) left)*(*(const TP*) right))
+#define SMH_DO_PRODUCT(TP) \
+(*(TP*) out) += ((TP) sign) * ((*(const TP*) left)*(*(const TP*) right))
     // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
     switch (typenum) {
         case NPY_FLOAT:
-            LB_DO_PRODUCT(npy_float);
+            SMH_DO_PRODUCT(npy_float);
             break;
         case NPY_DOUBLE:
-            LB_DO_PRODUCT(npy_double);
+            SMH_DO_PRODUCT(npy_double);
             break;
         case NPY_LONGDOUBLE:
-            LB_DO_PRODUCT(npy_longdouble);
+            SMH_DO_PRODUCT(npy_longdouble);
     }
-#undef LB_DO_PRODUCT
+#undef SMH_DO_PRODUCT
 }
 
 
-static int insert_frame(struct L2THelper* helper,
-                        npy_intp size,
-                        PyArray_Descr* descr)
+static int l2t_insert_letters(SMHelper* helper, npy_intp width)
 {
-    void* data_arr = PyMem_Malloc(size * PyDataType_ELSIZE(descr));
-    if (data_arr == NULL) { return -1; }
+    for (npy_intp i = 0; i < width; ++i) {
+        if (smh_insert_frame(helper) < 0) { return -1; }
 
-    npy_intp* indices_arr = (npy_intp*) PyMem_Malloc(size * sizeof(npy_intp));
-    if (indices_arr == NULL) { PyMem_Free(data_arr); }
-    if (indices_arr == NULL) {
-        Py_DECREF(data_arr);
+        void* coeff = smh_get_scalar_for_index(helper, i + 1);
+        if (coeff == NULL) {
+            return -1;
+        }
+        insert_one(coeff, smh_dtype(helper));
+    }
+
+    return 0;
+}
+
+static npy_intp tensor_size_of_degree(PyLieBasis* basis, int32_t degree)
+{
+    npy_intp size = 1;
+    const npy_intp width = basis->width;
+    while (degree--) {
+        size *= width;
+    }
+    return size;
+}
+
+static int insert_l2t_commutator(SMHelper* helper,
+                                 PyLieBasis* basis,
+                                 npy_intp key,
+                                 int32_t degree
+)
+{
+    const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
+
+    npy_intp left_key = *(npy_intp*) PyArray_GETPTR2((PyArrayObject*) basis->data, key, 0);
+    npy_intp right_key = *(npy_intp*) PyArray_GETPTR2((PyArrayObject*) basis->data, key, 1);
+
+    SMHFrame* left_frame = &helper->frames[left_key - 1];
+    SMHFrame* right_frame = &helper->frames[right_key - 1];
+
+    if (smh_insert_frame(helper) < 0) {
+        // py exc already set
         return -1;
     }
 
-    helper->frames[helper->size].data = data_arr;
-    helper->frames[helper->size].indices = indices_arr;
-    helper->frames[helper->size].size = 0;
-    helper->frames[helper->size].alloc = size;
-    ++helper->size;
+    const int32_t left_degree = degree_of_key(basis, left_key);
+    const int32_t right_degree = degree_of_key(basis, right_key);
+
+    npy_intp left_offset = tensor_size_of_degree(basis, left_degree);
+    npy_intp right_offset = tensor_size_of_degree(basis, right_degree);
+
+
+    for (npy_intp i = 0; i < left_frame->size; ++i) {
+        npy_intp left_idx = left_frame->indices[i];
+        for (npy_intp j = 0; j < right_frame->size; ++j) {
+            npy_intp right_idx = right_frame->indices[j];
+
+            void* coeff = smh_get_scalar_for_index(
+                helper,
+                left_idx * right_offset + right_idx);
+            add_product(coeff,
+                        &left_frame->data[i * itemsize],
+                        &right_frame->data[j * itemsize],
+                        smh_dtype(helper),
+                        1);
+
+            coeff = smh_get_scalar_for_index(helper,
+                                             right_idx * left_offset +
+                                             left_idx);
+            add_product(coeff,
+                        &left_frame->data[j * itemsize],
+                        &right_frame->data[i * itemsize],
+                        smh_dtype(helper),
+                        -1);
+        }
+    }
 
     return 0;
 }
-
-static int insert_l2t_letters(struct L2THelper* helper,
-                              npy_intp width,
-                              PyArray_Descr* descr)
-{
-    assert(width < helper->alloc);
-
-    for (npy_intp i = 0; i < width; ++i) {
-        if (!insert_frame(helper, 1, descr)) { return -1; }
-
-        struct L2TFrame* frame = &helper->frames[helper->size - 1];
-
-        *(npy_intp*) frame->indices = i + 1;
-        insert_one(frame->data, descr->type_num);
-        ++frame->size;
-    }
-
-    return 0;
-}
-
-static void* get_scalar_for_index(struct L2TFrame* frame, npy_intp index, PyArray_Descr* descr)
-{
-    // First find out of we already have the requested index
-    npy_intp diff = frame->size;
-    npy_intp pos = 0;
-    while (diff > 0) {
-        npy_intp half = diff / 2;
-        npy_intp mid_pos = pos + half;
-        npy_intp mid = frame->indices[mid_pos];
-        if (index == mid) {
-            return frame->data + mid_pos * PyDataType_ELSIZE(descr);
-        }
-
-        if (mid < index) {
-            pos = mid_pos + 1;
-            diff -= half + 1;
-        } else {
-            diff = half;
-        }
-    }
-
-    if (frame->indices[pos] == index) {
-        return frame->data + pos * PyDataType_ELSIZE(descr);
-    }
-
-    // If we're here, the element was not found and pos holds the position
-    // where it should be inserted
-
-    if (frame->size == frame->alloc) {
-        // We need to reallocate
-        void* new_data = PyMem_Realloc(frame->data,
-                                       2*(frame->alloc) * PyDataType_ELSIZE(descr));
-        if (new_data == NULL) {
-            PyErr_NoMemory();
-            return NULL;
-        }
-        npy_intp* new_indices = (npy_intp*) PyMem_Realloc(frame->indices,
-                                                          2*(frame->alloc) * sizeof(npy_intp));
-        if (new_indices == NULL) {
-            PyErr_NoMemory();
-            PyMem_Free(new_data);
-            return NULL;
-        }
-
-        frame->data = new_data;
-        frame->indices = new_indices;
-        frame->alloc *= 2;
-    }
-
-    // Shift elements to make room
-    if (pos < frame->size) {
-        memmove(&frame->indices[pos + 1], &frame->indices[pos],
-                (frame->size - pos) * sizeof(npy_intp));
-        memmove((char*)frame->data + (pos + 1) * PyDataType_ELSIZE(descr),
-                (char*)frame->data + pos * PyDataType_ELSIZE(descr),
-                (frame->size - pos) * PyDataType_ELSIZE(descr));
-    }
-
-    // Insert new element
-    frame->indices[pos] = index;
-    void* new_element_ptr = (char*)frame->data + pos * PyDataType_ELSIZE(descr);
-    insert_zero(new_element_ptr, descr->type_num);
-
-    ++frame->size;
-    return 0;
-
-}
-
-
-static int insert_l2t_commutator(struct L2THelper* helper,
-                                 PyLieBasis* basis,
-                                 npy_intp key,
-                                 PyArray_Descr* descr) {}
 
 
 static PyObject* construct_new_l2t(PyLieBasis* basis, PyArray_Descr* dtype)
@@ -696,64 +483,51 @@ static PyObject* construct_new_l2t(PyLieBasis* basis, PyArray_Descr* dtype)
      * rows and lie_dim columns.
      */
 
-    PyArrayObject* data;
-    PyArrayObject* indices;
-    PyArrayObject* indptr;
-
     npy_intp lie_dim = lie_basis_size_to_degree(basis, basis->depth);
+    npy_intp tensor_dim = get_tensor_size(basis);
+    npy_intp nnz_est = get_l2t_nnz_max(basis);
 
-    npy_intp tensor_dim = 1;
-    for (int32_t d = 0; d <= basis->depth; ++d) {
-        tensor_dim = 1 + basis->width * tensor_dim;
-    }
-
-    npy_intp shape[2];
-    shape[0] = tensor_dim;
-
-    indptr = (PyArrayObject*) PyArray_SimpleNew(1, shape, NPY_INTP);
-    if (indptr == NULL) { return NULL; }
-
-    npy_intp* db_data = PyArray_DATA((PyArrayObject*) basis->degree_begin);
-    npy_intp* indptr_data = PyArray_DATA(indptr);
-
-    // The first row contains no data
-    indptr_data[0] = 0;
-    indptr_data[1] = 0;
-
-    struct L2THelper helper;
-    if (!init_l2t_helper(&helper, tensor_dim)) {
-        Py_DECREF(indptr);
+    SMHelper helper;
+    if (smh_init(&helper, dtype, lie_dim, nnz_est) < 0) {
+        // py exc already set
         return NULL;
     }
 
-    if (!insert_l2t_letters(&helper, basis->width, dtype)) {
-        free_l2t_helper(&helper);
-        Py_DECREF(indptr);
-        return NULL;
-    }
+    // From now on, if we fail we need to jump to finish to properly clean up
+    // so define ret now so it is valid for the return path if we don't
+    // finish the build process
+    PyObject* ret = NULL;
 
-    npy_intp begin = db_data[1];
-    npy_intp end = db_data[2];
+    if (l2t_insert_letters(&helper, basis->width) < 0) {
+        // py exc already set
+        goto finish;
+    }
 
     for (int32_t degree = 2; degree <= basis->depth; ++degree) {
-        npy_intp end = db_data[degree + 1];
+        npy_intp key = *(npy_intp*) PyArray_GETPTR1(
+            (PyArrayObject*) basis->degree_begin,
+            degree);
+        npy_intp deg_end = *(npy_intp*) PyArray_GETPTR1(
+            (PyArrayObject*) basis->degree_begin,
+            degree + 1);
 
-        npy_intp size = end - begin;
-
-        begin = end;
+        for (; key < deg_end; ++key) {
+            if (insert_l2t_commutator(&helper, basis, key, degree) < 0) {
+                // py exc already set
+                goto finish;
+            }
+        }
     }
 
-    return sparse_matrix_from_components(
-        data,
-        indices,
-        indptr,
-        tensor_dim,
-        lie_dim);
-
+    ret = smh_build_matrix(&helper, tensor_dim, lie_dim);
+finish:
+    // whether or not creation was successful, we must free the helper
+    smh_free(&helper);
+    return ret;
 }
 
 
-PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype)
+PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype_obj)
 {
     if (!PyObject_TypeCheck(basis, &PyLieBasis_Type)) {
         PyErr_SetString(PyExc_TypeError,
@@ -762,33 +536,49 @@ PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype)
     }
     PyLieBasis* self = (PyLieBasis*) basis;
 
-    if (!PyObject_TypeCheck(dtype, &PyArrayDescr_Type)) {
-        PyErr_SetString(PyExc_TypeError, "expected numpy dtype");
+    PyArray_Descr* dtype = NULL;
+    if (!PyArray_DescrConverter(dtype_obj, &dtype)) {
         return NULL;
     }
 
-    PyObject* l2t = PyDict_GetItem(self->l2t, dtype);
+    // From this point onwards, we need to make sure we decrement
+    // dtype when we're done. We do this with a goto finish statement
+    // so set l2t NULL here to make that make sense.
+    PyObject* l2t = NULL;
+
+    if (!PyDataType_ISFLOAT(dtype)) {
+        PyErr_SetString(PyExc_TypeError,
+            "only floating point data types are supported");
+        goto finish;
+    }
+
+    l2t = PyDict_GetItem(self->l2t, (PyObject*) dtype);
     if (l2t) {
         // We already have it, return cached l2t map
         Py_INCREF(l2t);
-        return l2t;
+        goto finish;
     }
 
     // construct a new map and insert it into the l2t dict
+    // this function does not steal a reference to dtype
+    l2t = construct_new_l2t(self, dtype);
+    if (l2t == NULL) {
+        goto finish;
+    }
 
-    l2t = construct_new_l2t(self, (PyArray_Descr*) dtype);
-    if (l2t == NULL) { return NULL; }
+    // SetItem does not steal a reference to dtype or val.
+    PyDict_SetItem(self->l2t, (PyObject*) dtype, l2t);
 
-    Py_INCREF(l2t);
-    PyDict_SetItem(self->l2t, dtype, l2t);
-
+finish:
+    Py_DECREF(dtype);
     return l2t;
 }
 
 
 static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
 {
-    return NULL;
+
+    Py_RETURN_NOTIMPLEMENTED;
 }
 
 PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype)
@@ -822,17 +612,48 @@ PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype)
     return t2l;
 }
 
+static PyMemberDef PyLieBasis_members[] = {
+
+        {"width", Py_T_INT, offsetof(PyLieBasis, width), READONLY,
+         "width of the basis"},
+        {"depth", Py_T_INT, offsetof(PyLieBasis, depth), READONLY,
+         "depth of the basis"},
+        {"degree_begin", Py_T_OBJECT_EX,offsetof(PyLieBasis, degree_begin),
+         READONLY, "array of offsets for each degree"},
+        {"data", Py_T_OBJECT_EX, offsetof(PyLieBasis, data), 0, "basis data"},
+        {NULL}
+};
+
+
+
+PyMethodDef PyLieBasis_methods[] = {
+        {"size", lie_basis_size, METH_NOARGS, "get the size of the Lie basis"},
+        {"get_l2t_matrix", get_l2t_matrix, METH_O,
+         "get a sparse matrix representation of the Lie-to-tensor map"},
+        {NULL}
+};
+
+PyTypeObject PyLieBasis_Type = {
+        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = RPY_CPT_TYPE_NAME(LieBasis),
+        .tp_basicsize = sizeof(PyLieBasis),
+        .tp_itemsize = 0,
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+        .tp_doc = "LieBasis",
+        .tp_methods = PyLieBasis_methods,
+        .tp_members = PyLieBasis_members,
+        .tp_init = (initproc) lie_basis_init,
+        .tp_dealloc = (destructor) lie_basis_dealloc,
+        .tp_repr = (reprfunc) lie_basis_repr,
+        .tp_new = (newfunc) lie_basis_new,
+};
+
 
 int init_lie_basis(PyObject* module)
 {
     if (PyType_Ready(&PyLieBasis_Type) < 0) { return -1; }
-    if (PyType_Ready(&PySparseMatrix_Type) < 0) { return -1; }
 
     PyModule_AddObjectRef(module, "LieBasis", (PyObject*) &PyLieBasis_Type);
-
-    // In the future we might actually want to expose these to Python,
-    // but for now keep it internal
-    // PyModule_AddObjectRef(module, "SparseMatrix", (PyObject*) &PySparseMatrix_Type);
 
     return 0;
 }
