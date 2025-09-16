@@ -452,21 +452,19 @@ static int insert_l2t_commutator(SMHelper* helper,
         for (npy_intp j = 0; j < right_frame->size; ++j) {
             npy_intp right_idx = right_frame->indices[j];
 
-            void* coeff = smh_get_scalar_for_index(
-                helper,
-                left_idx * right_offset + right_idx);
+            npy_intp idx = left_idx * right_offset + right_idx;
+            void* coeff = smh_get_scalar_for_index(helper, idx);
             add_product(coeff,
                         &left_frame->data[i * itemsize],
                         &right_frame->data[j * itemsize],
                         smh_dtype(helper),
                         1);
 
-            coeff = smh_get_scalar_for_index(helper,
-                                             right_idx * left_offset +
-                                             left_idx);
+            idx = right_idx * left_offset + left_idx;
+            coeff = smh_get_scalar_for_index(helper, idx);
             add_product(coeff,
-                        &left_frame->data[j * itemsize],
-                        &right_frame->data[i * itemsize],
+                        &right_frame->data[j * itemsize],
+                        &left_frame->data[i * itemsize],
                         smh_dtype(helper),
                         -1);
         }
