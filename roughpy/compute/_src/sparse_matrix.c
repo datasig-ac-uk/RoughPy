@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "sparse_matrix.h"
 
 
@@ -6,6 +7,10 @@
 #include <stddef.h>
 
 #include <structmember.h>
+
+
+
+
 
 static PyObject* sparse_matrix_new(
     PyTypeObject* type,
@@ -138,6 +143,13 @@ int init_sparse_matrix(PyObject* module)
  * Helper functions
  */
 
+
+enum SMHFlags
+{
+    SMH_FINAL = 8,
+};
+
+
 static inline void set_indptr(SMHelper* helper, npy_intp index, npy_intp val)
 {
     npy_intp* ptr = (npy_intp*) PyArray_GETPTR1(helper->indptr, index);
@@ -148,9 +160,22 @@ static inline void set_indptr(SMHelper* helper, npy_intp index, npy_intp val)
 
 int smh_init(SMHelper* helper,
     PyArray_Descr* dtype,
-    npy_intp alloc,
-    npy_intp nnz_est)
+    npy_intp nrows,
+    npy_intp ncols,
+    npy_intp nnz_est,
+    int format
+    )
 {
+    if (format != SMH_CSC && format != SMH_CSR) {
+        PyErr_SetString(PyExc_ValueError, "Invalid format");
+        return -1;
+    }
+
+    npy_intp alloc = format == SMH_CSC ? ncols : nrows;
+    if (nnz_est < 0) {
+        nnz_est = alloc;
+    }
+
     void* ptr = PyMem_Malloc(alloc * sizeof(SMHFrame));
     if (ptr == NULL) {
         PyErr_NoMemory();
@@ -188,6 +213,9 @@ int smh_init(SMHelper* helper,
     helper->size = 0;
     helper->alloc = alloc;
     helper->nnz = 0;
+    helper->flags = format;
+    helper->rows = nrows;
+    helper->cols = ncols;
 
     set_indptr(helper, 0, 0);
     return 0;
@@ -321,14 +349,11 @@ void* smh_get_scalar_for_index(SMHelper* helper, npy_intp index)
     return new_element_ptr;
 }
 
-PyObject* smh_build_matrix(SMHelper* helper, npy_intp nrows, npy_intp ncols)
+
+static int smh_finalize(SMHelper* helper, int resize)
 {
-    // quick sanity checks
-    if (nrows != helper->alloc && ncols != helper->alloc) {
-        PyErr_SetString(PyExc_RuntimeError,
-            "internal error constructing sparse matrix;"
-            " inner dimension must equal either nrows or ncols");
-        return NULL;
+    if (helper->flags & SMH_FINAL) {
+        return 0;
     }
 
     if (helper->size != helper->alloc) {
@@ -336,7 +361,7 @@ PyObject* smh_build_matrix(SMHelper* helper, npy_intp nrows, npy_intp ncols)
             "internal error constructing sparse matrix;"
             " final size differs from expected"
             );
-        return NULL;
+        return -1;
     }
 
     const SMHFrame* last_frame = smh_current_frame(helper);
@@ -349,7 +374,18 @@ PyObject* smh_build_matrix(SMHelper* helper, npy_intp nrows, npy_intp ncols)
     set_indptr(helper, helper->size, helper->nnz);
 
     // trim the data and indices arrays to nnz
-    if (smh_resize(helper, helper->nnz) < 0) {
+    if (resize && smh_resize(helper, helper->nnz) < 0) {
+        return -1;
+    }
+
+    helper->flags |= SMH_FINAL;
+    return 0;
+}
+
+PyObject* smh_build_matrix(SMHelper* helper)
+{
+    // finalize the construction
+    if (smh_finalize(helper, 1) < 0) {
         return NULL;
     }
 
@@ -368,8 +404,66 @@ PyObject* smh_build_matrix(SMHelper* helper, npy_intp nrows, npy_intp ncols)
     helper->indptr = NULL;
 
     // set the nrows and ncols
-    ret->rows = nrows;
-    ret->cols = ncols;
+    ret->rows = helper->rows;
+    ret->cols = helper->cols;
 
     return (PyObject*) ret;
 }
+//
+// int smh_swap_format(SMHelper* helper)
+// {
+//     PyArrayObject* new_data = NULL;
+//     PyArrayObject* new_indices = NULL;
+//     PyArrayObject* new_indptr = NULL;
+//     int ret = -1;
+//
+//     // Make sure the matrix is finalized before we finish
+//     // no resize is needed because we reallocate anyway.
+//     if (smh_finalize(helper, 0) < 0) {
+//         goto finish;
+//     }
+//
+//     npy_intp new_outer_dim = (smh_is_csr(helper) ? helper->cols : helper->rows);
+//     npy_intp new_alloc = new_outer_dim + 1;
+//
+//     new_indptr = (PyArrayObject*) PyArray_SimpleNew(1, &new_alloc, NPY_INTP);
+//     if (new_indptr == NULL) {
+//         goto finish;
+//     }
+//
+//     new_data = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz, PyArray_TYPE(helper->data));
+//     if (new_data == NULL) {
+//         goto finish;
+//     }
+//
+//     new_indices = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz, NPY_INTP);
+//     if (new_indices == NULL) {
+//         goto finish;
+//     }
+//
+//     void* data_ptr = PyArray_DATA(helper->data);
+//     npy_intp* indices_ptr = PyArray_DATA(helper->indices);
+//     npy_intp* indptr_ptr = PyArray_DATA(helper->indptr);
+//
+//     void* new_data_ptr = PyArray_DATA(new_data);
+//     npy_intp* new_indices_ptr = PyArray_DATA(new_indices);
+//     npy_intp* new_indptr_ptr = PyArray_DATA(new_indptr);
+//
+//     /*
+//      * The procedure here is to walk over the old indices/data
+//      */
+//     new_indptr_ptr[0] = 0;
+//
+//
+//
+//
+//
+//
+//
+//     ret = 0;
+// finish:
+//     Py_XDECREF(new_data);
+//     Py_XDECREF(new_indices);
+//     Py_XDECREF(new_indptr);
+//     return ret;
+// }
