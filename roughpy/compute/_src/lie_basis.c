@@ -406,6 +406,24 @@ static inline void get_basis_word(PyLieBasis* basis, const npy_intp idx, LieWord
         idx, 1);
 }
 
+int PyLieBasis_get_parents(PyLieBasis* basis, npy_intp index, LieWord* out)
+{
+    PyArrayObject* data = (PyArrayObject*) basis->data;
+
+    if (index <= 0 || index >= PyLieBasis_size(basis)) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        return -1;
+    }
+
+    out->letters[0] = *(npy_intp*) PyArray_GETPTR2(
+        data, index, 0);
+
+    out->letters[1] = *(npy_intp*) PyArray_GETPTR2(
+        data, index, 1);
+
+    return 0;
+}
+
 npy_intp PyLieBasis_find_word(PyLieBasis* basis, const LieWord* target)
 {
     npy_intp pos = 0;
@@ -440,6 +458,7 @@ npy_intp PyLieBasis_find_word(PyLieBasis* basis, const LieWord* target)
 
     return -1;
 }
+
 
 int32_t PyLieBasis_degree(PyLieBasis* basis, const npy_intp key)
 {

@@ -28,12 +28,13 @@ RPY_NO_EXPORT
 PyObject* get_lie_multiplication_cache(PyObject* basis);
 
 
-RPY_NO_EXPORT
-const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(PyLieMultiplicationCache* cache, PyObject* basis_ob, const LieWord* word);
+const LieMultiplicationCacheEntry*
+PyLieMultiplicationCache_get(PyLieMultiplicationCache* cache,
+    PyLieBasis* basis, const LieWord* word);
 
 
 RPY_NO_EXPORT
-PyObject* lie_mutiplication_cache_clear(PyObject* cache);
+PyObject* lie_multiplication_cache_clear(PyObject* cache);
 
 RPY_NO_EXPORT
 PyLieMultiplicationCacheInner* lie_multiplication_cache_to_inner(PyObject* cache);
