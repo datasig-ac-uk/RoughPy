@@ -65,13 +65,17 @@ RPY_NO_EXPORT
 PyArrayObject *PyLieBasis_data(PyLieBasis *basis);
 
 RPY_NO_EXPORT
-npy_intp PyLieBasis_find_word(PyLieBasis* basis, const LieWord* target);
+npy_intp PyLieBasis_find_word(PyLieBasis* basis, const LieWord* target, int32_t degree_hint);
 
 RPY_NO_EXPORT
 int PyLieBasis_get_parents(PyLieBasis* basis, npy_intp index, LieWord* out);
 
 RPY_NO_EXPORT
 int32_t PyLieBasis_degree(PyLieBasis *basis, npy_intp key);
+
+PyObject* PyLieBasis_key2str(PyLieBasis* basis, npy_intp key);
+
+PyObject* PyLieBasis_word2str(PyLieBasis* basis, const LieWord* word);
 
 int init_lie_basis(PyObject *module);
 

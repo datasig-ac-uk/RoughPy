@@ -288,8 +288,22 @@ static int smh_resize(SMHelper* helper, npy_intp new_size)
     }
     Py_DECREF(result);
 
+    // We need to adjust all the fames to point to the new data structures
+    const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
+    char *data_ptr = PyArray_BYTES(helper->data);
+    npy_intp *indices_ptr = PyArray_DATA(helper->indices);
+    for (npy_intp i=0; i<helper->size; ++i) {
+        SMHFrame* frame = &helper->frames[i];
+        frame->data = data_ptr;
+        frame->indices = indices_ptr;
+
+        data_ptr += frame->size * itemsize;
+        indices_ptr += frame->size;
+    }
+
     return 0;
 }
+
 
 
 void* smh_get_scalar_for_index(SMHelper* helper, npy_intp index)

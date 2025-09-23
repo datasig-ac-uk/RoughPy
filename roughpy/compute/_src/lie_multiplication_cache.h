@@ -25,7 +25,7 @@ typedef struct PyLieMultiplicationCache {
 
 
 RPY_NO_EXPORT
-PyObject* get_lie_multiplication_cache(PyObject* basis);
+PyObject* get_lie_multiplication_cache(PyLieBasis* basis);
 
 
 const LieMultiplicationCacheEntry*
@@ -36,8 +36,6 @@ PyLieMultiplicationCache_get(PyLieMultiplicationCache* cache,
 RPY_NO_EXPORT
 PyObject* lie_multiplication_cache_clear(PyObject* cache);
 
-RPY_NO_EXPORT
-PyLieMultiplicationCacheInner* lie_multiplication_cache_to_inner(PyObject* cache);
 
 
 RPY_NO_EXPORT
