@@ -24,22 +24,6 @@ static PyObject* lmc_repr(PyObject* obj);
 namespace {
 
 
-inline int print_word(PyLieBasis* basis, const LieWord* word)
-{
-    PyObject* str = PyLieBasis_word2str(basis, word);
-    if (str == nullptr) {
-        return -1;
-    }
-    PyObject* line = PyUnicode_FromFormat("%U\n", str);
-    Py_DECREF(str);
-    if (line == nullptr) {
-        return -1;
-    }
-    int ret = PyObject_Print(line, stdout, Py_PRINT_RAW);
-    Py_DECREF(line);
-    return ret;
-}
-
 struct CacheEntryDeleter
 {
     void operator()(const LieMultiplicationCacheEntry* entry) const noexcept
@@ -271,8 +255,8 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
             0) { return nullptr; }
     }
 
-    if (word.letters[1] != parents.letters[1]) {
-        outer_word = {.letters = {word.letters[1], parents.letters[1]}};
+    if (word.letters[0] != parents.letters[1]) {
+        outer_word = {.letters = {word.letters[0], parents.letters[1]}};
         inner.letters[1] = parents.letters[0];
 
         if (compute_bracket_half(cache, basis, outer_word, inner, sign, vals) < 0) {
@@ -368,10 +352,6 @@ PyLieMultiplicationCache_get(PyLieMultiplicationCache* cache,
     if (PyLieBasis_width(basis) != cache->inner->width) {
         PyErr_SetString(PyExc_ValueError,
                         "width mismatch between basis and cache");
-    }
-
-    if (print_word(basis, word) < 0) {
-        return nullptr;
     }
 
     if (word->letters[0] == 0 || word->letters[1] == 0) {

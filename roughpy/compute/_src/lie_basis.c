@@ -905,8 +905,6 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
             // idx % prev_size by degm1_begin to get the correct index.
             const npy_intp rparent = degm1_begin + idx % prev_size;
 
-            printf("\n%zi, %zi\n", lparent, rparent);
-
             if (lparent == rparent) { continue; }
 
             // lframe corresponds to a letter, but the 1 is useful to us.
