@@ -667,7 +667,7 @@ static int insert_l2t_commutator(SMHelper* helper,
             add_product(scratch,
                         &right_frame->data[j * itemsize],
                         &left_frame->data[i * itemsize],
-                        smh_dtype(helper),
+                        typenum,
                         -1);
             if (smh_insert_value_at_index(helper, idx, scratch) < 0) {
                 return -1;

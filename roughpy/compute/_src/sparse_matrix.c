@@ -339,6 +339,20 @@ static inline void assign(void* dst, void* src, int typenum)
     }
 }
 
+static inline void add_assign(void* dst, void* src, int typenum)
+{
+    switch (typenum) {
+        case NPY_FLOAT:
+            *((float*) dst) += *((float*) src);
+        case NPY_DOUBLE:
+            *((double*) dst) += *((double*) src);
+        case NPY_LONGDOUBLE:
+            *((long double*) dst) += *((long double*) src);
+        case NPY_HALF:
+            *((npy_float16*) dst) += *((npy_float16*) src);
+    }
+}
+
 
 int smh_insert_value_at_index(SMHelper* helper, npy_intp index, void* value)
 {
@@ -391,12 +405,14 @@ int smh_insert_value_at_index(SMHelper* helper, npy_intp index, void* value)
                     frame->data + pos * itemsize,
                     (frame->size - pos) * itemsize);
         }
+
+        insert_zero(frame->data + pos * itemsize, typenum);
     }
 
     // Insert new element
     frame->indices[pos] = index;
     void* new_element_ptr = frame->data + pos * itemsize;
-    assign(new_element_ptr, value, typenum);
+    add_assign(new_element_ptr, value, typenum);
 
     ++frame->size;
 
