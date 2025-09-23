@@ -182,6 +182,7 @@ int smh_init(SMHelper* helper,
         return -1;
     }
 
+
     npy_intp indptr_size = alloc + 1;
     PyArrayObject* indptr = (PyArrayObject*) PyArray_SimpleNew(1, &indptr_size, NPY_INTP);
     if (indptr == NULL) {
@@ -304,7 +305,103 @@ static int smh_resize(SMHelper* helper, npy_intp new_size)
     return 0;
 }
 
+static inline int is_zero(void* value, int typenum)
+{
+    switch (typenum) {
+        case NPY_FLOAT:
+            return *((float*) value) == 0.0f;
+        case NPY_DOUBLE:
+            return *((double*) value) == 0.0;
+        case NPY_LONGDOUBLE:
+            return *((long double*) value) == 0.0L;
+        case NPY_HALF:
+            return *((npy_float16*) value) == 0.0f;
+    }
+    return 0;
+}
 
+
+static inline void assign(void* dst, void* src, int typenum)
+{
+    switch (typenum) {
+        case NPY_FLOAT:
+            *((float*) dst) = *((float*) src);
+            break;
+        case NPY_DOUBLE:
+            *((double*) dst) = *((double*) src);
+            break;
+        case NPY_LONGDOUBLE:
+            *((long double*) dst) = *((long double*) src);
+            break;
+        case NPY_HALF:
+            *((npy_float16*) dst) = *((npy_float16*) src);
+            break;
+    }
+}
+
+
+int smh_insert_value_at_index(SMHelper* helper, npy_intp index, void* value)
+{
+    const int typenum = PyArray_TYPE(helper->data);
+
+    if (is_zero(value, typenum)) {
+        return 0;
+    }
+
+    SMHFrame* frame = smh_current_frame(helper);
+    const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
+
+    // First find out of we already have the requested index
+    npy_intp diff = frame->size;
+    npy_intp pos = 0;
+    while (diff > 0) {
+        npy_intp half = diff / 2;
+        npy_intp mid_pos = pos + half;
+        npy_intp mid = frame->indices[mid_pos];
+        if (index == mid) {
+            pos = mid_pos;
+            break;
+        }
+
+        if (mid < index) {
+            pos = mid_pos + 1;
+            diff -= half + 1;
+        } else {
+            diff = half;
+        }
+    }
+
+    if (pos >= frame->size || frame->indices[pos] != index) {
+        // If we're here, the element was not found and pos holds the position
+        // where it should be inserted
+        npy_intp curr_maxsize = PyArray_SHAPE(helper->data)[0];
+        if (helper->nnz + frame->size == curr_maxsize) {
+            // We need to reallocate
+            if (smh_resize(helper, curr_maxsize * 2) < 0) {
+                // pyexc already set
+                return -1;
+            }
+        }
+
+        // Shift elements to make room
+        if (pos < frame->size) {
+            memmove(&frame->indices[pos + 1], &frame->indices[pos],
+                    (frame->size - pos) * sizeof(npy_intp));
+            memmove(frame->data + (pos + 1) * itemsize,
+                    frame->data + pos * itemsize,
+                    (frame->size - pos) * itemsize);
+        }
+    }
+
+    // Insert new element
+    frame->indices[pos] = index;
+    void* new_element_ptr = frame->data + pos * itemsize;
+    assign(new_element_ptr, value, typenum);
+
+    ++frame->size;
+
+    return 0;
+}
 
 void* smh_get_scalar_for_index(SMHelper* helper, npy_intp index)
 {

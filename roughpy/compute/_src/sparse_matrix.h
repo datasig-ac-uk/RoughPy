@@ -77,6 +77,9 @@ int smh_insert_frame(SMHelper *helper);
 RPY_NO_EXPORT
 void *smh_get_scalar_for_index(SMHelper *helper, npy_intp index);
 
+RPY_NO_EXPORT
+int smh_insert_value_at_index(SMHelper* helper, npy_intp index, void* value);
+
 // RPY_NO_EXPORT
 // int smh_swap_format(SMHelper *helper);
 

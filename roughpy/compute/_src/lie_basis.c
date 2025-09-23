@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "lie_basis.h"
 
+#include <stdalign.h>
 #include <stddef.h>
 #include <string.h>
 #include <structmember.h>
@@ -586,12 +587,16 @@ static inline void add_product(void* out,
 
 static int l2t_insert_letters(SMHelper* helper, const npy_intp width)
 {
+    alignas(16) char scratch[16];
+    insert_one(scratch, PyArray_TYPE(helper->data));
+
     for (npy_intp i = 0; i < width; ++i) {
         if (smh_insert_frame(helper) < 0) { return -1; }
 
-        void* coeff = smh_get_scalar_for_index(helper, i + 1);
-        if (coeff == NULL) { return -1; }
-        insert_one(coeff, smh_dtype(helper));
+        // void* coeff = smh_get_scalar_for_index(helper, i + 1);
+        // if (coeff == NULL) { return -1; }
+        // insert_one(coeff, smh_dtype(helper));
+        smh_insert_value_at_index(helper, i+1, scratch);
     }
 
     return 0;
@@ -611,7 +616,10 @@ static int insert_l2t_commutator(SMHelper* helper,
                                  int32_t degree
 )
 {
+    alignas(16) char scratch[16];
+
     const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
+    const int typenum = PyArray_TYPE(helper->data);
 
     const npy_intp left_key = *(npy_intp*) PyArray_GETPTR2(
         (PyArrayObject*) basis->data,
@@ -642,20 +650,28 @@ static int insert_l2t_commutator(SMHelper* helper,
             const npy_intp right_idx = right_frame->indices[j];
 
             npy_intp idx = left_idx * right_offset + right_idx;
-            void* coeff = smh_get_scalar_for_index(helper, idx);
-            add_product(coeff,
+            // void* scratch = smh_get_scalar_for_index(helper, idx);
+            insert_zero(scratch, typenum);
+            add_product(scratch,
                         &left_frame->data[i * itemsize],
                         &right_frame->data[j * itemsize],
-                        smh_dtype(helper),
+                        typenum,
                         1);
+            if (smh_insert_value_at_index(helper, idx, scratch) < 0) {
+                return -1;
+            }
 
             idx = right_idx * left_offset + left_idx;
-            coeff = smh_get_scalar_for_index(helper, idx);
-            add_product(coeff,
+            insert_zero(scratch, typenum);
+            // coeff = smh_get_scalar_for_index(helper, idx);
+            add_product(scratch,
                         &right_frame->data[j * itemsize],
                         &left_frame->data[i * itemsize],
                         smh_dtype(helper),
                         -1);
+            if (smh_insert_value_at_index(helper, idx, scratch) < 0) {
+                return -1;
+            }
         }
     }
 
@@ -760,12 +776,19 @@ finish:
 
 static int t2l_insert_letters(SMHelper* helper, const npy_intp width)
 {
+    alignas(16) char scratch[16];
+    const int typenum = PyArray_TYPE(helper->data);
+    insert_one(scratch, typenum);
+
     for (npy_intp i = 0; i < width; ++i) {
         if (smh_insert_frame(helper) < 0) { return -1; }
 
-        void* coeff = smh_get_scalar_for_index(helper, i);
-        if (coeff == NULL) { return -1; }
-        insert_one(coeff, smh_dtype(helper));
+        // void* coeff = smh_get_scalar_for_index(helper, i);
+        // if (coeff == NULL) { return -1; }
+        // insert_one(coeff, smh_dtype(helper));
+        if (smh_insert_value_at_index(helper, i+1, scratch) < 0) {
+            return -1;
+        }
     }
 
     return 0;
@@ -784,7 +807,9 @@ static inline void assign(void* dst, const void* src, const int typenum)
     }
 }
 
-static npy_intp get_t2l_nnz_max(PyLieBasis* basis) { return 1; }
+static npy_intp get_t2l_nnz_max(PyLieBasis* basis) {
+    return get_tensor_size(basis);
+}
 
 static int t2l_normalize_row(SMHelper* helper, npy_intp width, npy_intp depth)
 {
@@ -798,10 +823,13 @@ static int t2l_rbracket(PyLieBasis* basis,
                         const SMHFrame* rframe,
                         npy_intp first)
 {
+    alignas(16) char scratch[16];
+
     PyLieMultiplicationCache* cache = (PyLieMultiplicationCache*) basis->
             multiplier_cache;
 
     const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
+    const int typenum = PyArray_TYPE(helper->data);
     const void* lval = lframe->data;
 
     LieWord word = {{first, 0}};
@@ -826,13 +854,18 @@ static int t2l_rbracket(PyLieBasis* basis,
             npy_intp pkey = entry->data[2 * j];
             npy_intp pval = entry->data[2 * j + 1];
 
-            void* out_val = smh_get_scalar_for_index(helper, pkey-1);
-            if (out_val == NULL) {
+            // void* out_val = smh_get_scalar_for_index(helper, pkey-1);
+            insert_zero(scratch, typenum);
+            // if (out_val == NULL) {
+            //     // py exc already set
+            //     return -1;
+            // }
+
+            add_product(scratch, lval, val, typenum, pval);
+            if (smh_insert_value_at_index(helper, pkey, scratch) < 0) {
                 // py exc already set
                 return -1;
             }
-
-            add_product(out_val, lval, val, smh_dtype(helper), pval);
         }
     }
 
