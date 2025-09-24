@@ -259,7 +259,7 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
         outer_word = {.letters = {word.letters[0], parents.letters[1]}};
         inner.letters[1] = parents.letters[0];
 
-        if (compute_bracket_half(cache, basis, outer_word, inner, sign, vals) < 0) {
+        if (compute_bracket_half(cache, basis, outer_word, inner, -sign, vals) < 0) {
             return nullptr;
         }
     }
