@@ -266,7 +266,7 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
 
     const npy_intp size = vals.size();
     npy_intp alloc_bytes = sizeof(LieMultiplicationCacheEntry);
-    if (size > 0) { alloc_bytes += (2 * size - 1) * sizeof(npy_intp); }
+    alloc_bytes += 2*(size - 1) * sizeof(npy_intp);
     auto* entry = static_cast<LieMultiplicationCacheEntry*>(PyMem_Malloc(
         alloc_bytes));
 
@@ -308,7 +308,7 @@ static LieMultiplicationCacheEntry* compute_bracket(
     if (const npy_intp pos = PyLieBasis_find_word(basis, &target, degree); pos > 0) {
         // the pair belongs to the cache,
         auto* entry = static_cast<LieMultiplicationCacheEntry*>(PyMem_Malloc(
-            sizeof(LieMultiplicationCacheEntry) + sizeof(npy_intp)));
+            sizeof(LieMultiplicationCacheEntry)));
 
         if (entry == nullptr) {
             PyErr_NoMemory();

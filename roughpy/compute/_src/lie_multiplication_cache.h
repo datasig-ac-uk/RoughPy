@@ -11,9 +11,9 @@ extern "C" {
 
 
 typedef struct {
-    npy_intp word[2];
+    LieWord word;
     npy_intp size;
-    npy_intp data[1];
+    npy_intp data[2];
 } LieMultiplicationCacheEntry;
 
 struct PyLieMultiplicationCacheInner;
