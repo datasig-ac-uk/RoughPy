@@ -338,7 +338,7 @@ PyLieMultiplicationCache_get(PyLieMultiplicationCache* cache,
                              const LieWord* word)
 {
     static constexpr LieMultiplicationCacheEntry empty {
-        {0, 0},
+        {{0, 0}},
         0,
         {0}
     };
