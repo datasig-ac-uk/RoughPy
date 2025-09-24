@@ -9,8 +9,15 @@
 extern "C" {
 #endif
 
-typedef struct _LieWord {
+
+
+typedef union _LieWord {
     npy_intp letters[2];
+    struct
+    {
+        npy_intp left;
+        npy_intp right;
+    };
 } LieWord;
 
 typedef struct _PyLieBasis PyLieBasis;

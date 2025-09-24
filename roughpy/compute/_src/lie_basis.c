@@ -788,7 +788,7 @@ static int t2l_insert_letters(SMHelper* helper, const npy_intp width)
         // void* coeff = smh_get_scalar_for_index(helper, i);
         // if (coeff == NULL) { return -1; }
         // insert_one(coeff, smh_dtype(helper));
-        if (smh_insert_value_at_index(helper, i + 1, scratch) < 0) {
+        if (smh_insert_value_at_index(helper, i, scratch) < 0) {
             return -1;
         }
     }
@@ -850,7 +850,8 @@ static void multiply_inplace(void* dst, const void* src, const int typenum)
     }
 }
 
-static int t2l_normalize_row(SMHelper* helper, npy_intp width, npy_intp depth)
+// ReSharper disable once CppDFAConstantFunctionResult
+static int t2l_normalize_cols(SMHelper* helper, npy_intp width, npy_intp depth)
 {
     alignas(16) char scratch[16];
 
@@ -872,7 +873,7 @@ static int t2l_normalize_row(SMHelper* helper, npy_intp width, npy_intp depth)
             // lie keys of the same degree as the column index tensor word.
             char* data_bytes = frame->data;
             for (npy_intp j = 0; j < frame->size; ++j) {
-                multiply_inplace(&data_bytes[i * itemsize], scratch, typenum);
+                multiply_inplace(&data_bytes[j * itemsize], scratch, typenum);
             }
         }
 
@@ -900,7 +901,7 @@ static int t2l_rbracket(PyLieBasis* basis,
 
     LieWord word = {{first, 0}};
     for (npy_intp i = 0; i < rframe->size; ++i) {
-        word.letters[1] = 1 + rframe->indices[i];
+        word.right = 1 + rframe->indices[i];
 
         // if (word.letters[0] == word.letters[1]) {
         //     continue;
@@ -990,6 +991,10 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
             // idx / prev_size lies between 0 and width, non-inclusive, but the
             // indices of letters are between 1 and width inclusive.
             const npy_intp lparent = 1 + idx / prev_size;
+            // rparent has degree minus 1, so we have to offset
+            // idx % prev_size by degm1_begin to get the correct index.
+            const npy_intp rparent = degm1_begin + idx % prev_size;
+
 #if (defined(_DEBUG) || defined(RPY_DEBUG) || !defined(NDEBUG))
             if (lparent < 1 || lparent > basis->width) {
                 PyErr_SetString(PyExc_RuntimeError,
@@ -998,9 +1003,6 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
             }
 #endif
 
-            // rparent has degree minus 1, so we have to offset
-            // idx % prev_size by degm1_begin to get the correct index.
-            const npy_intp rparent = degm1_begin + idx % prev_size;
 
             if (lparent == rparent) { continue; }
 
@@ -1025,10 +1027,10 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
      * of u in the Lie algebra. To finish off, we must normalize r(u) by
      * 1/deg(u).
      */
-    // if (t2l_normalize_row(&helper, basis->width, basis->depth) < 0) {
+    if (t2l_normalize_cols(&helper, basis->width, basis->depth) < 0) {
         // py exc already set
-        // goto finish;
-    // }
+        goto finish;
+    }
 
     // Regardless of whether this call is successful, we still have to free
     // helper.

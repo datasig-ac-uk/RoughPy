@@ -272,11 +272,10 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
 
     entry->size = size;
     if (sign == 1) {
-        entry->word[0] = word.letters[0];
-        entry->word[1] = word.letters[1];
+        entry->word = word;
     } else {
-        entry->word[0] = word.letters[1];
-        entry->word[1] = word.letters[0];
+        entry->word.left = word.letters[1];
+        entry->word.right = word.letters[0];
     }
 
     npy_intp i = 0;
@@ -315,11 +314,9 @@ static LieMultiplicationCacheEntry* compute_bracket(
             return nullptr;
         }
 
-        entry->word[0] = target.letters[0];
-        entry->word[1] = target.letters[1];
+        entry->word = *word;
         entry->size = 1;
         entry->data[0] = pos;
-        // ReSharper disable once CppDFAArrayIndexOutOfBounds
         entry->data[1] = sign;
 
         return entry;
