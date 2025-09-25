@@ -1,11 +1,13 @@
 import numpy as np
-import jax
-import jax.numpy as jnp
-import jax.lax as lax
-
 from dataclasses import dataclass
 from typing import NamedTuple
 
+try:
+    import jax
+    import jax.numpy as jnp
+    import jax.lax as lax
+except ImportError as e:
+    raise ImportError("RoughPy JAX requires jax library. For install instructions please refer to https://docs.jax.dev/en/latest/installation.html") from e
 
 try:
     from . import _rpy_jax_internals
