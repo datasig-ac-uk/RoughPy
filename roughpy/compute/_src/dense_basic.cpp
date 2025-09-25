@@ -389,9 +389,79 @@ PyObject* py_dense_st_inplace_mul(PyObject*, PyObject*, PyObject*)
     Py_RETURN_NOTIMPLEMENTED;
 }
 
-PyObject* py_dense_lie_to_tensor(PyObject*, PyObject*, PyObject*)
+
+/*******************************************************************************
+ * Lie to tensor
+ ******************************************************************************/
+
+namespace {
+
+template <typename S>
+struct DenseLieToTensor
 {
-    Py_RETURN_NOTIMPLEMENTED;
+    using Scalar = S;
+    static constexpr npy_intp CoreDims = 1;
+
+    const CallConfig* config_;
+
+    explicit constexpr DenseLieToTensor(const CallConfig& config)
+        : config_(&config)
+    {}
+
+    template <typename OutIter, typename ArgIter>
+    void operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
+    {
+        const auto& lie_basis = static_cast<const LieBasis*>(config_->basis_data);
+
+
+    }
+};
+
+
+} // namespace
+
+PyObject* py_dense_lie_to_tensor(PyObject* Py_UNUSED(self), PyObject* args, PyObject* kwargs)
+{
+    static constexpr char const* const kwords[] = {
+        "out", "arg", "lie_basis", "tensor_basis", nullptr
+    };
+
+    PyObject *out_obj, *arg_obj;
+    PyObject* lie_basis_obj = nullptr;
+    PyObject* tensor_basis_obj = nullptr;
+    CallConfig config;
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|O", kwords, &out_obj, &arg_obj, &lie_basis_obj, &tensor_basis_obj)) {
+        return nullptr;
+    }
+
+    LieBasis lie_basis;
+    auto lie_basis_handle = to_basis(lie_basis_obj, lie_basis);
+    if (!lie_basis_handle) {
+        return nullptr;
+    }
+
+    TensorBasis tensor_basis;
+    PyObjHandle tensor_basis_handle;
+    if (tensor_basis_obj != nullptr) {
+        tensor_basis_handle = to_basis(tensor_basis_obj, tensor_basis);
+
+        if (tensor_basis.width != lie_basis.width) {
+            PyErr_SetString(PyExc_ValueError,
+                "mismatched width for Lie and tensor bases");
+            return nullptr;
+        }
+    } else {
+        // get a new tensor basis of the correct
+
+
+    }
+
+    if (!update_algebra_params(config)) {
+        return nullptr;
+    }
+
+
+    return binary_function_outer
 }
 
 PyObject* py_dense_tensor_to_lie(PyObject*, PyObject*, PyObject*)
