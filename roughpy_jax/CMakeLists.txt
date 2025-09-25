@@ -21,6 +21,9 @@ if (ROUGHPY_JAX_CUDA)
 endif()
 
 # Get XLA includes via jax lib
+# FIXME before merge to to main: remove find_package duplicated here from
+# roughpy/ dir by moving python find into into cmake/ dir function, and include
+# find_python in top level cmake.
 find_package(Python 3.8 REQUIRED COMPONENTS Interpreter Development.Module)
 execute_process(
     COMMAND "${Python_EXECUTABLE}"
