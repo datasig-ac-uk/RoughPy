@@ -116,6 +116,7 @@ static void lie_basis_dealloc(PyLieBasis* self)
     Py_XDECREF(self->data);
     Py_XDECREF(self->l2t);
     Py_XDECREF(self->t2l);
+    Py_XDECREF(self->multiplier_cache);
     Py_TYPE(self)->tp_free((PyObject*) self);
 }
 
