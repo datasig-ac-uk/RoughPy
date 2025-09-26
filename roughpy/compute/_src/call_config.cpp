@@ -7,34 +7,23 @@
 using namespace rpy::compute;
 
 
-bool rpy::compute::update_algebra_params(CallConfig& config)
+bool rpy::compute::update_algebra_params(CallConfig& config, npy_intp n_args, npy_intp const* arg_basis_mapping)
 {
-    auto* basis = config.basis_data;
-    if (config.lhs_max_degree == -1 || config.lhs_max_degree >= basis->depth) {
-        config.lhs_max_degree = basis->depth;
-    }
+    for (npy_intp i=0; i<n_args; ++i) {
+        auto& degree_bounds = config.degree_bounds[i];
 
-    if (config.lhs_max_degree < config.lhs_min_degree) {
-        PyErr_SetString(PyExc_ValueError,
-                        "lhs_min_degree must be less than lhs_max_degree");
-        return false;
-    }
+        const auto* basis = config.basis_data[arg_basis_mapping[i]];
 
-    if (config.rhs_max_degree == -1 || config.rhs_max_degree >= basis->depth) {
-        config.rhs_max_degree = basis->depth;
-    }
-    if (config.rhs_max_degree < config.rhs_min_degree) {
-        PyErr_SetString(PyExc_ValueError,
-                        "rhs_min_degree must be less than rhs_max_degree");
-        return false;
-    }
+        if (degree_bounds.max_degree == -1 || degree_bounds.max_degree > basis->depth) {
+            degree_bounds.max_degree = basis->depth;
+        }
 
-    if (config.out_max_degree == -1 || config.out_max_degree >= basis->depth) {
-        config.out_max_degree = basis->depth;
-    }
-    if (config.out_max_degree < config.out_min_degree) {
-        PyErr_SetString(PyExc_ValueError,
-                        "out_min_degree must be less than out_max_degree");
+        if (degree_bounds.min_degree > degree_bounds.max_degree) {
+            PyErr_Format(PyExc_ValueError,
+                "invalid degree bounds for argument %zd:"
+                " min_degree must not exceed max_degree", i);
+            return false;
+        }
     }
 
     return true;
