@@ -440,6 +440,14 @@ PyObject* py_dense_st_inplace_mul(PyObject*, PyObject*, PyObject*)
  * Lie to tensor
  ******************************************************************************/
 
+/*
+ * Lie to tensor is a bit different from other operations because it mixes the
+ * basis types for the arguments and carries an additional matrix sparse matrix
+ * that has to be passed down to the driver routine. This matrix can be either
+ * CSC or CSR format (with CSC being the default obtained from the PyLieBasis
+ * we defined). We have to support both.
+ */
+
 namespace {
 
 template <typename S>

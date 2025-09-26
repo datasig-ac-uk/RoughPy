@@ -89,6 +89,25 @@ PyMemberDef PySparseMatrix_members[] = {
         {NULL}
 };
 
+static PyObject* get_shape(PyObject* obj)
+{
+    PySparseMatrix* self = (PySparseMatrix*) obj;
+    return Py_BuildValue("(ii)", self->rows, self->cols);
+}
+
+static PyObject* get_nnz(PyObject* obj)
+{
+    PySparseMatrix* self = (PySparseMatrix*) obj;
+    npy_intp nnz = PyArray_SHAPE((PyArrayObject*) self->data)[0];
+    return PyLong_FromSsize_t(nnz);
+}
+
+PyGetSetDef PySparseMatrix_getsets[] = {
+    {"shape", (getter) get_shape, NULL, "the shape of the matrix", NULL},
+    {"nnz", (getter) get_nnz, NULL, "the number of non-zero entries in the matrix", NULL},
+    {NULL}
+};
+
 
 PyTypeObject PySparseMatrix_Type = {
         .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -100,6 +119,7 @@ PyTypeObject PySparseMatrix_Type = {
         .tp_new = (newfunc) sparse_matrix_new,
         .tp_dealloc = (destructor) sparse_matrix_dealloc,
         .tp_init = (initproc) sparse_matrix_init,
+        .tp_getset = PySparseMatrix_getsets,
     .tp_members = PySparseMatrix_members
 };
 
