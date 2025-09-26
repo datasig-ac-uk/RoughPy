@@ -445,7 +445,9 @@ PyObject* py_dense_st_inplace_mul(PyObject*, PyObject*, PyObject*)
  * basis types for the arguments and carries an additional matrix sparse matrix
  * that has to be passed down to the driver routine. This matrix can be either
  * CSC or CSR format (with CSC being the default obtained from the PyLieBasis
- * we defined). We have to support both.
+ * we defined). We have to support both. Since this is different from the usual
+ * process, we're going to not use the wrapping code and instead write the
+ * array type checking by hand.
  */
 
 namespace {
@@ -552,7 +554,55 @@ PyObject* py_dense_lie_to_tensor(PyObject* Py_UNUSED(self),
             nullptr
     };
 
-    return binary_function_outer<DenseLieToTensor>(out_obj, arg_obj, config);
+    if (!update_algebra_params(config, DenseLieToTensor<float>::n_args, DenseLieToTensor<float>::arg_basis_mapping)) {
+        return nullptr;
+    }
+
+    if (!PyArray_Check(out_obj)) {
+        PyErr_SetString(PyExc_ValueError, "out must be a numpy aray");
+        return nullptr;
+    }
+    auto* out_arr = reinterpret_cast<PyArrayObject*>(out_obj);
+
+    const auto n_dims = PyArray_NDIM(out_arr);
+    const auto dtype = PyArray_TYPE(out_arr);
+    const auto* shape = PyArray_DIMS(out_arr);
+
+    if (n_dims < 1) {
+        PyErr_SetString(PyExc_ValueError, "invalid shape");
+        return nullptr;
+    }
+
+    PyObjHandle arg_data(PyArray_ContiguousFromAny(arg_obj, dtype, n_dims, n_dims));
+    if (!arg_data) {
+        return nullptr;
+    }
+
+    auto* arg_arr = reinterpret_cast<PyArrayObject*>(arg_data.obj());
+
+    const auto arg_ndims = PyArray_NDIM(arg_arr);
+    if (arg_ndims != n_dims) {
+        PyErr_SetString(PyExc_ValueError,
+            "mismatch between argument dimensions and output dimensions");
+        return nullptr;
+    }
+
+    const auto* arg_shape = PyArray_DIMS(arg_arr);
+    if (!check_dims(arg_shape, arg_ndims - 1, shape, n_dims-1))
+    {
+        PyErr_SetString(PyExc_ValueError,
+                        "arg and out must have the same shape");
+        return nullptr;
+    }
+
+    // The sparse matrix needs special attention
+
+
+
+
+
+
+
 }
 
 PyObject* py_dense_tensor_to_lie(PyObject*, PyObject*, PyObject*)
