@@ -102,9 +102,25 @@ static PyObject* get_nnz(PyObject* obj)
     return PyLong_FromSsize_t(nnz);
 }
 
+static PyObject* get_dtype(PyObject* obj)
+{
+    PySparseMatrix* self = (PySparseMatrix*) obj;
+    PyObject* dtype = (PyObject*) PyArray_DESCR((PyArrayObject*) self->data);
+    Py_INCREF(dtype);
+    return dtype;
+}
+
+static PyObject* get_ndim(PyObject* obj)
+{
+    return PyLong_FromLong(2);
+}
+
+
 PyGetSetDef PySparseMatrix_getsets[] = {
     {"shape", (getter) get_shape, NULL, "the shape of the matrix", NULL},
     {"nnz", (getter) get_nnz, NULL, "the number of non-zero entries in the matrix", NULL},
+    {"dtype", (getter) get_dtype, NULL, "the dtype of the matrix", NULL},
+    {"ndim", (getter) get_ndim, NULL, "the ndim of the matrix, is always 2", NULL},
     {NULL}
 };
 
