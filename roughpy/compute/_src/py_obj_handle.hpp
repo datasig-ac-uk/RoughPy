@@ -35,6 +35,12 @@ public:
         return *this;
     }
 
+    void reset(PyObject* new_obj, bool incref=true)
+    {
+        if (incref) { Py_INCREF(ptr); }
+        Py_XSETREF(ptr, new_obj);
+    }
+
     // Must be followed by inc_ref if the object should be preserved
     constexpr PyObject*& obj() { return ptr; }
     void drop() noexcept
