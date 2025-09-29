@@ -13,9 +13,11 @@ public:
 
     PyObjHandle() = default;
 
-    PyObjHandle(PyObject* ptr) : ptr(ptr)
+    PyObjHandle(PyObject* ptr, bool incref=true) : ptr(ptr)
     {
-        Py_INCREF(ptr);
+        if (incref) {
+            Py_INCREF(ptr);
+        }
     }
 
     ~PyObjHandle()
