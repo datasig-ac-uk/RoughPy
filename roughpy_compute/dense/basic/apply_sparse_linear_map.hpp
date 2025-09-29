@@ -7,9 +7,9 @@
 namespace rpy::compute::basic {
 inline namespace v1 {
 
-template <typename OutIter, typename CompressedSparseMatrix, typename ArgIter>
+template <typename OutIter, typename OutBasis, typename CompressedSparseMatrix, typename ArgIter, typename ArgBasis>
 [[gnu::always_inline]] inline
-void apply_sparse_linear_map(DenseVectorFragment<OutIter> out, CompressedSparseMatrix const& matrix, DenseVectorFragment<ArgIter> arg)
+void apply_sparse_linear_map(DenseVectorView<OutIter, OutBasis> out, CompressedSparseMatrix const& matrix, DenseVectorView<ArgIter, ArgBasis> arg)
 {
     using Index = typename CompressedSparseMatrix::difference_type;
     if constexpr (CompressedSparseMatrix::compressed_dim == CompressedRow) {
