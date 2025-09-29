@@ -84,8 +84,8 @@ class LieBasis(_internals.LieBasis):
     pass
 
 
-
 SparseMatrix = _api("1.0.0")(_internals.SparseMatrix)
+
 
 @_api("1.0.0")
 @dataclass()
@@ -206,16 +206,7 @@ def st_inplace_mul(*args, **kwargs):
     ...
 
 
-def lie_to_tensor(*args, **kwargs):
-    ...
-
-
-def tensor_to_lie(*args, **kwargs):
-    ...
-
-
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
-
     """
     Exponential of a free tensor.
 
@@ -295,7 +286,6 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     return FreeTensor(result, out_basis)
 
 
-
 @_api("1.0.0")
 def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
     """
@@ -321,3 +311,38 @@ def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
 
     return ShuffleTensor(result, arg.basis)
 
+
+@_api("1.0.0")
+def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Compute the embedding of a Lie algebra element as a free tensor.
+
+    :param arg: Lie to embed into the tensor algebra
+    :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
+    :return: new FreeTensor containing the embedding of "arg"
+    """
+    l2t = arg.basis.get_l2t_matrix()
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+
+    result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
+    _internals.dense_lie_to_tensor(result, arg.data, l2t, tensor_basis)
+
+    return FreeTensor(result, tensor_basis)
+
+
+@_api("1.0.0")
+def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None) -> Lie:
+    """
+    Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
+
+    :param arg:
+    :param lie_basis:
+    :return:
+    """
+    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    l2t = lie_basis.get_l2t_matrix()
+
+    result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
+    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis)
+
+    return Lie(result, lie_basis)
