@@ -9,6 +9,7 @@
 #include <structmember.h>
 
 
+#define SMH_FLAGS_FORMAT_MASK 0x7;
 
 
 
@@ -115,15 +116,33 @@ static PyObject* get_ndim(PyObject* obj)
     return PyLong_FromLong(2);
 }
 
+static PyObject* get_format(PyObject* obj)
+{
+    PySparseMatrix* self = (PySparseMatrix*) obj;
+    switch (self->format) {
+        case SM_CSC:
+            return PyUnicode_FromString("csc");
+        case SM_CSR:
+            return PyUnicode_FromString("csr");
+    }
+    PyErr_SetString(PyExc_ValueError, "unknown format");
+    return NULL;
+}
+
 
 PyGetSetDef PySparseMatrix_getsets[] = {
     {"shape", (getter) get_shape, NULL, "the shape of the matrix", NULL},
     {"nnz", (getter) get_nnz, NULL, "the number of non-zero entries in the matrix", NULL},
     {"dtype", (getter) get_dtype, NULL, "the dtype of the matrix", NULL},
     {"ndim", (getter) get_ndim, NULL, "the ndim of the matrix, is always 2", NULL},
+    {"format", (getter) get_format, NULL, "the format of the matrix, either 'csc' or 'csr'", NULL},
     {NULL}
 };
 
+PyMethodDef PySparseMatrix_methods[] = {
+    {"getformat", (PyCFunction) get_format, METH_O, "get the string representation of the matrix format"},
+    {NULL}
+};
 
 PyTypeObject PySparseMatrix_Type = {
         .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
@@ -136,7 +155,8 @@ PyTypeObject PySparseMatrix_Type = {
         .tp_dealloc = (destructor) sparse_matrix_dealloc,
         .tp_init = (initproc) sparse_matrix_init,
         .tp_getset = PySparseMatrix_getsets,
-    .tp_members = PySparseMatrix_members
+    .tp_members = PySparseMatrix_members,
+    .tp_methods = PySparseMatrix_methods
 };
 
 PyObject* py_sparse_matrix_from_components(PyObject* data,
@@ -202,12 +222,12 @@ int smh_init(SMHelper* helper,
     int format
     )
 {
-    if (format != SMH_CSC && format != SMH_CSR) {
+    if (format != SM_CSC && format != SM_CSR) {
         PyErr_SetString(PyExc_ValueError, "Invalid format");
         return -1;
     }
 
-    npy_intp alloc = format == SMH_CSC ? ncols : nrows;
+    npy_intp alloc = format == SM_CSC ? ncols : nrows;
     if (nnz_est < 0) {
         nnz_est = alloc;
     }
@@ -525,6 +545,7 @@ PyObject* smh_build_matrix(SMHelper* helper)
     // set the nrows and ncols
     ret->rows = helper->rows;
     ret->cols = helper->cols;
+    ret->format = helper->flags & SMH_FLAGS_FORMAT_MASK;
 
     return (PyObject*) ret;
 }

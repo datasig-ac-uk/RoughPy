@@ -9,6 +9,12 @@ extern "C" {
 
 #endif
 
+enum SMFormat {
+    SM_CSR = 0,
+    SM_CSC = 1,
+};
+
+
 typedef struct _PySparseMatrix {
     PyObject_HEAD
     PyObject *data;
@@ -16,6 +22,7 @@ typedef struct _PySparseMatrix {
     PyObject *indptr;
     npy_intp rows;
     npy_intp cols;
+    enum SMFormat format;
 } PySparseMatrix;
 
 
@@ -25,10 +32,7 @@ typedef struct _SMHFrame {
     npy_intp size;
 } SMHFrame;
 
-enum SMHFormat {
-    SMH_CSR = 0,
-    SMH_CSC = 1,
-};
+
 
 typedef struct _SMHelper {
     SMHFrame *frames;
@@ -110,12 +114,12 @@ static inline void insert_zero(void *ptr, int typenum) {
 
 static inline int smh_is_csr(SMHelper* helper)
 {
-    return helper->flags & SMH_CSR;
+    return helper->flags & SM_CSR;
 }
 
 static inline int smh_is_csc(SMHelper* helper)
 {
-    return helper->flags & SMH_CSC;
+    return helper->flags & SM_CSC;
 }
 
 static inline void insert_one(void *ptr, int typenum) {
