@@ -694,7 +694,7 @@ static PyObject* construct_new_l2t(PyLieBasis* basis, PyArray_Descr* dtype)
     const npy_intp nnz_est = get_l2t_nnz_max(basis);
 
     SMHelper helper;
-    if (smh_init(&helper, dtype, tensor_dim, lie_dim, nnz_est, SMH_CSC) < 0) {
+    if (smh_init(&helper, dtype, tensor_dim, lie_dim, nnz_est, SM_CSC) < 0) {
         // py exc already set
         return NULL;
     }
@@ -957,7 +957,7 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
     const npy_intp nnz_est = get_t2l_nnz_max(basis);
 
     SMHelper helper;
-    if (smh_init(&helper, dtype, lie_dim, tensor_dim, nnz_est, SMH_CSC) < 0) {
+    if (smh_init(&helper, dtype, lie_dim, tensor_dim, nnz_est, SM_CSC) < 0) {
         // py exc already set
         return NULL;
     }
