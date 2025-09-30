@@ -321,11 +321,11 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None) -> FreeTens
     :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
     :return: new FreeTensor containing the embedding of "arg"
     """
-    l2t = arg.basis.get_l2t_matrix()
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
     tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
-    _internals.dense_lie_to_tensor(result, arg.data, l2t, tensor_basis)
+    _internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis)
 
     return FreeTensor(result, tensor_basis)
 
@@ -340,9 +340,9 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None) -> Lie:
     :return:
     """
     lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
-    l2t = lie_basis.get_l2t_matrix()
+    l2t = lie_basis.get_l2t_matrix(arg.data.dtype)
 
     result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
-    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis)
+    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis)
 
     return Lie(result, lie_basis)
