@@ -25,7 +25,36 @@ bool update_algebra_params(CallConfig& config, npy_intp n_args, npy_intp const* 
 
 
 PyObjHandle to_basis(PyObject* basis_obj, TensorBasis& basis);
-PyObjHandle to_basis(PyObject* basis_obj, LieBasis& basis);
+
+
+struct LieBasisArrayHolder
+{
+    PyArrayObject* degree_begin = nullptr;
+    PyArrayObject* data = nullptr;
+
+    LieBasisArrayHolder() = default;
+
+    LieBasisArrayHolder(LieBasisArrayHolder&& old) noexcept
+        : degree_begin(old.degree_begin), data(old.data)
+    {
+        old.degree_begin = nullptr;
+        old.data = nullptr;
+    }
+
+    ~LieBasisArrayHolder()
+    {
+        Py_XDECREF(degree_begin);
+        Py_XDECREF(data);
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return degree_begin != nullptr && data != nullptr;
+    }
+
+};
+
+LieBasisArrayHolder to_basis(PyObject* basis_obj, LieBasis& basis);
 
 }// namespace rpy::compute
 
