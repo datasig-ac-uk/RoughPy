@@ -583,12 +583,13 @@ SparseMatrixArrays get_sparse_matrix(
 {
     SparseMatrixArrays arrays;
 
-    // PyArray_FromAny steals a reference to dtype, so increment before we go.
-    PyArray_Descr* intp_descr = PyArray_DescrFromType(NPY_INTP);
-    Py_INCREF(intp_descr);
 
     PyObject* attr = PyObject_GetAttrString(matrix_obj, "indptr");
     if (!attr) { return {}; }
+
+    // PyArray_FromAny steals a reference to dtype, so increment before we go.
+    PyArray_Descr* intp_descr = PyArray_DescrFromType(NPY_INTP);
+    Py_INCREF(intp_descr);
 
     arrays.indptr = reinterpret_cast<PyArrayObject*>(PyArray_FromAny(
             attr,
@@ -599,7 +600,10 @@ SparseMatrixArrays get_sparse_matrix(
             nullptr
     ));
     Py_DECREF(attr);
-    if (!arrays.indptr) { return {}; }
+    if (!arrays.indptr) {
+        Py_DECREF(intp_descr);
+        return {};
+    }
 
     attr = PyObject_GetAttrString(matrix_obj, "indices");
     if (!attr) { return {}; }
@@ -637,12 +641,14 @@ SparseMatrixArrays get_sparse_matrix(
     // csr format and check the consistency with the input args
     npy_intp nrows, ncols;
     {
-        PyObjHandle l2t_shape = PyObject_GetAttrString(matrix_obj, "shape");
-        if (!l2t_shape) { return {}; }
+        PyObject* l2t_shape = PyObject_GetAttrString(matrix_obj, "shape");
+        if (l2t_shape == nullptr) { return {}; }
 
-        if (PyArg_ParseTuple(l2t_shape.obj(), "nn", &nrows, &ncols) != 0) {
+        if (!PyArg_ParseTuple(l2t_shape, "nn", &nrows, &ncols)) {
+            Py_DECREF(l2t_shape);
             return {};
         }
+        Py_DECREF(l2t_shape);
     }
 
     // Internal consistency checks. It is not necessary that the matrix shape
@@ -818,6 +824,8 @@ PyObject* py_dense_lie_to_tensor(
         return nullptr;
     }
 
+    // PyArray_Descr* dtype_descr = PyArray_DescrFromType(dtype);
+    // Py_INCREF(dtype_descr);
     PyObjHandle arg_data(
             PyArray_ContiguousFromAny(arg_obj, dtype, n_dims, n_dims),
             false
