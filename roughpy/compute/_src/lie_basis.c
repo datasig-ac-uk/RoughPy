@@ -6,9 +6,9 @@
 #include <string.h>
 #include <structmember.h>
 
-#include "sparse_matrix.h"
 #include "lie_multiplication_cache.h"
-
+#include "sparse_matrix.h"
+#include "tensor_basis.h"
 
 struct _PyLieBasis
 {
@@ -217,7 +217,7 @@ static int construct_lie_basis(PyLieBasis* self)
     npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
     memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
 
-    Py_SETREF(self->data, resized_data);
+    Py_XSETREF(self->data, resized_data);
     // resized_data is now a borrowed reference, clear it to avoid misuse
     resized_data = NULL;
     // Py_XDECREF(self->data);
@@ -228,7 +228,7 @@ static int construct_lie_basis(PyLieBasis* self)
     // Py_XDECREF(self->degree_begin);
     // self->degree_begin = degree_begin;
     // degree_begin = NULL;
-    Py_SETREF(self->degree_begin, degree_begin);
+    Py_XSETREF(self->degree_begin, degree_begin);
     /*
      * At this point we have transferred owneship of degree_begin to the struct
      * where it rightfully belongs, so the degree_begin variable now does not
@@ -1099,4 +1099,27 @@ PyObject* PyLieBasis_word2str(PyLieBasis* basis, const LieWord* word)
     Py_DECREF(left_str);
     Py_DECREF(right_str);
     return ret;
+}
+
+PyObject* PyLieBasis_get(int32_t width, int32_t depth)
+{
+    if (width <= 0 || depth <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "width and depth must be positive integers");
+        return NULL;
+    }
+
+    PyLieBasis* self = (PyLieBasis*) PyTensorBasis_Type.tp_alloc(
+        &PyLieBasis_Type, 0);
+    if (self == NULL) { return NULL; }
+
+    self->width = width;
+    self->depth = depth;
+
+    if (construct_lie_basis(self) != 0) {
+        Py_DECREF(self);
+        return NULL;
+    }
+
+    return (PyObject*) self;
 }

@@ -84,6 +84,8 @@ PyObject* PyLieBasis_key2str(PyLieBasis* basis, npy_intp key);
 
 PyObject* PyLieBasis_word2str(PyLieBasis* basis, const LieWord* word);
 
+PyObject* PyLieBasis_get(int32_t width, int32_t depth);
+
 int init_lie_basis(PyObject *module);
 
 #ifdef __cplusplus
