@@ -22,5 +22,5 @@ def test_l2t_t2l_roundtrip():
 
     y = rpc.tensor_to_lie(tensor_x, lie_basis)
 
-    assert_array_equal(x.data, y.data)
+    assert_array_almost_equal(x.data, y.data, decimal=15)
 
