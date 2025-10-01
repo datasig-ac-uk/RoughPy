@@ -273,8 +273,8 @@ struct DenseAntipode {
         DenseTensorView<ArgIter> arg(
                 arg_iter,
                 *basis,
-                config_->degree_bounds[2].min_degree,
-                config_->degree_bounds[2].max_degree
+                config_->degree_bounds[1].min_degree,
+                config_->degree_bounds[1].max_degree
         );
 
         basic::ft_antipode(
