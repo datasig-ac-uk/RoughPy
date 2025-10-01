@@ -659,7 +659,7 @@ SparseMatrixArrays get_sparse_matrix(
     if (nrows < out_dim) {
         PyErr_Format(
                 PyExc_ValueError,
-                "the provided l2t matrix does not achieve the required "
+                "the provided matrix does not achieve the required "
                 "depth required for the output of dimension %zd",
                 out_dim
         );
@@ -668,7 +668,7 @@ SparseMatrixArrays get_sparse_matrix(
     if (ncols < arg_dim) {
         PyErr_Format(
                 PyExc_ValueError,
-                "the provided l2t matrix does not achieve the required "
+                "the provided matrix does not achieve the required "
                 "depth required for the input of dimension %zd",
                 arg_dim
         );
