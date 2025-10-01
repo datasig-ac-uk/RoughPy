@@ -596,7 +596,7 @@ SparseMatrixArrays get_sparse_matrix(
             intp_descr,
             1,
             1,
-            NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED,
+            NPY_ARRAY_CARRAY_RO,
             nullptr
     ));
     Py_DECREF(attr);
@@ -612,7 +612,7 @@ SparseMatrixArrays get_sparse_matrix(
             intp_descr,
             1,
             1,
-            NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED,
+            NPY_ARRAY_CARRAY_RO,
             nullptr
     ));
     Py_DECREF(attr);
@@ -631,7 +631,7 @@ SparseMatrixArrays get_sparse_matrix(
             data_dtype,
             1,
             1,
-            NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED,
+            NPY_ARRAY_CARRAY_RO,
             nullptr
     ));
     Py_DECREF(attr);
