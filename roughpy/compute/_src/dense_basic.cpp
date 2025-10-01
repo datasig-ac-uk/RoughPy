@@ -691,8 +691,8 @@ SparseMatrixArrays get_sparse_matrix(
     // be equal. But to be sure, fall back to the getformat method in this case.
     const npy_intp* indptr_shape = PyArray_SHAPE(arrays.indptr);
 
-    matrix_data.indptr = reinterpret_cast<const npy_intp*>(arrays.indptr);
-    matrix_data.indices = reinterpret_cast<const npy_intp*>(arrays.indices);
+    matrix_data.indptr = static_cast<const npy_intp*>(PyArray_DATA(arrays.indptr));
+    matrix_data.indices = static_cast<const npy_intp*>(PyArray_DATA(arrays.indices));
     matrix_data.data = PyArray_DATA(arrays.data);
     matrix_data.nnz = nnz;
 
