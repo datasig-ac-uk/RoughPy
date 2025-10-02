@@ -503,15 +503,9 @@ struct DenseLieToTensor {
         const auto& tensor_basis
                 = *static_cast<const TensorBasis*>(config_->basis_data[1]);
 
-        DenseVectorFragment<OutIter> out(
-                out_iter,
-                tensor_basis.size()
-        );
+        DenseVectorFragment<OutIter> out(out_iter, tensor_basis.size());
 
-        DenseVectorFragment<ArgIter> arg(
-                arg_iter,
-                lie_basis.size()
-        );
+        DenseVectorFragment<ArgIter> arg(arg_iter, lie_basis.size());
 
         Matrix matrix{
                 static_cast<const S*>(matrix_->data),
@@ -522,7 +516,17 @@ struct DenseLieToTensor {
                 matrix_->n_inner
         };
 
-        basic::apply_sparse_linear_map(out, matrix, arg);
+        if (config_->ops != nullptr) {
+            basic::apply_sparse_linear_map(
+                    out,
+                    matrix,
+                    arg,
+                    ops::MultiplyBy<Scalar>{*static_cast<const S*>(config_->ops)
+                    }
+            );
+        } else {
+            basic::apply_sparse_linear_map(out, matrix, arg);
+        }
     }
 };
 
@@ -578,7 +582,6 @@ SparseMatrixArrays get_sparse_matrix(
 )
 {
     SparseMatrixArrays arrays;
-
 
     PyObject* attr = PyObject_GetAttrString(matrix_obj, "indptr");
     if (!attr) { return {}; }
@@ -687,8 +690,10 @@ SparseMatrixArrays get_sparse_matrix(
     // be equal. But to be sure, fall back to the getformat method in this case.
     const npy_intp* indptr_shape = PyArray_SHAPE(arrays.indptr);
 
-    matrix_data.indptr = static_cast<const npy_intp*>(PyArray_DATA(arrays.indptr));
-    matrix_data.indices = static_cast<const npy_intp*>(PyArray_DATA(arrays.indices));
+    matrix_data.indptr
+            = static_cast<const npy_intp*>(PyArray_DATA(arrays.indptr));
+    matrix_data.indices
+            = static_cast<const npy_intp*>(PyArray_DATA(arrays.indices));
     matrix_data.data = PyArray_DATA(arrays.data);
     matrix_data.nnz = nnz;
 
@@ -728,6 +733,39 @@ SparseMatrixArrays get_sparse_matrix(
     return arrays;
 }
 
+bool get_scale_factor(
+        PyObject* scale_factor_obj,
+        void* scalar_scratch,
+        CallConfig& config,
+        PyArray_Descr* out_dtype
+)
+{
+    if (scale_factor_obj == nullptr || Py_IsNone(scale_factor_obj)) {
+        return true;
+    }
+
+    if (PyArray_IsScalar(scale_factor_obj, Floating)) {
+        if (PyArray_CastScalarToCtype(
+                    scale_factor_obj,
+                    scalar_scratch,
+                    out_dtype
+            )
+            < 0) {
+            return false;
+        }
+    } else {
+        PyErr_SetString(
+                PyExc_ValueError,
+                "scale_factor must be a numpy floating point scalar"
+        );
+        return false;
+    }
+
+    config.ops = scalar_scratch;
+
+    return true;
+}
+
 }// namespace
 
 PyObject* py_dense_lie_to_tensor(
@@ -737,25 +775,34 @@ PyObject* py_dense_lie_to_tensor(
 )
 {
     static constexpr char const* const kwords[]
-            = {"out", "arg", "l2t_matrix", "lie_basis", "tensor_basis", nullptr
-            };
+            = {"out",
+               "arg",
+               "l2t_matrix",
+               "lie_basis",
+               "tensor_basis",
+               "scale_factor",
+               nullptr};
 
     PyObject *out_obj, *arg_obj, *l2t_matrix;
     PyObject* lie_basis_obj = nullptr;
     PyObject* tensor_basis_obj = nullptr;
+    PyObject* scale_factor_obj = nullptr;
 
     std::array<DegreeBounds, 2> degree_bounds;
+
+    alignas(16) std::array<std::byte, 16> scalar_scratch;
 
     if (!PyArg_ParseTupleAndKeywords(
                 args,
                 kwargs,
-                "OOOO|O",
+                "OOOO|OO",
                 kwords,
                 &out_obj,
                 &arg_obj,
                 &l2t_matrix,
                 &lie_basis_obj,
-                &tensor_basis_obj
+                &tensor_basis_obj,
+                &scale_factor_obj
         )) {
         return nullptr;
     }
@@ -863,6 +910,15 @@ PyObject* py_dense_lie_to_tensor(
 
     if (!arrays) { return nullptr; }
 
+    if (!get_scale_factor(
+                scale_factor_obj,
+                scalar_scratch.data(),
+                config,
+                PyArray_DESCR(out_arr)
+        )) {
+        return nullptr;
+    }
+
 #define RPC_SM_FORMAT_SWITCH(Scalar, format)                                   \
     switch (format) {                                                          \
         case CompressedCol:                                                    \
@@ -938,15 +994,9 @@ struct DenseTensorToLie {
         const auto& tensor_basis
                 = *static_cast<const TensorBasis*>(config_->basis_data[1]);
 
-        DenseVectorFragment<OutIter> out(
-                out_iter,
-                lie_basis.size()
-        );
+        DenseVectorFragment<OutIter> out(out_iter, lie_basis.size());
 
-        DenseVectorFragment<ArgIter> arg(
-                arg_iter,
-                tensor_basis.size()
-        );
+        DenseVectorFragment<ArgIter> arg(arg_iter, tensor_basis.size());
 
         Matrix matrix{
                 static_cast<const S*>(matrix_->data),
@@ -957,7 +1007,16 @@ struct DenseTensorToLie {
                 matrix_->n_inner
         };
 
-        basic::apply_sparse_linear_map(out, matrix, arg);
+        if (config_->ops != nullptr) {
+            basic::apply_sparse_linear_map(
+                    out,
+                    matrix,
+                    arg,
+                    ops::MultiplyBy<S>{*static_cast<const S*>(config_->ops)}
+            );
+        } else {
+            basic::apply_sparse_linear_map(out, matrix, arg);
+        }
     }
 };
 
@@ -970,25 +1029,33 @@ PyObject* py_dense_tensor_to_lie(
 )
 {
     static constexpr char const* const kwords[]
-            = {"out", "arg", "t2l_matrix", "lie_basis", "tensor_basis", nullptr
-            };
+            = {"out",
+               "arg",
+               "t2l_matrix",
+               "lie_basis",
+               "tensor_basis",
+               "scale_factor",
+               nullptr};
 
     PyObject *out_obj, *arg_obj, *t2l_matrix;
     PyObject* lie_basis_obj = nullptr;
     PyObject* tensor_basis_obj = nullptr;
+    PyObject* scale_factor_obj = nullptr;
 
     std::array<DegreeBounds, 2> degree_bounds;
+    alignas(16) std::array<std::byte, 16> scalar_scratch;
 
     if (!PyArg_ParseTupleAndKeywords(
                 args,
                 kwargs,
-                "OOOO|O",
+                "OOOO|OO",
                 kwords,
                 &out_obj,
                 &arg_obj,
                 &t2l_matrix,
                 &lie_basis_obj,
-                &tensor_basis_obj
+                &tensor_basis_obj,
+                &scale_factor_obj
         )) {
         return nullptr;
     }
@@ -1095,6 +1162,15 @@ PyObject* py_dense_tensor_to_lie(
 
     if (!arrays) { return nullptr; }
 
+    if (!get_scale_factor(
+                scale_factor_obj,
+                scalar_scratch.data(),
+                config,
+                PyArray_DESCR(out_arr)
+        )) {
+        return nullptr;
+    }
+
 #define RPC_SM_FORMAT_SWITCH(Scalar, format)                                   \
     switch (format) {                                                          \
         case CompressedCol:                                                    \
@@ -1129,5 +1205,4 @@ PyObject* py_dense_tensor_to_lie(
     }
 
 #undef RPC_SM_FORMAT_SWITCH
-
 }
