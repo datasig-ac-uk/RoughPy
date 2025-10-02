@@ -2,6 +2,8 @@
 // ReSharper disable CppDFAUnusedValue
 #include "dense_basic.h"
 
+#include <array>
+
 #include <roughpy_compute/common/cache_array.hpp>
 #include <roughpy_compute/common/sparse_matrix.hpp>
 #include <roughpy_compute/dense/views.hpp>
