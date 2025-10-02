@@ -1,5 +1,8 @@
 #include "dense_intermediate.h"
 
+
+#include <array>
+
 #include <roughpy_compute/dense/intermediate/free_tensor_exp.hpp>
 #include <roughpy_compute/dense/intermediate/free_tensor_log.hpp>
 #include <roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp>
