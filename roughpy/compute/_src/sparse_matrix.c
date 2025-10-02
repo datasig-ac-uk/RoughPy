@@ -361,17 +361,17 @@ static int smh_resize(SMHelper* helper, npy_intp new_size)
     return 0;
 }
 
-static inline int is_zero(void* value, int typenum)
+static inline int is_zero(const void* value, int typenum)
 {
     switch (typenum) {
         case NPY_FLOAT:
-            return *((float*) value) == 0.0f;
+            return *((const float*) value) == 0.0f;
         case NPY_DOUBLE:
-            return *((double*) value) == 0.0;
+            return *((const double*) value) == 0.0;
         case NPY_LONGDOUBLE:
-            return *((long double*) value) == 0.0L;
-        case NPY_HALF:
-            return *((npy_float16*) value) == 0.0f;
+            return *((const long double*) value) == 0.0L;
+        // case NPY_HALF:
+            // return *((const npy_float16*) value) == 0.0f;
     }
     return 0;
 }
@@ -389,9 +389,9 @@ static inline void assign(void* dst, const void* src, int typenum)
         case NPY_LONGDOUBLE:
             *((long double*) dst) = *((long double*) src);
             break;
-        case NPY_HALF:
-            *((npy_float16*) dst) = *((npy_float16*) src);
-            break;
+        // case NPY_HALF:
+            // *((npy_float16*) dst) = *((npy_float16*) src);
+            // break;
     }
 }
 
