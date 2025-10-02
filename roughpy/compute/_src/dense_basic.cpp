@@ -503,18 +503,14 @@ struct DenseLieToTensor {
         const auto& tensor_basis
                 = *static_cast<const TensorBasis*>(config_->basis_data[1]);
 
-        DenseTensorView<OutIter> out(
+        DenseVectorFragment<OutIter> out(
                 out_iter,
-                tensor_basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+                tensor_basis.size()
         );
 
-        DenseLieView<ArgIter> arg(
+        DenseVectorFragment<ArgIter> arg(
                 arg_iter,
-                lie_basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
+                lie_basis.size()
         );
 
         Matrix matrix{
@@ -656,7 +652,7 @@ SparseMatrixArrays get_sparse_matrix(
     // might be computing a truncated output, and this is handled by the
     // driver routine. However, the nrows must be at least the dimension of
     // the output tensor and ncols at least the dimension of the input Lie
-    if (nrows < out_dim) {
+    if (nrows != out_dim) {
         PyErr_Format(
                 PyExc_ValueError,
                 "the provided matrix does not achieve the required "
@@ -665,7 +661,7 @@ SparseMatrixArrays get_sparse_matrix(
         );
         return {};
     }
-    if (ncols < arg_dim) {
+    if (ncols != arg_dim) {
         PyErr_Format(
                 PyExc_ValueError,
                 "the provided matrix does not achieve the required "
@@ -942,18 +938,14 @@ struct DenseTensorToLie {
         const auto& tensor_basis
                 = *static_cast<const TensorBasis*>(config_->basis_data[1]);
 
-        DenseLieView<OutIter> out(
+        DenseVectorFragment<OutIter> out(
                 out_iter,
-                lie_basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+                lie_basis.size()
         );
 
-        DenseTensorView<ArgIter> arg(
+        DenseVectorFragment<ArgIter> arg(
                 arg_iter,
-                tensor_basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
+                tensor_basis.size()
         );
 
         Matrix matrix{
