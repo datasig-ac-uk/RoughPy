@@ -175,6 +175,7 @@ LieBasisArrayHolder rpy::compute::to_basis(PyObject* basis_obj, LieBasis& basis)
         Py_DECREF(intp_descr);
         return {};
     }
+    basis.data = static_cast<const npy_intp*>(PyArray_DATA(array_holder.data));
 
     PyObject* degree_begin_obj = PyObject_GetAttrString(basis_obj, "degree_begin");
     if (degree_begin_obj == nullptr) {
@@ -203,6 +204,8 @@ LieBasisArrayHolder rpy::compute::to_basis(PyObject* basis_obj, LieBasis& basis)
             "degree_begin array must have at least depth + 1 elements");
         return {};
     }
+
+    basis.degree_begin = static_cast<const npy_intp*>(PyArray_DATA(array_holder.degree_begin));
 
     return array_holder;
 }
