@@ -313,7 +313,7 @@ def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
 
 
 @_api("1.0.0")
-def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None) -> FreeTensor:
+def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
 
@@ -321,28 +321,18 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None) -> FreeTens
     :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
     :return: new FreeTensor containing the embedding of "arg"
     """
-    import sys
     l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
-
-    a = sys.getrefcount(l2t.indptr)
-    b = sys.getrefcount(l2t.indices)
-    c = sys.getrefcount(l2t.data)
-    print(a, b, c)
 
     tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
-    _internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis)
-
-    assert sys.getrefcount(l2t.indptr) == a
-    assert sys.getrefcount(l2t.indices) == b
-    assert sys.getrefcount(l2t.data) == c
+    _internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
 
     return FreeTensor(result, tensor_basis)
 
 
 @_api("1.0.0")
-def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None) -> Lie:
+def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
     """
     Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
 
@@ -354,6 +344,6 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None) -> Lie:
     l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
 
     result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
-    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis)
+    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
 
     return Lie(result, lie_basis)
