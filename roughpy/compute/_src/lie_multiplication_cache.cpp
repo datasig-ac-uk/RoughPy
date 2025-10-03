@@ -96,7 +96,7 @@ struct LieWordHash
     }
 };
 
-
+extern "C" {
 PyTypeObject PyLieMultiplicationCache_Type = {
         .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
         .tp_name = RPY_CPT_TYPE_NAME(LieMultiplicationCache),
@@ -106,6 +106,9 @@ PyTypeObject PyLieMultiplicationCache_Type = {
         .tp_repr = reinterpret_cast<reprfunc>(lmc_repr),
         .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_DISALLOW_INSTANTIATION,
 };
+
+
+}
 
 }// namespace
 
