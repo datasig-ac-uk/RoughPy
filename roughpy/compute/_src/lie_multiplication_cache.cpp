@@ -275,10 +275,10 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
 
     if (parents.letters[0] > 0 && word.letters[0] != parents.letters[0]) {
         outer_word = {
-                .letters{word.letters[0], parents.letters[0]}
+                {word.letters[0], parents.letters[0]}
         };
         inner = {
-                .letters = {0, parents.letters[1]}
+                {0, parents.letters[1]}
         };
 
         if (compute_bracket_half(cache, basis, outer_word, inner, sign, vals)
@@ -289,7 +289,7 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
 
     if (word.letters[0] != parents.letters[1]) {
         outer_word = {
-                .letters = {word.letters[0], parents.letters[1]}
+                {word.letters[0], parents.letters[1]}
         };
         inner.letters[1] = parents.letters[0];
 
