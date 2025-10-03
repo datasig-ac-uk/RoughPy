@@ -7,34 +7,23 @@
 using namespace rpy::compute;
 
 
-bool rpy::compute::update_algebra_params(CallConfig& config)
+bool rpy::compute::update_algebra_params(CallConfig& config, npy_intp n_args, npy_intp const* arg_basis_mapping)
 {
-    auto* basis = config.basis_data;
-    if (config.lhs_max_degree == -1 || config.lhs_max_degree >= basis->depth) {
-        config.lhs_max_degree = basis->depth;
-    }
+    for (npy_intp i=0; i<n_args; ++i) {
+        auto& degree_bounds = config.degree_bounds[i];
 
-    if (config.lhs_max_degree < config.lhs_min_degree) {
-        PyErr_SetString(PyExc_ValueError,
-                        "lhs_min_degree must be less than lhs_max_degree");
-        return false;
-    }
+        const auto* basis = config.basis_data[arg_basis_mapping[i]];
 
-    if (config.rhs_max_degree == -1 || config.rhs_max_degree >= basis->depth) {
-        config.rhs_max_degree = basis->depth;
-    }
-    if (config.rhs_max_degree < config.rhs_min_degree) {
-        PyErr_SetString(PyExc_ValueError,
-                        "rhs_min_degree must be less than rhs_max_degree");
-        return false;
-    }
+        if (degree_bounds.max_degree == -1 || degree_bounds.max_degree > basis->depth) {
+            degree_bounds.max_degree = basis->depth;
+        }
 
-    if (config.out_max_degree == -1 || config.out_max_degree >= basis->depth) {
-        config.out_max_degree = basis->depth;
-    }
-    if (config.out_max_degree < config.out_min_degree) {
-        PyErr_SetString(PyExc_ValueError,
-                        "out_min_degree must be less than out_max_degree");
+        if (degree_bounds.min_degree > degree_bounds.max_degree) {
+            PyErr_Format(PyExc_ValueError,
+                "invalid degree bounds for argument %zd:"
+                " min_degree must not exceed max_degree", i);
+            return false;
+        }
     }
 
     return true;
@@ -48,6 +37,7 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
     PyObject* width_obj = PyObject_GetAttrString(basis_obj, "width");
     if (width_obj == nullptr) { return false; }
     width = PyLong_AsInt(width_obj);
+    Py_DECREF(width_obj);
     if (width == -1) {
         // Error already set
         return false;
@@ -56,6 +46,7 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
     PyObject* data_obj = PyObject_GetAttrString(basis_obj, "depth");
     if (data_obj == nullptr) { return false; }
     depth = PyLong_AsInt(data_obj);
+    Py_DECREF(data_obj);
     if (depth == -1) {
         // Error already set
         return false;
@@ -69,7 +60,8 @@ PyObjHandle degree_begin_from_obj(PyObject* basis_obj, int32_t depth) noexcept
 {
     PyObjHandle degree_begin;
     if (PyObject_HasAttrString(basis_obj, "degree_begin")) {
-        degree_begin = PyObject_GetAttrString(basis_obj, "degree_begin");
+        // PyObject_GetAttrString returns a new reference to the attribute
+        degree_begin.reset(PyObject_GetAttrString(basis_obj, "degree_begin"), false);
 
         if (!PyArray_Check(degree_begin.obj())) {
             return PyObjHandle();
@@ -135,7 +127,85 @@ PyObjHandle rpy::compute::to_basis(PyObject* basis_obj, TensorBasis& basis)
     return degree_begin;
 }
 
-PyObjHandle rpy::compute::to_basis(PyObject* basis_obj, LieBasis& basis)
+LieBasisArrayHolder rpy::compute::to_basis(PyObject* basis_obj, LieBasis& basis)
 {
-    return PyObjHandle();
+    if (basis_obj == nullptr) {
+        PyErr_SetString(PyExc_ValueError, "basis object is null");
+        return {};
+    }
+
+    if (!width_and_depth_from_obj(basis_obj, basis.width, basis.depth)) {
+        return {};
+    }
+
+    LieBasisArrayHolder array_holder;
+    /*
+     * The main challenge here is unpacking the Lie basis data to a numpy array.
+     * If there is no data attribute then it is not a valid basis object. Unlike
+     * the tensor basis, we cannot just fill in the gaps by ourselves because
+     * the nature of the basis might not be the standard one that we provide.
+     */
+    PyObject* data_obj = PyObject_GetAttrString(basis_obj, "data");
+    if (data_obj == nullptr) { return {}; }
+
+    /*
+     * Let's make sure the data we do get is contiguous and of the correct shape
+     * otherwise we're wasting our time.
+     */
+    PyArray_Descr* intp_descr = PyArray_DescrFromType(NPY_INTP);
+    Py_INCREF(intp_descr);
+    array_holder.data = reinterpret_cast<PyArrayObject*>(PyArray_FromAny(
+            data_obj,
+            intp_descr,
+            2,
+            2,
+            NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED,
+            nullptr
+    ));
+    Py_DECREF(data_obj);
+
+    if (array_holder.data == nullptr) {
+        Py_DECREF(intp_descr);
+        return {};
+    }
+
+    const npy_intp* data_shape = PyArray_SHAPE(array_holder.data);
+    if (data_shape[1] != 2) {
+        PyErr_SetString(PyExc_ValueError, "data array must have shape (n, 2)");
+        Py_DECREF(intp_descr);
+        return {};
+    }
+    basis.data = static_cast<const npy_intp*>(PyArray_DATA(array_holder.data));
+
+    PyObject* degree_begin_obj = PyObject_GetAttrString(basis_obj, "degree_begin");
+    if (degree_begin_obj == nullptr) {
+        Py_DECREF(intp_descr);
+        return {};
+    }
+
+    array_holder.degree_begin = reinterpret_cast<PyArrayObject*>(PyArray_FromAny(
+                    degree_begin_obj,
+                    intp_descr,
+                    1,
+                    1,
+                    NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_ALIGNED,
+                    nullptr
+            ));
+    Py_DECREF(degree_begin_obj);
+    // At this point we have had intp_descr stolen twice, so it is no longer valid
+    intp_descr = nullptr;
+
+    if (array_holder.degree_begin == nullptr) {
+        return {};
+    }
+
+    if (PyArray_SHAPE(array_holder.degree_begin)[0] < basis.depth + 1) {
+        PyErr_SetString(PyExc_ValueError,
+            "degree_begin array must have at least depth + 1 elements");
+        return {};
+    }
+
+    basis.degree_begin = static_cast<const npy_intp*>(PyArray_DATA(array_holder.degree_begin));
+
+    return array_holder;
 }

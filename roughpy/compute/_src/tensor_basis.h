@@ -23,6 +23,8 @@ extern PyTypeObject PyTensorBasis_Type;
 int init_tensor_basis(PyObject* module);
 
 
+PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth);
+
 #ifdef __cplusplus
 }
 #endif

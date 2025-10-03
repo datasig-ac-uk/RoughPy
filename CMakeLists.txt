@@ -91,7 +91,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # I don't think we have any pure C anywhere, but we set the standard anyway
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # TODO: Handle these more delicately.
@@ -254,6 +254,8 @@ add_library(RoughPy_Compute INTERFACE
         roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp
         roughpy_compute/dense/intermediate/free_tensor_log.hpp
         roughpy_compute/dense/views.hpp
+        roughpy_compute/common/lie_to_tensor.hpp
+        roughpy_compute/common/scalars.hpp
 )
 target_include_directories(RoughPy_Compute INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)

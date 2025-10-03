@@ -57,7 +57,34 @@ class TensorBasis(_internals.TensorBasis):
 
 @_api("1.0.0")
 class LieBasis(_internals.LieBasis):
+    """
+    An instance of a Hall basis for the Lie algebra.
+
+    A Hall basis is indexed by integer keys k > 0. To each key there is an
+    associated pair of parents (a, b) where a and b are both keys belonging
+    to the Hall basis. The exceptions are the "letters", which are those keys
+    k for which the parents are (0, k). For convenience, we usually add a null
+    element to the basis at key 0 and with parents (0, 0), which serves to
+    offset elements correctly. However, this is not a valid key for the vectors
+    and thus the key to index map subtracts 1 from the key to obtain the
+    position in the vector.
+
+    The default constructor requires only width and depth and constructs a
+    Hall set greedily, minimizing the degree of the left parent. For instance,
+    for width 2 and depth 4, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
+    3 -> (1, 2) (which represents the bracket [1,2]), 4 -> (1, 3) ([1,[1,2]]),
+    and 5 -> (2, 3) ([2,[1,2]]).
+
+    This implementation is designed to be flexible as to the exact contents of
+    the Hall set, provided it is given in the format described above. The basis
+    must also be ordered by degree, so elements of degree k must appear
+    sequentially and between elements of degree k - 1 and degree k + 1 (if such
+    elements exist).
+    """
     pass
+
+
+SparseMatrix = _api("1.0.0")(_internals.SparseMatrix)
 
 
 @_api("1.0.0")
@@ -179,16 +206,7 @@ def st_inplace_mul(*args, **kwargs):
     ...
 
 
-def lie_to_tensor(*args, **kwargs):
-    ...
-
-
-def tensor_to_lie(*args, **kwargs):
-    ...
-
-
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
-
     """
     Exponential of a free tensor.
 
@@ -268,7 +286,6 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     return FreeTensor(result, out_basis)
 
 
-
 @_api("1.0.0")
 def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
     """
@@ -294,3 +311,39 @@ def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
 
     return ShuffleTensor(result, arg.basis)
 
+
+@_api("1.0.0")
+def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
+    """
+    Compute the embedding of a Lie algebra element as a free tensor.
+
+    :param arg: Lie to embed into the tensor algebra
+    :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
+    :return: new FreeTensor containing the embedding of "arg"
+    """
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+
+    result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
+    _internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return FreeTensor(result, tensor_basis)
+
+
+@_api("1.0.0")
+def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
+    """
+    Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
+
+    :param arg:
+    :param lie_basis:
+    :return:
+    """
+    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
+
+    result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
+    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return Lie(result, lie_basis)

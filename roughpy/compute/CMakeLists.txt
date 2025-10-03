@@ -26,11 +26,16 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/dense_intermediate.h
         _src/lie_basis.c
         _src/lie_basis.h
+        _src/lie_multiplication_cache.cpp
+        _src/lie_multiplication_cache.h
         _src/py_binary_array_fn.hpp
         _src/py_headers.h
         _src/py_obj_handle.hpp
         _src/py_ternary_array_fn.hpp
         _src/roughpy_compute_module.c
+        _src/sparse_matrix.c
+        _src/sparse_matrix.h
         _src/tensor_basis.c
         _src/tensor_basis.h
 )
+

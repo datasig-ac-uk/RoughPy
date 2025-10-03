@@ -5,7 +5,6 @@
 #include <Python.h>
 
 
-
 #define NPY_NO_DEPRECATED_API NPY_2_0_API_VERSION
 #ifndef NPY_IMPORT_THE_APIS_PLEASE
 #define NO_IMPORT_ARRAY
@@ -32,6 +31,9 @@
 
 
 #define RPY_CPT_TYPE_NAME(type) "_rpy_compute_internals." # type
+
+
+
 
 
 #endif //ROUGHPY_COMPUTE__SRC_PY_HEADERS_H
