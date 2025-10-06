@@ -1,62 +1,16 @@
+#ifndef ROUGHPY_COMPUTE_DENSE_BASIC_SHUFFLE_TENSOR_PRODUCT_HPP
+#define ROUGHPY_COMPUTE_DENSE_BASIC_SHUFFLE_TENSOR_PRODUCT_HPP
 
 #include <algorithm>
-#include <type_traits>
 
 #include "roughpy_compute/common/basis.hpp"
+#include "roughpy_compute/common/bitmask.hpp"
 #include "roughpy_compute/common/cache_array.hpp"
 #include "roughpy_compute/common/operations.hpp"
 #include "roughpy_compute/dense/views.hpp"
 
 namespace rpy::compute::basic {
 inline namespace v1 {
-
-namespace dtl {
-
-template <typename Int>
-class BitMask
-{
-    using UInt = std::make_unsigned_t<Int>;
-    UInt base_ = 0;
-
-    constexpr BitMask() = default;
-
-    constexpr explicit BitMask(int n_bits)
-        : base_((UInt{1} << n_bits) - UInt{1})
-    {}
-
-    constexpr UInt operator[](int idx) const noexcept
-    {
-        assert(idx < 8 * sizeof(UInt));
-        return (base_ >> idx) & UInt{1};
-    }
-
-    constexpr BitMask& operator++() noexcept
-    {
-        ++base_;
-        return *this;
-    }
-
-    constexpr BitMask operator++(int) noexcept
-    {
-        BitMask tmp = *this;
-        ++(*this);
-        return tmp;
-    }
-
-    friend constexpr bool
-    operator<(const BitMask& lhs, const BitMask& rhs) noexcept
-    {
-        return lhs.base_ < rhs.base_;
-    }
-
-    friend constexpr bool
-    operator==(const BitMask& lhs, const BitMask& rhs) noexcept
-    {
-        return lhs.base_ == rhs.base_;
-    }
-};
-
-}// namespace dtl
 
 template <
         typename OutIter,
@@ -73,7 +27,7 @@ void st_fma(
     using Scalar = typename DenseTensorView<OutIter>::Scalar;
     using Degree = typename DenseTensorView<OutIter>::Degree;
     using Index = typename DenseTensorView<OutIter>::Index;
-    using Mask = dtl::BitMask<Index>;
+    using Mask = BitMask<Index>;
 
     const Index width = out.width();
     const Index tile_size = width;
@@ -140,3 +94,5 @@ void st_fma(
 
 }// namespace v1
 }// namespace rpy::compute::basic
+
+#endif // ROUGHPY_COMPUTE_DENSE_BASIC_SHUFFLE_TENSOR_PRODUCT_HPP
