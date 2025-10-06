@@ -45,6 +45,12 @@ public:
     }
 
     friend constexpr bool
+    operator<=(const BitMask& lhs, const BitMask& rhs) noexcept
+    {
+        return lhs.base_ <= rhs.base_;
+    }
+
+    friend constexpr bool
     operator==(const BitMask& lhs, const BitMask& rhs) noexcept
     {
         return lhs.base_ == rhs.base_;
