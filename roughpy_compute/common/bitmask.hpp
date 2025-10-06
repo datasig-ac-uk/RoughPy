@@ -12,6 +12,7 @@ class BitMask
     using UInt = std::make_unsigned_t<Int>;
     UInt base_ = 0;
 
+public:
     constexpr BitMask() = default;
 
     constexpr explicit BitMask(int n_bits)
