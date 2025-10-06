@@ -436,15 +436,101 @@ PyObject* py_dense_ft_adj_lmul(
     );
 }
 
-PyObject* py_dense_st_fma(PyObject*, PyObject*, PyObject*)
+/*******************************************************************************
+ * Lie to tensor
+ ******************************************************************************/
+
+namespace {
+
+template <typename S>
+struct DenseSTFma
 {
-    Py_RETURN_NOTIMPLEMENTED;
+    using Scalar = S;
+    static constexpr npy_intp CoreDims = 1;
+    static constexpr npy_intp n_args = 3;
+    static constexpr npy_intp arg_basis_mapping[3] = {0, 0, 0};
+
+    const CallConfig* config_;
+
+    explicit DenseSTFma(CallConfig const& config) : config_(&config) {}
+
+    template <typename OutIter, typename LhsIter, typename RhsIter>
+    void operator()(OutIter out_iter, LhsIter lhs_iter, RhsIter rhs_iter)
+    {
+        auto const* tensor_basis
+                = static_cast<const TensorBasis *>(config_->basis_data[0]);
+
+
+        DenseTensorView<OutIter> out_view(
+            out_iter,
+            *tensor_basis,
+            config_->degree_bounds[0].min_degree,
+            config_->degree_bounds[0].max_degree
+            );
+
+        DenseTensorView<LhsIter> lhs_view(
+            lhs_iter, *tensor_basis,
+            config_->degree_bounds[1].min_degree,
+            config_->degree_bounds[1].max_degree
+            );
+
+        DenseTensorView<RhsIter> rhs_view(
+            rhs_iter, *tensor_basis,
+            config_->degree_bounds[2].min_degree,
+            config_->degree_bounds[2].max_degree
+        );
+
+        basic::st_fma(out_view, lhs_view, rhs_view);
+    }
+};
+
 }
 
-PyObject* py_dense_st_inplace_mul(PyObject*, PyObject*, PyObject*)
+PyObject* py_dense_st_fma(PyObject* Py_UNUSED(self), PyObject* args, PyObject* kwargs)
 {
-    Py_RETURN_NOTIMPLEMENTED;
+    static constexpr char const* const kwords[] = {
+        "out", "lhs", "rhs", "basis", nullptr
+    };
+
+    PyObject* out_obj, *lhs_obj, *rhs_obj;
+    PyObject* basis_obj = nullptr;
+
+    std::array<DegreeBounds, 3> degree_bounds;
+
+    if (!PyArg_ParseTupleAndKeywords(
+        args, kwargs,
+        "OOOO",
+        kwords,
+        &out_obj,
+        &lhs_obj,
+        &rhs_obj,
+        &basis_obj
+        )) {
+        return nullptr;
+    }
+
+    const BasisBase* basis_data[1];
+
+    TensorBasis basis;
+    const auto degree_begin_handle = to_basis(basis_obj, basis);
+
+    if (!degree_begin_handle) {
+        // error already set
+        return nullptr;
+    }
+
+    basis_data[0] = &basis;
+
+    CallConfig config {
+        degree_bounds.data(),
+        basis_data,
+        nullptr
+    };
+
+    return ternary_function_outer<DenseSTFma>(out_obj, lhs_obj, rhs_obj, config);
 }
+
+
 
 /*******************************************************************************
  * Lie to tensor
