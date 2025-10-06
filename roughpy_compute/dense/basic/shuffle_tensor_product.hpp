@@ -61,6 +61,8 @@ void st_fma(
                 TensorBasis::pack_masked_index(
                         letters.data(),
                         out_deg - 2,
+                        width,
+                        mask,
                         lhs_degree,
                         lhs_idx,
                         rhs_degree,
