@@ -225,7 +225,7 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
     _check_basis_compat(lhs.basis, rhs.basis)
 
     result_data = np.zeros_like(lhs.data)
-    _internals.dense_st_fma(result_data, lhs.data, lhs.basis)
+    _internals.dense_st_fma(result_data, lhs.data, rhs.data, lhs.basis)
 
     return ShuffleTensor(result_data, lhs.basis)
 
