@@ -36,7 +36,7 @@ void st_fma(
     CacheArray<int16_t, 32> letters(out.max_degree());
 
     out[0] += op(lhs[0] * rhs[0]);
-    Index out_size = 1;
+    Index out_size = width;
 
     for (Degree out_deg = 1; out_deg <= lhs.max_degree(); ++out_deg) {
         auto out_level = out.at_level(out_deg);
@@ -45,14 +45,14 @@ void st_fma(
             // unpack the outer letters
             TensorBasis::unpack_index_to_letters(
                     letters.data(),
-                    out_deg - 1,
+                    out_deg,
                     i,
                     width
             );
 
             Scalar acc{0};
 
-            for (Mask mask{}; mask < Mask(out_deg - 1); ++mask) {
+            for (Mask mask{}; mask <= Mask(out_deg); ++mask) {
                 Index lhs_idx = 0;
                 Degree lhs_degree = 0;
                 Index rhs_idx = 0;
@@ -60,7 +60,7 @@ void st_fma(
 
                 TensorBasis::pack_masked_index(
                         letters.data(),
-                        out_deg - 2,
+                        out_deg-1,
                         width,
                         mask,
                         lhs_degree,
