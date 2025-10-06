@@ -35,7 +35,7 @@ void st_fma(
     CacheArray<int16_t, 32> letters(out.max_degree());
     CacheArray<Scalar, 8> tile(tile_size);
 
-    out[0] += lhs[0] * rhs[0];
+    out[0] += op(lhs[0] * rhs[0]);
     Index out_size = 1;
 
     for (Degree out_deg = 1; out_deg <= lhs.max_degree(); ++out_deg) {
@@ -75,10 +75,10 @@ void st_fma(
                 auto rhs_p1_level = rhs.at_level(rhs_degree + 1);
 
                 for (Index j = 0; j < width; ++j) {
-                    tile[j] += lhs_level[lhs_idx]
-                            * rhs_p1_level[rhs_idx * width + j];
-                    tile[j] += lhs_p1_level[lhs_idx * width + j]
-                            * rhs_level[rhs_idx];
+                    tile[j] += op(lhs_level[lhs_idx]
+                            * rhs_p1_level[rhs_idx * width + j]);
+                    tile[j] += op(lhs_p1_level[lhs_idx * width + j]
+                            * rhs_level[rhs_idx]);
                 }
             }
 
