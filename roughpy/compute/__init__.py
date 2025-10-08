@@ -198,12 +198,36 @@ def antipode(a: FreeTensor, **kwargs) -> FreeTensor:
     return FreeTensor(result, a.basis)
 
 
-def st_fma(*args, **kwargs):
-    ...
+def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
+    """
+    Shuffle tensor fused multiply-add
+
+    :param a: input and first operand
+    :param b: left-hand operand
+    :param c: right-hand operand
+    :return:
+    """
+    _check_basis_compat(a.basis, b.basis, c.basis)
+
+    _internals.dense_st_fma(a.data, b.data, c.data, a.basis)
+
+    return a
 
 
-def st_inplace_mul(*args, **kwargs):
-    ...
+def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
+    """
+    Shuffle tensor product.
+
+    :param lhs: left-hand operand
+    :param rhs: right-hand operand
+    :return: the shuffle product of lhs and rhs
+    """
+    _check_basis_compat(lhs.basis, rhs.basis)
+
+    result_data = np.zeros_like(lhs.data)
+    _internals.dense_st_fma(result_data, lhs.data, rhs.data, lhs.basis)
+
+    return ShuffleTensor(result_data, lhs.basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:

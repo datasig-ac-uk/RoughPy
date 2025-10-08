@@ -23,8 +23,6 @@ PyObject* py_dense_ft_adj_lmul(PyObject*, PyObject*, PyObject*);
 
 RPY_NO_EXPORT
 PyObject* py_dense_st_fma(PyObject* , PyObject* , PyObject* );
-RPY_NO_EXPORT
-PyObject* py_dense_st_inplace_mul(PyObject* , PyObject* , PyObject* );
 
 
 RPY_NO_EXPORT
