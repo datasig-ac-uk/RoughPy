@@ -11,6 +11,12 @@
 
 namespace rpy::compute::basic {
 inline namespace v1 {
+/*
+ * The version 1 implementation is a straightforward, untiled algorithm. This takes each
+ * output index, breaks into letters and reshuffles them according to a bitmask to obtain
+ * all the contributors to the coefficient of that output scalar. This is written to the
+ * output.
+ */
 
 template <
         typename OutIter,
@@ -84,6 +90,14 @@ void st_fma(
 }// namespace v1
 
 namespace v2 {
+/*
+ * The version 2 implementation uses a single letter tiling on the right (fastest changing index) to
+ * group computations. This means we reduce the number of index decompositions and reshufflings that
+ * must be performed by a factor of w. More importantly, we improve the cache locality of all
+ * accesses by gathering blocks of data instead of single elements.
+ *
+ * This implementation is originally due to Mike Giles.
+ */
 
 template <
         typename OutIter,
