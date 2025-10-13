@@ -1,10 +1,9 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "sparse_matrix.h"
 
-
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
 
 
 
@@ -13,12 +12,11 @@
 
 #define SMH_FLAGS_FORMAT_MASK 0x7;
 
-
-
 static PyObject* sparse_matrix_new(
-    PyTypeObject* type,
-    PyObject* Py_UNUSED(args),
-    PyObject* Py_UNUSED(kwargs))
+        PyTypeObject* type,
+        PyObject* Py_UNUSED(args),
+        PyObject* Py_UNUSED(kwargs)
+)
 {
     PySparseMatrix* self = (PySparseMatrix*) type->tp_alloc(type, 0);
     if (!self) { return NULL; }
@@ -35,7 +33,6 @@ static PyObject* sparse_matrix_new(
     return (PyObject*) self;
 }
 
-
 static void sparse_matrix_dealloc(PySparseMatrix* self)
 {
     Py_XDECREF(self->data);
@@ -44,10 +41,8 @@ static void sparse_matrix_dealloc(PySparseMatrix* self)
     Py_TYPE(self)->tp_free((PyObject*) self);
 }
 
-
-static int sparse_matrix_init(PySparseMatrix* self,
-                              PyObject* args,
-                              PyObject* kwargs)
+static int
+sparse_matrix_init(PySparseMatrix* self, PyObject* args, PyObject* kwargs)
 {
     static char* kwords[] = {"data", "indices", "indptr", "rows", "cols", NULL};
     PyObject* data = NULL;
@@ -56,15 +51,19 @@ static int sparse_matrix_init(PySparseMatrix* self,
     int rows = 0;
     int cols = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args,
-                                     kwargs,
-                                     "OOOii",
-                                     kwords,
-                                     &data,
-                                     &indices,
-                                     &indptr,
-                                     &rows,
-                                     &cols)) { return -1; }
+    if (!PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "OOOii",
+                kwords,
+                &data,
+                &indices,
+                &indptr,
+                &rows,
+                &cols
+        )) {
+        return -1;
+    }
 
     Py_INCREF(data);
     Py_SETREF(self->data, data);
@@ -77,7 +76,6 @@ static int sparse_matrix_init(PySparseMatrix* self,
 
     return 0;
 }
-
 
 PyMemberDef PySparseMatrix_members[] = {
         {"data", Py_T_OBJECT_EX, offsetof(PySparseMatrix, data), 0, "data"},
@@ -113,63 +111,69 @@ static PyObject* get_dtype(PyObject* obj)
     return dtype;
 }
 
-static PyObject* get_ndim(PyObject* obj)
-{
-    return PyLong_FromLong(2);
-}
+static PyObject* get_ndim(PyObject* obj) { return PyLong_FromLong(2); }
 
 static PyObject* get_format(PyObject* obj)
 {
     PySparseMatrix* self = (PySparseMatrix*) obj;
     switch (self->format) {
-        case SM_CSC:
-            return PyUnicode_FromString("csc");
-        case SM_CSR:
-            return PyUnicode_FromString("csr");
+        case SM_CSC: return PyUnicode_FromString("csc");
+        case SM_CSR: return PyUnicode_FromString("csr");
     }
     PyErr_SetString(PyExc_ValueError, "unknown format");
     return NULL;
 }
 
-
 PyGetSetDef PySparseMatrix_getsets[] = {
-    {"shape", (getter) get_shape, NULL, "the shape of the matrix", NULL},
-    {"nnz", (getter) get_nnz, NULL, "the number of non-zero entries in the matrix", NULL},
-    {"dtype", (getter) get_dtype, NULL, "the dtype of the matrix", NULL},
-    {"ndim", (getter) get_ndim, NULL, "the ndim of the matrix, is always 2", NULL},
-    {"format", (getter) get_format, NULL, "the format of the matrix, either 'csc' or 'csr'", NULL},
-    {NULL}
+        {"shape", (getter) get_shape, NULL, "the shape of the matrix", NULL},
+        {"nnz",
+         (getter) get_nnz,
+         NULL, "the number of non-zero entries in the matrix",
+         NULL},
+        {"dtype", (getter) get_dtype, NULL, "the dtype of the matrix", NULL},
+        {"ndim",
+         (getter) get_ndim,
+         NULL, "the ndim of the matrix, is always 2",
+         NULL},
+        {"format",
+         (getter) get_format,
+         NULL, "the format of the matrix, either 'csc' or 'csr'",
+         NULL},
+        {NULL}
 };
 
 PyMethodDef PySparseMatrix_methods[] = {
-    {"getformat", (PyCFunction) get_format, METH_O, "get the string representation of the matrix format"},
-    {NULL}
+        {"getformat",
+         (PyCFunction) get_format,
+         METH_O, "get the string representation of the matrix format"},
+        {NULL}
 };
 
-PyTypeObject PySparseMatrix_Type = {
-        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(SparseMatrix),
-        .tp_basicsize = sizeof(PySparseMatrix),
-        .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "SparseMatrix",
-        .tp_new = (newfunc) sparse_matrix_new,
-        .tp_dealloc = (destructor) sparse_matrix_dealloc,
-        .tp_init = (initproc) sparse_matrix_init,
-        .tp_getset = PySparseMatrix_getsets,
-    .tp_members = PySparseMatrix_members,
-    .tp_methods = PySparseMatrix_methods
-};
+PyTypeObject PySparseMatrix_Type
+        = {.ob_base = PyVarObject_HEAD_INIT(NULL, 0).tp_name
+           = RPY_CPT_TYPE_NAME(SparseMatrix),
+           .tp_basicsize = sizeof(PySparseMatrix),
+           .tp_itemsize = 0,
+           .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+           .tp_doc = "SparseMatrix",
+           .tp_new = (newfunc) sparse_matrix_new,
+           .tp_dealloc = (destructor) sparse_matrix_dealloc,
+           .tp_init = (initproc) sparse_matrix_init,
+           .tp_getset = PySparseMatrix_getsets,
+           .tp_members = PySparseMatrix_members,
+           .tp_methods = PySparseMatrix_methods};
 
-PyObject* py_sparse_matrix_from_components(PyObject* data,
-    PyObject* indices,
-    PyObject* indptr,
-    npy_intp nrows,
-    npy_intp ncols)
+PyObject* py_sparse_matrix_from_components(
+        PyObject* data,
+        PyObject* indices,
+        PyObject* indptr,
+        npy_intp nrows,
+        npy_intp ncols
+)
 {
-    PySparseMatrix* self = (PySparseMatrix*) PySparseMatrix_Type.tp_alloc(
-        &PySparseMatrix_Type,
-        0);
+    PySparseMatrix* self
+            = (PySparseMatrix*)
+                      PySparseMatrix_Type.tp_alloc(&PySparseMatrix_Type, 0);
     if (!self) {
         Py_XDECREF(data);
         Py_XDECREF(indices);
@@ -196,19 +200,14 @@ int init_sparse_matrix(PyObject* module)
     return 0;
 }
 
-
-
-
 /*
  * Helper functions
  */
-
 
 enum SMHFlags
 {
     SMH_FINAL = 8,
 };
-
 
 static inline void set_indptr(SMHelper* helper, npy_intp index, npy_intp val)
 {
@@ -216,15 +215,14 @@ static inline void set_indptr(SMHelper* helper, npy_intp index, npy_intp val)
     *ptr = val;
 }
 
-
-
-int smh_init(SMHelper* helper,
-    PyArray_Descr* dtype,
-    npy_intp nrows,
-    npy_intp ncols,
-    npy_intp nnz_est,
-    int format
-    )
+int smh_init(
+        SMHelper* helper,
+        PyArray_Descr* dtype,
+        npy_intp nrows,
+        npy_intp ncols,
+        npy_intp nnz_est,
+        int format
+)
 {
     if (format != SM_CSC && format != SM_CSR) {
         PyErr_SetString(PyExc_ValueError, "Invalid format");
@@ -232,9 +230,7 @@ int smh_init(SMHelper* helper,
     }
 
     npy_intp alloc = format == SM_CSC ? ncols : nrows;
-    if (nnz_est < 0) {
-        nnz_est = alloc;
-    }
+    if (nnz_est < 0) { nnz_est = alloc; }
 
     void* ptr = PyMem_Malloc(alloc * sizeof(SMHFrame));
     if (ptr == NULL) {
@@ -242,9 +238,9 @@ int smh_init(SMHelper* helper,
         return -1;
     }
 
-
     npy_intp indptr_size = alloc + 1;
-    PyArrayObject* indptr = (PyArrayObject*) PyArray_SimpleNew(1, &indptr_size, NPY_INTP);
+    PyArrayObject* indptr
+            = (PyArrayObject*) PyArray_SimpleNew(1, &indptr_size, NPY_INTP);
     if (indptr == NULL) {
         PyMem_Free(ptr);
         return -1;
@@ -252,14 +248,16 @@ int smh_init(SMHelper* helper,
 
     // the creation method steals a reference to dtype, so incref
     Py_INCREF(dtype);
-    PyArrayObject* data = (PyArrayObject*) PyArray_SimpleNewFromDescr(1, &nnz_est, dtype);
+    PyArrayObject* data
+            = (PyArrayObject*) PyArray_SimpleNewFromDescr(1, &nnz_est, dtype);
     if (data == NULL) {
         PyMem_Free(ptr);
         Py_DECREF(indptr);
         return -1;
     }
 
-    PyArrayObject* indices = (PyArrayObject*) PyArray_SimpleNew(1, &nnz_est, NPY_INTP);
+    PyArrayObject* indices
+            = (PyArrayObject*) PyArray_SimpleNew(1, &nnz_est, NPY_INTP);
     if (indices == NULL) {
         PyMem_Free(ptr);
         Py_DECREF(indptr);
@@ -290,13 +288,100 @@ void smh_free(SMHelper* helper)
     PyMem_Free(helper->frames);
 }
 
+static inline int is_zero(const void* value, int typenum)
+{
+    switch (typenum) {
+        case NPY_FLOAT: return *((const float*) value) == 0.0f;
+        case NPY_DOUBLE: return *((const double*) value) == 0.0;
+        case NPY_LONGDOUBLE:
+            return *((const long double*) value) == 0.0L;
+            // case NPY_HALF:
+            // return *((const npy_float16*) value) == 0.0f;
+    }
+    return 0;
+}
+
+static inline void assign(void* dst, const void* src, int typenum)
+{
+    switch (typenum) {
+        case NPY_FLOAT: *((float*) dst) = *((float*) src); break;
+        case NPY_DOUBLE: *((double*) dst) = *((double*) src); break;
+        case NPY_LONGDOUBLE:
+            *((long double*) dst) = *((long double*) src);
+            break;
+            // case NPY_HALF:
+            // *((npy_float16*) dst) = *((npy_float16*) src);
+            // break;
+    }
+}
+
+static inline void add_assign(void* dst, const void* src, int typenum)
+{
+    switch (typenum) {
+        case NPY_FLOAT: *((float*) dst) += *((float*) src); break;
+        case NPY_DOUBLE: *((double*) dst) += *((double*) src); break;
+        case NPY_LONGDOUBLE:
+            *((long double*) dst) += *((long double*) src);
+            break;
+        case NPY_HALF: *((npy_float16*) dst) += *((npy_float16*) src); break;
+    }
+}
+//
+// void remove_value_at_pos(SMHFrame* frame, npy_intp pos, npy_intp itemsize)
+// {
+//     assert(pos >= 0 && pos < frame->size);
+//
+//     // Shift elements to fill the gap
+//     if (pos < frame->size - 1) {
+//         // Shift indices array
+//         memmove(&frame->indices[pos],
+//                 &frame->indices[pos + 1],
+//                 (frame->size - pos - 1) * sizeof(npy_intp));
+//
+//         // Shift data array
+//         memmove(frame->data + pos * itemsize,
+//                 frame->data + (pos + 1) * itemsize,
+//                 (frame->size - pos - 1) * itemsize);
+//     }
+//
+//     // Decrement the frame size
+//     --frame->size;
+// }
+
+void remove_zeros_from_frame(SMHFrame* frame, npy_intp itemsize, int typenum)
+{
+    if (frame->size <= 0) { return; }
+
+    // if earlier terms are zero, shuffle everything that follows down.
+    for (npy_intp i = 0; i < frame->size - 1; ++i) {
+        if (is_zero(&frame->data[i * itemsize], typenum)) {
+            memmove(&frame->indices[i],
+                    &frame->indices[i + 1],
+                    (frame->size - 1) * sizeof(npy_intp));
+
+            memmove(&frame->data[i * itemsize],
+                    &frame->data[(i + 1) * itemsize],
+                    (frame->size - 1) * itemsize);
+
+            --frame->size;
+        }
+    }
+
+    // if the last entry is zero, just forget it
+    if (is_zero(&frame->data[(frame->size - 1)*itemsize], typenum)) {
+        --frame->size;
+    }
+}
+
 int smh_insert_frame(SMHelper* helper)
 {
     char* data_ptr;
     npy_intp* indices_ptr;
     if (helper->size == helper->alloc) {
-        PyErr_SetString(PyExc_RuntimeError,
-            "Internal error building sparse matrix; too many frames");
+        PyErr_SetString(
+                PyExc_RuntimeError,
+                "Internal error building sparse matrix; too many frames"
+        );
         return -1;
     }
 
@@ -307,8 +392,13 @@ int smh_insert_frame(SMHelper* helper)
     } else {
         // Adding a new frame on top existing stack, use previous frame
         // to get data and indices_ptrs
+        const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
+        const int typenum = PyArray_TYPE(helper->data);
+
         SMHFrame* prev_frame = smh_current_frame(helper);
-        data_ptr = prev_frame->data + prev_frame->size * PyArray_ITEMSIZE(helper->data);
+        remove_zeros_from_frame(prev_frame, itemsize, typenum);
+
+        data_ptr = prev_frame->data + prev_frame->size * itemsize;
         indices_ptr = prev_frame->indices + prev_frame->size;
 
         // increase the nnz
@@ -330,30 +420,23 @@ int smh_insert_frame(SMHelper* helper)
 
 static int smh_resize(SMHelper* helper, npy_intp new_size)
 {
-    PyArray_Dims newshape = {
-        &new_size,
-        1
-    };
+    PyArray_Dims newshape = {&new_size, 1};
 
     // resize returns None on success, so we have to decref on success
     // the array is resized inplace.
     PyObject* result = PyArray_Resize(helper->data, &newshape, 0, NPY_CORDER);
-    if (result == NULL) {
-        return -1;
-    }
+    if (result == NULL) { return -1; }
     Py_DECREF(result);
 
     result = PyArray_Resize(helper->indices, &newshape, 0, NPY_CORDER);
-    if (result == NULL) {
-        return -1;
-    }
+    if (result == NULL) { return -1; }
     Py_DECREF(result);
 
     // We need to adjust all the fames to point to the new data structures
     const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
-    char *data_ptr = PyArray_BYTES(helper->data);
-    npy_intp *indices_ptr = PyArray_DATA(helper->indices);
-    for (npy_intp i=0; i<helper->size; ++i) {
+    char* data_ptr = PyArray_BYTES(helper->data);
+    npy_intp* indices_ptr = PyArray_DATA(helper->indices);
+    for (npy_intp i = 0; i < helper->size; ++i) {
         SMHFrame* frame = &helper->frames[i];
         frame->data = data_ptr;
         frame->indices = indices_ptr;
@@ -365,71 +448,18 @@ static int smh_resize(SMHelper* helper, npy_intp new_size)
     return 0;
 }
 
-static inline int is_zero(const void* value, int typenum)
-{
-    switch (typenum) {
-        case NPY_FLOAT:
-            return *((const float*) value) == 0.0f;
-        case NPY_DOUBLE:
-            return *((const double*) value) == 0.0;
-        case NPY_LONGDOUBLE:
-            return *((const long double*) value) == 0.0L;
-        // case NPY_HALF:
-            // return *((const npy_float16*) value) == 0.0f;
-    }
-    return 0;
-}
-
-
-static inline void assign(void* dst, const void* src, int typenum)
-{
-    switch (typenum) {
-        case NPY_FLOAT:
-            *((float*) dst) = *((float*) src);
-            break;
-        case NPY_DOUBLE:
-            *((double*) dst) = *((double*) src);
-            break;
-        case NPY_LONGDOUBLE:
-            *((long double*) dst) = *((long double*) src);
-            break;
-        // case NPY_HALF:
-            // *((npy_float16*) dst) = *((npy_float16*) src);
-            // break;
-    }
-}
-
-static inline void add_assign(void* dst, const void* src, int typenum)
-{
-    switch (typenum) {
-        case NPY_FLOAT:
-            *((float*) dst) += *((float*) src);
-            break;
-        case NPY_DOUBLE:
-            *((double*) dst) += *((double*) src);
-            break;
-        case NPY_LONGDOUBLE:
-            *((long double*) dst) += *((long double*) src);
-            break;
-        case NPY_HALF:
-            *((npy_float16*) dst) += *((npy_float16*) src);
-            break;
-    }
-}
-
-
-int smh_insert_value_at_index(SMHelper* helper, npy_intp index, const void* value)
+int smh_insert_value_at_index(
+        SMHelper* helper,
+        npy_intp index,
+        const void* value
+)
 {
     const int typenum = PyArray_TYPE(helper->data);
 
-    if (is_zero(value, typenum)) {
-        return 0;
-    }
+    if (is_zero(value, typenum)) { return 0; }
 
     void* new_element_ptr = smh_get_scalar_for_index(helper, index);
-    if (new_element_ptr == NULL) {
-        return -1;
-    }
+    if (new_element_ptr == NULL) { return -1; }
 
     add_assign(new_element_ptr, value, typenum);
     return 0;
@@ -447,9 +477,7 @@ void* smh_get_scalar_for_index(SMHelper* helper, npy_intp index)
         npy_intp half = diff / 2;
         npy_intp mid_pos = pos + half;
         npy_intp mid = frame->indices[mid_pos];
-        if (index == mid) {
-            return frame->data + mid_pos * itemsize;
-        }
+        if (index == mid) { return frame->data + mid_pos * itemsize; }
 
         if (mid < index) {
             pos = mid_pos + 1;
@@ -476,7 +504,8 @@ void* smh_get_scalar_for_index(SMHelper* helper, npy_intp index)
 
     // Shift elements to make room
     if (pos < frame->size) {
-        memmove(&frame->indices[pos + 1], &frame->indices[pos],
+        memmove(&frame->indices[pos + 1],
+                &frame->indices[pos],
                 (frame->size - pos) * sizeof(npy_intp));
         memmove(frame->data + (pos + 1) * itemsize,
                 frame->data + pos * itemsize,
@@ -492,22 +521,25 @@ void* smh_get_scalar_for_index(SMHelper* helper, npy_intp index)
     return new_element_ptr;
 }
 
-
 static int smh_finalize(SMHelper* helper, int resize)
 {
-    if (helper->flags & SMH_FINAL) {
-        return 0;
-    }
+    if (helper->flags & SMH_FINAL) { return 0; }
 
     if (helper->size != helper->alloc) {
-        PyErr_SetString(PyExc_RuntimeError,
-            "internal error constructing sparse matrix;"
-            " final size differs from expected"
-            );
+        PyErr_SetString(
+                PyExc_RuntimeError,
+                "internal error constructing sparse matrix;"
+                " final size differs from expected"
+        );
         return -1;
     }
 
-    const SMHFrame* last_frame = smh_current_frame(helper);
+    SMHFrame* last_frame = smh_current_frame(helper);
+    remove_zeros_from_frame(
+            last_frame,
+            PyArray_ITEMSIZE(helper->data),
+            PyArray_TYPE(helper->data)
+    );
 
     // First we need to finalize the nnz count
     helper->nnz += last_frame->size;
@@ -517,9 +549,7 @@ static int smh_finalize(SMHelper* helper, int resize)
     set_indptr(helper, helper->size, helper->nnz);
 
     // trim the data and indices arrays to nnz
-    if (resize && smh_resize(helper, helper->nnz) < 0) {
-        return -1;
-    }
+    if (resize && smh_resize(helper, helper->nnz) < 0) { return -1; }
 
     helper->flags |= SMH_FINAL;
     return 0;
@@ -528,15 +558,13 @@ static int smh_finalize(SMHelper* helper, int resize)
 PyObject* smh_build_matrix(SMHelper* helper)
 {
     // finalize the construction
-    if (smh_finalize(helper, 1) < 0) {
-        return NULL;
-    }
+    if (smh_finalize(helper, 1) < 0) { return NULL; }
 
     // Now we allocate the new sparse matrix
-    PySparseMatrix* ret = (PySparseMatrix*) PySparseMatrix_Type.tp_alloc(&PySparseMatrix_Type, 0);
-    if (ret == NULL) {
-        return NULL;
-    }
+    PySparseMatrix* ret
+            = (PySparseMatrix*)
+                      PySparseMatrix_Type.tp_alloc(&PySparseMatrix_Type, 0);
+    if (ret == NULL) { return NULL; }
 
     // move the arrays over to the new spares matrix
     ret->data = (PyObject*) helper->data;
@@ -567,21 +595,21 @@ PyObject* smh_build_matrix(SMHelper* helper)
 //         goto finish;
 //     }
 //
-//     npy_intp new_outer_dim = (smh_is_csr(helper) ? helper->cols : helper->rows);
-//     npy_intp new_alloc = new_outer_dim + 1;
+//     npy_intp new_outer_dim = (smh_is_csr(helper) ? helper->cols :
+//     helper->rows); npy_intp new_alloc = new_outer_dim + 1;
 //
 //     new_indptr = (PyArrayObject*) PyArray_SimpleNew(1, &new_alloc, NPY_INTP);
 //     if (new_indptr == NULL) {
 //         goto finish;
 //     }
 //
-//     new_data = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz, PyArray_TYPE(helper->data));
-//     if (new_data == NULL) {
+//     new_data = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz,
+//     PyArray_TYPE(helper->data)); if (new_data == NULL) {
 //         goto finish;
 //     }
 //
-//     new_indices = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz, NPY_INTP);
-//     if (new_indices == NULL) {
+//     new_indices = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz,
+//     NPY_INTP); if (new_indices == NULL) {
 //         goto finish;
 //     }
 //
