@@ -355,13 +355,15 @@ void remove_zeros_from_frame(SMHFrame* frame, npy_intp itemsize, int typenum)
     // if earlier terms are zero, shuffle everything that follows down.
     for (npy_intp i = 0; i < frame->size - 1; ++i) {
         if (is_zero(&frame->data[i * itemsize], typenum)) {
+            const npy_intp remaining_elts = frame->size - i - 1;
+
             memmove(&frame->indices[i],
                     &frame->indices[i + 1],
-                    (frame->size - 1) * sizeof(npy_intp));
+                    remaining_elts * sizeof(npy_intp));
 
             memmove(&frame->data[i * itemsize],
                     &frame->data[(i + 1) * itemsize],
-                    (frame->size - 1) * itemsize);
+                    remaining_elts * itemsize);
 
             --frame->size;
         }
