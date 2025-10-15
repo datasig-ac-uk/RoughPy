@@ -40,6 +40,30 @@ static PyObject* lie_basis_repr(PyLieBasis* self);
 // PylieBasis methods
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
+static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
+{
+    const long arg = PyLong_AsLong(obj);
+
+    if (arg == -1 && PyErr_Occurred() != NULL) { return 0; }
+
+    int check = 0;
+
+    check |= arg == PLB_Major_Bourbaki;
+    check |= arg == PLB_Major_Reutenauer;
+
+    if (!check) {
+        PyErr_Format(
+                PyExc_ValueError,
+                "Lie basis definition indicator does not match a known "
+                "Hall set definition"
+        );
+        return 0;
+    }
+
+    *(PyLieBasis_Major*) result = check;
+
+    return 1;
+}
 
 /*******************************************************************************
  * Lie basis type
@@ -1192,6 +1216,7 @@ static int check_lie_data_standard_ordering(
         PyArrayObject* degree_begin_arr,
         int32_t width,
         int32_t depth,
+        PyLieBasis_Major major,
         char const** msg
 )
 {
@@ -1228,22 +1253,45 @@ static int check_lie_data_standard_ordering(
 
         for (npy_intp elt_idx = db_data[degree]; elt_idx < db_data[degree + 1];
              ++elt_idx) {
-            const npy_intp a = data[2 * elt_idx + 0];
-            const npy_intp bc = data[2 * elt_idx + 1];
 
-            if (a >= bc) {
-                LBC_SET_ERR(
-                        "elements h = (k, l) in the basis must satisfy k < l"
-                );
-                return 0;
-            }
+            if (major == PLB_Major_Bourbaki) {
 
-            const npy_intp b = data[2 * bc + 0];
-            // const npy_intp c = data[2 * bc + 1];
+                const npy_intp a = data[2 * elt_idx + 0];
+                const npy_intp bc = data[2 * elt_idx + 1];
 
-            if (b != 0 && (b > a || a >= bc)) {
-                LBC_SET_ERR("when h=[a,[b,c]] we must have b <= a < [b,c]");
-                return 0;
+                if (a >= bc) {
+                    LBC_SET_ERR(
+                            "elements h = [k,l] in the basis must satisfy k < l"
+                    );
+                    return 0;
+                }
+
+                const npy_intp b = data[2 * bc + 0];
+                // const npy_intp c = data[2 * bc + 1];
+
+                if (b != 0 && b > a) {
+                    LBC_SET_ERR("when h=[a,[b,c]] we must have b <= a < [b,c]");
+                    return 0;
+                }
+            } else if (major == PLB_Major_Reutenauer) {
+                const npy_intp xy = data[2 * elt_idx + 0];
+                const npy_intp c = data[2 * elt_idx + 1];
+
+                if (elt_idx >= c) {
+                    LBC_SET_ERR("with h=[k,l] we must have h < l");
+                    return 0;
+                }
+
+                const npy_intp x = data[2 * xy + 0];
+                const npy_intp y = data[2 * xy + 1];
+
+                // xy is a letter or xy = [x,y] and y >= c
+                if (x != 0 && (x >= y || y < c)) {
+                    LBC_SET_ERR(
+                            "when h=[[a,b],c] one must have x < y and b >= c"
+                    );
+                    return 0;
+                }
             }
         }
     }
@@ -1251,14 +1299,16 @@ static int check_lie_data_standard_ordering(
     return 1;
 }
 
+typedef int (*order_evaluator)(void*, npy_intp, npy_intp, PyArrayObject*, PyArrayObject*);
+
 /**
  * @brief Evaluate the total ordering on two Lie keys
  *
  * Returns true (1) if left <= right and false (0) otherwise. Returns -1 on
  * error, which should be propagated to the Python interpreter.
  */
-static int call_order_function(
-        PyObject* ordering,
+static int call_py_order_function(
+        void* ordering,
         npy_intp left,
         npy_intp right,
         PyArrayObject* data,
@@ -1266,7 +1316,7 @@ static int call_order_function(
 )
 {
     PyObject* result = PyObject_CallFunction(
-            ordering,
+            (PyObject*) ordering,
             "nnOO",
             left,
             right,
@@ -1290,7 +1340,9 @@ static int check_lie_data_custom_ordering(
         PyArrayObject* degree_begin_arr,
         int32_t width,
         int32_t depth,
-        PyObject* total_order,
+        void* total_order,
+        order_evaluator evaluate_order,
+        PyLieBasis_Major major,
         char const** msg
 )
 {
@@ -1327,44 +1379,11 @@ static int check_lie_data_custom_ordering(
 
         for (npy_intp elt_idx = db_data[degree]; elt_idx < db_data[degree + 1];
              ++elt_idx) {
-            const npy_intp a = data[2 * elt_idx + 0];
-            const npy_intp bc = data[2 * elt_idx + 1];
+            if (major == PLB_Major_Bourbaki) {
+                const npy_intp a = data[2 * elt_idx + 0];
+                const npy_intp bc = data[2 * elt_idx + 1];
 
-            const int a_le_bc = call_order_function(
-                    total_order,
-                    a,
-                    bc,
-                    data_arr,
-                    degree_begin_arr
-            );
-            if (a_le_bc < 0) {
-                // error already set
-                return -1;
-            }
-
-            if (!a_le_bc || a == bc) {
-                LBC_SET_ERR(
-                        "elements h = (k, l) in the basis must satisfy k < l"
-                );
-                return 0;
-            }
-
-            const npy_intp b = data[2 * bc + 0];
-            // const npy_intp c = data[2 * bc + 1];
-
-            if (b != 0) {
-                const int b_le_a = call_order_function(
-                        total_order,
-                        b,
-                        a,
-                        data_arr,
-                        degree_begin_arr
-                );
-                if (b_le_a < 0) {
-                    // error already set
-                    return -1;
-                }
-                const int a_le_bc = call_order_function(
+                const int a_le_bc = evaluate_order(
                         total_order,
                         a,
                         bc,
@@ -1376,9 +1395,83 @@ static int check_lie_data_custom_ordering(
                     return -1;
                 }
 
-                if (!b_le_a || !a_le_bc || a == bc) {
-                    LBC_SET_ERR("when h=[a,[b,c]] we must have b <= a < [b,c]");
+                if (!a_le_bc || a == bc) {
+                    LBC_SET_ERR(
+                            "elements h = (k, l) in the basis must satisfy k < "
+                            "l"
+                    );
                     return 0;
+                }
+
+                const npy_intp b = data[2 * bc + 0];
+                // const npy_intp c = data[2 * bc + 1];
+
+                if (b != 0) {
+                    const int b_le_a = evaluate_order(
+                            total_order,
+                            b,
+                            a,
+                            data_arr,
+                            degree_begin_arr
+                    );
+                    if (b_le_a < 0) {
+                        // error already set
+                        return -1;
+                    }
+
+                    if (!b_le_a) {
+                        LBC_SET_ERR(
+                                "when h=[a,[b,c]] we must have b <= a < [b,c]"
+                        );
+                        return 0;
+                    }
+                }
+            } else if (major == PLB_Major_Reutenauer) {
+                const npy_intp xy = data[2 * elt_idx + 0];
+                const npy_intp z = data[2 * elt_idx + 1];
+
+                const int h_le_z = evaluate_order(
+                        total_order,
+                        elt_idx,
+                        z,
+                        data_arr,
+                        degree_begin_arr
+                );
+
+                if (!h_le_z || elt_idx == z) {
+                    LBC_SET_ERR("when h=[k,l] we must have h < l");
+                    return 0;
+                }
+
+                const npy_intp x = data[2 * xy + 0];
+                const npy_intp y = data[2 * xy + 1];
+
+                if (x != 0) {
+                    const int x_le_y = evaluate_order(
+                            total_order,
+                            x,
+                            y,
+                            data_arr,
+                            degree_begin_arr
+                    );
+
+                    if (!x_le_y || x == y) {
+                        LBC_SET_ERR("when h=[[a,b],c] we must have x < y");
+                        return 0;
+                    }
+
+                    const int z_le_y = evaluate_order(
+                            total_order,
+                            z,
+                            y,
+                            data_arr,
+                            degree_begin_arr
+                    );
+
+                    if (!z_le_y) {
+                        LBC_SET_ERR("when h=[[a,b],c] we must have b >= c");
+                        return 0;
+                    }
                 }
             }
         }
@@ -1393,6 +1486,7 @@ int PyLieBasis_check_data_internal(
         int32_t width,
         int32_t depth,
         PyObject* total_order,
+        PyLieBasis_Major major,
         char const** msg
 )
 {
@@ -1402,6 +1496,7 @@ int PyLieBasis_check_data_internal(
                 degree_begin_arr,
                 width,
                 depth,
+                major,
                 msg
         );
     }
@@ -1417,10 +1512,11 @@ int PyLieBasis_check_data_internal(
             width,
             depth,
             total_order,
+            call_py_order_function,
+            major,
             msg
     );
 }
-
 PyObject* PyLieBasis_check_data(
         PyObject* Py_UNUSED(self),
         PyObject* args,
@@ -1433,6 +1529,7 @@ PyObject* PyLieBasis_check_data(
                "width",
                "depth",
                "total_order",
+               "basis_major",
                "raise_on_fail"};
 
     PyObject* ret = NULL;
@@ -1440,11 +1537,12 @@ PyObject* PyLieBasis_check_data(
     PyObject* total_order = NULL;
     int32_t width, depth;
     int throw_on_fail = 0;
+    PyLieBasis_Major major = PLB_Major_Bourbaki;
 
     if (!PyArg_ParseTupleAndKeywords(
                 args,
                 kwargs,
-                "O&O&ii|Op",
+                "O&O&ii|OO&p",
                 kwords,
                 PyArray_Converter,
                 &data,
@@ -1453,6 +1551,8 @@ PyObject* PyLieBasis_check_data(
                 &width,
                 &depth,
                 &total_order,
+                PyLIeBasis_Major_converter,
+                &major,
                 &throw_on_fail
         )) {
         goto finish;
@@ -1461,19 +1561,17 @@ PyObject* PyLieBasis_check_data(
     const char* message = NULL;
     char const** msg_arg = (throw_on_fail) ? &message : NULL;
 
-
     int internal_result = PyLieBasis_check_data_internal(
             data,
             degree_begin,
             width,
             depth,
             total_order,
+            major,
             msg_arg
     );
 
-    if (internal_result < 0) {
-        goto finish;
-    }
+    if (internal_result < 0) { goto finish; }
 
     if (throw_on_fail && !internal_result) {
         assert(message != NULL);
