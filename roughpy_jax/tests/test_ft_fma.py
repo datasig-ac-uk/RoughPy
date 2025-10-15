@@ -1,5 +1,26 @@
 import jax.numpy as jnp
+import pytest
 import roughpy_jax as rpj
+
+
+def test_dense_ft_fma_basis_mismatch():
+    zeros = jnp.zeros(100, dtype=jnp.float32)
+
+    # Mismatch first and second widths
+    with pytest.raises(ValueError):
+        rpj.dense_ft_fma(
+            rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2)),
+            rpj.FreeTensor(zeros, rpj.TensorBasis(3, 2)),
+            rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2))
+        )
+
+    # Mismatch first and third widths
+    with pytest.raises(ValueError):
+        rpj.dense_ft_fma(
+            rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2)),
+            rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2)),
+            rpj.FreeTensor(zeros, rpj.TensorBasis(3, 2))
+        )
 
 
 def test_dense_ft_fma():
@@ -16,7 +37,7 @@ def test_dense_ft_fma():
     d = rpj.dense_ft_fma(a, b, c)
 
     expected = jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=jnp.float32)
-    jnp.allclose(d, expected)
+    assert jnp.allclose(d, expected)
 
 
 def test_dense_ft_fma_compare_compute():
