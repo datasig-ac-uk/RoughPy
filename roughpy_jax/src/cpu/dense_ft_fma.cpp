@@ -37,7 +37,7 @@ std::pair<int64_t, int64_t> GetDims(const ffi::Buffer<T>& buffer)
 
 // FIXME This reworked/duplicate from roughpy/compute/_src/call_config.cpp, can
 // We reuse private CallConfig to centralise this behaviour?
-std::optional<ffi::Error> update_algebra_params(
+ffi::Error update_algebra_params(
     int width,
     int depth,
     int& out_min_degree,
@@ -69,7 +69,7 @@ std::optional<ffi::Error> update_algebra_params(
         return ffi::Error::InvalidArgument("out_min_degree must be less than out_max_degree");
     }
 
-    return std::nullopt;
+    return ffi::Error::Success();
 }
 
 ffi::Error cpu_dense_ft_fma_impl(
@@ -145,8 +145,9 @@ ffi::Error cpu_dense_ft_fma_impl(
         lhs_max_degree,
         rhs_max_degree
     );
-    if (depth_check_error.has_value()) {
-        return *depth_check_error;
+
+    if (depth_check_error.failure()) {
+        return depth_check_error;
     }
 
     // JAX array are immutable so rather than the ternary ft_fma call where the
