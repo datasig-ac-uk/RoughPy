@@ -10,20 +10,83 @@ extern "C" {
 #endif
 
 
-typedef struct _PyLieBasis
-{
-    PyObject_HEAD
-    int32_t width;
-    int32_t depth;
-    PyObject* degree_begin;
-    PyObject* data;
-} PyLieBasis;
+
+typedef union _LieWord {
+    npy_intp letters[2];
+    struct
+    {
+        npy_intp left;
+        npy_intp right;
+    };
+} LieWord;
+
+typedef struct _PyLieBasis PyLieBasis;
 
 
 extern PyTypeObject PyLieBasis_Type;
 
+/*
+ * At the moment, the Hall set we construct obeys the ordering where both
+ * left and right keys are kept in lexicographical order. In the future, we
+ * might want to allow other bases where this invariant is not satisfied. In
+ * that case, we either need a different total ordering on words such that
+ * basis->data is in order with respect to this ordering OR fall back to a
+ * linear search instead.
+ */
 
-int init_lie_basis(PyObject* module);
+// lexicographic order on words
+static inline int hall_word_less(const npy_intp* lhs, const npy_intp* rhs)
+{
+    return lhs[0] < rhs[0] || (lhs[0] == rhs[0] && lhs[1] < rhs[1]);
+}
+
+static inline int hall_word_equal(const npy_intp* lhs, const npy_intp* rhs)
+{
+    return lhs[0] == rhs[0] && lhs[1] == rhs[1];
+}
+
+PyObject *get_l2t_matrix(PyObject *basis, PyObject *dtype_obj);
+
+PyObject *get_t2l_matrix(PyObject *basis, PyObject *dtype_obj);
+
+static inline int PyLieBasis_Check(PyObject *obj) {
+    return PyObject_TypeCheck(obj, &PyLieBasis_Type);
+}
+
+RPY_NO_EXPORT
+int32_t PyLieBasis_width(PyLieBasis *basis);
+
+RPY_NO_EXPORT
+int32_t PyLieBasis_depth(PyLieBasis *basis);
+
+RPY_NO_EXPORT
+npy_intp PyLieBasis_size(PyLieBasis *basis);
+
+RPY_NO_EXPORT
+npy_intp PyLieBasis_true_size(PyLieBasis *basis);
+
+RPY_NO_EXPORT
+PyArrayObject *PyLieBasis_degree_begin(PyLieBasis *basis);
+
+RPY_NO_EXPORT
+PyArrayObject *PyLieBasis_data(PyLieBasis *basis);
+
+RPY_NO_EXPORT
+npy_intp PyLieBasis_find_word(PyLieBasis* basis, const LieWord* target, int32_t degree_hint);
+
+RPY_NO_EXPORT
+int PyLieBasis_get_parents(PyLieBasis* basis, npy_intp index, LieWord* out);
+
+RPY_NO_EXPORT
+int32_t PyLieBasis_degree(PyLieBasis *basis, npy_intp key);
+
+PyObject* PyLieBasis_key2str(PyLieBasis* basis, npy_intp key);
+
+PyObject* PyLieBasis_word2str(PyLieBasis* basis, const LieWord* word);
+
+PyObject* PyLieBasis_get(int32_t width, int32_t depth);
+
+int init_lie_basis(PyObject *module);
 
 #ifdef __cplusplus
 }

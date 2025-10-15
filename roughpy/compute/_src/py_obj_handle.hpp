@@ -7,60 +7,68 @@ namespace rpy::compute {
 
 class PyObjHandle
 {
-    PyObject* ptr = nullptr;
+    PyObject* ptr_ = nullptr;
 
 public:
 
     PyObjHandle() = default;
 
-    PyObjHandle(PyObject* ptr) : ptr(ptr)
+    PyObjHandle(PyObject* ptr, bool incref=true) : ptr_(ptr)
     {
-        Py_INCREF(ptr);
+        if (incref) {
+            Py_INCREF(ptr_);
+        }
     }
 
     ~PyObjHandle()
     {
-        Py_XDECREF(ptr);
+        Py_XDECREF(ptr_);
     }
 
-    PyObjHandle(PyObjHandle&& other) noexcept : ptr(other.ptr)
+    PyObjHandle(PyObjHandle&& other) noexcept : ptr_(other.ptr_)
     {
-        other.ptr = nullptr;
+        other.ptr_ = nullptr;
     }
 
     PyObjHandle& operator=(PyObjHandle&& other) noexcept
     {
-        Py_XSETREF(ptr, other.ptr);
-        other.ptr = nullptr;
+        Py_XSETREF(ptr_, other.ptr_);
+        other.ptr_ = nullptr;
         return *this;
     }
 
-    // Must be followed by inc_ref if the object should be preserved
-    constexpr PyObject*& obj() { return ptr; }
-    void drop() noexcept
+    void reset(PyObject* new_obj, bool incref=true)
     {
-        Py_XDECREF(ptr);
-        ptr = nullptr;
+        if (incref) { Py_INCREF(ptr_); }
+        Py_XSETREF(ptr_, new_obj);
     }
 
-    void inc_ref() noexcept { Py_INCREF(ptr); }
+    // Must be followed by inc_ref if the object should be preserved
+    constexpr PyObject*& obj() { return ptr_; }
+    void drop() noexcept
+    {
+        Py_XDECREF(ptr_);
+        ptr_ = nullptr;
+    }
+
+    void inc_ref() noexcept { Py_INCREF(ptr_); }
 
     PyObject* release() noexcept
     {
-        auto tmp = ptr;
-        ptr = nullptr;
+        auto tmp = ptr_;
+        ptr_ = nullptr;
         return tmp;
     }
 
     explicit constexpr operator bool() const noexcept
     {
-        return ptr != nullptr;
+        return ptr_ != nullptr;
     }
 
     PyObjHandle& operator=(PyObject* obj) noexcept
     {
         Py_INCREF(obj);
-        Py_XSETREF(ptr, obj);
+        Py_XSETREF(ptr_, obj);
         // Py_XDECREF(ptr);
         // ptr = obj;
         // Py_INCREF(ptr);

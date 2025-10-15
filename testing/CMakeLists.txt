@@ -18,7 +18,7 @@ set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST CACHE INTERNAL "")
 add_library(RoughPy_test_harness STATIC src/main.cpp)
 
 
-target_link_libraries(RoughPy_test_harness PUBLIC GTest::gtest)
+target_link_libraries(RoughPy_test_harness PUBLIC GTest::gtest GTest::gmock)
 
 
 

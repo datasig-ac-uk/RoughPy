@@ -8,13 +8,13 @@ extern "C" {
 #endif
 
 RPY_NO_EXPORT
-PyObject* py_ft_dense_exp(PyObject*, PyObject*, PyObject*);
+PyObject* py_dense_ft_exp(PyObject*, PyObject*, PyObject*);
 
 RPY_NO_EXPORT
-PyObject* py_ft_dense_fmexp(PyObject*, PyObject*, PyObject*);
+PyObject* py_dense_ft_fmexp(PyObject*, PyObject*, PyObject*);
 
 RPY_NO_EXPORT
-PyObject* py_ft_dense_log(PyObject*, PyObject*, PyObject*);
+PyObject* py_dense_ft_log(PyObject*, PyObject*, PyObject*);
 
 
 

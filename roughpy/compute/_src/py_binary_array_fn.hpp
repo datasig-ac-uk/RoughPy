@@ -65,7 +65,7 @@ template<template <typename> class Fn>
 [[gnu::always_inline]] RPY_NO_EXPORT inline
 PyObject *binary_function_outer(PyObject *out_obj,
                                 PyObject *arg_obj,
-                                CallConfig const &config) {
+                                CallConfig &config) {
     // static constexpr char const* const kwords[] = {
     //         "out", "arg", "basis", "rhs_max_degree", nullptr
     // };
@@ -83,7 +83,11 @@ PyObject *binary_function_outer(PyObject *out_obj,
     //     config.rhs_max_degree = config.depth;
     // }
 
-    constexpr auto core_dims = Fn<double>::CoreDims;
+    constexpr auto core_dims = Fn<float>::CoreDims;
+
+    if (!update_algebra_params(config, Fn<float>::n_args, Fn<float>::arg_basis_mapping)) {
+        return nullptr;
+    }
 
     if (!PyArray_Check(out_obj)) {
         PyErr_SetString(PyExc_TypeError, "out must be a numpy array");
