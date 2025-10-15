@@ -86,6 +86,13 @@ PyObject* PyLieBasis_word2str(PyLieBasis* basis, const LieWord* word);
 
 PyObject* PyLieBasis_get(int32_t width, int32_t depth);
 
+
+int PyLieBasis_check_data_internal(PyArrayObject* data, PyArrayObject* degree_begin, int32_t width, int32_t depth, PyObject* total_order, char const** message);
+
+PyObject* PyLieBasis_check_data(PyObject* self, PyObject* args, PyObject* kwargs);
+
+
+
 int init_lie_basis(PyObject *module);
 
 #ifdef __cplusplus
