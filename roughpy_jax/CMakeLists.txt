@@ -32,20 +32,16 @@ execute_process(
 )
 message(STATUS "XLA include directory: ${XLA_DIR}")
 
-# FIXME for review whether to use nanobind or native python bindings
-find_package(nanobind CONFIG REQUIRED)
-
-nanobind_add_module(RoughPy_JaxModule NB_STATIC 
+add_library(RoughPy_JaxModule SHARED
     src/cpu/dense_ft_fma.cpp
-    src/py_module.cpp
 )
 
-# Ensure that XLA FFI definitions are visible in genreated .so 
+# Ensure that XLA FFI definitions are visible in genreated .so
 set_target_properties(RoughPy_JaxModule PROPERTIES
     CXX_VISIBILITY_PRESET default
 )
 
-# FIXME for review, original in roughpy/CMakeLists.txt is missing platforms
+# FIXME for review, copied from RoughPy_PyModule which is missing platforms
 if (WIN32)
 elseif (APPLE)
 else ()
@@ -60,6 +56,8 @@ target_include_directories(RoughPy_JaxModule PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
+# Use same naming convention as rpy_compute (except without cpython versioning)
+set_target_properties(RoughPy_JaxModule PROPERTIES PREFIX "")
 set_target_properties(RoughPy_JaxModule PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     LIBRARY_OUTPUT_NAME _rpy_jax_internals

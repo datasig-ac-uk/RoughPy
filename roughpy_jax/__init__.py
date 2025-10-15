@@ -1,3 +1,4 @@
+import ctypes
 import numpy as np
 from dataclasses import dataclass
 from typing import NamedTuple
@@ -10,16 +11,16 @@ except ImportError as e:
     raise ImportError("RoughPy JAX requires jax library. For install instructions please refer to https://docs.jax.dev/en/latest/installation.html") from e
 
 try:
-    from . import _rpy_jax_internals
-except ImportError as e:
+    # FIXME review if load library ffi approach OK and best path format (base dir required for testing atm)
+    _rpy_jax_internals = ctypes.cdll.LoadLibrary("roughpy_jax/_rpy_jax_internals.so")
+except OSError as e:
     _rpy_jax_internals = None
-    raise ImportError("RoughPy JAX CPU backend is not installed correctly") from e
+    raise OSError("RoughPy JAX CPU backend is not installed correctly") from e
 else:
-    # FIXME create using register
     jax.ffi.register_ffi_target(
         "cpu_dense_ft_fma",
-        _rpy_jax_internals.cpu_dense_ft_fma(),
-        "cpu"
+        jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_fma),
+        platform="cpu"
     )
 
 
