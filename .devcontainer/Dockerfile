@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-RUN apt-get update && apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/GMT apt-get update && apt-get install -y \
     python3 \
     python3-venv \
     python3-pip \
@@ -15,10 +15,7 @@ RUN apt-get update && apt-get install -y \
     libtool-bin \
     pkg-config \
     nvidia-cuda-toolkit \
-    nvidia-driver-535-server \
-    nanobind-dev
-
-# FIXME if nanobind not used in final JAX interface, remove from apt installs
+    nvidia-driver-535-server
 
 WORKDIR /tools
 
@@ -31,7 +28,7 @@ RUN pip install \
     ninja \
     "pybind11<3.0.0" \
     "numpy>=2.0.0" \
-    "jax[cuda12]" \
+    "jax" \
     absl-py \
     pytest \
     pytest-cov
