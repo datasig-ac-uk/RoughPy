@@ -441,7 +441,12 @@ int init_lie_multiplication_cache(PyObject* module)
     PyObject* lmc_cache = PyDict_New();
     if (lmc_cache == nullptr) { return -1; }
 
-    if (PyModule_Add(module, "_lmc_cache", lmc_cache) < 0) { return -1; }
+    // PyModule_Add is not added until Python 3.13. Fall back to the now
+    // deprecated PyModule_AddObject.
+    if (!PyModule_AddObject(module, "_lmc_cache", lmc_cache)) {
+        Py_DECREF(lmc_cache);
+        return -1;
+    }
 
     return 0;
 }
