@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "lie_basis.h"
 
+#include <math.h>
 #include <stdalign.h>
 #include <stddef.h>
 #include <string.h>
@@ -136,10 +137,11 @@ static int construct_lie_basis(PyLieBasis* self)
      * large enough to hold the data. We can resize down
      * later.
      */
-    npy_intp alloc_size = 1;
-    for (npy_intp i = 1; i <= self->depth; ++i) {
-        alloc_size = 1 + alloc_size * self->width;
-    }
+    // npy_intp alloc_size = 1;
+    // for (npy_intp i = 1; i <= self->depth; ++i) {
+    //     alloc_size = 1 + alloc_size * self->width;
+    // }
+    const npy_intp alloc_size = 1 + compute_lie_dim(self->width, self->depth);
 
     const npy_intp degree_begin_shape[1] = {self->depth + 2};
     degree_begin = PyArray_SimpleNew(1, degree_begin_shape, NPY_INTP);
@@ -210,22 +212,30 @@ static int construct_lie_basis(PyLieBasis* self)
 
     Py_END_ALLOW_THREADS;
 
-    data_shape[0] = size;
+    // data_shape[0] = size;
 
-    PyObject* resized_data = PyArray_SimpleNew(2, data_shape, NPY_INTP);
-    // PyObject* tmp = PyArray_Newshape((PyArrayObject*) data, &dims,
-    // NPY_CORDER);
-    if (resized_data == NULL) { goto cleanup; }
+    // PyObject* resized_data = PyArray_SimpleNew(2, data_shape, NPY_INTP);
+    // // PyObject* tmp = PyArray_Newshape((PyArrayObject*) data, &dims,
+    // // NPY_CORDER);
+    // if (resized_data == NULL) { goto cleanup; }
+    //
+    // npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
+    // memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
 
-    npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
-    memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
-
-    Py_XSETREF(self->data, resized_data);
+    // Py_XSETREF(self->data, resized_data);
     // resized_data is now a borrowed reference, clear it to avoid misuse
-    resized_data = NULL;
+    // resized_data = NULL;
     // Py_XDECREF(self->data);
     // self->data = tmp;
     // tmp = NULL;
+    Py_XSETREF(self->data, data);
+    /*
+     * At this point we have transferred ownership of data to the struct where
+     * it rightfully belongs, so the data variable now does not hold a strong
+     * reference. To avoid a use-after-free bug caused by Py_XDECREF below, we
+     * clear this reference.
+     */
+    data = NULL;
 
     // Move the degree_begin data into the struct;
     // Py_XDECREF(self->degree_begin);
@@ -233,7 +243,7 @@ static int construct_lie_basis(PyLieBasis* self)
     // degree_begin = NULL;
     Py_XSETREF(self->degree_begin, degree_begin);
     /*
-     * At this point we have transferred owneship of degree_begin to the struct
+     * At this point we have transferred ownership of degree_begin to the struct
      * where it rightfully belongs, so the degree_begin variable now does not
      * hold a strong reference. To avoid a use-after-free bug caused by the
      * Py_XDECREF below, we clear this reference.
@@ -248,7 +258,6 @@ cleanup:
 
     return ret;
 }
-
 
 #define LBC_SET_ERR(MESSAGE)                                                   \
     do {                                                                       \
@@ -350,7 +359,13 @@ check_data_and_db(PyLieBasis* self, PyObject* data, PyObject* degree_begin)
     PyArrayObject* db_arr = (PyArrayObject*) degree_begin;
 
     const char* msg = NULL;
-    if (!check_data_arrays_basics(data_arr, db_arr, self->width, self->depth, &msg)) {
+    if (!check_data_arrays_basics(
+                data_arr,
+                db_arr,
+                self->width,
+                self->depth,
+                &msg
+        )) {
         assert(msg != NULL);
         PyErr_SetString(PyExc_ValueError, msg);
         return -1;
@@ -977,7 +992,7 @@ static int t2l_rbracket(
             // }
 
             add_product(scratch, lval, val, typenum, pval);
-            if (smh_insert_value_at_index(helper, pkey-1, scratch) < 0) {
+            if (smh_insert_value_at_index(helper, pkey - 1, scratch) < 0) {
                 // py exc already set
                 return -1;
             }
@@ -1475,3 +1490,101 @@ finish:
 }
 
 #undef LBC_SET_ERR
+
+/*******************************************************************************
+ * Compute degree size
+ ******************************************************************************/
+
+/* clang-format off */
+static const int8_t mobius_values_cache[32]
+        = {0, // dummy
+           1, -1, -1,  0, -1,  1, -1,  0,  0,  1,
+          -1,  0, -1,  1,  1,  0, -1,  0, -1,  0,
+           1,  1, -1,  0,  0,  1,  0,  0, -1, -1,
+          -1};
+/* clang-format on */
+
+static inline npy_intp mobius_func(int32_t n)
+{
+    if (n <= 0) { return 0; }
+
+    /*
+     * The vast majority of calls to mobius will be for small values. We cache
+     * the first 31 such values (+1 implicit value to make the indexing
+     * convenient).
+     */
+    if (n <= 31) { return mobius_values_cache[n]; }
+
+    int n_prime_factors = 0;
+
+    // power 2 can be done efficiently
+    if ((n & 1) == 0) {
+        n >>= 1;
+        if ((n & 1) == 0) {
+            // n is not square free, mu(n) = 0
+            return 0;
+        }
+        ++n_prime_factors;
+    }
+
+    // test the odd divisors up to sqrt(n)
+    // note that the odds that are not primes do waste a division op, but
+    // this will always be false since we will have already removed all the
+    // prime factors earlier in the process
+    for (int32_t d = 3; d * d <= n; d += 2) {
+        if ((n % d) == 0) {
+            n /= d;
+            if ((n % d) == 0) {
+                // n is not square free, mu(n) = 0
+                return 0;
+            }
+            ++n_prime_factors;
+        }
+    }
+
+    // if we haven't already eliminated all the prime factors of n then what
+    // remains of n must itself be a prime
+    if (n > 1) { ++n_prime_factors; }
+
+    return (n_prime_factors & 1) ? -1 : 1;
+}
+
+static inline npy_intp int_pow(npy_intp base, int32_t exp)
+{
+    npy_intp result = 1;
+    npy_intp b = base;
+    int32_t e = exp;
+    while (e > 0) {
+        if (e & 1) { result *= b; }
+        e >>= 1;
+        if (e) { b *= b; }
+    }
+    return result;
+}
+
+npy_intp compute_lie_degree_dim(int32_t width, int32_t degree)
+{
+    if (degree <= 0) { return 0; }
+    if (degree == 1) { return width; }
+
+    npy_intp sum = 0;
+    for (int32_t d = 1; d <= degree; ++d) {
+        div_t qr = div(degree, d);
+        if (qr.rem == 0) {
+            const npy_intp mu = mobius_func(d);
+            if (mu != 0) { sum += mu * int_pow(width, qr.quot); }
+        }
+    }
+
+    return sum / degree;
+}
+npy_intp compute_lie_dim(const int32_t width, const int32_t depth)
+{
+    npy_intp result = 0;
+
+    for (int32_t d=1; d<=depth; ++d) {
+        result += compute_lie_degree_dim(width, d);
+    }
+
+    return result;
+}

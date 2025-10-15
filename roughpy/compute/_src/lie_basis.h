@@ -1,27 +1,23 @@
 #ifndef ROUGHPY_COMPUTE__SRC_LIE_BASIS_H
 #define ROUGHPY_COMPUTE__SRC_LIE_BASIS_H
 
-
 #include "py_headers.h"
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-
-typedef union _LieWord {
+typedef union _LieWord
+{
     npy_intp letters[2];
-    struct
-    {
+    struct {
         npy_intp left;
         npy_intp right;
     };
 } LieWord;
 
 typedef struct _PyLieBasis PyLieBasis;
-
 
 extern PyTypeObject PyLieBasis_Type;
 
@@ -45,40 +41,45 @@ static inline int hall_word_equal(const npy_intp* lhs, const npy_intp* rhs)
     return lhs[0] == rhs[0] && lhs[1] == rhs[1];
 }
 
-PyObject *get_l2t_matrix(PyObject *basis, PyObject *dtype_obj);
+PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype_obj);
 
-PyObject *get_t2l_matrix(PyObject *basis, PyObject *dtype_obj);
+PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype_obj);
 
-static inline int PyLieBasis_Check(PyObject *obj) {
+static inline int PyLieBasis_Check(PyObject* obj)
+{
     return PyObject_TypeCheck(obj, &PyLieBasis_Type);
 }
 
 RPY_NO_EXPORT
-int32_t PyLieBasis_width(PyLieBasis *basis);
+int32_t PyLieBasis_width(PyLieBasis* basis);
 
 RPY_NO_EXPORT
-int32_t PyLieBasis_depth(PyLieBasis *basis);
+int32_t PyLieBasis_depth(PyLieBasis* basis);
 
 RPY_NO_EXPORT
-npy_intp PyLieBasis_size(PyLieBasis *basis);
+npy_intp PyLieBasis_size(PyLieBasis* basis);
 
 RPY_NO_EXPORT
-npy_intp PyLieBasis_true_size(PyLieBasis *basis);
+npy_intp PyLieBasis_true_size(PyLieBasis* basis);
 
 RPY_NO_EXPORT
-PyArrayObject *PyLieBasis_degree_begin(PyLieBasis *basis);
+PyArrayObject* PyLieBasis_degree_begin(PyLieBasis* basis);
 
 RPY_NO_EXPORT
-PyArrayObject *PyLieBasis_data(PyLieBasis *basis);
+PyArrayObject* PyLieBasis_data(PyLieBasis* basis);
 
 RPY_NO_EXPORT
-npy_intp PyLieBasis_find_word(PyLieBasis* basis, const LieWord* target, int32_t degree_hint);
+npy_intp PyLieBasis_find_word(
+        PyLieBasis* basis,
+        const LieWord* target,
+        int32_t degree_hint
+);
 
 RPY_NO_EXPORT
 int PyLieBasis_get_parents(PyLieBasis* basis, npy_intp index, LieWord* out);
 
 RPY_NO_EXPORT
-int32_t PyLieBasis_degree(PyLieBasis *basis, npy_intp key);
+int32_t PyLieBasis_degree(PyLieBasis* basis, npy_intp key);
 
 PyObject* PyLieBasis_key2str(PyLieBasis* basis, npy_intp key);
 
@@ -87,16 +88,19 @@ PyObject* PyLieBasis_word2str(PyLieBasis* basis, const LieWord* word);
 PyObject* PyLieBasis_get(int32_t width, int32_t depth);
 
 
-int PyLieBasis_check_data_internal(PyArrayObject* data, PyArrayObject* degree_begin, int32_t width, int32_t depth, PyObject* total_order, char const** message);
-
-PyObject* PyLieBasis_check_data(PyObject* self, PyObject* args, PyObject* kwargs);
+npy_intp compute_lie_degree_dim(int32_t width, int32_t degree);
 
 
+npy_intp compute_lie_dim(const int32_t width, const int32_t depth);
 
-int init_lie_basis(PyObject *module);
+
+PyObject*
+PyLieBasis_check_data(PyObject* self, PyObject* args, PyObject* kwargs);
+
+int init_lie_basis(PyObject* module);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //ROUGHPY_COMPUTE__SRC_LIE_BASIS_H
+#endif// ROUGHPY_COMPUTE__SRC_LIE_BASIS_H
