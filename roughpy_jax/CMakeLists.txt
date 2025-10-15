@@ -1,4 +1,4 @@
-project(RoughPyJaxModule LANGUAGES CXX)
+project(RoughPy_JaxModule LANGUAGES CXX)
 
 # Optionally enable CUDA build
 include(CheckLanguage)
@@ -35,23 +35,32 @@ message(STATUS "XLA include directory: ${XLA_DIR}")
 # FIXME for review whether to use nanobind or native python bindings
 find_package(nanobind CONFIG REQUIRED)
 
-nanobind_add_module(RoughPyJaxModule NB_STATIC 
+nanobind_add_module(RoughPy_JaxModule NB_STATIC 
     src/cpu/dense_ft_fma.cpp
     src/py_module.cpp
 )
 
 # Ensure that XLA FFI definitions are visible in genreated .so 
-set_target_properties(RoughPyJaxModule PROPERTIES
+set_target_properties(RoughPy_JaxModule PROPERTIES
     CXX_VISIBILITY_PRESET default
 )
 
-target_include_directories(RoughPyJaxModule PRIVATE
+# FIXME for review, original in roughpy/CMakeLists.txt is missing platforms
+if (WIN32)
+elseif (APPLE)
+else ()
+    set_target_properties(RoughPy_JaxModule PROPERTIES
+        INSTALL_RPATH $ORIGIN
+    )
+endif ()
+
+target_include_directories(RoughPy_JaxModule PRIVATE
     ${XLA_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
-set_target_properties(RoughPyJaxModule PROPERTIES
+set_target_properties(RoughPy_JaxModule PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     LIBRARY_OUTPUT_NAME _rpy_jax_internals
 )
