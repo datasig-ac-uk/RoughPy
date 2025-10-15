@@ -60,7 +60,7 @@ endif()
 
 
 # Essentially from Professional CMake 19th Edition pp 713-715
-option(ROUGHPY_ROUGHPY_ENABLE_ASAN "Enable Address sanitizer" OFF)
+option(ROUGHPY_ENABLE_ASAN "Enable Address sanitizer" OFF)
 
 
 if (MSVC)
@@ -92,6 +92,7 @@ elseif (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(
             -fno-omit-frame-pointer
             $<$<BOOL:${ROUGHPY_ENABLE_ASAN}>:-fsanitize=address>
+            $<$<BOOL:${ROUGHPY_ENABLE_ASAN}>:-shared-libasan>
             $<$<BOOL:${ROUGHPY_ENABLE_LSAN}>:-fsanitize=leak>
             $<$<BOOL:${ROUGHPY_ENABLE_MSAN}>:-fsanitize=memory>
             $<$<BOOL:${ROUGHPY_ENABLE_TSAN}>:-fsanitize=thread>
@@ -99,6 +100,7 @@ elseif (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     )
     add_link_options(
             $<$<BOOL:${ROUGHPY_ENABLE_ASAN}>:-fsanitize=address>
+            $<$<BOOL:${ROUGHPY_ENABLE_ASAN}>:-shared-libasan>
             $<$<BOOL:${ROUGHPY_ENABLE_LSAN}>:-fsanitize=leak>
             $<$<BOOL:${ROUGHPY_ENABLE_MSAN}>:-fsanitize=memory>
             $<$<BOOL:${ROUGHPY_ENABLE_TSAN}>:-fsanitize=thread>
