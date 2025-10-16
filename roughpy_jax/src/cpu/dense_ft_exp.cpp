@@ -21,7 +21,7 @@ ffi::Error cpu_dense_ft_exp_impl(
 
     auto [degree_begin_size, degree_begin_dim] = get_buffer_dims(degree_begin);
     if (degree_begin_size != depth + 2) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin size must be depth + 2");
+        return ffi::Error::InvalidArgument("cpu_dense_ft_exp degree_begin size must be depth + 2");
     }
 
     auto [result_size, result_dim] = get_buffer_dims(*result);
