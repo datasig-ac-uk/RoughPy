@@ -22,6 +22,11 @@ else:
         jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_fma),
         platform="cpu"
     )
+    jax.ffi.register_ffi_target(
+        "cpu_dense_ft_exp",
+        jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_exp),
+        platform="cpu"
+    )
 
 
 @dataclass
@@ -43,9 +48,9 @@ class TensorBasis:
         # Equivalent to data[0] = 0; data[i] = 1 + data[i - 1] * width;
         if not degree_begin:
             def degree_begin_fn(last_degree, _):
-                new_degree = 1 + last_degree * width 
+                new_degree = 1 + last_degree * width
                 return new_degree, last_degree
-            
+
             _, degree_begin = lax.scan(degree_begin_fn, 0, length=depth + 2)
         else:
             # FIXME
@@ -100,7 +105,7 @@ def dense_ft_fma(
     """
     if a.data.dtype != jnp.float32:
         raise ValueError("cpu_dense_ft_fma a array only supports float32 dtype")
-  
+
     if b.data.dtype != jnp.float32:
         raise ValueError("cpu_dense_ft_fma b array only supports float32 dtype")
 
@@ -131,5 +136,42 @@ def dense_ft_fma(
         lhs_depth=np.int32(lhs_depth),
         rhs_depth=np.int32(rhs_depth)
     )
+
+
+def dense_ft_exp(
+    x: DenseFreeTensor,
+    out_basis: TensorBasis | None = None
+) -> DenseFreeTensor:
+    """
+    Free tensor exponent
+
+    This function is equivalent to `a = e ^ x`.
+
+    Currently only floating point scalars (np.float32) are supported.
+
+    If `out_basis` is not specified, the same basis as `x` is used.
+
+    :param x: argument
+    :param out_basis: optional output basis.
+    :return: tensor exponential of `x`
+    """
+    if x.data.dtype != jnp.float32:
+        raise ValueError("dense_ft_exp x array only supports float32 dtype")
+
+    out_basis = out_basis or x.basis
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_exp",
+        jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
+    )
+
+    return call(
+        out_basis.degree_begin,
+        x.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        arg_depth=np.int32(x.basis.depth)
+    )
+
 
 FreeTensor = DenseFreeTensor
