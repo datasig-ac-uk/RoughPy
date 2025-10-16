@@ -20,6 +20,9 @@ static PyObject* lmc_repr(PyObject* obj);
 
 namespace {
 
+
+PyObject* plm_cache_cache = nullptr;
+
 struct CacheEntryDeleter {
     void operator()(const LieMultiplicationCacheEntry* entry) const noexcept
     {
@@ -167,25 +170,26 @@ PyObject* PyLieMultiplicationCache_new(const int32_t width)
 
 PyObject* get_lie_multiplication_cache(PyLieBasis* basis)
 {
-    PyObject* rpc_internals
-            = PyImport_ImportModule("roughpy.compute._rpy_compute_internals");
-    if (rpc_internals == nullptr) { return nullptr; }
-
-    PyObject* lmc_cache = PyObject_GetAttrString(rpc_internals, "_lmc_cache");
-    Py_DECREF(rpc_internals);
-    if (lmc_cache == nullptr) { return nullptr; }
+    // PyObject* rpc_internals
+    //         = PyImport_ImportModule("roughpy.compute._rpy_compute_internals");
+    // if (rpc_internals == nullptr) { return nullptr; }
+    //
+    // PyObject* lmc_cache = PyObject_GetAttrString(rpc_internals, "_lmc_cache");
+    // Py_DECREF(rpc_internals);
+    // if (lmc_cache == nullptr) { return nullptr; }
+    if (plm_cache_cache == nullptr) { return nullptr; }
 
     const int32_t width = PyLieBasis_width(basis);
     PyObject* py_width = PyLong_FromLong(width);
     if (py_width == nullptr) { return nullptr; }
 
-    PyObject* cache = PyDict_GetItem(lmc_cache, py_width);
+    PyObject* cache = PyDict_GetItem(plm_cache_cache, py_width);
     if (cache == nullptr) {
         cache = PyLieMultiplicationCache_new(width);
 
         if (cache == nullptr) { goto finish; }
 
-        if (PyDict_SetItem(lmc_cache, py_width, cache) < 0) {
+        if (PyDict_SetItem(plm_cache_cache, py_width, cache) < 0) {
             Py_DECREF(cache);
             goto finish;
         }
@@ -194,7 +198,7 @@ PyObject* get_lie_multiplication_cache(PyLieBasis* basis)
     }
 
 finish:
-    Py_DECREF(lmc_cache);
+    // Py_DECREF(lmc_cache);
     Py_DECREF(py_width);
     return cache;
 }
@@ -477,11 +481,16 @@ int init_lie_multiplication_cache(PyObject* module)
 {
     if (PyType_Ready(&PyLieMultiplicationCache_Type) < 0) { return -1; }
 
-    PyObject* lmc_cache = PyDict_New();
-    if (lmc_cache == nullptr) { return -1; }
+    // PyObject* lmc_cache = PyDict_New();
+    // if (lmc_cache == nullptr) { return -1; }
+    plm_cache_cache = PyDict_New();
+    // make this immortal?
+    if (plm_cache_cache == nullptr) {
+        return -1;
+    }
 
-    if (PyModule_AddObject(module, "_lmc_cache", lmc_cache) < 0) {
-        Py_DECREF(lmc_cache);
+    if (PyModule_AddObject(module, "_lmc_cache", plm_cache_cache) < 0) {
+        Py_DECREF(plm_cache_cache);
         return -1;
     }
 
