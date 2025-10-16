@@ -443,7 +443,7 @@ int init_lie_multiplication_cache(PyObject* module)
 
     // PyModule_Add is not added until Python 3.13. Fall back to the now
     // deprecated PyModule_AddObject.
-    if (!PyModule_AddObject(module, "_lmc_cache", lmc_cache)) {
+    if (PyModule_AddObject(module, "_lmc_cache", lmc_cache) < 0) {
         Py_DECREF(lmc_cache);
         return -1;
     }
