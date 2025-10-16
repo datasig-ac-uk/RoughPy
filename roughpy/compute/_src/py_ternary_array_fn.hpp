@@ -72,9 +72,13 @@ template<template <typename> class Fn>
 PyObject *ternary_function_outer(PyObject *out_obj [[maybe_unused]],
                                  PyObject *lhs_obj,
                                  PyObject *rhs_obj,
-                                 CallConfig const &config
+                                 CallConfig &config
 ) {
-    constexpr auto core_dims = Fn<double>::CoreDims;
+    constexpr auto core_dims = Fn<float>::CoreDims;
+
+    if (!update_algebra_params(config, Fn<float>::n_args, Fn<float>::arg_basis_mapping)) {
+        return nullptr;
+    }
 
     if (!PyArray_Check(out_obj)) {
         PyErr_SetString(PyExc_TypeError, "out must be a numpy array");

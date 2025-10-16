@@ -12,13 +12,15 @@
 namespace rpy::compute::intermediate {
 inline namespace v1 {
 
-template <typename S>
+template <typename OutIter, typename MulIter, typename ExpIter>
 void ft_fmexp(
-        DenseTensorView<S*> out,
-        DenseTensorView<S const*> multiplier,
-        DenseTensorView<S const*> exponent)
+        DenseTensorView<OutIter> out,
+        DenseTensorView<MulIter> multiplier,
+        DenseTensorView<ExpIter> exponent)
 {
-    using Degree = typename DenseTensorView<S*>::Degree;
+    using OutView = DenseTensorView<OutIter>;
+    using Degree = typename OutView::Degree;
+    using Scalar = typename OutView::Scalar;
 
     auto const common_size = std::min(out.size(), multiplier.size());
     std::copy_n(multiplier.data(), common_size, out.data());
@@ -30,7 +32,7 @@ void ft_fmexp(
         basic::ft_inplace_mul(
             out.truncate(max_level),
             exponent.truncate(max_level, 1),
-            ops::DivideBy<S>(static_cast<S>(deg))
+            ops::DivideBy<Scalar>(static_cast<Scalar>(deg))
         );
 
         basic::vector_inplace_addition(out, multiplier);

@@ -7,10 +7,11 @@ namespace rpy::compute::basic {
 inline namespace v1 {
 
 
-template <typename S, typename Basis>
-void vector_inplace_scalar_multiply(DenseVectorView<S*, Basis> arg, S const& scalar)
+template <typename ArgIter, typename Basis, typename Scalar>
+void vector_inplace_scalar_multiply(DenseVectorView<ArgIter, Basis> arg, Scalar const& scalar)
 {
-    using Index = typename DenseVectorView<S*, Basis>::Index;
+    using ArgView = DenseVectorView<ArgIter, Basis>;
+    using Index = typename ArgView::Index;
 
     for (Index i=0; i < arg.size(); ++i) {
         arg[i] *= scalar;

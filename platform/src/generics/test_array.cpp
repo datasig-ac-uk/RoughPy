@@ -29,7 +29,7 @@ TEST(TestArray, TestDestructorAllocDealloc)
     auto type_ptr = Rc<MockType>{new MockType};
     {
         // Mock double size and confirm data assigned on construction
-        EXPECT_CALL(*type_ptr, object_size()).Times(1).WillOnce([]{
+        EXPECT_CALL(*type_ptr, object_size()).Times(1).WillRepeatedly([]{
             // Arbitrary type size for valid example
             return sizeof(double);
         });

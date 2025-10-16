@@ -32,6 +32,10 @@ option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 
+# FIXME hard-coded settings during dev, review defaults before merge to main
+option(ROUGHPY_JAX "Enable RoughPy JAX support" ON)
+option(ROUGHPY_JAX_CUDA "Enable RoughPy JAX CUDA support" OFF)
+
 if (DEFINED CONAN_COMMAND
         OR "${CMAKE_PROJECT_TOP_LEVEL_INCLUDES}" MATCHES "conan_provider.cmake"
         OR "${CMAKE_TOOLCHAIN_FILE}" MATCHES "conan_toolchain.cmake")
@@ -91,7 +95,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # I don't think we have any pure C anywhere, but we set the standard anyway
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # TODO: Handle these more delicately.
@@ -258,10 +262,15 @@ add_library(RoughPy_Compute INTERFACE
         roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp
         roughpy_compute/dense/intermediate/free_tensor_log.hpp
         roughpy_compute/dense/views.hpp
+        roughpy_compute/common/lie_to_tensor.hpp
+        roughpy_compute/common/scalars.hpp
 )
 target_include_directories(RoughPy_Compute INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)
 
+if (ROUGHPY_JAX)
+    add_subdirectory(roughpy_jax)
+endif ()
 
 
 if (ROUGHPY_BUILD_PYLIB)

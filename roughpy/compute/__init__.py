@@ -20,11 +20,10 @@ from dataclasses import dataclass
 
 from . import _rpy_compute_internals as _internals
 
-
 __all__ = []
 
-def _api(version: str, *args, **kwargs):
 
+def _api(version: str, *args, **kwargs):
     def deco(func_or_class):
         global __all__
         __all__.append(func_or_class.__name__)
@@ -58,8 +57,34 @@ class TensorBasis(_internals.TensorBasis):
 
 @_api("1.0.0")
 class LieBasis(_internals.LieBasis):
+    """
+    An instance of a Hall basis for the Lie algebra.
+
+    A Hall basis is indexed by integer keys k > 0. To each key there is an
+    associated pair of parents (a, b) where a and b are both keys belonging
+    to the Hall basis. The exceptions are the "letters", which are those keys
+    k for which the parents are (0, k). For convenience, we usually add a null
+    element to the basis at key 0 and with parents (0, 0), which serves to
+    offset elements correctly. However, this is not a valid key for the vectors
+    and thus the key to index map subtracts 1 from the key to obtain the
+    position in the vector.
+
+    The default constructor requires only width and depth and constructs a
+    Hall set greedily, minimizing the degree of the left parent. For instance,
+    for width 2 and depth 4, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
+    3 -> (1, 2) (which represents the bracket [1,2]), 4 -> (1, 3) ([1,[1,2]]),
+    and 5 -> (2, 3) ([2,[1,2]]).
+
+    This implementation is designed to be flexible as to the exact contents of
+    the Hall set, provided it is given in the format described above. The basis
+    must also be ordered by degree, so elements of degree k must appear
+    sequentially and between elements of degree k - 1 and degree k + 1 (if such
+    elements exist).
+    """
     pass
 
+
+SparseMatrix = _api("1.0.0")(_internals.SparseMatrix)
 
 
 @_api("1.0.0")
@@ -97,7 +122,6 @@ def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
             raise ValueError(f"Incompatible width for basis {i}")
 
 
-
 # Basic functions
 @_api("1.0.0")
 def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor, **kwargs):
@@ -112,11 +136,12 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor, **kwargs):
     :param b: left-hand operand
     :param c: right-hand operand
     """
-    _check_basis_compat(a.basis, b.basis, b.basis)
+    _check_basis_compat(a.basis, b.basis, c.basis)
 
     # In the future, we will need to handle alternative prototype tensors here.
 
     _internals.dense_ft_fma(a.data, b.data, c.data, b.basis, c.basis.depth)
+
 
 @_api("1.0.0")
 def ft_mul(a: FreeTensor, b: FreeTensor, **kwargs) -> FreeTensor:
@@ -173,45 +198,176 @@ def antipode(a: FreeTensor, **kwargs) -> FreeTensor:
     return FreeTensor(result, a.basis)
 
 
+def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
+    """
+    Shuffle tensor fused multiply-add
 
-def st_fma(*args, **kwargs):
-    ...
+    :param a: input and first operand
+    :param b: left-hand operand
+    :param c: right-hand operand
+    :return:
+    """
+    _check_basis_compat(a.basis, b.basis, c.basis)
 
+    _internals.dense_st_fma(a.data, b.data, c.data, a.basis)
 
-def st_inplace_mul(*args, **kwargs):
-    ...
-
-
-
-def lie_to_tensor(*args, **kwargs):
-    ...
-
-
-def tensor_to_lie(*args, **kwargs):
-    ...
+    return a
 
 
+def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
+    """
+    Shuffle tensor product.
+
+    :param lhs: left-hand operand
+    :param rhs: right-hand operand
+    :return: the shuffle product of lhs and rhs
+    """
+    _check_basis_compat(lhs.basis, rhs.basis)
+
+    result_data = np.zeros_like(lhs.data)
+    _internals.dense_st_fma(result_data, lhs.data, rhs.data, lhs.basis)
+
+    return ShuffleTensor(result_data, lhs.basis)
 
 
-def ft_exp(x: FreeTensor) -> FreeTensor:
+def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     """
     Exponential of a free tensor.
 
     :param x: argument
+    :param out_basis: optional output basis. If not specified, the same basis as `x` is used.
     :return: tensor exponential of `x`
     """
 
-    result = np.zeros_like(x.data)
+    out_basis = out_basis or x.basis
 
-    # This is a pure python implementation that will be
-    # replaced by a C++ implementation once available.
-    depth = x.basis.depth
-    result[0] = 1
+    _check_basis_compat(out_basis, x.basis)
 
-    for deg in range(0, depth):
-        z = x.data / (depth - deg)
-        _internals.dense_ft_inplace_mul(result, z, x.basis)
+    dtype = x.data.dtype
+    if dtype not in (np.float32, np.float64):
+        raise ValueError(f"Unsupported dtype {dtype}")
 
-        result[0] += 1
+    shape = (*x.data.shape[:-1], out_basis.size())
 
-    return FreeTensor(result, x.basis)
+    result = np.zeros(shape, dtype=dtype)
+
+    _internals.dense_ft_exp(result, x.data, out_basis)
+
+    return FreeTensor(result, out_basis)
+
+
+def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Logarithm of a free tensor.
+
+
+    :param x: tensor to take logarithm of
+    :param out_basis: optional output basis. If not specified, the same basis as `x` is used.
+    :return: tensor logarithm of `x`
+    """
+
+    out_basis = out_basis or x.basis
+    _check_basis_compat(out_basis, x.basis)
+
+    dtype = x.data.dtype
+    if dtype not in (np.float32, np.float64):
+        raise ValueError(f"Unsupported dtype {dtype}")
+
+    shape = (*x.data.shape[:-1], out_basis.size())
+
+    result = np.zeros(shape, dtype=dtype)
+
+    _internals.dense_ft_log(result, x.data, out_basis)
+
+    return FreeTensor(result, out_basis)
+
+
+def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Fused multiply-exponential of two free tensors.
+
+    Computes the fused product A*exp(X) where A is `multiplier` and X is `exponent`.
+
+    :param multiplier: Multiplier free tensor
+    :param exponent: Free tensor to exponential
+    :param out_basis: Optional output basis. If not specified, the same basis as `multiplier` is used.
+    :return: The result of fused multiply-exponential of `multiplier` and `exponent`
+    """
+
+    out_basis = out_basis or multiplier.basis
+    _check_basis_compat(out_basis, multiplier.basis, exponent.basis)
+
+    dtype = multiplier.data.dtype
+    if dtype not in (np.float32, np.float64):
+        raise ValueError(f"Unsupported dtype {dtype}")
+
+    shape = (*multiplier.data.shape[:-1], out_basis.size())
+
+    result = np.zeros(shape, dtype=dtype)
+
+    _internals.dense_ft_fmexp(result, multiplier.data, exponent.data, out_basis)
+
+    return FreeTensor(result, out_basis)
+
+
+@_api("1.0.0")
+def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
+    """
+    Compute the adjoint of a free tensor left-multiplication.
+
+    The operator L_A: T -> T defined by L_A(X) = A * X (where * denotes
+    free tensor multiplication) is a well-defined linear operator on the
+    free tensor algebra. The adjoint of this function L_A* is a linear
+    operator on the shuffle algebra. This operator aggregates the
+    coefficients of S according to their prefix in A.
+
+    :param op: The operand of the left multiplication L_A
+    :param arg: The shuffle tensor argument on which to apply the adjoint
+    :return: The result of L_A*(S)
+    """
+
+    _check_basis_compat(op.basis, arg.basis)
+
+    result = np.zeros_like(arg.data)
+
+    _internals.dense_ft_adjoint_left_mul(
+        result, op.data, arg.data, op.basis, arg.basis.depth, op.basis.depth, arg.basis.depth)
+
+    return ShuffleTensor(result, arg.basis)
+
+
+@_api("1.0.0")
+def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
+    """
+    Compute the embedding of a Lie algebra element as a free tensor.
+
+    :param arg: Lie to embed into the tensor algebra
+    :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
+    :return: new FreeTensor containing the embedding of "arg"
+    """
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+
+    result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
+    _internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return FreeTensor(result, tensor_basis)
+
+
+@_api("1.0.0")
+def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
+    """
+    Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
+
+    :param arg:
+    :param lie_basis:
+    :return:
+    """
+    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
+
+    result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
+    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return Lie(result, lie_basis)

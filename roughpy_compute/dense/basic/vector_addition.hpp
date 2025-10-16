@@ -11,17 +11,17 @@
 namespace rpy::compute::basic {
 inline namespace v1 {
 
-template <typename S, typename Basis, typename LhsOp=ops::Identity, typename RhsOp=ops::Identity>
+template <typename OutIter, typename LhsIter, typename RhsIter, typename Basis, typename LhsOp=ops::Identity, typename RhsOp=ops::Identity>
 void vector_addition(
-    DenseVectorView<S*, Basis> out,
-    DenseVectorView<S const*, Basis> lhs,
-    DenseVectorView<S const*, Basis> rhs,
+    DenseVectorView<OutIter, Basis> out,
+    DenseVectorView<LhsIter, Basis> lhs,
+    DenseVectorView<RhsIter, Basis> rhs,
     LhsOp&& lhs_op=LhsOp{},
     RhsOp&& rhs_op=RhsOp{}
 )
 {
-    using Index = typename DenseVectorView<S*, Basis>::Index;
-
+    using OutView = DenseVectorView<OutIter, Basis>;
+    using Index = typename OutView::Index;
 
     // I'm going to ignore minimum degree at the moment. We might want to
     // fix this later

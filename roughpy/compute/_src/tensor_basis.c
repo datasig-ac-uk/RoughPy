@@ -15,6 +15,24 @@ static PyObject* tensor_basis_new(PyTypeObject* type,
     return (PyObject*) self;
 }
 
+static inline PyObject* construct_tensor_db(int32_t width, int32_t depth)
+{
+
+    npy_intp const shape[1] = {depth + 2};
+    PyObject* arr = PyArray_SimpleNew(1, shape, NPY_INTP);
+
+    if (!arr) { return NULL; }
+
+    npy_intp* data = (npy_intp*) PyArray_DATA(
+        (PyArrayObject*) arr);
+
+    data[0] = 0;
+    for (npy_intp i = 1; i < depth + 2; ++i) {
+        data[i] = 1 + data[i - 1] * width;
+    }
+
+    return arr;
+}
 
 static int tensor_basis_init(PyTensorBasis* self,
                              PyObject* args,
@@ -63,26 +81,17 @@ static int tensor_basis_init(PyTensorBasis* self,
                             "first two elements should be 0 and 1");
             return -1;
         }
-        if (self->depth >= 1 && data[2] - 1) {
+        if (self->depth >= 1 && data[1] - 1) {
             PyErr_SetString(PyExc_ValueError, "data[2] must match the width");
             return -1;
         }
 
         Py_XSETREF(self->degree_begin, Py_NewRef(degree_begin));
     } else {
-        npy_intp const shape[1] = {self->depth + 2};
-        PyObject* arr = PyArray_SimpleNew(1, shape, NPY_INTP);
-
-        if (!arr) { return -1; }
-
-        npy_intp* data = (npy_intp*) PyArray_DATA(
-            (PyArrayObject*) arr);
-
-        data[0] = 0;
-        for (npy_intp i = 1; i < self->depth + 2; ++i) {
-            data[i] = 1 + data[i - 1] * self->width;
+        PyObject* arr = construct_tensor_db(self->width, self->depth);
+        if (arr == NULL) {
+            return -1;
         }
-
         Py_XSETREF(self->degree_begin, arr);
     }
 
@@ -195,4 +204,28 @@ int init_tensor_basis(PyObject* module)
     }
 
     return 0;
+}
+
+
+PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth)
+{
+    if (width <= 0 || depth <= 0) {
+        PyErr_SetString(PyExc_ValueError, "width must be positive");
+        return NULL;
+    }
+
+    PyTensorBasis* self = (PyTensorBasis*) PyTensorBasis_Type.tp_alloc(&PyTensorBasis_Type, 0);
+    if (!self) { return NULL; }
+
+    self->width = width;
+    self->depth = depth;
+
+    PyObject* db = construct_tensor_db(width, depth);
+    if (db == NULL) {
+        Py_DECREF(self);
+        return NULL;
+    }
+
+    Py_XSETREF(self->degree_begin, db);
+    return self;
 }

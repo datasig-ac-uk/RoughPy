@@ -40,7 +40,7 @@ class CacheArray : Allocator_ {
 
 public:
 
-    explicit CacheArray(std::size_t size) : ptr_{nullptr}, size_(size){
+    explicit CacheArray(std::size_t size) : size_(size){
         if (size > InlineSize) {
             ptr_ = Traits::allocate(*this, size);
             alloc_ = size;
@@ -57,13 +57,13 @@ public:
 
     [[nodiscard]]
     constexpr T const& operator[](std::size_t index) const noexcept {
-        assert(index < size_);
+        assert(ptr_ != nullptr && index < size_);
         return ptr_[index];
     }
 
     [[nodiscard]]
     constexpr T& operator[](std::size_t index) noexcept {
-        assert(index < size_);
+        assert(ptr_ != nullptr && index < size_);
         return ptr_[index];
     }
 

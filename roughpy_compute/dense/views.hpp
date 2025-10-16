@@ -267,7 +267,6 @@ public:
     [[nodiscard]]
     constexpr Degree min_degree() const noexcept { return min_degree_; }
 
-
     [[nodiscard]]
     constexpr DenseVectorFragment<Iter_> at_level(Degree degree) const noexcept
     {
@@ -279,6 +278,14 @@ public:
         };
     }
 
+    [[nodiscard]]
+    constexpr DenseVectorFragment<Iter_> level_range(Degree degree_begin,
+        Degree degree_end) const noexcept
+    {
+        auto begin_idx = basis_.degree_begin[degree_begin];
+        auto end_idx = basis_.degree_begin[degree_end+1];
+        return {data_ + begin_idx, end_idx - begin_idx};
+    }
 
     [[nodiscard]]
     constexpr reference operator[](Index i) noexcept { return data_[i]; }
@@ -298,10 +305,11 @@ public:
     constexpr DenseTensorView truncate(Degree new_max_degree,
                                        Degree new_min_degree = 0) const noexcept
     {
+
         return {
                 this->data(),
                 this->basis(),
-                std::max(this->min_degree_, new_min_degree),
+                std::max(this->min_degree(), new_min_degree),
                 std::min(this->max_degree(), new_max_degree)
         };
     }

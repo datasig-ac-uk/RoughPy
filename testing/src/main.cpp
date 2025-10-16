@@ -3,6 +3,7 @@
 //
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <cstdio>
 
@@ -45,7 +46,9 @@ int main(int argc, char** argv)
 
     // make sure the output format is exactly as for the gtest_main function
     printf("Running main() from file %s\n", __FILE__);
-    testing::InitGoogleTest(&argc, argv);
+    // testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleMock(&argc, argv);
+
     const auto result = RUN_ALL_TESTS();
 
 #if defined(_WIN32) && defined(_DEBUG) && !defined(RPY_NO_DEBUG_MODIFICATION)
