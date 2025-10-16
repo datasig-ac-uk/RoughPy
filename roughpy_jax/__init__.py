@@ -11,27 +11,25 @@ except ImportError as e:
     raise ImportError("RoughPy JAX requires jax library. For install instructions please refer to https://docs.jax.dev/en/latest/installation.html") from e
 
 try:
-    # FIXME review if load library ffi approach OK and best path format (base dir required for testing atm)
+    # XLA functions loaded directly from .so rather than python module
     _rpy_jax_internals = ctypes.cdll.LoadLibrary("roughpy_jax/_rpy_jax_internals.so")
 except OSError as e:
     _rpy_jax_internals = None
     raise OSError("RoughPy JAX CPU backend is not installed correctly") from e
 else:
-    jax.ffi.register_ffi_target(
+    # Register CPU functions by looking up expected names in .so
+    cpu_func_names = [
         "cpu_dense_ft_fma",
-        jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_fma),
-        platform="cpu"
-    )
-    jax.ffi.register_ffi_target(
         "cpu_dense_ft_exp",
-        jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_exp),
-        platform="cpu"
-    )
-    jax.ffi.register_ffi_target(
-        "cpu_dense_ft_log",
-        jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_log),
-        platform="cpu"
-    )
+        "cpu_dense_ft_log"
+    ]
+    for func_name in cpu_func_names:
+        func_ptr = getattr(_rpy_jax_internals, func_name)
+        jax.ffi.register_ffi_target(
+            func_name,
+            jax.ffi.pycapsule(func_ptr),
+            platform="cpu"
+        )
 
 
 @dataclass
