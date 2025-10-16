@@ -35,6 +35,7 @@ message(STATUS "XLA include directory: ${XLA_DIR}")
 add_library(RoughPy_JaxModule SHARED
     src/cpu/dense_ft_fma.cpp
     src/cpu/dense_ft_exp.cpp
+    src/cpu/dense_ft_log.cpp
 )
 
 # Ensure that XLA FFI definitions are visible in genreated .so

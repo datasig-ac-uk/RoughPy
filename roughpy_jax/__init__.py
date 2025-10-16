@@ -27,6 +27,11 @@ else:
         jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_exp),
         platform="cpu"
     )
+    jax.ffi.register_ffi_target(
+        "cpu_dense_ft_log",
+        jax.ffi.pycapsule(_rpy_jax_internals.cpu_dense_ft_log),
+        platform="cpu"
+    )
 
 
 @dataclass
@@ -162,6 +167,42 @@ def dense_ft_exp(
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_exp",
+        jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
+    )
+
+    return call(
+        out_basis.degree_begin,
+        x.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        arg_depth=np.int32(x.basis.depth)
+    )
+
+
+def dense_ft_log(
+    x: DenseFreeTensor,
+    out_basis: TensorBasis | None = None
+) -> DenseFreeTensor:
+    """
+    Free tensor logarithm
+
+    This function is equivalent to `a = log(x)`.
+
+    Currently only floating point scalars (np.float32) are supported.
+
+    If `out_basis` is not specified, the same basis as `x` is used.
+
+    :param x: argument
+    :param out_basis: optional output basis.
+    :return: tensor logarithm of `x`
+    """
+    if x.data.dtype != jnp.float32:
+        raise ValueError("dense_ft_log x array only supports float32 dtype")
+
+    out_basis = out_basis or x.basis
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_log",
         jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
     )
 
