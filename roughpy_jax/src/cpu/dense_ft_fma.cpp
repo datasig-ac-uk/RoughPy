@@ -47,30 +47,19 @@ ffi::Error cpu_dense_ft_fma_impl(
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma result size must match out size");
     }
 
-    auto [out_min_degree, out_max_degree] = default_min_max_degree(out_depth, depth);
-    if (out_max_degree < out_min_degree) {
-        return ffi::Error::InvalidArgument("out min degree must be less than max degree");
-    }
-
-    auto [lhs_min_degree, lhs_max_degree] = default_min_max_degree(lhs_depth, depth);
-    if (lhs_max_degree < lhs_min_degree) {
-        return ffi::Error::InvalidArgument("lhs min degree must be less than max degree");
-    }
-
-    auto [rhs_min_degree, rhs_max_degree] = default_min_max_degree(rhs_depth, depth);
-    if (rhs_max_degree < rhs_min_degree) {
-        return ffi::Error::InvalidArgument("rhs min degree must be less than max degree");
-    }
-
     // FIXME for review: narrowing conversion on width and depth, underlying types
     auto degree_begin_i64 = copy_degree_begin_i64(degree_begin, degree_begin_size);
     TensorBasis basis = { degree_begin_i64.data(), width, depth };
 
     // Compute fma into result originally copied from out array
     copy_result_buffer(out, out_size, result);
-    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, out_min_degree, out_max_degree);
-    DenseTensorView<const RpyFloatType*> lhs_view(lhs.typed_data(), basis, lhs_min_degree, lhs_max_degree);
-    DenseTensorView<const RpyFloatType*> rhs_view(rhs.typed_data(), basis, rhs_min_degree, rhs_max_degree);
+
+    int out_max_degree = default_max_degree(out_depth, depth);
+    int lhs_max_degree = default_max_degree(lhs_depth, depth);
+    int rhs_max_degree = default_max_degree(rhs_depth, depth);
+    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, 0, out_max_degree);
+    DenseTensorView<const RpyFloatType*> lhs_view(lhs.typed_data(), basis, 0, lhs_max_degree);
+    DenseTensorView<const RpyFloatType*> rhs_view(rhs.typed_data(), basis, 0, rhs_max_degree);
     basic::ft_fma(result_view, lhs_view, rhs_view);
 
     return ffi::Error::Success();

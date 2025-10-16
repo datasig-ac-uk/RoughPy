@@ -33,18 +33,15 @@ ffi::Error cpu_dense_ft_exp_impl(
         return ffi::Error::InvalidArgument("cpu_dense_ft_exp result size must match out size");
     }
 
-    auto [arg_min_degree, arg_max_degree] = default_min_max_degree(arg_depth, depth);
-    if (arg_max_degree < arg_min_degree) {
-        return ffi::Error::InvalidArgument("arg min degree must be less than max degree");
-    }
-
     // FIXME for review: narrowing conversion on width and depth, underlying types
     auto degree_begin_i64 = copy_degree_begin_i64(degree_begin, degree_begin_size);
     TensorBasis basis = { degree_begin_i64.data(), width, depth };
 
     zero_result_buffer(arg_size, result);
-    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, arg_min_degree, arg_max_degree);
-    DenseTensorView<const RpyFloatType*> arg_view(arg.typed_data(), basis, arg_min_degree, arg_max_degree);
+
+    int arg_max_degree = default_max_degree(arg_depth, depth);
+    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, 0, arg_max_degree);
+    DenseTensorView<const RpyFloatType*> arg_view(arg.typed_data(), basis, 0, arg_max_degree);
     intermediate::ft_exp(result_view, arg_view);
 
     return ffi::Error::Success();
