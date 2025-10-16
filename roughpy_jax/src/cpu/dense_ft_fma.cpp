@@ -1,7 +1,7 @@
-#include "cpu/dense_ft_fma.hpp"
-
 #include <cstring>
 #include <type_traits>
+
+#include "xla_includes.hpp"
 
 #include "roughpy_compute/dense/basic/free_tensor_fma.hpp"
 

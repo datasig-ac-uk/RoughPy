@@ -1,8 +1,0 @@
-#ifndef ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP
-#define ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP
-
-#include "xla_includes.hpp"
-
-XLA_FFI_DECLARE_HANDLER_SYMBOL(cpu_dense_ft_fma);
-
-#endif // ROUGHPY_JAX_CPU_DENSE_FT_FMA_HPP
