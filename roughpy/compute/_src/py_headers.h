@@ -33,6 +33,16 @@
 #define RPY_CPT_TYPE_NAME(type) "_rpy_compute_internals." # type
 
 
+#if PY_VERSION_HEX < PYVER_HEX(3, 13)
+#ifdef __cplusplus
+#define RPC_PY_KWORD_CAST(ARG) const_cast<char**>(ARG)
+#else
+#define RPC_PY_KWORD_CAST(ARG) (char**) ARG
+#endif
+#else
+#define RPC_PY_KWORD_CAST(ARG) ARG
+#endif
+
 
 
 
