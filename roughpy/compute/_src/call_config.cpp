@@ -46,6 +46,10 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
     PyObject* data_obj = PyObject_GetAttrString(basis_obj, "depth");
     if (data_obj == nullptr) { return false; }
     depth = PyLong_AsInt32(data_obj);
+    Py_DECREF(data_obj);
+    if (depth == -1) {
+        // Error already set
+        return false;
     }
 
     return true;
