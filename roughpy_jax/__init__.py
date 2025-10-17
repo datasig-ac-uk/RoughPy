@@ -128,7 +128,7 @@ def dense_ft_fma(
         jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
     )
 
-    return call(
+    fma_data = call(
         basis.degree_begin,
         a.data,
         b.data,
@@ -139,6 +139,8 @@ def dense_ft_fma(
         lhs_depth=np.int32(lhs_depth),
         rhs_depth=np.int32(rhs_depth)
     )
+
+    return DenseFreeTensor(fma_data, basis) # FIXME review: basis from b, dtype shape from a
 
 
 def dense_ft_exp(
@@ -168,13 +170,15 @@ def dense_ft_exp(
         jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
     )
 
-    return call(
+    exp_data = call(
         out_basis.degree_begin,
         x.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
         arg_depth=np.int32(x.basis.depth)
     )
+
+    return DenseFreeTensor(exp_data, out_basis)
 
 
 def dense_ft_log(
@@ -204,13 +208,15 @@ def dense_ft_log(
         jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
     )
 
-    return call(
+    log_data = call(
         out_basis.degree_begin,
         x.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
         arg_depth=np.int32(x.basis.depth)
     )
+
+    return DenseFreeTensor(log_data, out_basis)
 
 
 FreeTensor = DenseFreeTensor

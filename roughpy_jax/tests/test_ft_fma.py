@@ -37,7 +37,7 @@ def test_dense_ft_fma():
     d = rpj.dense_ft_fma(a, b, c)
 
     expected = jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=jnp.float32)
-    assert jnp.allclose(d, expected)
+    assert jnp.allclose(d.data, expected)
 
 
 def test_dense_ft_fma_compare_compute():
