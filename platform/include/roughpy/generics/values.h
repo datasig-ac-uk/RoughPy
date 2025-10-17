@@ -159,7 +159,7 @@ public:
     using ConstRef::data;
 
     template<typename T = void>
-    RPY_NO_DISCARD T *data() const noexcept {
+    RPY_NO_DISCARD constexpr T *data() noexcept {
         return const_cast<T *>(ConstRef::data<T>());
     }
 

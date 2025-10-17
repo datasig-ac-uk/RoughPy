@@ -109,27 +109,27 @@ PyTypeObject PyLieMultiplicationCache_Type = {
         nullptr,                              /* tp_getattro */
         nullptr,                              /* tp_setattro */
         nullptr,                              /* tp_as_buffer */
-        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_DISALLOW_INSTANTIATION, /* tp_flags */
-        nullptr,                                                /* tp_doc */
-        nullptr, /* tp_traverse */
-        nullptr, /* tp_clear */
-        nullptr, /* tp_richcompare */
-        0,       /* tp_weaklistoffset */
-        nullptr, /* tp_iter */
-        nullptr, /* tp_iternext */
-        nullptr, /* tp_methods */
-        nullptr, /* tp_members */
-        nullptr, /* tp_getset */
-        nullptr, /* tp_base */
-        nullptr, /* tp_dict */
-        nullptr, /* tp_descr_get */
-        nullptr, /* tp_descr_set */
-        0,       /* tp_dictoffset */
-        nullptr, /* tp_init */
-        nullptr, /* tp_alloc */
-        nullptr, /* tp_new */
-        nullptr, /* tp_free */
-        nullptr, /* tp_is_gc */
+        Py_TPFLAGS_DEFAULT,                   /* tp_flags */
+        nullptr,                              /* tp_doc */
+        nullptr,                              /* tp_traverse */
+        nullptr,                              /* tp_clear */
+        nullptr,                              /* tp_richcompare */
+        0,                                    /* tp_weaklistoffset */
+        nullptr,                              /* tp_iter */
+        nullptr,                              /* tp_iternext */
+        nullptr,                              /* tp_methods */
+        nullptr,                              /* tp_members */
+        nullptr,                              /* tp_getset */
+        nullptr,                              /* tp_base */
+        nullptr,                              /* tp_dict */
+        nullptr,                              /* tp_descr_get */
+        nullptr,                              /* tp_descr_set */
+        0,                                    /* tp_dictoffset */
+        nullptr,                              /* tp_init */
+        nullptr,                              /* tp_alloc */
+        nullptr,                              /* tp_new */
+        nullptr,                              /* tp_free */
+        nullptr,                              /* tp_is_gc */
 };
 }
 
@@ -441,7 +441,10 @@ int init_lie_multiplication_cache(PyObject* module)
     PyObject* lmc_cache = PyDict_New();
     if (lmc_cache == nullptr) { return -1; }
 
-    if (PyModule_Add(module, "_lmc_cache", lmc_cache) < 0) { return -1; }
+    if (PyModule_AddObject(module, "_lmc_cache", lmc_cache) < 0) {
+        Py_DECREF(lmc_cache);
+        return -1;
+    }
 
     return 0;
 }
