@@ -44,7 +44,8 @@ int32_t RPC_PyLongAsInt32(PyObject* pylong);
 #elif PY_VERSION_HEX >= PYVER_HEX(3, 13) && INT_MAX == INT32_MAX
 #define PyLong_AsInt32(obj) PyLong_AsInt((obj))
 #else
-#define PyLong_AsInt32((obj)) RPC_PyLongAsInt32((obj))
+#define PyLong_AsInt32(obj) RPC_PyLongAsInt32((obj))
+#endif
 #endif
 
 
