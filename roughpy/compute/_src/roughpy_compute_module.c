@@ -7,14 +7,7 @@
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
 
-static int init_module(PyObject* module)
-{
-    if (init_lie_basis(module) < 0) { return -1; }
-    if (init_tensor_basis(module) < 0) { return -1; }
-    if (init_sparse_matrix(module) < 0) { return -1; }
 
-    return 0;
-}
 
 static PyMethodDef roughpy_compute_methods[] = {
         {             "dense_ft_fma",
@@ -62,7 +55,9 @@ static PyMethodDef roughpy_compute_methods[] = {
 };
 
 static PyModuleDef_Slot roughpy_compute_slots[] = {
-        {                Py_mod_exec,                                init_module},
+    {Py_mod_exec, init_lie_basis},
+    {Py_mod_exec, init_tensor_basis},
+    {Py_mod_exec, init_sparse_matrix},
 #if PY_VERSION_HEX >= PYVER_HEX(3, 12)
         {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED},
 #endif

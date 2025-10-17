@@ -169,6 +169,40 @@ int32_t RPC_PyLongAsInt32(PyObject* pylong);
 #endif
 
 
+/*
+ * Python 3.10 added the PyModule_AddObjectRef, which is the new way that objects
+ * should be added to a Python module. This function does not steal a reference
+ * to the object, so it must always be decremented from the calling scope after
+ * completion. For the benefit of Python 3.9 we replicate a version of this here
+ * which is not quite as sophisticated as the "real" implementation but does
+ * the same job.
+ */
+#if PY_VERSION_HEX < PYVER_HEX(3, 10)
+static inline int PyModule_AddObjectRef(PyObject* module, const char* name, PyObject* object)
+{
+  if (object == NULL) { return -1; }
+  Py_INCREF(object);
+  if (PyModule_AddObject(module, name, object) < 0) {
+    Py_DECREF(object);
+    return -1;
+  }
+  return 0;
+}
+#endif
+
+
+/*
+ * Similarly, Python 3.13 added PyModule_Add which always steals a reference to
+ * obj even on failure.
+ */
+#if PY_VERSION_HEX < PYVER_HEX(3, 13)
+static inline int PyModule_Add(PyObject* module, const char* name, PyObject* obj)
+{
+  int result = PyModule_AddObjectRef(module, name, obj);
+  Py_XDECREF(obj);
+  return result;
+}
+#endif
 
 
 #ifdef __cplusplus

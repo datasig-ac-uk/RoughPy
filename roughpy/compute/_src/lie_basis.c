@@ -90,9 +90,7 @@ int init_lie_basis(PyObject* module)
 
     if (PyType_Ready(&PyLieBasis_Type) < 0) { return -1; }
 
-    Py_INCREF(&PyLieBasis_Type);
-    if (PyModule_AddObject(module, "LieBasis", (PyObject*) &PyLieBasis_Type) < 0) {
-        Py_DECREF(&PyLieBasis_Type);
+    if (PyModule_AddObjectRef(module, "LieBasis", (PyObject*) &PyLieBasis_Type) < 0) {
         return -1;
     }
 
