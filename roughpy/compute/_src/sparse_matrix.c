@@ -6,8 +6,10 @@
 #include <string.h>
 #include <stddef.h>
 
-#include <structmember.h>
 
+
+#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#include "py_compat.h"
 
 #define SMH_FLAGS_FORMAT_MASK 0x7;
 
