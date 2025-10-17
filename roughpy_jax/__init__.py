@@ -117,15 +117,15 @@ def ft_fma(
 
     _check_basis_compat(a.basis, b.basis, c.basis)
 
-    # FIXME review default basis, this is worked from ft_fma in roughpy/compute/__init__.py
-    basis = b.basis
+    # Use same basis convention as ft_fma in roughpy/compute
+    basis = c.basis
     out_depth = c.basis.depth
     lhs_depth = -1
     rhs_depth = -1
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_fma",
-        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
+        jax.ShapeDtypeStruct(c.data.shape, c.data.dtype)
     )
 
     fma_data = call(
@@ -140,7 +140,7 @@ def ft_fma(
         rhs_depth=np.int32(rhs_depth)
     )
 
-    return DenseFreeTensor(fma_data, basis) # FIXME review: basis from b, dtype shape from a
+    return DenseFreeTensor(fma_data, basis)
 
 
 def ft_exp(
