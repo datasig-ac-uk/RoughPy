@@ -9,6 +9,7 @@
 #include "lie_multiplication_cache.h"
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
+#include "py_compat.h"
 
 struct _PyLieBasis
 {

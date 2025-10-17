@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <structmember.h>
 
+#include "py_compat.h"
+
 static PyObject* tensor_basis_new(PyTypeObject* type,
                                   PyObject* Py_UNUSED(args),
                                   PyObject* Py_UNUSED(kwargs))
