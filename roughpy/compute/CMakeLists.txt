@@ -29,6 +29,8 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/lie_multiplication_cache.cpp
         _src/lie_multiplication_cache.h
         _src/py_binary_array_fn.hpp
+        _src/py_compat.c
+        _src/py_compat.h
         _src/py_headers.h
         _src/py_obj_handle.hpp
         _src/py_ternary_array_fn.hpp
