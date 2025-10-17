@@ -85,9 +85,9 @@ PyMemberDef PySparseMatrix_members[] = {
          "indices"},
         {"indptr", Py_T_OBJECT_EX, offsetof(PySparseMatrix, indptr), 0,
          "indptr"},
-        {"rows", Py_T_PYSSIZET, offsetof(PySparseMatrix, rows), READONLY,
+        {"rows", Py_T_PYSSIZET, offsetof(PySparseMatrix, rows), Py_READONLY,
          "rows"},
-        {"cols", Py_T_PYSSIZET, offsetof(PySparseMatrix, cols), READONLY,
+        {"cols", Py_T_PYSSIZET, offsetof(PySparseMatrix, cols), Py_READONLY,
          "cols"},
         {NULL}
 };
