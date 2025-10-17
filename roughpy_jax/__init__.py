@@ -75,6 +75,12 @@ class DenseFreeTensor(NamedTuple):
     basis: TensorBasis
 
 
+"""
+Free tensor alias, assumed to be dense without prefix
+"""
+FreeTensor = DenseFreeTensor
+
+
 def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
     out_width = out_basis.width
 
@@ -83,11 +89,7 @@ def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
             raise ValueError(f"Incompatible width for basis {i}")
 
 
-def ft_fma(
-    a: DenseFreeTensor,
-    b: DenseFreeTensor,
-    c: DenseFreeTensor
-) -> DenseFreeTensor:
+def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     """
     Free tensor fused multiply-add.
 
@@ -99,7 +101,7 @@ def ft_fma(
     to be the output. In JAX arrays are immutable so this version differs by
     copying `a` and returing a new result with its size and shape.
 
-    The basis is taken from `b`.
+    The basis is taken from `c`.
 
     :param a: addition operand
     :param b: left-hand multiply operand
@@ -128,7 +130,7 @@ def ft_fma(
         jax.ShapeDtypeStruct(c.data.shape, c.data.dtype)
     )
 
-    fma_data = call(
+    out_data = call(
         basis.degree_begin,
         a.data,
         b.data,
@@ -140,13 +142,60 @@ def ft_fma(
         rhs_depth=np.int32(rhs_depth)
     )
 
-    return DenseFreeTensor(fma_data, basis)
+    return FreeTensor(out_data, basis)
 
 
-def ft_exp(
-    x: DenseFreeTensor,
-    out_basis: TensorBasis | None = None
-) -> DenseFreeTensor:
+def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
+    """
+    Free tensor multiply.
+
+    This function is equivalent to `c = a * b`.
+
+    Currently only floating point scalars (np.float32) are supported.
+
+    The basis is taken from `b`.
+
+    :param a: left-hand multiply operand
+    :param b: right-hand multiple operand
+    :return: result
+    """
+    if a.data.dtype != jnp.float32:
+        raise ValueError("cpu_dense_ft_mul a array only supports float32 dtype")
+
+    if b.data.dtype != jnp.float32:
+        raise ValueError("cpu_dense_ft_mul b array only supports float32 dtype")
+
+    _check_basis_compat(a.basis, b.basis)
+
+    zero_add_data = jnp.zeros_like(a.data)
+
+    # Use same basis convention as ft_mul in roughpy/compute
+    basis = b.basis
+    out_depth = b.basis.depth
+    lhs_depth = -1
+    rhs_depth = b.basis.depth
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_fma",
+        jax.ShapeDtypeStruct(b.data.shape, b.data.dtype)
+    )
+
+    out_data = call(
+        basis.degree_begin,
+        zero_add_data,
+        a.data,
+        b.data,
+        width=np.int32(basis.width),
+        depth=np.int32(basis.depth),
+        out_depth=np.int32(out_depth),
+        lhs_depth=np.int32(lhs_depth),
+        rhs_depth=np.int32(rhs_depth)
+    )
+
+    return FreeTensor(out_data, basis)
+
+
+def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     """
     Free tensor exponent
 
@@ -170,7 +219,7 @@ def ft_exp(
         jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
     )
 
-    exp_data = call(
+    out_data = call(
         out_basis.degree_begin,
         x.data,
         width=np.int32(out_basis.width),
@@ -178,13 +227,10 @@ def ft_exp(
         arg_depth=np.int32(x.basis.depth)
     )
 
-    return DenseFreeTensor(exp_data, out_basis)
+    return FreeTensor(out_data, out_basis)
 
 
-def ft_log(
-    x: DenseFreeTensor,
-    out_basis: TensorBasis | None = None
-) -> DenseFreeTensor:
+def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     """
     Free tensor logarithm
 
@@ -208,7 +254,7 @@ def ft_log(
         jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
     )
 
-    log_data = call(
+    out_data = call(
         out_basis.degree_begin,
         x.data,
         width=np.int32(out_basis.width),
@@ -216,7 +262,4 @@ def ft_log(
         arg_depth=np.int32(x.basis.depth)
     )
 
-    return DenseFreeTensor(log_data, out_basis)
-
-
-FreeTensor = DenseFreeTensor
+    return FreeTensor(out_data, out_basis)
