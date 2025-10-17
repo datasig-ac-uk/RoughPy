@@ -63,8 +63,8 @@ static PyMethodDef roughpy_compute_methods[] = {
 
 static PyModuleDef_Slot roughpy_compute_slots[] = {
         {                Py_mod_exec,                                init_module},
-#if Py_VERSION_HEX >= PYVER_HEX(3, 12)
-        {Py_mod_multipe_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED},
+#if PY_VERSION_HEX >= PYVER_HEX(3, 12)
+        {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED},
 #endif
         {                          0,                                       NULL}
 };
