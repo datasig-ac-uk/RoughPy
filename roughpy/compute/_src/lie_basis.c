@@ -9,7 +9,7 @@
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
 
-#define PRC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include "py_compat.h"
 
 struct _PyLieBasis

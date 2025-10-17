@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#define PRC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include "py_compat.h"
 
 static PyObject* tensor_basis_new(PyTypeObject* type,
