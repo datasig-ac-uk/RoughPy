@@ -197,9 +197,11 @@ int init_tensor_basis(PyObject* module)
 {
     if (PyType_Ready(&PyTensorBasis_Type) < 0) { return -1; }
 
-    if (PyModule_AddObjectRef(module,
+    Py_INCREF(&PyTensorBasis_Type);
+    if (PyModule_AddObject(module,
                               "TensorBasis",
                               (PyObject*) &PyTensorBasis_Type) < 0) {
+        Py_DECREF(&PyTensorBasis_Type);
         return -1;
     }
 
