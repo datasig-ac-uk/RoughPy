@@ -902,15 +902,10 @@ static int t2l_rbracket(PyLieBasis* basis,
 
     const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
     const int typenum = PyArray_TYPE(helper->data);
-    const void* lval = lframe->data;
 
     LieWord word = {{first, 0}};
     for (npy_intp i = 0; i < rframe->size; ++i) {
         word.right = 1 + rframe->indices[i];
-
-        // if (word.letters[0] == word.letters[1]) {
-        //     continue;
-        // }
 
         const LieMultiplicationCacheEntry* entry = PyLieMultiplicationCache_get(
             cache,
@@ -921,19 +916,13 @@ static int t2l_rbracket(PyLieBasis* basis,
             return -1;
         }
 
-        void* val = &rframe->data[i * itemsize];
         for (npy_intp j = 0; j < entry->size; ++j) {
             npy_intp pkey = entry->data[2 * j];
             npy_intp pval = entry->data[2 * j + 1];
 
-            // void* out_val = smh_get_scalar_for_index(helper, pkey-1);
             insert_zero(scratch, typenum);
-            // if (out_val == NULL) {
-            //     // py exc already set
-            //     return -1;
-            // }
 
-            add_product(scratch, lval, val, typenum, pval);
+            add_product(scratch, lframe->data, &rframe->data[i*itemsize], typenum, pval);
             if (smh_insert_value_at_index(helper, pkey-1, scratch) < 0) {
                 // py exc already set
                 return -1;
