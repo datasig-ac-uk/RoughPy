@@ -1,8 +1,9 @@
 #include "tensor_basis.h"
 
 #include <stdlib.h>
-#include <structmember.h>
+#include <stddef.h>
 
+#define PRC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include "py_compat.h"
 
 static PyObject* tensor_basis_new(PyTypeObject* type,
@@ -161,9 +162,9 @@ static void tensor_basis_dealloc(PyTensorBasis* self)
 
 static PyMemberDef PyTensorBasis_members[] = {
         {"width", Py_T_INT, offsetof(PyTensorBasis, width),
-         READONLY, "width of the basis"},
+         Py_READONLY, "width of the basis"},
         {"depth", Py_T_INT, offsetof(PyTensorBasis, depth),
-         READONLY, "depth of the basis"},
+         Py_READONLY, "depth of the basis"},
         {"degree_begin", Py_T_OBJECT_EX,offsetof(PyTensorBasis, degree_begin),
          0, "degree_begin"},
         {NULL}

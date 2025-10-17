@@ -4,11 +4,12 @@
 #include <stdalign.h>
 #include <stddef.h>
 #include <string.h>
-#include <structmember.h>
 
 #include "lie_multiplication_cache.h"
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
+
+#define PRC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include "py_compat.h"
 
 struct _PyLieBasis
@@ -45,12 +46,12 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
 static PyMemberDef PyLieBasis_members[] = {
 
-        {"width", Py_T_INT, offsetof(PyLieBasis, width), READONLY,
+        {"width", Py_T_INT, offsetof(PyLieBasis, width), Py_READONLY,
          "width of the basis"},
-        {"depth", Py_T_INT, offsetof(PyLieBasis, depth), READONLY,
+        {"depth", Py_T_INT, offsetof(PyLieBasis, depth), Py_READONLY,
          "depth of the basis"},
         {"degree_begin", Py_T_OBJECT_EX,offsetof(PyLieBasis, degree_begin),
-         READONLY, "array of offsets for each degree"},
+         Py_READONLY, "array of offsets for each degree"},
         {"data", Py_T_OBJECT_EX, offsetof(PyLieBasis, data), 0, "basis data"},
         {NULL}
 };
