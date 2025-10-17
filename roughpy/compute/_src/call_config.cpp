@@ -1,5 +1,5 @@
 #include "call_config.hpp"
-
+#include "py_compat.h"
 
 #include <roughpy_compute/common/basis.hpp>
 
@@ -36,7 +36,7 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
 {
     PyObject* width_obj = PyObject_GetAttrString(basis_obj, "width");
     if (width_obj == nullptr) { return false; }
-    width = PyLong_AsLong(width_obj);
+    width = PyLong_AsInt32(width_obj);
     Py_DECREF(width_obj);
     if (width == -1) {
         // Error already set
@@ -45,11 +45,7 @@ static bool width_and_depth_from_obj(PyObject* basis_obj,
 
     PyObject* data_obj = PyObject_GetAttrString(basis_obj, "depth");
     if (data_obj == nullptr) { return false; }
-    depth = PyLong_AsLong(data_obj);
-    Py_DECREF(data_obj);
-    if (depth == -1) {
-        // Error already set
-        return false;
+    depth = PyLong_AsInt32(data_obj);
     }
 
     return true;

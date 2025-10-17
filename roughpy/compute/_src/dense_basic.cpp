@@ -24,6 +24,7 @@
 #include "call_config.hpp"
 
 #include "py_binary_array_fn.hpp"
+#include "py_compat.h"
 #include "py_obj_handle.hpp"
 #include "py_ternary_array_fn.hpp"
 #include "tensor_basis.h"
@@ -105,7 +106,7 @@ PyObject* py_dense_ft_fma(
                 args,
                 kwargs,
                 "OOOO|iii",
-                kwords,
+                RPC_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &lhs_obj,
                 &rhs_obj,
@@ -208,7 +209,7 @@ PyObject* py_dense_ft_inplace_mul(
                 args,
                 kwargs,
                 "OOO|ii",
-                kwords,
+                RPC_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &rhs_obj,
                 &basis_obj,
@@ -307,7 +308,7 @@ PyObject* py_dense_antipode(
                 args,
                 kwargs,
                 "OOO|ii",
-                kwords,
+                RPC_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &arg_obj,
                 &basis_obj,
@@ -407,7 +408,7 @@ PyObject* py_dense_ft_adj_lmul(
                 args,
                 kwargs,
                 "OOOO|iii",
-                kwords,
+                RPC_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &op_obj,
                 &arg_obj,
@@ -500,7 +501,7 @@ PyObject* py_dense_st_fma(PyObject* Py_UNUSED(self), PyObject* args, PyObject* k
     if (!PyArg_ParseTupleAndKeywords(
         args, kwargs,
         "OOOO",
-        kwords,
+        RPC_PY_KWORD_CAST(kwords),
         &out_obj,
         &lhs_obj,
         &rhs_obj,
@@ -884,7 +885,7 @@ PyObject* py_dense_lie_to_tensor(
                 args,
                 kwargs,
                 "OOOO|OO",
-                kwords,
+                RPC_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &arg_obj,
                 &l2t_matrix,
@@ -1137,7 +1138,7 @@ PyObject* py_dense_tensor_to_lie(
                 args,
                 kwargs,
                 "OOOO|OO",
-                kwords,
+                RPC_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &arg_obj,
                 &t2l_matrix,
