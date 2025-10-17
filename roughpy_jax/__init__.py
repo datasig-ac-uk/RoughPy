@@ -22,7 +22,8 @@ else:
         "cpu_dense_ft_fma",
         "cpu_dense_ft_exp",
         "cpu_dense_ft_log",
-        "cpu_dense_ft_fmexp"
+        "cpu_dense_ft_fmexp",
+        "cpu_dense_ft_antipode",
     ]
     for func_name in cpu_func_names:
         func_ptr = getattr(_rpy_jax_internals, func_name)
@@ -181,6 +182,34 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     )
 
     return FreeTensor(out_data, basis)
+
+
+# FIXME review: should this have ft_ prefix? compute version does not
+def ft_antipode(a: FreeTensor) -> FreeTensor:
+    """
+    Antipode of a free tensor
+
+    :param a: argument
+    :return: new tensor with antipode of `a`
+    """
+    _check_tensor_data_type(a, "antipode a expecting float32 array data")
+
+    out_basis = a.basis
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_antipode",
+        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
+    )
+
+    out_data = call(
+        out_basis.degree_begin,
+        a.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        arg_depth=np.int32(a.basis.depth)
+    )
+
+    return FreeTensor(out_data, out_basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
