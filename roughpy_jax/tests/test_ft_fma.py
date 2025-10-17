@@ -8,7 +8,7 @@ def test_dense_ft_fma_basis_mismatch():
 
     # Mismatch first and second widths
     with pytest.raises(ValueError):
-        rpj.dense_ft_fma(
+        rpj.ft_fma(
             rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2)),
             rpj.FreeTensor(zeros, rpj.TensorBasis(3, 2)),
             rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2))
@@ -16,7 +16,7 @@ def test_dense_ft_fma_basis_mismatch():
 
     # Mismatch first and third widths
     with pytest.raises(ValueError):
-        rpj.dense_ft_fma(
+        rpj.ft_fma(
             rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2)),
             rpj.FreeTensor(zeros, rpj.TensorBasis(2, 2)),
             rpj.FreeTensor(zeros, rpj.TensorBasis(3, 2))
@@ -34,7 +34,7 @@ def test_dense_ft_fma():
     c = rpj.FreeTensor(c_data, basis)
 
     # FIXME Should this be named dense_ft_fma or just ft_fma as in roughpy_compute?
-    d = rpj.dense_ft_fma(a, b, c)
+    d = rpj.ft_fma(a, b, c)
 
     expected = jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=jnp.float32)
     assert jnp.allclose(d.data, expected)

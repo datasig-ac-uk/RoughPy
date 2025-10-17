@@ -83,7 +83,7 @@ def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
             raise ValueError(f"Incompatible width for basis {i}")
 
 
-def dense_ft_fma(
+def ft_fma(
     a: DenseFreeTensor,
     b: DenseFreeTensor,
     c: DenseFreeTensor
@@ -143,7 +143,7 @@ def dense_ft_fma(
     return DenseFreeTensor(fma_data, basis) # FIXME review: basis from b, dtype shape from a
 
 
-def dense_ft_exp(
+def ft_exp(
     x: DenseFreeTensor,
     out_basis: TensorBasis | None = None
 ) -> DenseFreeTensor:
@@ -181,7 +181,7 @@ def dense_ft_exp(
     return DenseFreeTensor(exp_data, out_basis)
 
 
-def dense_ft_log(
+def ft_log(
     x: DenseFreeTensor,
     out_basis: TensorBasis | None = None
 ) -> DenseFreeTensor:
