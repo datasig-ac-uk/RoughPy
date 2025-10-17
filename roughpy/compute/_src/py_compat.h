@@ -35,13 +35,13 @@ extern "C" {
 #if PY_VERSION_HEX < PYVER_HEX(3, 10)
 static inline PyObject* Py_NewRef(PyObject* obj)
 {
-  Py_INCREF(obj)
+  Py_INCREF(obj);
   return obj;
 }
 
 static inline PyObject* Py_XNewRef(PyObject* obj)
 {
-  Py_XINCREF(obj)
+  Py_XINCREF(obj);
   return obj;
 }
 
