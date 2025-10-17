@@ -26,11 +26,11 @@ ffi::Error cpu_dense_ft_exp_impl(
 
     auto [result_size, result_dim] = get_buffer_dims(*result);
     if (result_dim != arg_dim) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_exp result array must match out array");
+        return ffi::Error::InvalidArgument("cpu_dense_ft_exp result dimension must match out array");
     }
 
     if (result_size != arg_size) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_exp result size must match out size");
+        return ffi::Error::InvalidArgument("cpu_dense_ft_exp result size must match out array");
     }
 
     // FIXME for review: narrowing conversion on width and depth, underlying types

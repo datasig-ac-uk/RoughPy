@@ -59,20 +59,18 @@ def test_dense_ft_exp_and_fmexp():
     e = rpj.FreeTensor(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
     x = _create_rng_zero_ft(rng, basis)
 
-    # e_exp_b = rpj.ft_fmexp(e, x)
-    # exp_b = rpj.ft_exp(x)
-    # assert jnp.allclose(e_exp_b.data, exp_b.data)
+    e_exp_b = rpj.ft_fmexp(e, x)
+    exp_b = rpj.ft_exp(x)
+    assert jnp.allclose(e_exp_b.data, exp_b.data)
 
 
 def test_dense_ft_fmexp():
+    rng = np.random.default_rng()
+
     basis = rpj.TensorBasis(2, 2)
     a = rpj.FreeTensor(jnp.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0]), basis)
+    x = _create_rng_zero_ft(rng, basis)
+    b = rpj.ft_fmexp(a, x)
 
-    # rng = jnp.random.default_rng()
-    # x = rpj.FreeTensor(jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
-    # x.data[1:basis.width+1] = rng.normal(size=(basis.width,))
-
-    # FIXME add ft_fmexp
-    # b = rpj.ft_fmexp(a, x)
-    # expected = rpj.ft_mul(a, rpj.dense_ft_exp(x))
-    # assert_array_almost_equal(b.data, expected.data)
+    expected = rpj.ft_mul(a, rpj.ft_exp(x))
+    assert jnp.allclose(b.data, expected.data)
