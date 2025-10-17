@@ -190,7 +190,11 @@ int init_sparse_matrix(PyObject* module)
 {
     if (PyType_Ready(&PySparseMatrix_Type) < 0) { return -1; }
 
-    PyModule_AddObjectRef(module, "SparseMatrix", (PyObject*) &PySparseMatrix_Type);
+    Py_INCREF(&PySparseMatrix_Type);
+    if (PyModule_AddObject(module, "SparseMatrix", (PyObject*) &PySparseMatrix_Type) < 0) {
+        Py_DECREF(&PySparseMatrix_Type);
+        return -1;
+    }
     return 0;
 }
 
