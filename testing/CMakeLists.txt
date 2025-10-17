@@ -2,7 +2,7 @@
 # GLOBAL flag to make it available to the rest of the project.
 find_package(GTest CONFIG REQUIRED GLOBAL)
 
-if (NOT TARGET GTest::gtest)
+if (NOT TARGET GTest::gtest OR NOT TARGET GTest::gmock)
     message(FATAL_ERROR "GTest::gtest target not defined")
 endif ()
 
