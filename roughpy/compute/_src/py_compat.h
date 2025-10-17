@@ -30,6 +30,24 @@ extern "C" {
 #endif
 
 
+// Python 3.10 added new functions Py_NewRef and Py_XNewRef which are very useful
+// we need those all over the place, so backport
+#if PY_VERSION_HEX < PYVER_HEX(3, 10)
+static inline PyObject* Py_NewRef(PyObject* obj)
+{
+  Py_INCREF(obj)
+  return obj;
+}
+
+static inline PyObject* Py_XNewRef(PyObject* obj)
+{
+  Py_XINCREF(obj)
+  return obj;
+}
+
+
+#endif
+
 
 // Python 3.14 introduced PyLong_AsInt32 which we use in places to convert to a
 // 32-bit integer when int and long are not the same size (e.g. most 64-bit Unix
