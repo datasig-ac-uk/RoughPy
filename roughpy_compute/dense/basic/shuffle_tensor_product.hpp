@@ -37,7 +37,6 @@ void st_fma(
     using Mask = BitMask<Index>;
 
     const Index width = out.width();
-    const Index tile_size = width;
 
     CacheArray<int16_t, 32> letters(out.max_degree());
 
