@@ -213,7 +213,7 @@ static inline int compute_bracket_half(
 )
 {
     const LieMultiplicationCacheEntry* outer_product
-            = PyLieMultiplicationCache_get(cache, basis, &outer_word);
+            = PyLieMultiplicationCache_get(cache, basis, &outer_word, 0);
     if (RPY_UNLIKELY(outer_product == nullptr)) {
         // error already set
         return -1;
@@ -225,7 +225,7 @@ static inline int compute_bracket_half(
         const npy_intp val = outer_product->data[2 * i + 1];
 
         auto* inner_product
-                = PyLieMultiplicationCache_get(cache, basis, &inner);
+                = PyLieMultiplicationCache_get(cache, basis, &inner, 0);
         if (RPY_UNLIKELY(inner_product == nullptr)) {
             // error already set
             return -1;
@@ -271,7 +271,9 @@ static LieCacheEntryPtr compute_bracket_slow(
         PyLieMultiplicationCache* cache,
         PyLieBasis* basis,
         const LieWord& word,
-        const npy_intp sign
+        const npy_intp sign,
+        const int32_t lhs_degree,
+        const int32_t rhs_degree
 )
 {
     LieWord parents, outer_word, inner;
@@ -339,7 +341,9 @@ static LieCacheEntryPtr compute_bracket(
         PyLieMultiplicationCache* inner,
         PyLieBasis* basis,
         const LieWord* word,
-        const int32_t degree
+        const int32_t degree,
+        const int32_t lhs_degree,
+        const int32_t rhs_degree
 ) noexcept
 {
 
@@ -387,7 +391,7 @@ static LieCacheEntryPtr compute_bracket(
     // }
 
     try {
-        return compute_bracket_slow(inner, basis, target, sign);
+        return compute_bracket_slow(inner, basis, target, sign, lhs_degree, rhs_degree);
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return nullptr;
@@ -397,7 +401,8 @@ static LieCacheEntryPtr compute_bracket(
 const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
         PyLieMultiplicationCache* cache,
         PyLieBasis* basis,
-        const LieWord* word
+        const LieWord* word,
+        int32_t degree
 )
 {
     static constexpr LieMultiplicationCacheEntry empty{{{0, 0}}, 0, {0}};
@@ -424,7 +429,16 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
 
     const auto lhs_deg = PyLieBasis_degree(basis, word->letters[0]);
     const auto rhs_deg = PyLieBasis_degree(basis, word->letters[1]);
-    const auto degree = lhs_deg + rhs_deg;
+    const auto test_degree = lhs_deg + rhs_deg;
+    if (degree > 0 && test_degree != degree) {
+        PyErr_Format(PyExc_ValueError,
+            "mismatched degrees in Lie bracket: %d != %d + %d",
+            degree, lhs_deg, rhs_deg
+            );
+        return nullptr;
+    } else {
+        degree = test_degree;
+    }
 
     if (degree > PyLieBasis_depth(basis)) { return &empty; }
 
@@ -451,7 +465,7 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
                 entry->data[2 * i + 1] = -it->second->data[2 * i + 1];
             }
         } else {
-            entry = compute_bracket(cache, basis, word, degree);
+            entry = compute_bracket(cache, basis, word, degree, lhs_deg, rhs_deg);
         }
     }
 
