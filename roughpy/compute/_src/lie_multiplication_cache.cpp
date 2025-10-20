@@ -285,6 +285,15 @@ static LieCacheEntryPtr compute_bracket_slow(
         return nullptr;
     }
 
+    if (RPY_UNLIKELY(parents.right == 0)) {
+        // This is really unlikely to happen unless something has gone
+        // drastically wrong
+        PyErr_Format(PyExc_RuntimeError,
+            "found word [%zd, %zd] that expanded incorrectly to [0,0]",
+            word.left, word.right);
+        return nullptr;
+    }
+
     if (parents.letters[0] > 0 && word.letters[0] != parents.letters[0]) {
         outer_word = {
                 {word.letters[0], parents.letters[0]}
