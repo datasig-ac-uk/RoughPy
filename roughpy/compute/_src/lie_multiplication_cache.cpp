@@ -452,9 +452,6 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
             }
         } else {
             entry = compute_bracket(cache, basis, word, degree);
-            if (!entry) {
-                return nullptr;
-            }
         }
     }
 
