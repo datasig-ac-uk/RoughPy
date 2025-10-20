@@ -15,10 +15,8 @@
 #define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include "py_compat.h"
 
-struct _PyLieBasis
-{
-    PyObject_HEAD
-    int32_t width;
+struct _PyLieBasis {
+    PyObject_HEAD int32_t width;
     int32_t depth;
     PyObject* degree_begin;
     PyObject* data;
@@ -1205,7 +1203,6 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
                 goto finish;
             }
 #endif
-
 
             if (lparent == rparent) { continue; }
 
