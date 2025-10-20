@@ -28,7 +28,7 @@ PyObject* get_lie_multiplication_cache(PyLieBasis* basis);
 
 const LieMultiplicationCacheEntry*
 PyLieMultiplicationCache_get(PyLieMultiplicationCache* cache,
-    PyLieBasis* basis, const LieWord* word);
+    PyLieBasis* basis, const LieWord* word, int32_t degree);
 
 
 RPY_NO_EXPORT
