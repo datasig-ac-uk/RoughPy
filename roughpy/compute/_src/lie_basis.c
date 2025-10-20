@@ -888,44 +888,52 @@ static int t2l_normalize_cols(SMHelper* helper, npy_intp width, npy_intp depth)
     return 0;
 }
 
-
-static int t2l_rbracket(PyLieBasis* basis,
-                        SMHelper* helper,
-                        const SMHFrame* lframe,
-                        const SMHFrame* rframe,
-                        npy_intp first)
+static int t2l_rbracket(
+        PyLieBasis* basis,
+        SMHelper* helper,
+        const SMHFrame* lframe,
+        const SMHFrame* rframe,
+        int32_t degree
+)
 {
     alignas(16) char scratch[16];
 
-    PyLieMultiplicationCache* cache = (PyLieMultiplicationCache*) basis->
-            multiplier_cache;
+    PyLieMultiplicationCache* cache
+            = (PyLieMultiplicationCache*) basis->multiplier_cache;
 
     const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
     const int typenum = PyArray_TYPE(helper->data);
 
-    LieWord word = {{first, 0}};
-    for (npy_intp i = 0; i < rframe->size; ++i) {
-        word.right = 1 + rframe->indices[i];
+    LieWord word;
+    for (npy_intp i = 0; i < lframe->size; ++i) {
+        word.left = 1 + lframe->indices[i];
+        for (npy_intp j = 0; j < rframe->size; ++j) {
+            word.right = 1 + rframe->indices[j];
 
-        const LieMultiplicationCacheEntry* entry = PyLieMultiplicationCache_get(
-            cache,
-            basis,
-            &word);
-        if (entry == NULL) {
-            // py exc already set
-            return -1;
-        }
-
-        for (npy_intp j = 0; j < entry->size; ++j) {
-            npy_intp pkey = entry->data[2 * j];
-            npy_intp pval = entry->data[2 * j + 1];
-
-            insert_zero(scratch, typenum);
-
-            add_product(scratch, lframe->data, &rframe->data[i*itemsize], typenum, pval);
-            if (smh_insert_value_at_index(helper, pkey-1, scratch) < 0) {
+            const LieMultiplicationCacheEntry* entry
+                    = PyLieMultiplicationCache_get(cache, basis, &word, degree);
+            if (entry == NULL) {
                 // py exc already set
                 return -1;
+            }
+
+            for (npy_intp k = 0; k < entry->size; ++k) {
+                npy_intp pkey = entry->data[2 * k];
+                npy_intp pval = entry->data[2 * k + 1];
+
+                insert_zero(scratch, typenum);
+
+                add_product(
+                        scratch,
+                        &lframe->data[i*itemsize],
+                        &rframe->data[j * itemsize],
+                        typenum,
+                        pval
+                );
+                if (smh_insert_value_at_index(helper, pkey - 1, scratch) < 0) {
+                    // py exc already set
+                    return -1;
+                }
             }
         }
     }
@@ -1000,12 +1008,12 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
 
             if (lparent == rparent) { continue; }
 
-            // lframe corresponds to a letter, but the 1 is useful to us.
             const SMHFrame* lframe = &helper.frames[lparent];
             const SMHFrame* rframe = &helper.frames[rparent];
 
             // Compute the bracket [lparent, r(rparent)]
-            if (t2l_rbracket(basis, &helper, lframe, rframe, lparent) < 0) {
+            if (t2l_rbracket(basis, &helper, lframe, rframe, degree)
+                < 0) {
                 // py exc already set
                 goto finish;
             }
