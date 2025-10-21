@@ -46,6 +46,7 @@ static PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op);
 // PylieBasis methods
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
+static PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key);
 static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
 {
     const long arg = PyLong_AsLong(obj);
@@ -1323,6 +1324,80 @@ PyObject* PyLieBasis_get(int32_t width, int32_t depth)
     return (PyObject*) self;
 }
 
+/*
+ * Lie word function implementations
+ */
+int LieWordFunction_FromPyCallable(
+        PyObject* callable,
+        LieWordFunction* function
+)
+{
+    Py_INCREF(callable);
+    function->function_obj = (void*) callable;
+    function->type = LieWordFunction_Py_Function;
+    return 0;
+}
+int LieWordFunction_FromCFunction(void* c_func, LieWordFunction* function)
+{
+    function->function_obj = (void*) c_func;
+    function->type = LieWordFunction_C_Function;
+    return 0;
+}
+void LieWordFunction_destroy(LieWordFunction* function)
+{
+    if (function->type == LieWordFunction_Py_Function) {
+        Py_XDECREF(function->function_obj);
+    }
+}
+int LieWordFunction_call_bool(
+        PyLieBasis* basis,
+        LieWordFunction* function,
+        const LieWord* lhs,
+        const LieWord* rhs
+)
+{
+    if (function->function_obj == NULL) { return -1; }
+
+    switch (function->type) {
+        case LieWordFunction_C_Function:
+            return ((LieWordCFunction) function->function_obj)(basis, lhs, rhs);
+        case LieWordFunction_Py_Function:
+            do {
+                PyObject* result_obj = PyObject_CallFunction(
+                        (PyObject*) function->function_obj,
+                        "(nn)(nn)O",
+                        lhs->left,
+                        lhs->right,
+                        rhs->left,
+                        rhs->right,
+                        (PyObject*) basis
+                );
+
+                if (result_obj == NULL) { return -1; }
+
+                int result = PyObject_IsTrue(result_obj);
+                Py_DECREF(result_obj);
+
+                return result;
+            } while (0);
+    }
+
+    PyErr_SetString(
+            PyExc_SystemError,
+            "reached end of function that should be inaccessible"
+    );
+    return -1;
+}
+int LieWord_standard_less(
+        PyLieBasis* Py_UNUSED(basis),
+        const LieWord* lhs,
+        const LieWord* rhs
+)
+{
+    return lhs->left < rhs->left
+            || (lhs->left == rhs->left && lhs->right < rhs->right);
+}
+
 npy_intp PyLieBasis_get_foliage(
         PyLieBasis* basis,
         npy_intp key,
@@ -1417,6 +1492,43 @@ npy_intp PyLieBasis_get_foliage(
 
     return written_len;
 }
+PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key_obj)
+{
+    assert(PyObject_IsInstance(self, (PyObject*) &PyLieBasis_Type));
+    PyLieBasis* basis = (PyLieBasis*) self;
+
+    PyObject* result = NULL;
+
+    const npy_intp key = PyLong_AsSsize_t(key_obj);
+    if (key == -1 && PyErr_Occurred()) { return result; }
+
+    npy_intp* foliage = PyMem_Malloc(basis->depth * sizeof(npy_intp));
+
+    const npy_intp num_letters
+            = PyLieBasis_get_foliage(basis, key, foliage, basis->depth);
+
+    if (num_letters == -1) {
+        // error already set
+        goto finish;
+    }
+
+    result = PyTuple_New(num_letters);
+    if (result == NULL) { goto finish; }
+
+    for (npy_intp i = 0; i < num_letters; ++i) {
+        PyObject* digit = PyLong_FromSsize_t(foliage[i]);
+        if (digit == NULL) {
+            Py_DECREF(result);
+            goto finish;
+        }
+        PyTuple_SET_ITEM(result, i, digit);
+    }
+
+finish:
+    PyMem_Free(foliage);
+    return result;
+}
+
 static int check_lie_data_standard_ordering(
         PyArrayObject* data_arr,
         PyArrayObject* degree_begin_arr,
