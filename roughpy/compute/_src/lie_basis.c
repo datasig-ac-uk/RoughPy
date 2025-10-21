@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "lie_basis.h"
 
+#include <math.h>
 #include <stdalign.h>
 #include <stddef.h>
 #include <string.h>
@@ -48,6 +49,30 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
 static PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key);
 
+static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
+{
+    const long arg = PyLong_AsLong(obj);
+
+    if (arg == -1 && PyErr_Occurred() != NULL) { return 0; }
+
+    int check = 0;
+
+    check |= arg == PLB_Major_Bourbaki;
+    check |= arg == PLB_Major_Reutenauer;
+
+    if (!check) {
+        PyErr_Format(
+                PyExc_ValueError,
+                "Lie basis definition indicator does not match a known "
+                "Hall set definition"
+        );
+        return 0;
+    }
+
+    *(PyLieBasis_Major*) result = check;
+
+    return 1;
+}
 
 /*******************************************************************************
  * Lie basis type
@@ -157,10 +182,11 @@ static int construct_lie_basis(PyLieBasis* self)
      * large enough to hold the data. We can resize down
      * later.
      */
-    npy_intp alloc_size = 1;
-    for (npy_intp i = 1; i <= self->depth; ++i) {
-        alloc_size = 1 + alloc_size * self->width;
-    }
+    // npy_intp alloc_size = 1;
+    // for (npy_intp i = 1; i <= self->depth; ++i) {
+    //     alloc_size = 1 + alloc_size * self->width;
+    // }
+    const npy_intp alloc_size = 1 + compute_lie_dim(self->width, self->depth);
 
     const npy_intp degree_begin_shape[1] = {self->depth + 2};
     degree_begin = PyArray_SimpleNew(1, degree_begin_shape, NPY_INTP);
@@ -231,22 +257,30 @@ static int construct_lie_basis(PyLieBasis* self)
 
     Py_END_ALLOW_THREADS;
 
-    data_shape[0] = size;
+    // data_shape[0] = size;
 
-    PyObject* resized_data = PyArray_SimpleNew(2, data_shape, NPY_INTP);
-    // PyObject* tmp = PyArray_Newshape((PyArrayObject*) data, &dims,
-    // NPY_CORDER);
-    if (resized_data == NULL) { goto cleanup; }
+    // PyObject* resized_data = PyArray_SimpleNew(2, data_shape, NPY_INTP);
+    // // PyObject* tmp = PyArray_Newshape((PyArrayObject*) data, &dims,
+    // // NPY_CORDER);
+    // if (resized_data == NULL) { goto cleanup; }
+    //
+    // npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
+    // memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
 
-    npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
-    memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
-
-    Py_XSETREF(self->data, resized_data);
+    // Py_XSETREF(self->data, resized_data);
     // resized_data is now a borrowed reference, clear it to avoid misuse
-    resized_data = NULL;
+    // resized_data = NULL;
     // Py_XDECREF(self->data);
     // self->data = tmp;
     // tmp = NULL;
+    Py_XSETREF(self->data, data);
+    /*
+     * At this point we have transferred ownership of data to the struct where
+     * it rightfully belongs, so the data variable now does not hold a strong
+     * reference. To avoid a use-after-free bug caused by Py_XDECREF below, we
+     * clear this reference.
+     */
+    data = NULL;
 
     // Move the degree_begin data into the struct;
     // Py_XDECREF(self->degree_begin);
@@ -254,7 +288,7 @@ static int construct_lie_basis(PyLieBasis* self)
     // degree_begin = NULL;
     Py_XSETREF(self->degree_begin, degree_begin);
     /*
-     * At this point we have transferred owneship of degree_begin to the struct
+     * At this point we have transferred ownership of degree_begin to the struct
      * where it rightfully belongs, so the degree_begin variable now does not
      * hold a strong reference. To avoid a use-after-free bug caused by the
      * Py_XDECREF below, we clear this reference.
@@ -270,6 +304,83 @@ cleanup:
     Py_XDECREF(data);
 
     return ret;
+}
+
+#define LBC_SET_ERR(MESSAGE)                                                   \
+    do {                                                                       \
+        if (msg != NULL) { *msg = MESSAGE; }                                   \
+    } while (0)
+
+static int check_data_arrays_basics(
+        PyArrayObject* data,
+        PyArrayObject* degree_begin,
+        int32_t width,
+        int32_t depth,
+        char const** msg
+)
+{
+    if (!PyArray_IS_C_CONTIGUOUS(degree_begin)) {
+        LBC_SET_ERR("degree_begin must be contiguous");
+        return 0;
+    }
+
+    if (PyArray_NDIM(degree_begin) != 1) {
+        LBC_SET_ERR("degree_begin should be 1-dimensional");
+        return 0;
+    }
+
+    const npy_intp* db_shape = PyArray_SHAPE(degree_begin);
+    if (db_shape[0] < depth + 2) {
+        LBC_SET_ERR("degree_begin must contain at least depth + 2 entries");
+        return 0;
+    }
+
+    if (PyArray_TYPE(degree_begin) != NPY_INTP) {
+        LBC_SET_ERR("degree_begin must have dtype equal to np.intp");
+        return 0;
+    }
+    const npy_intp* db_data = (npy_intp*) PyArray_DATA(degree_begin);
+
+    if (db_data[0] != 0) {
+        LBC_SET_ERR("degree begin must start at 0");
+        return 0;
+    }
+    if (depth >= 1 && db_data[2] - db_data[1] != width) {
+        LBC_SET_ERR("mismatch between width and degree_begin for level 1");
+        return 0;
+    }
+
+    for (int32_t i = 2; i <= depth; ++i) {
+        if (db_data[i] <= db_data[i - 1]) {
+            LBC_SET_ERR("degree_begin must be strictly increasing");
+            return 0;
+        }
+    }
+
+    if (!PyArray_IS_C_CONTIGUOUS(data)) {
+        LBC_SET_ERR("data must be C-contiguous");
+        return 0;
+    }
+
+    if (PyArray_NDIM(data) != 2) {
+        LBC_SET_ERR("data must be 2-dimensional");
+        return 0;
+    }
+
+    const npy_intp* data_shape = PyArray_SHAPE(data);
+    if (data_shape[1] != 2 || data_shape[0] != db_data[depth + 1]) {
+        LBC_SET_ERR(
+                "data shape must be (N, 2) where N = degree_begin[depth+1]"
+        );
+        return 0;
+    }
+
+    if (PyArray_TYPE(data) != NPY_INTP) {
+        LBC_SET_ERR("data must have dtype = np.intp");
+        return 0;
+    }
+
+    return 1;
 }
 
 static int
@@ -291,61 +402,19 @@ check_data_and_db(PyLieBasis* self, PyObject* data, PyObject* degree_begin)
         return -1;
     }
 
-    const PyArrayObject* data_arr = (PyArrayObject*) data;
-    const PyArrayObject* db_arr = (PyArrayObject*) degree_begin;
+    PyArrayObject* data_arr = (PyArrayObject*) data;
+    PyArrayObject* db_arr = (PyArrayObject*) degree_begin;
 
-    if (PyArray_TYPE(data_arr) != NPY_INTP) {
-        PyErr_SetString(
-                PyExc_ValueError,
-                "data must be (pointer-sized) integers"
-        );
-        return -1;
-    }
-
-    if (PyArray_TYPE(db_arr) != NPY_INTP) {
-        PyErr_SetString(
-                PyExc_ValueError,
-                "degree_begin must be (pointer-sized) integers"
-        );
-        return -1;
-    }
-
-    if (PyArray_NDIM(data_arr) != 2) {
-        PyErr_SetString(
-                PyExc_ValueError,
-                "expected 2-dimensional array for data"
-        );
-        return -1;
-    }
-
-    if (PyArray_DIM(data_arr, 1) != 2) {
-        PyErr_SetString(PyExc_ValueError, "expected data to of shape (N, 2)");
-        return -1;
-    }
-
-    if (PyArray_NDIM(db_arr) != 1) {
-        PyErr_SetString(
-                PyExc_ValueError,
-                "expected 1-dimensional array for db"
-        );
-        return -1;
-    }
-
-    if (PyArray_DIM(db_arr, 0) < self->depth + 2) {
-        PyErr_SetString(
-                PyExc_ValueError,
-                "degree_begin array must be contain at least depth + 2 elements"
-        );
-        return -1;
-    }
-
-    const npy_intp size = *(npy_intp*) PyArray_GETPTR1(db_arr, self->depth + 1);
-
-    if (PyArray_DIM(data_arr, 0) < size) {
-        PyErr_SetString(
-                PyExc_ValueError,
-                "mismatch in size between data and degree_begin arrays"
-        );
+    const char* msg = NULL;
+    if (!check_data_arrays_basics(
+                data_arr,
+                db_arr,
+                self->width,
+                self->depth,
+                &msg
+        )) {
+        assert(msg != NULL);
+        PyErr_SetString(PyExc_ValueError, msg);
         return -1;
     }
 
@@ -1317,5 +1386,481 @@ PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key_obj)
 
 finish:
     PyMem_Free(foliage);
+    return result;
+}
+
+static int check_lie_data_standard_ordering(
+        PyArrayObject* data_arr,
+        PyArrayObject* degree_begin_arr,
+        int32_t width,
+        int32_t depth,
+        PyLieBasis_Major major,
+        char const** msg
+)
+{
+    if (!check_data_arrays_basics(
+                data_arr,
+                degree_begin_arr,
+                width,
+                depth,
+                msg
+        )) {
+        return 0;
+    }
+
+    const npy_intp* db_data = (const npy_intp*) PyArray_DATA(degree_begin_arr);
+    const npy_intp* data = (const npy_intp*) PyArray_DATA(data_arr);
+
+    if (db_data[1] > 0 && (data[0] != 0 || data[1] != 0)) {
+        LBC_SET_ERR("first element of data must be the neutral element");
+    }
+
+    // If the depth is 0 then there is nothing more we need to do
+    if (depth < 1) { return 1; }
+
+    for (npy_intp l = db_data[1]; l < db_data[2]; ++l) {
+        if (data[2 * l + 0] != 0 && data[2 * l + 1] != l) {
+            LBC_SET_ERR(
+                    "data must contain letters represented as pairs (0, l)"
+            );
+            return 0;
+        }
+    }
+
+    for (int32_t degree = 2; degree <= depth; ++degree) {
+
+        for (npy_intp elt_idx = db_data[degree]; elt_idx < db_data[degree + 1];
+             ++elt_idx) {
+
+            if (major == PLB_Major_Bourbaki) {
+
+                const npy_intp a = data[2 * elt_idx + 0];
+                const npy_intp bc = data[2 * elt_idx + 1];
+
+                if (a >= bc) {
+                    LBC_SET_ERR(
+                            "elements h = [k,l] in the basis must satisfy k < l"
+                    );
+                    return 0;
+                }
+
+                const npy_intp b = data[2 * bc + 0];
+                // const npy_intp c = data[2 * bc + 1];
+
+                if (b != 0 && b > a) {
+                    LBC_SET_ERR("when h=[a,[b,c]] we must have b <= a < [b,c]");
+                    return 0;
+                }
+            } else if (major == PLB_Major_Reutenauer) {
+                const npy_intp xy = data[2 * elt_idx + 0];
+                const npy_intp c = data[2 * elt_idx + 1];
+
+                if (elt_idx >= c) {
+                    LBC_SET_ERR("with h=[k,l] we must have h < l");
+                    return 0;
+                }
+
+                const npy_intp x = data[2 * xy + 0];
+                const npy_intp y = data[2 * xy + 1];
+
+                // xy is a letter or xy = [x,y] and y >= c
+                if (x != 0 && (x >= y || y < c)) {
+                    LBC_SET_ERR(
+                            "when h=[[a,b],c] one must have x < y and b >= c"
+                    );
+                    return 0;
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+typedef int (*order_evaluator)(void*, npy_intp, npy_intp, PyArrayObject*, PyArrayObject*);
+
+/**
+ * @brief Evaluate the total ordering on two Lie keys
+ *
+ * Returns true (1) if left <= right and false (0) otherwise. Returns -1 on
+ * error, which should be propagated to the Python interpreter.
+ */
+static int call_py_order_function(
+        void* ordering,
+        npy_intp left,
+        npy_intp right,
+        PyArrayObject* data,
+        PyArrayObject* db
+)
+{
+    PyObject* result = PyObject_CallFunction(
+            (PyObject*) ordering,
+            "nnOO",
+            left,
+            right,
+            (PyObject*) data,
+            (PyObject*) db
+    );
+
+    if (result == NULL) { return -1; }
+    // From here on out we need to make sure we decrement result before return
+
+    // For now, just check if the result is truthy
+    const int ret = PyObject_IsTrue(result);
+
+    // finish:
+    Py_DECREF(result);
+    return ret;
+}
+
+static int check_lie_data_custom_ordering(
+        PyArrayObject* data_arr,
+        PyArrayObject* degree_begin_arr,
+        int32_t width,
+        int32_t depth,
+        void* total_order,
+        order_evaluator evaluate_order,
+        PyLieBasis_Major major,
+        char const** msg
+)
+{
+    if (!check_data_arrays_basics(
+                data_arr,
+                degree_begin_arr,
+                width,
+                depth,
+                msg
+        )) {
+        return 0;
+    }
+
+    const npy_intp* db_data = (const npy_intp*) PyArray_DATA(degree_begin_arr);
+    const npy_intp* data = (const npy_intp*) PyArray_DATA(data_arr);
+
+    if (db_data[1] > 0 && (data[0] != 0 || data[1] != 0)) {
+        LBC_SET_ERR("first element of data must be the neutral element");
+    }
+
+    // If the depth is 0 then there is nothing more we need to do
+    if (depth < 1) { return 1; }
+
+    for (npy_intp l = db_data[1]; l < db_data[2]; ++l) {
+        if (data[2 * l + 0] != 0 && data[2 * l + 1] != l) {
+            LBC_SET_ERR(
+                    "data must contain letters represented as pairs (0, l)"
+            );
+            return 0;
+        }
+    }
+
+    for (int32_t degree = 2; degree <= depth; ++degree) {
+
+        for (npy_intp elt_idx = db_data[degree]; elt_idx < db_data[degree + 1];
+             ++elt_idx) {
+            if (major == PLB_Major_Bourbaki) {
+                const npy_intp a = data[2 * elt_idx + 0];
+                const npy_intp bc = data[2 * elt_idx + 1];
+
+                const int a_le_bc = evaluate_order(
+                        total_order,
+                        a,
+                        bc,
+                        data_arr,
+                        degree_begin_arr
+                );
+                if (a_le_bc < 0) {
+                    // error already set
+                    return -1;
+                }
+
+                if (!a_le_bc || a == bc) {
+                    LBC_SET_ERR(
+                            "elements h = (k, l) in the basis must satisfy k < "
+                            "l"
+                    );
+                    return 0;
+                }
+
+                const npy_intp b = data[2 * bc + 0];
+                // const npy_intp c = data[2 * bc + 1];
+
+                if (b != 0) {
+                    const int b_le_a = evaluate_order(
+                            total_order,
+                            b,
+                            a,
+                            data_arr,
+                            degree_begin_arr
+                    );
+                    if (b_le_a < 0) {
+                        // error already set
+                        return -1;
+                    }
+
+                    if (!b_le_a) {
+                        LBC_SET_ERR(
+                                "when h=[a,[b,c]] we must have b <= a < [b,c]"
+                        );
+                        return 0;
+                    }
+                }
+            } else if (major == PLB_Major_Reutenauer) {
+                const npy_intp xy = data[2 * elt_idx + 0];
+                const npy_intp z = data[2 * elt_idx + 1];
+
+                const int h_le_z = evaluate_order(
+                        total_order,
+                        elt_idx,
+                        z,
+                        data_arr,
+                        degree_begin_arr
+                );
+
+                if (!h_le_z || elt_idx == z) {
+                    LBC_SET_ERR("when h=[k,l] we must have h < l");
+                    return 0;
+                }
+
+                const npy_intp x = data[2 * xy + 0];
+                const npy_intp y = data[2 * xy + 1];
+
+                if (x != 0) {
+                    const int x_le_y = evaluate_order(
+                            total_order,
+                            x,
+                            y,
+                            data_arr,
+                            degree_begin_arr
+                    );
+
+                    if (!x_le_y || x == y) {
+                        LBC_SET_ERR("when h=[[a,b],c] we must have x < y");
+                        return 0;
+                    }
+
+                    const int z_le_y = evaluate_order(
+                            total_order,
+                            z,
+                            y,
+                            data_arr,
+                            degree_begin_arr
+                    );
+
+                    if (!z_le_y) {
+                        LBC_SET_ERR("when h=[[a,b],c] we must have b >= c");
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+int PyLieBasis_check_data_internal(
+        PyArrayObject* data_arr,
+        PyArrayObject* degree_begin_arr,
+        int32_t width,
+        int32_t depth,
+        PyObject* total_order,
+        PyLieBasis_Major major,
+        char const** msg
+)
+{
+    if (total_order == NULL) {
+        return check_lie_data_standard_ordering(
+                data_arr,
+                degree_begin_arr,
+                width,
+                depth,
+                major,
+                msg
+        );
+    }
+
+    if (!PyCallable_Check(total_order)) {
+        PyErr_SetString(PyExc_TypeError, "total_order must be callable");
+        return -1;
+    }
+
+    return check_lie_data_custom_ordering(
+            data_arr,
+            degree_begin_arr,
+            width,
+            depth,
+            total_order,
+            call_py_order_function,
+            major,
+            msg
+    );
+}
+PyObject* PyLieBasis_check_data(
+        PyObject* Py_UNUSED(self),
+        PyObject* args,
+        PyObject* kwargs
+)
+{
+    static char* kwords[]
+            = {"data",
+               "degree_begin",
+               "width",
+               "depth",
+               "total_order",
+               "basis_major",
+               "raise_on_fail"};
+
+    PyObject* ret = NULL;
+    PyArrayObject *data = NULL, *degree_begin = NULL;
+    PyObject* total_order = NULL;
+    int32_t width, depth;
+    int throw_on_fail = 0;
+    PyLieBasis_Major major = PLB_Major_Bourbaki;
+
+    if (!PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "O&O&ii|OO&p",
+                kwords,
+                PyArray_Converter,
+                &data,
+                PyArray_Converter,
+                &degree_begin,
+                &width,
+                &depth,
+                &total_order,
+                PyLIeBasis_Major_converter,
+                &major,
+                &throw_on_fail
+        )) {
+        goto finish;
+    }
+
+    const char* message = NULL;
+    char const** msg_arg = (throw_on_fail) ? &message : NULL;
+
+    int internal_result = PyLieBasis_check_data_internal(
+            data,
+            degree_begin,
+            width,
+            depth,
+            total_order,
+            major,
+            msg_arg
+    );
+
+    if (internal_result < 0) { goto finish; }
+
+    if (throw_on_fail && !internal_result) {
+        assert(message != NULL);
+        PyErr_SetString(PyExc_ValueError, message);
+        goto finish;
+    }
+
+    ret = PyBool_FromLong(internal_result);
+
+finish:
+    Py_XDECREF(data);
+    Py_XDECREF(degree_begin);
+    return ret;
+}
+
+#undef LBC_SET_ERR
+
+/*******************************************************************************
+ * Compute degree size
+ ******************************************************************************/
+
+/* clang-format off */
+static const int8_t mobius_values_cache[32]
+        = {0, // dummy
+           1, -1, -1,  0, -1,  1, -1,  0,  0,  1,
+          -1,  0, -1,  1,  1,  0, -1,  0, -1,  0,
+           1,  1, -1,  0,  0,  1,  0,  0, -1, -1,
+          -1};
+/* clang-format on */
+
+static inline npy_intp mobius_func(int32_t n)
+{
+    if (n <= 0) { return 0; }
+
+    /*
+     * The vast majority of calls to mobius will be for small values. We cache
+     * the first 31 such values (+1 implicit value to make the indexing
+     * convenient).
+     */
+    if (n <= 31) { return mobius_values_cache[n]; }
+
+    int n_prime_factors = 0;
+
+    // power 2 can be done efficiently
+    if ((n & 1) == 0) {
+        n >>= 1;
+        if ((n & 1) == 0) {
+            // n is not square free, mu(n) = 0
+            return 0;
+        }
+        ++n_prime_factors;
+    }
+
+    // test the odd divisors up to sqrt(n)
+    // note that the odds that are not primes do waste a division op, but
+    // this will always be false since we will have already removed all the
+    // prime factors earlier in the process
+    for (int32_t d = 3; d * d <= n; d += 2) {
+        if ((n % d) == 0) {
+            n /= d;
+            if ((n % d) == 0) {
+                // n is not square free, mu(n) = 0
+                return 0;
+            }
+            ++n_prime_factors;
+        }
+    }
+
+    // if we haven't already eliminated all the prime factors of n then what
+    // remains of n must itself be a prime
+    if (n > 1) { ++n_prime_factors; }
+
+    return (n_prime_factors & 1) ? -1 : 1;
+}
+
+static inline npy_intp int_pow(npy_intp base, int32_t exp)
+{
+    npy_intp result = 1;
+    npy_intp b = base;
+    int32_t e = exp;
+    while (e > 0) {
+        if (e & 1) { result *= b; }
+        e >>= 1;
+        if (e) { b *= b; }
+    }
+    return result;
+}
+
+npy_intp compute_lie_degree_dim(int32_t width, int32_t degree)
+{
+    if (degree <= 0) { return 0; }
+    if (degree == 1) { return width; }
+
+    npy_intp sum = 0;
+    for (int32_t d = 1; d <= degree; ++d) {
+        div_t qr = div(degree, d);
+        if (qr.rem == 0) {
+            const npy_intp mu = mobius_func(d);
+            if (mu != 0) { sum += mu * int_pow(width, qr.quot); }
+        }
+    }
+
+    return sum / degree;
+}
+npy_intp compute_lie_dim(const int32_t width, const int32_t depth)
+{
+    npy_intp result = 0;
+
+    for (int32_t d=1; d<=depth; ++d) {
+        result += compute_lie_degree_dim(width, d);
+    }
+
     return result;
 }

@@ -108,6 +108,8 @@ class DenseLie:
     basis: LieBasis
 
 
+check_lie_basis_data = _api("1.0.0")(_internals.check_lie_basis_data)
+
 # Type aliases
 FreeTensor = DenseFreeTensor
 ShuffleTensor = DenseShuffleTensor
