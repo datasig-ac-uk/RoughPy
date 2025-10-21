@@ -447,7 +447,7 @@ static LieCacheEntryPtr compute_bracket(
     // }
 
     try {
-        return compute_bracket_slow(inner, basis, target, sign, lhs_degree, rhs_degree);
+        return compute_bracket_jacobi(inner, basis, target, sign, lhs_degree, rhs_degree);
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return nullptr;
