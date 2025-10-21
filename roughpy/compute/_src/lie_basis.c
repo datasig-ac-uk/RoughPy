@@ -47,6 +47,31 @@ static PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op);
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
 static PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key);
+
+// LieWordFunction routines
+static int
+LieWordFunction_FromPyCallable(PyObject* callable, LieWordFunction* function);
+static int
+LieWordFunction_FromCFunction(void* c_func, LieWordFunction* function);
+
+static void LieWordFunction_destroy(LieWordFunction* function);
+
+static int LieWordFunction_call_bool(
+        PyLieBasis* basis,
+        LieWordFunction* function,
+        const LieWord* lhs,
+        const LieWord* rhs
+);
+
+static int LieWord_standard_less(
+        PyLieBasis* basis,
+        const LieWord* lhs,
+        const LieWord* rhs
+);
+
+static int
+LieWord_lyndon_less(PyLieBasis* basis, const LieWord* lhs, const LieWord* rhs);
+
 static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
 {
     const long arg = PyLong_AsLong(obj);
@@ -431,33 +456,30 @@ static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs)
 
     if (data == NULL || degree_begin == NULL) {
         if (construct_lie_basis(self) < 0) { return -1; }
+
+        Py_XSETREF(self->multiplier_cache, get_lie_multiplication_cache(self));
+
     } else {
         // Do some basic sanity checks to make sure
         if (check_data_and_db(self, data, degree_begin) < 0) { return -1; }
 
-        PyObject* tmp = self->data;
-        Py_INCREF(data);
-        self->data = data;
-        Py_XDECREF(tmp);
+        // PyObject* tmp = self->data;
+        Py_SETREF(self->data, Py_NewRef(data));
+        // Py_INCREF(data);
+        // self->data = data;
+        // Py_XDECREF(tmp);
 
-        tmp = self->degree_begin;
-        Py_INCREF(degree_begin);
-        self->degree_begin = degree_begin;
-        Py_XDECREF(tmp);
+        // tmp = self->degree_begin;
+        Py_SETREF(self->degree_begin, Py_NewRef(degree_begin));
+        // Py_INCREF(degree_begin);
+        // self->degree_begin = degree_begin;
+        // Py_XDECREF(tmp);
+
+        PyObject* mcache = PyLieMultiplicationCache_new(self->width);
+        if (mcache == NULL) { return -1; }
+        Py_XSETREF(self->multiplier_cache, mcache);
     }
 
-    PyObject* lmc = get_lie_multiplication_cache(self);
-    if (lmc == NULL) {
-        PyErr_SetString(
-                PyExc_RuntimeError,
-                "internal error: failed to get multiplication cache"
-        );
-        return -1;
-    }
-
-    PyObject* tmp = self->multiplier_cache;
-    self->multiplier_cache = lmc;
-    Py_XDECREF(tmp);
 
     return 0;
 }
@@ -1492,6 +1514,109 @@ npy_intp PyLieBasis_get_foliage(
 
     return written_len;
 }
+
+/**
+ * @brief Expand a Lie word to its foliage.
+ *
+ * Expand the lie word `word` into the sequence of letters in the foliage of the
+ * tree defined by the word. This sequence of letters are written to the
+ * `foliage` argument, which must be large enough to hold the foliage of the
+ * word; the size must be at least degree(word) in length when degree is the
+ * standard degree function on Lie words.
+ *
+ */
+static npy_intp LieWord_to_foliage(
+        PyLieBasis* basis,
+        const LieWord* word,
+        npy_intp* foliage,
+        npy_intp foliage_maxsize
+)
+{
+    // First handle the trivial case where word is a letter
+    if (word->left == 0) {
+        foliage[0] = word->right;
+        return 0;
+    }
+
+    npy_intp written_len = PyLieBasis_get_foliage(
+            basis,
+            word->left,
+            foliage,
+            foliage_maxsize
+    );
+    if (written_len < 0) { return -1; }
+
+    npy_intp len = PyLieBasis_get_foliage(
+            basis,
+            word->right,
+            foliage + written_len,
+            foliage_maxsize - written_len
+    );
+    if (len < 0) { return -1; }
+
+    written_len += len;
+
+    return written_len;
+}
+
+static int32_t LieWord_degree(PyLieBasis* basis, const LieWord* word)
+{
+    int32_t left_deg = PyLieBasis_degree(basis, word->left);
+    if (left_deg < 0) { return -1; }
+
+    int32_t right_deg = PyLieBasis_degree(basis, word->right);
+    if (right_deg < 0) { return -1; }
+    left_deg += right_deg;
+
+    return left_deg;
+}
+
+/*
+ * The Lyndon basis less function is a lexicographic ordering on the foliage
+ * of the word. The process here is to expand both words to their foliage and
+ * then perform a simple lexicographic comparison on the two foliage arrays.
+ *
+ * Both words are assumed to have degree <= basis->depth, this is not checked
+ * directly.
+ */
+int LieWord_lyndon_less(
+        PyLieBasis* basis,
+        const LieWord* lhs,
+        const LieWord* rhs
+)
+{
+    if (lhs->left == 0 && rhs->left == 0) { return lhs->right < rhs->right; }
+
+    int ret = -1;
+    npy_intp* left_foliage = PyMem_Malloc(2 * basis->depth * sizeof(npy_intp));
+    npy_intp* right_foliage = left_foliage + basis->depth;
+
+    npy_intp left_letters
+            = LieWord_to_foliage(basis, lhs, left_foliage, basis->depth);
+    if (left_letters < 0) { goto finish; }
+
+    npy_intp right_letters
+            = LieWord_to_foliage(basis, rhs, right_foliage, basis->depth);
+    if (right_letters < 0) { goto finish; }
+
+    // these should be the same, but just check to be sure
+    npy_intp letters_to_check = Py_MIN(left_letters, right_letters);
+
+    // no more errors can occur, so set ret = 0
+    ret = 0;
+    for (npy_intp i = 0; i < letters_to_check; ++i) {
+        if (left_foliage[i] < right_foliage[i]) {
+            ret = 1;
+            break;
+        }
+        if (left_foliage[i] > right_foliage[i]) { break; }
+    }
+
+finish:
+    PyMem_Free(left_foliage);
+    return ret;
+}
+
 PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key_obj)
 {
     assert(PyObject_IsInstance(self, (PyObject*) &PyLieBasis_Type));
