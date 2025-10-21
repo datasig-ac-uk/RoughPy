@@ -203,29 +203,39 @@ finish:
     return cache;
 }
 
+/*
+ * Compute a bracket of the form [[x, y], z]. We first replace the inner bracket
+ * with u = [x, y] = sum_i a_i u_i where a_i are integers and u_i are basis
+ * elements. Then expand by linearity to write
+ *
+ * [[x, y], z] = [u, z] = sum_i a_i [u_i, z].
+ *
+ * The "outer product" is thus rewriting [x, y] as the sum, and the inner
+ * products are the brackets [u_i, z] for each i.
+ */
 static inline int compute_bracket_half(
         PyLieMultiplicationCache* cache,
         PyLieBasis* basis,
         const LieWord& outer_word,
-        LieWord& inner,
+        LieWord& inner_word,
         const npy_intp sign,
         std::map<npy_intp, npy_intp>& vals
 )
 {
     const LieMultiplicationCacheEntry* outer_product
-            = PyLieMultiplicationCache_get(cache, basis, &outer_word, 0);
+            = PyLieMultiplicationCache_get(cache, basis, &outer_word, -1);
     if (RPY_UNLIKELY(outer_product == nullptr)) {
         // error already set
         return -1;
     }
 
     for (npy_intp i = 0; i < outer_product->size; ++i) {
-        inner.letters[0] = outer_product->data[2 * i];
+        inner_word.letters[0] = outer_product->data[2 * i];
 
         const npy_intp val = outer_product->data[2 * i + 1];
 
         auto* inner_product
-                = PyLieMultiplicationCache_get(cache, basis, &inner, 0);
+                = PyLieMultiplicationCache_get(cache, basis, &inner_word, -1);
         if (RPY_UNLIKELY(inner_product == nullptr)) {
             // error already set
             return -1;
@@ -267,23 +277,66 @@ static LieCacheEntryPtr new_entry(npy_intp size)
     return new_entry;
 }
 
-static LieCacheEntryPtr compute_bracket_slow(
+
+/*
+ * If the bracket does not belong to the basis, then we need to use the Jacobi
+ * identity to break one of the terms into a Z-linear combination of other
+ * brackets and resolve.
+ *
+ * The jacobi identity says that, for x, y, z, we have
+ *
+ *  [x, [y, z]] + [y, [z, x]] + [z, [x, y]] = 0
+ *
+ * Combined with antisymmetry, we can write
+ *
+ *  [x, [y, z]] = [[z, x], y] + [[x, y], z]] = [[x, y], z] - [[x, z], y].
+ *
+ * Now in our case, we are given a bracket [u, v] to compute, and we should
+ * probably expand the factor that has the larger degree. If this is v, then the
+ * above is the expansion that is required, but if not then we need to use the
+ * antisymmetry once again to obtain
+ *
+ *  [[y, z], x] = -[x, [y, z]] = [[x, z], y] - [[x, y], z].
+ *
+ * Of course, it might be good to also reverse the bracket majoring on the right
+ * hand side too but regardless, we should get the same answer in the end.
+ *
+ *
+ */
+static LieCacheEntryPtr compute_bracket_jacobi(
         PyLieMultiplicationCache* cache,
         PyLieBasis* basis,
         const LieWord& word,
-        const npy_intp sign,
-        const int32_t lhs_degree,
-        const int32_t rhs_degree
+        npy_intp sign,
+        int32_t lhs_degree,
+        int32_t rhs_degree
 )
 {
-    LieWord parents, outer_word, inner;
+    LieWord parents, outer_word, inner_word;
 
     std::map<npy_intp, npy_intp> vals;
 
-    if (PyLieBasis_get_parents(basis, word.letters[1], &parents) < 0) {
-        // error already set
-        return nullptr;
+    // This function should only have been called if the end product has degree
+    // at least 3.
+    assert(lhs_degree > 1 || rhs_degree > 1);
+
+
+    if (lhs_degree <= rhs_degree) {
+        if (PyLieBasis_get_parents(basis, word.right, &parents) < 0) {
+            // error already set
+            return nullptr;
+        }
+        outer_word.left = word.left;
+    } else {
+        if (PyLieBasis_get_parents(basis, word.left, &parents) < 0) {
+            // error already set
+            return nullptr;
+        }
+        outer_word.left = word.right;
+        sign = -sign;
     }
+    assert(parents.left != 0);
+
 
     if (RPY_UNLIKELY(parents.right == 0)) {
         // This is really unlikely to happen unless something has gone
@@ -294,27 +347,21 @@ static LieCacheEntryPtr compute_bracket_slow(
         return nullptr;
     }
 
-    if (parents.letters[0] > 0 && word.letters[0] != parents.letters[0]) {
-        outer_word = {
-                {word.letters[0], parents.letters[0]}
-        };
-        inner = {
-                {0, parents.letters[1]}
-        };
+    if (outer_word.left != parents.left) {
+        outer_word.right = parents.left;
+        inner_word.right = parents.right;
 
-        if (compute_bracket_half(cache, basis, outer_word, inner, sign, vals)
+        if (compute_bracket_half(cache, basis, outer_word, inner_word, sign, vals)
             < 0) {
             return nullptr;
         }
     }
 
-    if (word.letters[0] != parents.letters[1]) {
-        outer_word = {
-                {word.letters[0], parents.letters[1]}
-        };
-        inner.letters[1] = parents.letters[0];
+    if (outer_word.left != parents.right) {
+        outer_word.right = parents.right;
+        inner_word.right = parents.left;
 
-        if (compute_bracket_half(cache, basis, outer_word, inner, -sign, vals)
+        if (compute_bracket_half(cache, basis, outer_word, inner_word, -sign, vals)
             < 0) {
             return nullptr;
         }
@@ -462,14 +509,15 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
                 {word->right, word->left}
         };
         auto it = cache->cache.find(rev_word);
-        if (it != cache->cache.end()) {
-            entry = new_entry(it->second->size);
+        if (it != cache->cache.end() && it->second) {
+            auto size = it->second->size;
+            entry = new_entry(size);
             if (!entry) {
                 return nullptr;
             }
 
             entry->word = *word;
-            for (npy_intp i=0; i<it->second->size; ++i) {
+            for (npy_intp i=0; i<size; ++i) {
                 entry->data[2 * i] = it->second->data[2 * i];
                 entry->data[2 * i + 1] = -it->second->data[2 * i + 1];
             }
