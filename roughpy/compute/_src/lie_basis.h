@@ -330,7 +330,40 @@ npy_intp compute_lie_dim(int32_t width, int32_t depth);
 
 
 
-int init_lie_basis(PyObject* module);
+/**
+ * @brief Expands a target key within a Lie basis into its foliage
+ * representation.
+ *
+ * This function recursively decomposes a given key in the Lie basis into
+ * its corresponding foliage, which is the list of letters defining the
+ * structure of the key. The decomposition relies on navigating through
+ * parent-child relationships in the basis and storing the resulting letters in
+ * the provided foliage array.
+ *
+ * The function uses the provided foliage array as both storage for the
+ * result and a temporary stack for internal processing. It ensures that
+ * sufficient space is available for both purposes, failing with an error
+ * if the maximum size is exceeded or other constraints are violated.
+ *
+ * @param basis A pointer to the `PyLieBasis` structure representing the Lie
+ * basis to operate on.
+ * @param key An integer key within the Lie basis to be expanded into its
+ * foliage.
+ * @param foliage A pointer to an array of integers to store the resulting
+ * foliage. The foliage array must be sufficiently large to hold the result and
+ * intermediate processing data.
+ * @param foliage_maxsize The maximum size of the foliage array. This determines
+ * the allowed storage for both the result and any temporary stack data used
+ * during processing.
+ * @return The number of letters written into the foliage array if the operation
+ * is successful. Returns -1 in case of an error, such as insufficient array
+ * size or a runtime issue.
+ */
+RPY_NO_EXPORT
+npy_intp PyLieBasis_get_foliage(PyLieBasis* basis, npy_intp key, npy_intp* foliage, npy_intp foliage_maxsize);
+
+
+int init_lie_basis(PyObject *module);
 
 #ifdef __cplusplus
 }
