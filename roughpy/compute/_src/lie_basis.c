@@ -1323,6 +1323,100 @@ PyObject* PyLieBasis_get(int32_t width, int32_t depth)
     return (PyObject*) self;
 }
 
+npy_intp PyLieBasis_get_foliage(
+        PyLieBasis* basis,
+        npy_intp key,
+        npy_intp* foliage,
+        npy_intp foliage_maxsize
+)
+{
+    /*
+     * As we recurse down, we need to make sure we visit all the branches of the
+     * tree. To do this, we maintain a stack of the factors that we have yet to
+     * visit. To save from allocating more space for this, we use the foliage
+     * array as temporary storage to hold this stack. It should be large enough
+     * since the (foliage) degree should add up correctly at each point.
+     */
+    npy_intp written_len = 0;
+    npy_intp stack_len = 0;
+
+    LieWord parents;
+
+    // First expand the left factor
+    while (key > 0) {
+
+        if (PyLieBasis_get_parents(basis, key, &parents)) { return -1; }
+
+        // Set the next key to be the left factor
+        key = parents.left;
+
+        if (parents.left == 0) {
+            /*
+             * We found a letter, add it to the foliage array and if there is
+             * anything in the stack pop and continue.
+             */
+
+            if (stack_len > 0) {
+                // pop from the stack, since this might remove the need to
+                // move any bytes of stack
+                key = foliage[written_len + (--stack_len)];
+
+                // Check there is space in the foliage array
+                if (written_len + 1 + stack_len > foliage_maxsize) {
+                    PyErr_SetString(
+                            PyExc_RuntimeError,
+                            "ran out of space in foliage array"
+                    );
+                    return -1;
+                }
+
+                // shuffle stack over to make sure there is room.
+                memmove(&foliage[written_len + 1],
+                        &foliage[written_len],
+                        stack_len * sizeof(npy_intp));
+
+            } else {
+                if (written_len + 1 > foliage_maxsize) {
+                    PyErr_SetString(
+                            PyExc_RuntimeError,
+                            "ran out of space in foliage array"
+                    );
+                    return -1;
+                }
+            }
+
+            // insert the letter
+            foliage[written_len++] = parents.right;
+        } else {
+            /*
+             * The current key is not a letter. Push the right factor onto the
+             * stack to be processed later.
+             */
+
+            // Check there is room in the stack
+            if (written_len + stack_len + 1 > foliage_maxsize) {
+                PyErr_SetString(
+                        PyExc_RuntimeError,
+                        "ran out of space in foliage array"
+                );
+                return -1;
+            }
+
+            foliage[written_len + stack_len] = parents.right;
+            ++stack_len;
+        }
+    }
+
+    if (stack_len > 0) {
+        PyErr_SetString(
+                PyExc_RuntimeError,
+                "foliage expansion finished with non-empty work stack"
+        );
+        written_len = -1;
+    }
+
+    return written_len;
+}
 static int check_lie_data_standard_ordering(
         PyArrayObject* data_arr,
         PyArrayObject* degree_begin_arr,
