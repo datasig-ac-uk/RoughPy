@@ -48,29 +48,6 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
 static PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key);
 
-// LieWordFunction routines
-static int
-LieWordFunction_FromPyCallable(PyObject* callable, LieWordFunction* function);
-static int
-LieWordFunction_FromCFunction(void* c_func, LieWordFunction* function);
-
-static void LieWordFunction_destroy(LieWordFunction* function);
-
-static int LieWordFunction_call_bool(
-        PyLieBasis* basis,
-        LieWordFunction* function,
-        const LieWord* lhs,
-        const LieWord* rhs
-);
-
-static int LieWord_standard_less(
-        PyLieBasis* basis,
-        const LieWord* lhs,
-        const LieWord* rhs
-);
-
-static int
-LieWord_lyndon_less(PyLieBasis* basis, const LieWord* lhs, const LieWord* rhs);
 
 static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
 {
@@ -463,23 +440,13 @@ static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs)
         // Do some basic sanity checks to make sure
         if (check_data_and_db(self, data, degree_begin) < 0) { return -1; }
 
-        // PyObject* tmp = self->data;
         Py_SETREF(self->data, Py_NewRef(data));
-        // Py_INCREF(data);
-        // self->data = data;
-        // Py_XDECREF(tmp);
-
-        // tmp = self->degree_begin;
         Py_SETREF(self->degree_begin, Py_NewRef(degree_begin));
-        // Py_INCREF(degree_begin);
-        // self->degree_begin = degree_begin;
-        // Py_XDECREF(tmp);
 
         PyObject* mcache = PyLieMultiplicationCache_new(self->width);
         if (mcache == NULL) { return -1; }
         Py_XSETREF(self->multiplier_cache, mcache);
     }
-
 
     return 0;
 }
@@ -1346,79 +1313,6 @@ PyObject* PyLieBasis_get(int32_t width, int32_t depth)
     return (PyObject*) self;
 }
 
-/*
- * Lie word function implementations
- */
-int LieWordFunction_FromPyCallable(
-        PyObject* callable,
-        LieWordFunction* function
-)
-{
-    Py_INCREF(callable);
-    function->function_obj = (void*) callable;
-    function->type = LieWordFunction_Py_Function;
-    return 0;
-}
-int LieWordFunction_FromCFunction(void* c_func, LieWordFunction* function)
-{
-    function->function_obj = (void*) c_func;
-    function->type = LieWordFunction_C_Function;
-    return 0;
-}
-void LieWordFunction_destroy(LieWordFunction* function)
-{
-    if (function->type == LieWordFunction_Py_Function) {
-        Py_XDECREF(function->function_obj);
-    }
-}
-int LieWordFunction_call_bool(
-        PyLieBasis* basis,
-        LieWordFunction* function,
-        const LieWord* lhs,
-        const LieWord* rhs
-)
-{
-    if (function->function_obj == NULL) { return -1; }
-
-    switch (function->type) {
-        case LieWordFunction_C_Function:
-            return ((LieWordCFunction) function->function_obj)(basis, lhs, rhs);
-        case LieWordFunction_Py_Function:
-            do {
-                PyObject* result_obj = PyObject_CallFunction(
-                        (PyObject*) function->function_obj,
-                        "(nn)(nn)O",
-                        lhs->left,
-                        lhs->right,
-                        rhs->left,
-                        rhs->right,
-                        (PyObject*) basis
-                );
-
-                if (result_obj == NULL) { return -1; }
-
-                int result = PyObject_IsTrue(result_obj);
-                Py_DECREF(result_obj);
-
-                return result;
-            } while (0);
-    }
-
-    PyErr_SetString(
-            PyExc_SystemError,
-            "reached end of function that should be inaccessible"
-    );
-    return -1;
-}
-int LieWord_standard_less(
-        PyLieBasis* Py_UNUSED(basis),
-        const LieWord* lhs,
-        const LieWord* rhs
-)
-{
-    return lhs->left < rhs->left
-            || (lhs->left == rhs->left && lhs->right < rhs->right);
-}
 
 npy_intp PyLieBasis_get_foliage(
         PyLieBasis* basis,
@@ -1515,107 +1409,6 @@ npy_intp PyLieBasis_get_foliage(
     return written_len;
 }
 
-/**
- * @brief Expand a Lie word to its foliage.
- *
- * Expand the lie word `word` into the sequence of letters in the foliage of the
- * tree defined by the word. This sequence of letters are written to the
- * `foliage` argument, which must be large enough to hold the foliage of the
- * word; the size must be at least degree(word) in length when degree is the
- * standard degree function on Lie words.
- *
- */
-static npy_intp LieWord_to_foliage(
-        PyLieBasis* basis,
-        const LieWord* word,
-        npy_intp* foliage,
-        npy_intp foliage_maxsize
-)
-{
-    // First handle the trivial case where word is a letter
-    if (word->left == 0) {
-        foliage[0] = word->right;
-        return 0;
-    }
-
-    npy_intp written_len = PyLieBasis_get_foliage(
-            basis,
-            word->left,
-            foliage,
-            foliage_maxsize
-    );
-    if (written_len < 0) { return -1; }
-
-    npy_intp len = PyLieBasis_get_foliage(
-            basis,
-            word->right,
-            foliage + written_len,
-            foliage_maxsize - written_len
-    );
-    if (len < 0) { return -1; }
-
-    written_len += len;
-
-    return written_len;
-}
-
-static int32_t LieWord_degree(PyLieBasis* basis, const LieWord* word)
-{
-    int32_t left_deg = PyLieBasis_degree(basis, word->left);
-    if (left_deg < 0) { return -1; }
-
-    int32_t right_deg = PyLieBasis_degree(basis, word->right);
-    if (right_deg < 0) { return -1; }
-    left_deg += right_deg;
-
-    return left_deg;
-}
-
-/*
- * The Lyndon basis less function is a lexicographic ordering on the foliage
- * of the word. The process here is to expand both words to their foliage and
- * then perform a simple lexicographic comparison on the two foliage arrays.
- *
- * Both words are assumed to have degree <= basis->depth, this is not checked
- * directly.
- */
-int LieWord_lyndon_less(
-        PyLieBasis* basis,
-        const LieWord* lhs,
-        const LieWord* rhs
-)
-{
-    if (lhs->left == 0 && rhs->left == 0) { return lhs->right < rhs->right; }
-
-    int ret = -1;
-    npy_intp* left_foliage = PyMem_Malloc(2 * basis->depth * sizeof(npy_intp));
-    npy_intp* right_foliage = left_foliage + basis->depth;
-
-    npy_intp left_letters
-            = LieWord_to_foliage(basis, lhs, left_foliage, basis->depth);
-    if (left_letters < 0) { goto finish; }
-
-    npy_intp right_letters
-            = LieWord_to_foliage(basis, rhs, right_foliage, basis->depth);
-    if (right_letters < 0) { goto finish; }
-
-    // these should be the same, but just check to be sure
-    npy_intp letters_to_check = Py_MIN(left_letters, right_letters);
-
-    // no more errors can occur, so set ret = 0
-    ret = 0;
-    for (npy_intp i = 0; i < letters_to_check; ++i) {
-        if (left_foliage[i] < right_foliage[i]) {
-            ret = 1;
-            break;
-        }
-        if (left_foliage[i] > right_foliage[i]) { break; }
-    }
-
-finish:
-    PyMem_Free(left_foliage);
-    return ret;
-}
 
 PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key_obj)
 {
