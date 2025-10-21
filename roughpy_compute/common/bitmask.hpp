@@ -21,7 +21,7 @@ public:
 
     constexpr UInt operator[](int idx) const noexcept
     {
-        assert(idx < 8 * sizeof(UInt));
+        assert(idx < static_cast<int>(8 * sizeof(UInt)));
         return (base_ >> idx) & UInt{1};
     }
 
