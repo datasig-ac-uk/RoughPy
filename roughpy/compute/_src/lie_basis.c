@@ -12,6 +12,12 @@
 #define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include "py_compat.h"
 
+
+typedef enum _PyLieBasis_Flags
+{
+    PyLieBasis_OrderedData = 1
+} PyLieBasis_Flags;
+
 struct _PyLieBasis {
     PyObject_HEAD int32_t width;
     int32_t depth;
@@ -20,6 +26,8 @@ struct _PyLieBasis {
     PyObject* l2t;
     PyObject* t2l;
     PyObject* multiplier_cache;
+
+    int flags;
 };
 
 // PyLieBasis type functions
@@ -121,6 +129,8 @@ static PyObject* lie_basis_new(
 
     Py_XSETREF(self->l2t, PyDict_New());
     Py_XSETREF(self->t2l, PyDict_New());
+
+    self->flags = 0;
 
     return (PyObject*) self;
 }
@@ -250,6 +260,8 @@ static int construct_lie_basis(PyLieBasis* self)
      * Py_XDECREF below, we clear this reference.
      */
     degree_begin = NULL;
+
+    self->flags |= PyLieBasis_OrderedData;
 
     ret = 0;
 
@@ -456,23 +468,9 @@ int PyLieBasis_get_parents(PyLieBasis* basis, npy_intp index, LieWord* out)
     return 0;
 }
 
-npy_intp PyLieBasis_find_word(
-        PyLieBasis* basis,
-        const LieWord* target,
-        int32_t degree_hint
-)
+
+static inline npy_intp find_word_binary(PyLieBasis* basis, const LieWord* target, int32_t degree)
 {
-
-    int32_t degree = degree_hint;
-    if (degree == -1) {
-        int32_t ldegree = PyLieBasis_degree(basis, target->letters[0]);
-        int32_t rdegree = PyLieBasis_degree(basis, target->letters[1]);
-
-        degree = ldegree + rdegree;
-    }
-
-    if (degree > basis->depth) { return -1; }
-
     npy_intp pos = *(npy_intp*) PyArray_GETPTR1(
             (PyArrayObject*) basis->degree_begin,
             degree
@@ -509,9 +507,58 @@ npy_intp PyLieBasis_find_word(
     if (pos < degree_end
         && hall_word_equal(test_word.letters, target->letters)) {
         return pos;
+        }
+
+    return -1;
+}
+
+static inline npy_intp find_word_linear(PyLieBasis* basis, const LieWord* target, int32_t degree)
+{
+    npy_intp pos = *(npy_intp*) PyArray_GETPTR1(
+            (PyArrayObject*) basis->degree_begin,
+            degree
+    );
+    const npy_intp degree_end = *(npy_intp*) PyArray_GETPTR1(
+            (PyArrayObject*) basis->degree_begin,
+            degree + 1
+    );
+
+    LieWord test_word;
+
+    for (; pos < degree_end; ++pos) {
+        get_basis_word(basis, pos, &test_word);
+
+        if (hall_word_equal(test_word.letters, target->letters)) {
+            return pos;
+        }
     }
 
     return -1;
+}
+
+
+npy_intp PyLieBasis_find_word(
+        PyLieBasis* basis,
+        const LieWord* target,
+        int32_t degree_hint
+)
+{
+
+    int32_t degree = degree_hint;
+    if (degree == -1) {
+        int32_t ldegree = PyLieBasis_degree(basis, target->letters[0]);
+        int32_t rdegree = PyLieBasis_degree(basis, target->letters[1]);
+
+        degree = ldegree + rdegree;
+    }
+
+    if (degree > basis->depth) { return -1; }
+
+    if (basis->flags & PyLieBasis_OrderedData) {
+        return find_word_binary(basis, target, degree);
+    }
+
+    return find_word_linear(basis, target, degree);
 }
 
 int32_t PyLieBasis_degree(PyLieBasis* basis, const npy_intp key)

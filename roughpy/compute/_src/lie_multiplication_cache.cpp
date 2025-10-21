@@ -398,8 +398,8 @@ static LieCacheEntryPtr compute_bracket(
         PyLieBasis* basis,
         const LieWord* word,
         const int32_t degree,
-        const int32_t lhs_degree,
-        const int32_t rhs_degree
+        int32_t lhs_degree,
+        int32_t rhs_degree
 ) noexcept
 {
 
@@ -407,6 +407,7 @@ static LieCacheEntryPtr compute_bracket(
     LieWord target = *word;
     if (target.letters[0] > target.letters[1]) {
         std::swap(target.letters[0], target.letters[1]);
+        std::swap(lhs_degree, rhs_degree);
         sign = -1;
     }
 
@@ -429,22 +430,22 @@ static LieCacheEntryPtr compute_bracket(
 
         return entry;
     }
-    //
-    // const LieWord rev_target = { {target.right, target.left }};
-    // if (const npy_intp pos = PyLieBasis_find_word(basis, &rev_target,
-    // degree); pos > 0) {
-    //     auto entry = new_entry(1);
-    //
-    //     if (!entry) {
-    //         return entry;
-    //     }
-    //
-    //     entry->word = *word;
-    //     entry->data[0] = pos;
-    //     entry->data[1] = -sign;
-    //
-    //     return entry;
-    // }
+
+    const LieWord rev_target = { {target.right, target.left }};
+    if (const npy_intp pos = PyLieBasis_find_word(basis, &rev_target,
+    degree); pos > 0) {
+        auto entry = new_entry(1);
+
+        if (!entry) {
+            return entry;
+        }
+
+        entry->word = *word;
+        entry->data[0] = pos;
+        entry->data[1] = -sign;
+
+        return entry;
+    }
 
     try {
         return compute_bracket_jacobi(inner, basis, target, sign, lhs_degree, rhs_degree);
