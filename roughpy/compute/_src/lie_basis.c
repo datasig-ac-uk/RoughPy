@@ -50,6 +50,7 @@ static void lie_basis_dealloc(PyLieBasis* self);
 static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs);
 
 static PyObject* lie_basis_repr(PyLieBasis* self);
+static int lie_basis_traverse(PyObject* op, visitproc visit, void* arg);
 
 // PylieBasis methods
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
@@ -116,6 +117,7 @@ PyTypeObject PyLieBasis_Type = {
         .tp_dealloc = (destructor) lie_basis_dealloc,
         .tp_repr = (reprfunc) lie_basis_repr,
         .tp_new = (newfunc) lie_basis_new,
+    .tp_traverse = (traverseproc) lie_basis_traverse
 };
 
 /*******************************************************************************
@@ -530,20 +532,15 @@ static PyObject* lie_basis_repr(PyLieBasis* self)
     return PyUnicode_FromFormat("LieBasis(%i, %i)", self->width, self->depth);
 }
 
-static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
+int lie_basis_traverse(PyObject* op, visitproc Py_UNUSED(visit), void* Py_UNUSED(arg))
 {
-    const PyLieBasis* self_ = (PyLieBasis*) self;
-    if (Py_IsNone(self_->degree_begin)) {
-        PyErr_SetString(PyExc_RuntimeError, "degree_begin is None");
-        return NULL;
-    }
-    const npy_intp size = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) self_->degree_begin,
-            self_->depth + 1
-    );
+    // PyLieBasis* basis = (PyLieBasis*) op;
 
-    return PyLong_FromLong(size - 1);
+    return 0;
 }
+
+
+
 
 /*
  * External methods
