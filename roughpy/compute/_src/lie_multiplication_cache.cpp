@@ -204,14 +204,21 @@ finish:
 }
 
 /*
- * Compute a bracket of the form [[x, y], z]. We first replace the inner bracket
- * with u = [x, y] = sum_i a_i u_i where a_i are integers and u_i are basis
- * elements. Then expand by linearity to write
+ * Compute a bracket which is either of the form [[x, y], z] or [x, [y, z]], as
+ * determined by inner_pos.
  *
- * [[x, y], z] = [u, z] = sum_i a_i [u_i, z].
+ * We first replace the inner bracket (outer_word) by expanding to sum_i a_i u_i
+ * where a_i are integers and u_i are basis elements. Then expand by linearity
+ * to write
  *
- * The "outer product" is thus rewriting [x, y] as the sum, and the inner
- * products are the brackets [u_i, z] for each i.
+ * [[x, y], z] = [u, z] = sum_i a_i [u_i, z]
+ *
+ * or
+ *
+ * [x, [y, z]] = sum a_i [x, u_i].
+ *
+ * The inner word therefore refers to the brackets of the form [u_i, z] or
+ * [x, u_i] that appear in the sum.
  */
 static inline int compute_bracket_half(
         PyLieMultiplicationCache* cache,
@@ -219,6 +226,7 @@ static inline int compute_bracket_half(
         const LieWord& outer_word,
         LieWord& inner_word,
         const npy_intp sign,
+        int inner_pos,
         std::map<npy_intp, npy_intp>& vals
 )
 {
@@ -230,7 +238,7 @@ static inline int compute_bracket_half(
     }
 
     for (npy_intp i = 0; i < outer_product->size; ++i) {
-        inner_word.letters[0] = outer_product->data[2 * i];
+        inner_word.letters[inner_pos] = outer_product->data[2 * i];
 
         const npy_intp val = outer_product->data[2 * i + 1];
 
@@ -245,11 +253,8 @@ static inline int compute_bracket_half(
             // ReSharper disable once CppTooWideScopeInitStatement
             auto [it, _] = vals.emplace(inner_product->data[2 * j], 0);
 
-            if (RPY_UNLIKELY(
-                        (it->second
-                         += sign * val * inner_product->data[2 * j + 1])
-                        == 0
-                )) {
+            it->second += sign * val * inner_product->data[2 * j + 1];
+            if (RPY_UNLIKELY(it->second == 0)) {
                 vals.erase(it);
             }
         }
@@ -306,8 +311,7 @@ static LieCacheEntryPtr new_entry(npy_intp size)
 static LieCacheEntryPtr compute_bracket_jacobi(
         PyLieMultiplicationCache* cache,
         PyLieBasis* basis,
-        const LieWord& word,
-        npy_intp sign,
+        const LieWord& target,
         int32_t lhs_degree,
         int32_t rhs_degree
 )
@@ -320,68 +324,109 @@ static LieCacheEntryPtr compute_bracket_jacobi(
     // at least 3.
     assert(lhs_degree > 1 || rhs_degree > 1);
 
-
-    if (lhs_degree <= rhs_degree) {
-        if (PyLieBasis_get_parents(basis, word.right, &parents) < 0) {
-            // error already set
-            return nullptr;
-        }
-        outer_word.left = word.left;
+    /*
+     * OK this is the complicated part and I'm likely going to forget how this
+     * works so it needs some pretty clear documentation. We have to make a
+     * choice about which factor of the word to expand using the Jacobi relation
+     * to make progress. The decision depends on the majoring of the basis:
+     *
+     *  - For left-major bases, we expand the left factor if the degree is at
+     *    least 2. Otherwise, we expand the right factor.
+     *  - For right-major bases, we expand the right factor if the degree is at
+     *    least 2. Otherwise, we expand the left factor.
+     *
+     * The expansion is handled generically by setting two variables
+     * `expanded_pos` and `unexpanded_pos` to the values 0 and 1 (or 1 and 0)
+     * depending on the basis major and degrees. `expanded_pos` refers to the
+     * index in the word corresponding to the factor to be expanded, and
+     * `unexpanded_pos = 1 - expanded_pos`. The position into which the
+     * unexpanded factor and the parents of the expanded factor are determined
+     * by these two integers too. This means we can write some very generic code
+     * that uses these integers to put the correct values in the correct places
+     * regardless of basis major and which factor is to be expanded.
+     *
+     * For setting which term to expand, we need to consider which direction the
+     * basis itself is majored. For left-major (Reutenaur), we want to expand
+     * in the left term provided that lhs_degree > 1. Thus expanded_pos = 0
+     * if and only if lhs_degree > 1 but this means that
+     * expanded_pos = lhs_degree == 1 which gives 0 if lhs_degree > 1 and 1
+     * otherwise. Similarly, for right-major bases we need
+     * expanded_pos = rhs_degree > 1 to get expanded_pos = 1 when rhs_degree > 1
+     * and 0 otherwise.
+     */
+    int expanded_pos;
+    if (PyLieBasis_is_left_major(basis)) {
+        expanded_pos = lhs_degree == 1;
     } else {
-        if (PyLieBasis_get_parents(basis, word.left, &parents) < 0) {
-            // error already set
-            return nullptr;
-        }
-        outer_word.left = word.right;
-        sign = -sign;
+        expanded_pos = rhs_degree > 1;
     }
-    assert(parents.left != 0);
+    const int unexpanded_pos = 1-expanded_pos;
 
 
-    if (RPY_UNLIKELY(parents.right == 0)) {
-        // This is really unlikely to happen unless something has gone
-        // drastically wrong
-        PyErr_Format(PyExc_RuntimeError,
-            "found word [%zd, %zd] that expanded incorrectly to [0,0]",
-            word.left, word.right);
+    if (PyLieBasis_get_parents(basis, target.letters[expanded_pos], &parents) < 0) {
+        // error already set;
         return nullptr;
     }
+    assert(parents.left != 0 && parents.right != 0);
 
-    if (outer_word.left != parents.left) {
-        outer_word.right = parents.left;
-        inner_word.right = parents.right;
+    outer_word.letters[unexpanded_pos] = target.letters[unexpanded_pos];
 
-        if (compute_bracket_half(cache, basis, outer_word, inner_word, sign, vals)
+    /*
+     * Expand the left factor. This either
+     *
+     *   [[x, y], z] if the expanded_pos == 1
+     *
+     * or
+     *
+     *   [x, [y, z]] if expanded_pos == 0
+     *
+     * Note that the inner bracket here is the "outer word" since this is
+     * computed first, and the outer bracket is the "inner word". The unexpanded
+     * position of inner_word is filled in with the terms from resolved outer
+     * word expansion.
+     */
+    if (outer_word.letters[unexpanded_pos] != parents.letters[unexpanded_pos]) {
+        outer_word.letters[expanded_pos] = parents.letters[unexpanded_pos];
+        inner_word.letters[expanded_pos] = parents.letters[expanded_pos];
+
+        if (compute_bracket_half(cache, basis, outer_word, inner_word, 1, unexpanded_pos, vals)
             < 0) {
             return nullptr;
         }
     }
 
-    if (outer_word.left != parents.right) {
-        outer_word.right = parents.right;
-        inner_word.right = parents.left;
+    /*
+     * Expand the right factor. This either
+     *
+     *   [[x, z], y] if the expanded_pos == 1
+     *
+     * or
+     *
+     *   [y, [x, z]] if expanded_pos == 0
+     *
+     * Note that the inner bracket here is the "outer word" since this is
+     * computed first, and the outer bracket is the "inner word". The unexpanded
+     * position of inner_word is filled in with the terms from resolved outer
+     * word expansion.
+     */
+    if (outer_word.letters[unexpanded_pos] != parents.letters[expanded_pos]) {
+        outer_word.letters[expanded_pos] = parents.letters[expanded_pos];
+        inner_word.letters[expanded_pos] = parents.letters[unexpanded_pos];
 
-        if (compute_bracket_half(cache, basis, outer_word, inner_word, -sign, vals)
+        if (compute_bracket_half(cache, basis, outer_word, inner_word, -1, unexpanded_pos, vals)
             < 0) {
             return nullptr;
         }
     }
 
+    /*
+     * vals now contains the fully expanded brackets with no zeros in it.
+     * We need to turn this into a cache entry that we can store and use
+     * elsewhere.
+     */
     const npy_intp size = vals.size();
-    // npy_intp alloc_bytes = sizeof(LieMultiplicationCacheEntry);
-    // alloc_bytes += 2 * (size - 1) * sizeof(npy_intp);
-    // auto* entry = static_cast<LieMultiplicationCacheEntry*>(
-    //         PyMem_Malloc(alloc_bytes)
-    // );
     auto entry = new_entry(size);
-
-    // entry->size = size;
-    if (sign == 1) {
-        entry->word = word;
-    } else {
-        entry->word.left = word.letters[1];
-        entry->word.right = word.letters[0];
-    }
+    entry->word = target;
 
     npy_intp i = 0;
     for (const auto& [key, val] : vals) {
@@ -396,22 +441,13 @@ static LieCacheEntryPtr compute_bracket_jacobi(
 static LieCacheEntryPtr compute_bracket(
         PyLieMultiplicationCache* inner,
         PyLieBasis* basis,
-        const LieWord* word,
+        const LieWord& word,
         const int32_t degree,
         int32_t lhs_degree,
         int32_t rhs_degree
 ) noexcept
 {
-
-    npy_intp sign = 1;
-    LieWord target = *word;
-    if (target.letters[0] > target.letters[1]) {
-        std::swap(target.letters[0], target.letters[1]);
-        std::swap(lhs_degree, rhs_degree);
-        sign = -1;
-    }
-
-    if (const npy_intp pos = PyLieBasis_find_word(basis, &target, degree);
+    if (const npy_intp pos = PyLieBasis_find_word(basis, &word, degree);
         pos > 0) {
         // the pair belongs to the cache,
         // auto* entry = static_cast<LieMultiplicationCacheEntry*>(
@@ -424,31 +460,15 @@ static LieCacheEntryPtr compute_bracket(
             return entry;
         }
 
-        entry->word = *word;
+        entry->word = word;
         entry->data[0] = pos;
-        entry->data[1] = sign;
-
-        return entry;
-    }
-
-    const LieWord rev_target = { {target.right, target.left }};
-    if (const npy_intp pos = PyLieBasis_find_word(basis, &rev_target,
-    degree); pos > 0) {
-        auto entry = new_entry(1);
-
-        if (!entry) {
-            return entry;
-        }
-
-        entry->word = *word;
-        entry->data[0] = pos;
-        entry->data[1] = -sign;
+        entry->data[1] = 1;
 
         return entry;
     }
 
     try {
-        return compute_bracket_jacobi(inner, basis, target, sign, lhs_degree, rhs_degree);
+        return compute_bracket_jacobi(inner, basis, word, lhs_degree, rhs_degree);
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return nullptr;
@@ -484,8 +504,64 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
 
     if (word->letters[0] == word->letters[1]) { return &empty; }
 
-    const auto lhs_deg = PyLieBasis_degree(basis, word->letters[0]);
-    const auto rhs_deg = PyLieBasis_degree(basis, word->letters[1]);
+    /*
+     * Check if the degree is greater than the basis depth. This is only a
+     * screening check because the degree might not actually be given yet, but
+     * it does allow us to bypass work in the case where the degree is provided
+     * and is obviously too large.
+     */
+    const auto depth = PyLieBasis_depth(basis);
+    if (degree > depth) {
+        return &empty;
+    }
+
+    /*
+     * Another rudimentary check that this is a remotely sensible word to
+     * consider computing the product for. If both letters are larger than
+     * the basis true size then the degree cannot possibly be less than depth.
+     */
+    const auto true_size = PyLieBasis_true_size(basis);
+    if (word->letters[0] >= true_size || word->letters[1] >= true_size) {
+        return &empty;
+    }
+
+    /*
+     * Look in the cache for word. Either the value is already there, and
+     * the returned iterator points to the existing entry, or we insert a new
+     * null entry that we will have to populate later; we use the inserted bool
+     * to determine which case we're in.
+     */
+    auto [it, inserted] = cache->cache.emplace(*word, nullptr);
+    if (it == cache->cache.end()) {
+        PyErr_SetString(PyExc_RuntimeError,
+            "could not insert new value into Lie multiplier cache");
+        return nullptr;
+    }
+
+    // Have we already populated this value in the cache?
+    if (!inserted) {
+        // We might already be in-flight, but this is an error.
+        if (!it->second) {
+            PyErr_Format(PyExc_RuntimeError,
+                "computing [%zd, %zd] is already in-flight but attempting to access result",
+                word->letters[0], word->letters[1]
+                );
+            return nullptr;
+        }
+        return it->second.get();
+    }
+
+    // local copy of the word so we can modify it
+    LieWord target = *word;
+
+    /*
+     * If we're here then we haven't found the word in the cache so we need to
+     * compute the value. First we need to compute the actual degree and do some
+     * more checking that the bracket is worth computing
+     */
+    auto lhs_deg = PyLieBasis_degree(basis, target.left);
+    auto rhs_deg = PyLieBasis_degree(basis, target.right);
+
     const auto test_degree = lhs_deg + rhs_deg;
     if (degree > 0 && test_degree != degree) {
         PyErr_Format(PyExc_ValueError,
@@ -494,38 +570,84 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
             );
         return nullptr;
     } else {
+        // if degree is not already set then set it
         degree = test_degree;
     }
 
-    if (degree > PyLieBasis_depth(basis)) { return &empty; }
-
-    const auto true_size = PyLieBasis_true_size(basis);
-    if (word->letters[0] >= true_size || word->letters[1] >= true_size) {
+    /*
+     * Recheck that degree is not greater than the basis depth. If this is the
+     * case, we need to clear out the cache entry before returning the empty
+     * product.
+     */
+    if (degree > depth) {
+        cache->cache.erase(it);
         return &empty;
     }
 
-    auto& entry = cache->cache[*word];
-    if (!entry) {
-        LieWord rev_word = {
-                {word->right, word->left}
-        };
-        auto it = cache->cache.find(rev_word);
-        if (it != cache->cache.end() && it->second) {
-            auto size = it->second->size;
-            entry = new_entry(size);
-            if (!entry) {
-                return nullptr;
-            }
+    /*
+     * One last thing to check before we start doing actual work. Words have a
+     * canonical repesentation according to the basis order. It only makes sense
+     * to compute the values for words that have this canonical representation.
+     * So our first step is to canonicalize the word. If this involves swapping
+     * the letters in the word, then we should first compute the canonical
+     * word (possibly by getting it from the cache) and then use this to
+     * populate the original cache entry.
+     */
+    int exchanged = PyLieBasis_canonicalize_word(basis, &target, &lhs_deg, &rhs_deg);
+    if (exchanged < 0) {
+        return nullptr;
+    }
 
-            entry->word = *word;
-            for (npy_intp i=0; i<size; ++i) {
-                entry->data[2 * i] = it->second->data[2 * i];
-                entry->data[2 * i + 1] = -it->second->data[2 * i + 1];
-            }
-        } else {
-            entry = compute_bracket(cache, basis, word, degree, lhs_deg, rhs_deg);
+    // Our target is now a canonical word.
+    if (!exchanged) {
+        // The word was already canonical and doesn't yet exist in the cache, so
+        // compute the result and return.
+        it->second = compute_bracket(cache, basis, target, degree, lhs_deg, rhs_deg);
+
+        // If it->second is still null then an error occurred and it should be
+        // set
+        return it->second.get();
+    }
+
+    // We had to swap, first look in the cache for the canonical word.
+    auto [canon_it, canon_insert] = cache->cache.emplace(target, nullptr);
+    if (canon_it == cache->cache.end()) {
+        PyErr_SetString(PyExc_RuntimeError,
+            "could not insert new entry into Lie multiplier cache");
+        return nullptr;
+    }
+    if (canon_insert) {
+        // We inserted a new cache value for the canonicalized word, so we need
+        // to populate this.
+        canon_it->second = compute_bracket(cache, basis, target, degree, lhs_deg, rhs_deg);
+
+        if (!canon_it->second) {
+            // error occurred in computation should be set
+            return nullptr;
         }
     }
+
+    /*
+     * One way or another we now have a populated canonical entry pointed to
+     * by canon_it so now it is time to construct the entry for the original key
+     * by just copying the data from the canonical version and reversing the
+     * signs of all the scalars.
+     */
+
+    auto& entry = it->second;
+    const auto& canon = *canon_it->second;
+    entry = new_entry(canon.size);
+    if (!entry) {
+        // error already set
+        return nullptr;
+    }
+
+    entry->word = *word;
+    for (npy_intp i=0; i<canon.size; ++i) {
+        entry->data[2 * i] = canon.data[2 * i];
+        entry->data[2 * i + 1] = -canon.data[2 * i + 1];
+    }
+
 
     return entry.get();
 }
