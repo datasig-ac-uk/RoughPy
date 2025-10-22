@@ -363,7 +363,27 @@ RPY_NO_EXPORT
 npy_intp PyLieBasis_get_foliage(PyLieBasis* basis, npy_intp key, npy_intp* foliage, npy_intp foliage_maxsize);
 
 
-int init_lie_basis(PyObject *module);
+int PyLieBasis_check_data_internal(
+        PyArrayObject* data,
+        PyArrayObject* degree_begin,
+        int32_t width,
+        int32_t depth,
+        PyObject* total_order,
+        PyLieBasisMajor major,
+        char const** message
+);
+
+
+npy_intp compute_lie_degree_dim(int32_t width, int32_t degree);
+
+
+npy_intp compute_lie_dim(const int32_t width, const int32_t depth);
+
+
+PyObject*
+PyLieBasis_check_data(PyObject* self, PyObject* args, PyObject* kwargs);
+
+int init_lie_basis(PyObject* module);
 
 #ifdef __cplusplus
 }
