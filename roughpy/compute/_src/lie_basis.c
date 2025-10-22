@@ -14,21 +14,28 @@
 #include "py_compat.h"
 
 
-typedef enum _PyLieBasis_Flags
-{
-    PyLieBasis_OrderedData = 1
-} PyLieBasis_Flags;
+
+
+
+typedef int (*WordCompare)(PyLieBasis* basis, npy_intp left, npy_intp right);
+typedef int (*order_evaluator)(void*, npy_intp, npy_intp, PyArrayObject*, PyArrayObject*);
+
 
 struct _PyLieBasis {
-    PyObject_HEAD int32_t width;
+    PyObject_HEAD//
+    int32_t width;
     int32_t depth;
     PyObject* degree_begin;
     PyObject* data;
+    PyLieBasisMajor major;
+    PyLieBasisDataOrdering data_ordering;
     PyObject* l2t;
     PyObject* t2l;
     PyObject* multiplier_cache;
 
-    int flags;
+
+    WordCompare word_cmp;
+
 };
 
 // PyLieBasis type functions
@@ -49,30 +56,19 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
 
 static PyObject* lie_basis_key_to_foliage(PyObject* self, PyObject* key);
 
-static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
-{
-    const long arg = PyLong_AsLong(obj);
 
-    if (arg == -1 && PyErr_Occurred() != NULL) { return 0; }
+// argument converters
+static int PyLieBasis_Major_converter(PyObject* obj, void* result);
+static int PyLieBasis_DataOrdering_converter(PyObject* obj, void* result);
 
-    int check = 0;
 
-    check |= arg == PLB_Major_Bourbaki;
-    check |= arg == PLB_Major_Reutenauer;
+// Word orders
+static int key_word_compare(PyLieBasis* basis, npy_intp left, npy_intp right);
+static int foliage_lex_word_compare(PyLieBasis* basis, npy_intp left, npy_intp right);
+static int py_word_compare(PyLieBasis* basis, npy_intp left, npy_intp right);
 
-    if (!check) {
-        PyErr_Format(
-                PyExc_ValueError,
-                "Lie basis definition indicator does not match a known "
-                "Hall set definition"
-        );
-        return 0;
-    }
 
-    *(PyLieBasis_Major*) result = check;
 
-    return 1;
-}
 
 /*******************************************************************************
  * Lie basis type
@@ -155,7 +151,11 @@ static PyObject* lie_basis_new(
     Py_XSETREF(self->l2t, PyDict_New());
     Py_XSETREF(self->t2l, PyDict_New());
 
-    self->flags = 0;
+    Py_XSETREF(self->multiplier_cache, Py_NewRef(Py_None));
+
+
+    self->data_ordering = PLB_UnorderedData;
+    self->major = PLB_Major_Reutenauer;
 
     return (PyObject*) self;
 }
@@ -295,7 +295,10 @@ static int construct_lie_basis(PyLieBasis* self)
      */
     degree_begin = NULL;
 
-    self->flags |= PyLieBasis_OrderedData;
+    self->major = PLB_Major_Bourbaki;
+    self->data_ordering = PLB_OrderedData;
+
+    Py_XSETREF(self->multiplier_cache, get_lie_multiplication_cache(self));
 
     ret = 0;
 
@@ -421,29 +424,87 @@ check_data_and_db(PyLieBasis* self, PyObject* data, PyObject* degree_begin)
     return 0;
 }
 
+static int lie_basis_set_word_order(PyLieBasis* self, PyObject* ordering_obj)
+{
+    if (ordering_obj == NULL) {
+        self->word_cmp = &key_word_compare;
+        return 0;
+    }
+
+    if (PyUnicode_Check(ordering_obj)) {
+        /*
+         * If ordering obj is a unicode string then it's because it should be
+         * one of the builtins. The options are standard and foliage_lex for
+         * now.
+         */
+
+        if (PyUnicode_CompareWithASCIIString(ordering_obj, "standard") == 0) {
+            self->word_cmp = key_word_compare;
+            return 0;
+        }
+
+        if (PyUnicode_CompareWithASCIIString(ordering_obj, "foliage_lex") == 0) {
+            self->word_cmp = foliage_lex_word_compare;
+            return 0;
+        }
+
+        PyErr_SetString(PyExc_ValueError,
+            "unrecognized standard ordering function");
+        return -1;
+    }
+
+    if (PyCallable_Check(ordering_obj)) {
+        self->word_cmp = py_word_compare;
+
+        if (PyObject_SetAttrString((PyObject*) self, "word_cmp", ordering_obj) < 0) {
+            return -1;
+        }
+
+    }
+
+    return 0;
+}
+
 static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs)
 {
-    static char* kwords[] = {"width", "depth", "degree_begin", "data", NULL};
+    static char* kwords[] = {
+        "width", "depth", "degree_begin", "data",
+        "bracket_major", "data_is_ordered", "word_order",
+        "check_data",
+        NULL
+    };
     PyObject* degree_begin = NULL;
     PyObject* data = NULL;
+    PyObject* word_ordering_obj = NULL;
+    int check_data = 0;
 
     if (!PyArg_ParseTupleAndKeywords(
                 args,
                 kwargs,
-                "ii|OO",
+                "ii|OOO&O&Op",
                 kwords,
                 &self->width,
                 &self->depth,
                 &degree_begin,
-                &data
+                &data,
+                PyLieBasis_Major_converter,
+                &self->major,
+                PyLieBasis_DataOrdering_converter,
+                &self->data_ordering,
+                &word_ordering_obj,
+                &check_data
         )) {
+        return -1;
+    }
+
+    // set the order first, at some point in the future, we might choose to have
+    // this participate in the construction of the default Lie basis.
+    if (lie_basis_set_word_order(self, word_ordering_obj) < 0) {
         return -1;
     }
 
     if (data == NULL || degree_begin == NULL) {
         if (construct_lie_basis(self) < 0) { return -1; }
-
-        Py_XSETREF(self->multiplier_cache, get_lie_multiplication_cache(self));
 
     } else {
         // Do some basic sanity checks to make sure
@@ -455,6 +516,10 @@ static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs)
         PyObject* mcache = PyLieMultiplicationCache_new(self->width);
         if (mcache == NULL) { return -1; }
         Py_XSETREF(self->multiplier_cache, mcache);
+
+        if (check_data) {
+            const char* message = NULL;
+        }
     }
 
     return 0;
@@ -487,6 +552,15 @@ int32_t PyLieBasis_width(PyLieBasis* basis) { return basis->width; }
 
 int32_t PyLieBasis_depth(PyLieBasis* basis) { return basis->depth; }
 
+PyLieBasisDataOrdering PyLieBasis_data_ordering(PyLieBasis* basis)
+{
+    return basis->data_ordering;
+}
+PyLieBasisMajor PyLieBasis_major(PyLieBasis* basis)
+{
+    return basis->major;
+}
+
 npy_intp PyLieBasis_true_size(PyLieBasis* basis)
 {
     return *(npy_intp*) PyArray_GETPTR1(
@@ -498,6 +572,21 @@ npy_intp PyLieBasis_true_size(PyLieBasis* basis)
 npy_intp PyLieBasis_size(PyLieBasis* basis)
 {
     return PyLieBasis_true_size(basis) - 1;
+}
+
+static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
+{
+    const PyLieBasis* self_ = (PyLieBasis*) self;
+    if (Py_IsNone(self_->degree_begin)) {
+        PyErr_SetString(PyExc_RuntimeError, "degree_begin is None");
+        return NULL;
+    }
+    const npy_intp size = *(npy_intp*) PyArray_GETPTR1(
+            (PyArrayObject*) self_->degree_begin,
+            self_->depth + 1
+    );
+
+    return PyLong_FromLong(size - 1);
 }
 
 PyArrayObject* PyLieBasis_degree_begin(PyLieBasis* basis)
@@ -623,7 +712,7 @@ npy_intp PyLieBasis_find_word(
 
     if (degree > basis->depth) { return -1; }
 
-    if (basis->flags & PyLieBasis_OrderedData) {
+    if (PyLieBasis_data_is_ordered(basis)) {
         return find_word_binary(basis, target, degree);
     }
 
@@ -930,17 +1019,6 @@ static int t2l_insert_letters(SMHelper* helper, const npy_intp width)
     }
 
     return 0;
-}
-
-static inline void assign(void* dst, const void* src, const int typenum)
-{
-    switch (typenum) {
-        case NPY_FLOAT: *(npy_float*) dst = *(npy_float*) src; break;
-        case NPY_DOUBLE: *(npy_double*) dst = *(npy_double*) src; break;
-        case NPY_LONGDOUBLE:
-            *(npy_longdouble*) dst = *(npy_longdouble*) src;
-            break;
-    }
 }
 
 static npy_intp get_t2l_nnz_max(PyLieBasis* basis)
@@ -1394,7 +1472,7 @@ static int check_lie_data_standard_ordering(
         PyArrayObject* degree_begin_arr,
         int32_t width,
         int32_t depth,
-        PyLieBasis_Major major,
+        PyLieBasisMajor major,
         char const** msg
 )
 {
@@ -1477,7 +1555,6 @@ static int check_lie_data_standard_ordering(
     return 1;
 }
 
-typedef int (*order_evaluator)(void*, npy_intp, npy_intp, PyArrayObject*, PyArrayObject*);
 
 /**
  * @brief Evaluate the total ordering on two Lie keys
@@ -1520,7 +1597,7 @@ static int check_lie_data_custom_ordering(
         int32_t depth,
         void* total_order,
         order_evaluator evaluate_order,
-        PyLieBasis_Major major,
+        PyLieBasisMajor major,
         char const** msg
 )
 {
@@ -1664,7 +1741,7 @@ int PyLieBasis_check_data_internal(
         int32_t width,
         int32_t depth,
         PyObject* total_order,
-        PyLieBasis_Major major,
+        PyLieBasisMajor major,
         char const** msg
 )
 {
@@ -1695,6 +1772,41 @@ int PyLieBasis_check_data_internal(
             msg
     );
 }
+
+int PyLieBasis_Major_converter(PyObject* obj, void* result)
+{
+    const long arg = PyLong_AsLong(obj);
+
+    if (arg == -1 && PyErr_Occurred() != NULL) { return 0; }
+
+    int check = 0;
+
+    check |= arg == PLB_Major_Bourbaki;
+    check |= arg == PLB_Major_Reutenauer;
+
+    if (!check) {
+        PyErr_Format(
+                PyExc_ValueError,
+                "Lie basis definition indicator does not match a known "
+                "Hall set definition"
+        );
+        return 0;
+    }
+
+    *(PyLieBasisMajor*) result = check;
+
+    return 1;
+}
+
+int PyLieBasis_DataOrdering_converter(PyObject* obj, void* result)
+{
+    const int bval = PyObject_IsTrue(obj);
+    if (bval == -1) { return 0; }
+
+    *(PyLieBasisDataOrdering*) result = bval ? PLB_OrderedData : PLB_UnorderedData;
+    return 1;
+}
+
 PyObject* PyLieBasis_check_data(
         PyObject* Py_UNUSED(self),
         PyObject* args,
@@ -1715,7 +1827,7 @@ PyObject* PyLieBasis_check_data(
     PyObject* total_order = NULL;
     int32_t width, depth;
     int throw_on_fail = 0;
-    PyLieBasis_Major major = PLB_Major_Bourbaki;
+    PyLieBasisMajor major = PLB_Major_Bourbaki;
 
     if (!PyArg_ParseTupleAndKeywords(
                 args,
@@ -1729,7 +1841,7 @@ PyObject* PyLieBasis_check_data(
                 &width,
                 &depth,
                 &total_order,
-                PyLIeBasis_Major_converter,
+                PyLieBasis_Major_converter,
                 &major,
                 &throw_on_fail
         )) {
@@ -1864,3 +1976,128 @@ npy_intp compute_lie_dim(const int32_t width, const int32_t depth)
 
     return result;
 }
+
+
+
+
+/*
+ * Lexicographic word orders
+ */
+int key_word_compare(PyLieBasis* Py_UNUSED(basis), npy_intp left, npy_intp right)
+{
+    return left < right;
+}
+
+int foliage_lex_word_compare(PyLieBasis* basis, npy_intp left, npy_intp right)
+{
+    npy_intp* left_foliage = PyMem_Malloc(2*basis->depth * sizeof(npy_intp));
+    npy_intp* right_foliage = left_foliage + basis->depth;
+
+    int ret = -1;
+
+    npy_intp left_letters = PyLieBasis_get_foliage(basis, left, left_foliage, basis->depth);
+    if (left_letters < 0) {
+        goto finish;
+    }
+    npy_intp right_letters = PyLieBasis_get_foliage(basis, right, right_foliage, basis->depth);
+    if (right_letters < 0) {
+        goto finish;
+    }
+
+    ret = 0;
+    npy_intp n_letters = Py_MIN(left_letters, right_letters);
+
+    for (npy_intp i=0; i<n_letters; ++i) {
+        if (left_foliage[i] < right_foliage[i]) {
+            ret = 1;
+            goto finish;
+        }
+        if (left_foliage[i] > right_foliage[i]) {
+            goto finish;
+        }
+    }
+
+    // left < right also if left is a prefix of right.
+    ret = left_letters < right_letters;
+finish:
+    PyMem_Free(left_foliage);
+    return ret;
+}
+
+int py_word_compare(PyLieBasis* basis, npy_intp left, npy_intp right)
+{
+    PyObject* ordering = PyObject_GetAttrString((PyObject*) basis, "word_compare");
+    if (ordering == NULL) {
+        // word_compare not found
+        return -1;
+    }
+
+    // From here on out we need to make sure we decrement result and ordering
+    // before return
+    int ret = -1;
+
+    PyObject* result = PyObject_CallFunction(
+            (PyObject*) ordering,
+            "nnO",
+            left,
+            right,
+            (PyObject*) basis
+    );
+
+    if (result == NULL) {
+        goto finish;
+    }
+
+    // For now, just check if the result is truthy
+    ret = PyObject_IsTrue(result);
+
+finish:
+    Py_DECREF(ordering);
+    Py_XDECREF(result);
+    return ret;
+}
+
+static inline void swap_word_and_degrees(LieWord* word, int32_t* ldegree, int32_t* rdegree)
+{
+    npy_intp tmp = word->left;
+    word->left = word->right;
+    word->right = tmp;
+
+    int32_t t_degree = *ldegree;
+    *ldegree = *rdegree;
+    *rdegree = t_degree;
+}
+
+int PyLieBasis_canonicalize_word(
+        PyLieBasis* basis,
+        LieWord* word,
+        int32_t* ldegree,
+        int32_t* rdegree
+)
+{
+    // if (*ldegree > *rdegree) {
+    //     swap_word_and_degrees(word, ldegree, rdegree);
+    //     return 1;
+    // }
+    // if (*ldegree < *rdegree) {
+    //     return 0;
+    // }
+
+    int ord = basis->word_cmp(basis, word->left, word->right);
+
+    if (ord < 0) {
+        // erro already set
+        return -1;
+    }
+
+    // ord is true if word->left < word->right. In this case there is nothing to
+    // do. We're interested in the other case where !ord is true so
+    // word->left > word->right (equality should not occur).
+    if (!ord) {
+        swap_word_and_degrees(word, ldegree, rdegree);
+    }
+
+    return !ord;
+}
+
+

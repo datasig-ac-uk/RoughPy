@@ -56,13 +56,20 @@ extern "C" {
  *
  * For now, this is only used in the check function.
  */
-typedef enum _PyLieBasis_Major
+typedef enum _PyLieBasisMajor
 {
     PLB_Major_Bourbaki = 0,
     PLB_Major_Right = PLB_Major_Bourbaki,
     PLB_Major_Reutenauer = 1,
     PLB_Major_Left = PLB_Major_Reutenauer
-} PyLieBasis_Major;
+} PyLieBasisMajor;
+
+
+typedef enum _PyLieBasisDataOrdering
+{
+    PLB_UnorderedData = 0,
+    PLB_OrderedData = 1
+} PyLieBasisDataOrdering;
 
 typedef union _LieWord
 {
@@ -106,6 +113,35 @@ static inline int PyLieBasis_Check(PyObject* obj)
     return PyObject_TypeCheck(obj, &PyLieBasis_Type);
 }
 
+
+// flag functions - these will be useful if we move to a flags integer later
+RPY_NO_EXPORT
+PyLieBasisDataOrdering PyLieBasis_data_ordering(PyLieBasis* basis);
+
+static inline int PyLieBasis_data_is_ordered(PyLieBasis* basis)
+{
+    return PyLieBasis_data_ordering(basis) == PLB_OrderedData;
+}
+
+static inline int PyLieBasis_data_is_unordered(PyLieBasis* basis)
+{
+    return PyLieBasis_data_ordering(basis) == PLB_UnorderedData;
+}
+
+RPY_NO_EXPORT
+PyLieBasisMajor PyLieBasis_major(PyLieBasis* basis);
+
+static inline int PyLieBasis_is_left_major(PyLieBasis* basis)
+{
+    return PyLieBasis_major(basis) == PLB_Major_Left;
+}
+
+static inline int PyLieBasis_is_right_major(PyLieBasis* basis)
+{
+    return PyLieBasis_major(basis) == PLB_Major_Right;
+}
+
+// attribute getters
 RPY_NO_EXPORT
 int32_t PyLieBasis_width(PyLieBasis* basis);
 
@@ -250,7 +286,7 @@ int PyLieBasis_check_data_internal(
         int32_t width,
         int32_t depth,
         PyObject* total_order,
-        PyLieBasis_Major major,
+        PyLieBasisMajor major,
         char const** message
 );
 
