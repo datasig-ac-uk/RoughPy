@@ -363,6 +363,11 @@ RPY_NO_EXPORT
 npy_intp PyLieBasis_get_foliage(PyLieBasis* basis, npy_intp key, npy_intp* foliage, npy_intp foliage_maxsize);
 
 
+RPY_NO_EXPORT
+int PyLieBasis_canonicalize_word(PyLieBasis* basis, LieWord* word, int32_t* ldegree, int32_t* rdegree);
+
+
+
 int PyLieBasis_check_data_internal(
         PyArrayObject* data,
         PyArrayObject* degree_begin,
