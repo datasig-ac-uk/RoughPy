@@ -295,15 +295,40 @@ int PyLieBasis_check_data_internal(
         char const** message
 );
 
-
+/**
+ * @brief Computes the dimension of a given Lie degree for a specified width.
+ *
+ * This function calculates the dimension of the Lie algebra at a specific
+ * degree using the Möbius inversion formula. It considers all divisors of the
+ * degree, applies the Möbius function for each divisor, and computes
+ * contributions based on the given width, summing up the results appropriately.
+ *
+ * @param width The width of the alphabet for which the dimension is to be
+ * computed. It represents the number of letters in the basis.
+ * @param degree The degree of the Lie element whose dimension is to be
+ * computed. Must be a positive integer.
+ * @return The computed dimension of the Lie basis for the given width and
+ * degree. Returns 0 for invalid input (e.g., degree <= 0).
+ */
 npy_intp compute_lie_degree_dim(int32_t width, int32_t degree);
 
+/**
+ * @brief Computes the dimension of the Lie algebra for a given width and depth.
+ *
+ * This function calculates the total number of basis elements in the Lie
+ * algebra by summing up the dimensions of the Lie algebra for each degree from
+ * 1 to the specified depth. It utilizes a helper function to determine the
+ * dimension for each degree.
+ *
+ * @param width The size of the alphabet or number of generators of the Lie
+ * algebra.
+ * @param depth The maximum degree of the Lie words being considered.
+ * @return The total dimension of the Lie algebra for the given width and depth
+ *         or -1 if an overflow occurs.
+ */
+npy_intp compute_lie_dim(int32_t width, int32_t depth);
 
-npy_intp compute_lie_dim(const int32_t width, const int32_t depth);
 
-
-PyObject*
-PyLieBasis_check_data(PyObject* self, PyObject* args, PyObject* kwargs);
 
 int init_lie_basis(PyObject* module);
 

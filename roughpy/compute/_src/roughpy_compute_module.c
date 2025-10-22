@@ -51,10 +51,6 @@ static PyMethodDef roughpy_compute_methods[] = {
          (PyCFunction) py_dense_tensor_to_lie,
          METH_VARARGS | METH_KEYWORDS,
          "dense free tensor tensor to Lie map"                                   },
-        {          "check_lie_basis_data",
-         (PyCFunction) PyLieBasis_check_data,
-         METH_VARARGS | METH_KEYWORDS,
-         "check if data and degree_begin data form a valid Lie basis"            },
         {                       NULL,     NULL, 0,                           NULL}
 };
 
