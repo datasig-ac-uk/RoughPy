@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "tensor_basis.h"
 
 #include <stddef.h>
