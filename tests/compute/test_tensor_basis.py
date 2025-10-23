@@ -7,6 +7,7 @@ import roughpy.compute as rpc
 
 
 def test_created_degree_begins():
+    """Test that degree_begin is created correctly"""
     width = 5
     depth = 5
 
