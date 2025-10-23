@@ -539,7 +539,7 @@ static inline PyObject* lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right
     const npy_intp* l_db_data = PyArray_DATA((PyArrayObject*) left->degree_begin);
     const npy_intp* r_db_data = PyArray_DATA((PyArrayObject*) right->degree_begin);
 
-    for (npy_intp d=0; d<left->depth; ++d) {
+    for (int32_t d=0; d<left->depth + 2; ++d) {
         if (l_db_data[d] != r_db_data[d]) {
             return PyBool_FromLong(!success);
         }
