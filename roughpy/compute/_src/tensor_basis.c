@@ -151,7 +151,7 @@ static Py_hash_t tensor_basis_hash(PyObject* obj)
 
     // also include the degree-begin data to be sure we get everything right
     const npy_intp db_bytes = ((npy_intp) self->depth + 2) * sizeof(npy_intp);
-    const char* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
+    const void* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
     state = fnv1a_hash_bytes(state, db_data, db_bytes);
 
     // maybe there are other things to include later.
