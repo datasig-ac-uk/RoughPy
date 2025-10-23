@@ -16,6 +16,10 @@ extern PyTypeObject PyTensorBasis_Type;
 
 int init_tensor_basis(PyObject* module);
 
+static inline int PyTensorBasis_Check(PyObject* obj)
+{
+  return PyObject_IsInstance(obj, (PyObject*) &PyTensorBasis_Type);
+}
 
 PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth);
 

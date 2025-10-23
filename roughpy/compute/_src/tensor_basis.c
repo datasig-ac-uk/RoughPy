@@ -19,9 +19,7 @@ struct _PyTensorBasis {
 };
 /* clang-format on */
 
-
-static PyObject*
-tensor_basis_new(
+static PyObject* tensor_basis_new(
         PyTypeObject* type,
         PyObject* Py_UNUSED(args),
         PyObject* Py_UNUSED(kwargs)
@@ -140,9 +138,7 @@ static Py_hash_t tensor_basis_hash(PyObject* obj)
 
     // We may need to replace this with an atomic load
     Py_hash_t hash = self->cached_hash;
-    if (hash != -1) {
-        return hash;
-    }
+    if (hash != -1) { return hash; }
 
     Py_uhash_t state = FNV1A_OFFSET_BASIS;
     state = fnv1a_hash_string(state, Py_TYPE(self)->tp_name);
@@ -214,6 +210,47 @@ static void tensor_basis_dealloc(PyTensorBasis* self)
     Py_TYPE(self)->tp_free((PyObject*) self);
 }
 
+static PyObject*
+tensor_basis_test_equal(PyTensorBasis* left, PyTensorBasis* right, long success)
+{
+    if (left->width != right->width) { return PyBool_FromLong(!success); }
+    if (left->depth != right->depth) { return PyBool_FromLong(!success); }
+
+    const npy_intp* l_db_data
+            = PyArray_DATA((PyArrayObject*) left->degree_begin);
+    const npy_intp* r_db_data
+            = PyArray_DATA((PyArrayObject*) right->degree_begin);
+
+    for (int32_t d = 0; d < left->depth + 2; ++d) {
+        if (l_db_data[d] != r_db_data[d]) { return PyBool_FromLong(!success); }
+    }
+
+    return PyBool_FromLong(success);
+}
+
+static PyObject*
+tensor_basis_richcompare(PyObject* self, PyObject* other, int op)
+{
+    if (!PyTensorBasis_Check(self) || !PyTensorBasis_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    PyTensorBasis* left = (PyTensorBasis*) self;
+    PyTensorBasis* right = (PyTensorBasis*) other;
+
+    switch (op) {
+        case Py_EQ: return tensor_basis_test_equal(left, right, 1);
+        case Py_NE: return tensor_basis_test_equal(left, right, 0);
+        case Py_LT:
+        case Py_LE:
+        case Py_GT:
+        case Py_GE:
+        default: break;
+    }
+
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
 static PyMemberDef PyTensorBasis_members[] = {
         {"width",
          Py_T_INT, offsetof(PyTensorBasis, width),
@@ -238,21 +275,24 @@ static PyMethodDef PyTensorBasis_methods[] = {
         {NULL}
 };
 
-PyTypeObject PyTensorBasis_Type
-        = {.ob_base = PyVarObject_HEAD_INIT(NULL, 0).tp_name
-           = RPY_CPT_TYPE_NAME(TensorBasis),
-           .tp_basicsize = sizeof(PyTensorBasis),
-           .tp_itemsize = 0,
-           .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-           .tp_doc = "TensorBasis",
-           .tp_methods = PyTensorBasis_methods,
-           .tp_members = PyTensorBasis_members,
-           .tp_new = tensor_basis_new,
-           .tp_init = (initproc) tensor_basis_init,
-           .tp_dealloc = (destructor) tensor_basis_dealloc,
-           .tp_repr = (reprfunc) tensor_basis_repr,
-    .tp_hash = (hashfunc) tensor_basis_hash
-        };
+/* clang-format off */
+PyTypeObject PyTensorBasis_Type = {
+        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = RPY_CPT_TYPE_NAME(TensorBasis),
+        .tp_basicsize = sizeof(PyTensorBasis),
+        .tp_itemsize = 0,
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+        .tp_doc = "TensorBasis",
+        .tp_methods = PyTensorBasis_methods,
+        .tp_members = PyTensorBasis_members,
+        .tp_new = tensor_basis_new,
+        .tp_init = (initproc) tensor_basis_init,
+        .tp_dealloc = (destructor) tensor_basis_dealloc,
+        .tp_repr = (reprfunc) tensor_basis_repr,
+        .tp_hash = (hashfunc) tensor_basis_hash,
+        .tp_richcompare = (richcmpfunc) tensor_basis_richcompare,
+};
+/* clang-format on */
 
 int init_tensor_basis(PyObject* module)
 {
@@ -295,19 +335,11 @@ PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth)
     return self;
 }
 
-
-
 /******************************************************************************
  * External methods
  ******************************************************************************/
-int32_t PyTensorBasis_width(PyTensorBasis* basis)
-{
-    return basis->width;
-}
-int32_t PyTensorBasis_depth(PyTensorBasis* basis)
-{
-    return basis->depth;
-}
+int32_t PyTensorBasis_width(PyTensorBasis* basis) { return basis->width; }
+int32_t PyTensorBasis_depth(PyTensorBasis* basis) { return basis->depth; }
 PyArrayObject* PyTensorBasis_degree_begin(PyTensorBasis* basis)
 {
     return (PyArrayObject*) basis->degree_begin;
