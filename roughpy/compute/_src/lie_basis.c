@@ -494,7 +494,7 @@ Py_hash_t lie_basis_hash(PyObject* obj)
     }
 
     Py_uhash_t state = FNV1A_OFFSET_BASIS;
-    state = fnv1a_hash_string(state, Py_TYPE(self)->tp_name);
+    state = fnv1a_hash_bytes(state, "LieBasis", 8);
     state = fnv1a_hash_i32(state, self->width);
     state = fnv1a_hash_i32(state, self->depth);
 
@@ -505,8 +505,8 @@ Py_hash_t lie_basis_hash(PyObject* obj)
      * number of bytes to process from this.
      */
     const npy_intp data_bytes = 2*PyLieBasis_true_size(self) * sizeof(npy_intp);
-    const char* data = PyArray_DATA((PyArrayObject*) self->data);
-    state = fnv1a_hash_bytes(state, (const unsigned char*) data, data_bytes);
+    const void* data = PyArray_DATA((PyArrayObject*) self->data);
+    state = fnv1a_hash_bytes(state, data, data_bytes);
 
     /*
      * we also need to hash the degree_begin array. Again this might actually be
@@ -514,8 +514,8 @@ Py_hash_t lie_basis_hash(PyObject* obj)
      * depth + 2 values.
      */
     const npy_intp db_bytes = ((npy_intp) self->depth + 2) * sizeof(npy_intp);
-    const char* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
-    state = fnv1a_hash_bytes(state, (const unsigned char*) db_data, db_bytes);
+    const void* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
+    state = fnv1a_hash_bytes(state, db_data, db_bytes);
 
     // There may be other fields we need to hash in here, but not at the moment
 
