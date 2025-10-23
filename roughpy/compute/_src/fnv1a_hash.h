@@ -28,9 +28,9 @@ uint64_t
 fnv1a_hash_string64(uint64_t state, const char* str);
 
 uint32_t
-fnv1a_hash_bytes32(uint32_t state, const unsigned char* bytes, size_t len);
+fnv1a_hash_bytes32(uint32_t state, const void* bytes, size_t len);
 uint64_t
-fnv1a_hash_bytes64(uint64_t state, const unsigned char* bytes, size_t len);
+fnv1a_hash_bytes64(uint64_t state, const void* bytes, size_t len);
 
 
 #ifdef __cplusplus

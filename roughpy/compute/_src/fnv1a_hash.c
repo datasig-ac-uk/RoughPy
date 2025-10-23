@@ -41,19 +41,23 @@ uint64_t fnv1a_hash_string64(uint64_t state, const char* str)
 }
 
 uint32_t
-fnv1a_hash_bytes32(uint32_t state, const unsigned char* bytes, const size_t len)
+fnv1a_hash_bytes32(uint32_t state, const void* bytes, const size_t len)
 {
-    for (size_t i = 0; i < len; ++i) {
-        FNV1A_MIX_OCTET_32(state, bytes[i]);
+    const unsigned char* ptr = (const unsigned char*) bytes;
+    const unsigned char* bytes_end = ptr + len;
+    for (; ptr != bytes_end; ++ptr) {
+        FNV1A_MIX_OCTET_32(state, *ptr);
     }
     return state;
 }
 
 uint64_t
-fnv1a_hash_bytes64(uint64_t state, const unsigned char* bytes, const size_t len)
+fnv1a_hash_bytes64(uint64_t state, const void* bytes, const size_t len)
 {
-    for (size_t i = 0; i < len; ++i) {
-        FNV1A_MIX_OCTET_64(state, bytes[i]);
+    const unsigned char* ptr = (const unsigned char*) bytes;
+    const unsigned char* bytes_end = ptr + len;
+    for (; ptr != bytes_end; ++ptr) {
+        FNV1A_MIX_OCTET_64(state, *ptr);
     }
     return state;
 }
