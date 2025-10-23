@@ -13,7 +13,7 @@ struct _PyTensorBasis {
     int32_t depth;
     PyObject* degree_begin;
 
-    Py_hash_t cached_hash
+    Py_hash_t cached_hash;
 };
 
 
