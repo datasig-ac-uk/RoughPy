@@ -27,7 +27,7 @@ static inline Py_uhash_t fnv1a_hash_string(Py_uhash_t state, const char* str)
 }
 
 static inline Py_uhash_t
-fnv1a_hash_bytes(Py_uhash_t state, const unsigned char* bytes, Py_ssize_t len)
+fnv1a_hash_bytes(Py_uhash_t state, const void* bytes, size_t len)
 {
 #if SIZEOF_VOID_P == 8
     return fnv1a_hash_bytes64(state, bytes, len);
@@ -38,65 +38,37 @@ fnv1a_hash_bytes(Py_uhash_t state, const unsigned char* bytes, Py_ssize_t len)
 
 static inline Py_uhash_t fnv1a_hash_i32(Py_uhash_t state, int32_t value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_uhash_t fnv1a_hash_u32(Py_uhash_t state, uint32_t value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_uhash_t fnv1a_hash_i64(Py_uhash_t state, int64_t value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_uhash_t fnv1a_hash_u64(Py_uhash_t state, uint64_t value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_uhash_t fnv1a_hash_isize(Py_uhash_t state, Py_ssize_t value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_uhash_t fnv1a_hash_usize(Py_uhash_t state, size_t value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_uhash_t fnv1a_hash_ptr(Py_uhash_t state, const void* value)
 {
-    return fnv1a_hash_bytes(
-            state,
-            (const unsigned char*) &value,
-            sizeof(value)
-    );
+    return fnv1a_hash_bytes(state, &value, sizeof(value));
 }
 
 static inline Py_hash_t fnv1a_finalize_hash(Py_hash_t state)
