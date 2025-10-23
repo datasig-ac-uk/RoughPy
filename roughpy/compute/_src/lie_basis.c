@@ -1,4 +1,5 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
+// ReSharper disable CppLocalVariableMayBeConst
 #include "lie_basis.h"
 
 #include <math.h>
