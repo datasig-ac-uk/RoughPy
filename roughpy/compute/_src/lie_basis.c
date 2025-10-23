@@ -504,7 +504,7 @@ Py_hash_t lie_basis_hash(PyObject* obj)
      * thus derived from the PyLieBasis_true_size function, and we read the
      * number of bytes to process from this.
      */
-    const npy_intp data_bytes = 2*PyLieBasis_true_size(self) * sizeof(npy_intp);
+    const size_t data_bytes = 2*PyLieBasis_true_size(self) * sizeof(npy_intp);
     const void* data = PyArray_DATA((PyArrayObject*) self->data);
     state = fnv1a_hash_bytes(state, data, data_bytes);
 
@@ -513,7 +513,7 @@ Py_hash_t lie_basis_hash(PyObject* obj)
      * larger than the depth requires, so be sure to only process the first
      * depth + 2 values.
      */
-    const npy_intp db_bytes = ((npy_intp) self->depth + 2) * sizeof(npy_intp);
+    const size_t db_bytes = (self->depth + 2) * sizeof(npy_intp);
     const void* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
     state = fnv1a_hash_bytes(state, db_data, db_bytes);
 
