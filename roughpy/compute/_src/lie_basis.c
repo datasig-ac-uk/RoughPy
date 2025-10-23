@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "py_fnv1a_hash.h"
 #include "lie_multiplication_cache.h"
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
@@ -23,6 +24,10 @@ struct _PyLieBasis
     PyObject* l2t;
     PyObject* t2l;
     PyObject* multiplier_cache;
+
+
+
+    Py_hash_t cached_hash;
 };
 
 
@@ -36,6 +41,7 @@ static void lie_basis_dealloc(PyLieBasis* self);
 static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs);
 
 static PyObject* lie_basis_repr(PyLieBasis* self);
+static Py_hash_t lie_basis_hash(PyObject* obj);
 
 // PylieBasis methods
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
@@ -103,6 +109,7 @@ PyTypeObject PyLieBasis_Type = {
         .tp_dealloc = (destructor) lie_basis_dealloc,
         .tp_repr = (reprfunc) lie_basis_repr,
         .tp_new = (newfunc) lie_basis_new,
+    .tp_hash = (hashfunc) lie_basis_hash
 };
 
 /*******************************************************************************
@@ -135,6 +142,8 @@ static PyObject* lie_basis_new(
 
     Py_XSETREF(self->l2t, PyDict_New());
     Py_XSETREF(self->t2l, PyDict_New());
+
+    self->cached_hash = -1;
 
     return (PyObject*) self;
 }
@@ -470,6 +479,49 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
     return PyLong_FromLong(size - 1);
 }
 
+Py_hash_t lie_basis_hash(PyObject* obj)
+{
+    PyLieBasis* self = (PyLieBasis*) obj;
+
+    // This might need to be made atomic in the future
+    Py_hash_t hash = self->cached_hash;
+    if (hash != -1) {
+        return hash;
+    }
+
+    Py_uhash_t state = FNV1A_OFFSET_BASIS;
+    state = fnv1a_hash_string(state, Py_TYPE(self)->tp_name);
+    state = fnv1a_hash_i32(state, self->width);
+    state = fnv1a_hash_i32(state, self->depth);
+
+    /*
+     * We need to be a little careful here because the data table might actually
+     * contain more values than really belong to the basis. The basis size is
+     * thus derived from the PyLieBasis_true_size function, and we read the
+     * number of bytes to process from this.
+     */
+    const npy_intp data_bytes = 2*PyLieBasis_true_size(self) * sizeof(npy_intp);
+    const char* data = PyArray_DATA((PyArrayObject*) self->data);
+    state = fnv1a_hash_bytes(state, (const unsigned char*) data, data_bytes);
+
+    /*
+     * we also need to hash the degree_begin array. Again this might actually be
+     * larger than the depth requires, so be sure to only process the first
+     * depth + 2 values.
+     */
+    const npy_intp db_bytes = ((npy_intp) self->depth + 2) * sizeof(npy_intp);
+    const char* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
+    state = fnv1a_hash_bytes(state, (const unsigned char*) db_data, db_bytes);
+
+    // There may be other fields we need to hash in here, but not at the moment
+
+    hash = fnv1a_finalize_hash(state);
+
+    // room for atomic store
+    self->cached_hash = hash;
+
+    return hash;
+}
 /*
  * External methods
  */
