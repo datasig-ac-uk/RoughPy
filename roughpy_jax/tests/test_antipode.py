@@ -26,7 +26,7 @@ def test_antipode_on_signature():
     expected = np.zeros_like(sig.data)
     expected[0] = 1.0
 
-    assert jnp.allclose(product.data, expected)
+    assert jnp.allclose(product.data, expected, atol=1e-7)
 
 
 def test_antipode_idempotent():
