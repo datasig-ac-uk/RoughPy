@@ -19,6 +19,11 @@ int init_tensor_basis(PyObject* module);
 
 PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth);
 
+int32_t PyTensorBasis_width(PyTensorBasis* basis);
+int32_t PyTensorBasis_depth(PyTensorBasis* basis);
+PyArrayObject* PyTensorBasis_degree_begin(PyTensorBasis* basis);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -8,13 +8,16 @@
 
 #include "py_fnv1a_hash.h"
 
+/* clang-format off */
 struct _PyTensorBasis {
-    PyObject_HEAD int32_t width;
+    PyObject_HEAD//
+    int32_t width;
     int32_t depth;
     PyObject* degree_begin;
 
     Py_hash_t cached_hash;
 };
+/* clang-format on */
 
 
 static PyObject*
@@ -290,4 +293,22 @@ PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth)
 
     Py_XSETREF(self->degree_begin, db);
     return self;
+}
+
+
+
+/******************************************************************************
+ * External methods
+ ******************************************************************************/
+int32_t PyTensorBasis_width(PyTensorBasis* basis)
+{
+    return basis->width;
+}
+int32_t PyTensorBasis_depth(PyTensorBasis* basis)
+{
+    return basis->depth;
+}
+PyArrayObject* PyTensorBasis_degree_begin(PyTensorBasis* basis)
+{
+    return (PyArrayObject*) basis->degree_begin;
 }
