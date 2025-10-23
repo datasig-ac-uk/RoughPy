@@ -209,8 +209,6 @@ jobs:
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DROUGHPY_BUILD_TESTS=ON \
           -DCMAKE_MAKE_PROGRAM="$NINJA_BIN" \
-          -DCMAKE_C_COMPILER=clang \
-          -DCMAKE_CXX_COMPILER=clang++ \
           -DROUGHPY_BUILD_TEST_PYTHON_EMBED=ON \
           -DVCPKG_BUILD_TYPE=release
       env:
