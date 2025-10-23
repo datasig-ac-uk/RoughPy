@@ -42,6 +42,7 @@ static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs);
 
 static PyObject* lie_basis_repr(PyLieBasis* self);
 static Py_hash_t lie_basis_hash(PyObject* obj);
+static PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op);
 
 // PylieBasis methods
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
@@ -96,20 +97,22 @@ PyMethodDef PyLieBasis_methods[] = {
         {NULL}
 };
 
-PyTypeObject PyLieBasis_Type = {
-        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(LieBasis),
-        .tp_basicsize = sizeof(PyLieBasis),
-        .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "LieBasis",
-        .tp_methods = PyLieBasis_methods,
-        .tp_members = PyLieBasis_members,
-        .tp_init = (initproc) lie_basis_init,
-        .tp_dealloc = (destructor) lie_basis_dealloc,
-        .tp_repr = (reprfunc) lie_basis_repr,
-        .tp_new = (newfunc) lie_basis_new,
-    .tp_hash = (hashfunc) lie_basis_hash
+PyTypeObject PyLieBasis_Type = {                                              //
+                .ob_base = PyVarObject_HEAD_INIT(NULL, 0)//
+                                   .tp_name
+                = RPY_CPT_TYPE_NAME(LieBasis),
+                .tp_basicsize = sizeof(PyLieBasis),
+                .tp_itemsize = 0,
+                .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                .tp_doc = "LieBasis",
+                .tp_methods = PyLieBasis_methods,
+                .tp_members = PyLieBasis_members,
+                .tp_init = (initproc) lie_basis_init,
+                .tp_dealloc = (destructor) lie_basis_dealloc,
+                .tp_repr = (reprfunc) lie_basis_repr,
+                .tp_new = (newfunc) lie_basis_new,
+                .tp_hash = (hashfunc) lie_basis_hash,
+                .tp_richcompare = (richcmpfunc) lie_basis_richcompare
 };
 
 /*******************************************************************************
@@ -522,6 +525,65 @@ Py_hash_t lie_basis_hash(PyObject* obj)
 
     return hash;
 }
+
+static inline PyObject* lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right, long success)
+{
+    if (left->width != right->width) {
+        return PyBool_FromLong(!success);
+    }
+
+    if (left->depth != right->depth) {
+        return PyBool_FromLong(!success);
+    }
+
+    const npy_intp* l_db_data = PyArray_DATA((PyArrayObject*) left->degree_begin);
+    const npy_intp* r_db_data = PyArray_DATA((PyArrayObject*) right->degree_begin);
+
+    for (npy_intp d=0; d<left->depth; ++d) {
+        if (l_db_data[d] != r_db_data[d]) {
+            return PyBool_FromLong(!success);
+        }
+    }
+
+    // for now rely on the hash value too. Maybe later we can do something more
+    // careful to test that the data is the same.
+
+    Py_hash_t lhash = PyObject_Hash((PyObject*) left);
+    Py_hash_t rhash = PyObject_Hash((PyObject*) right);
+
+    if (lhash != rhash) {
+        return PyBool_FromLong(!success);
+    }
+
+    return PyBool_FromLong(!success);
+}
+
+PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op)
+{
+    if (!PyLieBasis_Check(self) || !PyLieBasis_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    PyLieBasis* left = (PyLieBasis*) self;
+    PyLieBasis* right = (PyLieBasis*) other;
+
+    switch (op) {
+        case Py_EQ:
+            return lie_basis_test_equal(left, right, 1);
+        case Py_NE:
+            return lie_basis_test_equal(left, right, 0);
+        case Py_LE:
+        case Py_GE:
+        case Py_LT:
+        case Py_GT:
+        default:
+            break;
+    }
+
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
+
 /*
  * External methods
  */
