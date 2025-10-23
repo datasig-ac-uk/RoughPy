@@ -9,13 +9,7 @@
 extern "C" {
 #endif
 
-typedef struct _PyTensorBasis
-{
-    PyObject_HEAD
-    int32_t width;
-    int32_t depth;
-    PyObject* degree_begin;
-} PyTensorBasis;
+typedef struct _PyTensorBasis PyTensorBasis;
 
 extern PyTypeObject PyTensorBasis_Type;
 
