@@ -556,7 +556,7 @@ static inline PyObject* lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right
         return PyBool_FromLong(!success);
     }
 
-    return PyBool_FromLong(!success);
+    return PyBool_FromLong(success);
 }
 
 PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op)
