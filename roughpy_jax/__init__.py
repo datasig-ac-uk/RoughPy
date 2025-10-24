@@ -33,34 +33,14 @@ else:
         )
 
 
-@dataclass
-class TensorBasis:
-    """
-    Tensor basis with width and depth and array of indexes that specify where
-    degree data begins in tensor. If degree_begin is not specified, a default
-    free tensor lookup is initialised from width and depth.
-    """
-    width: int
-    depth: int
-    degree_begin: np.ndarray
+# FIXME review point: neatly load compute module from roughpy_jax dir
+import sys
+sys.path.append('roughpy/compute')
+import _rpy_compute_internals
 
-    def __init__(self, width: int, depth: int, degree_begin=None):
-        self.width = width
-        self.depth = depth
-
-        # Degree begin buffer is int64 as in roughpy_jax C++ ptr internals
-        if degree_begin:
-            # FIXME convert to int64 if not already
-            pass
-        else:
-            degree_begin = np.zeros(depth + 2, dtype=np.int64)
-            for i in range(1, depth + 2):
-                degree_begin[i] = 1 + width * degree_begin[i - 1]
-
-        self.degree_begin = degree_begin
-
-    def size(self):
-        return self.degree_begin[self.depth + 1]
+# FIXME replicate frozen dataclass
+class TensorBasis(_rpy_compute_internals.TensorBasis):
+    pass
 
 
 class DenseFreeTensor(NamedTuple):
