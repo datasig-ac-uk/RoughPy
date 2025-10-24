@@ -9,21 +9,24 @@
 extern "C" {
 #endif
 
-typedef struct _PyTensorBasis
-{
-    PyObject_HEAD
-    int32_t width;
-    int32_t depth;
-    PyObject* degree_begin;
-} PyTensorBasis;
+typedef struct _PyTensorBasis PyTensorBasis;
 
 extern PyTypeObject PyTensorBasis_Type;
 
 
 int init_tensor_basis(PyObject* module);
 
+static inline int PyTensorBasis_Check(PyObject* obj)
+{
+  return PyObject_IsInstance(obj, (PyObject*) &PyTensorBasis_Type);
+}
 
 PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth);
+
+int32_t PyTensorBasis_width(PyTensorBasis* basis);
+int32_t PyTensorBasis_depth(PyTensorBasis* basis);
+PyArrayObject* PyTensorBasis_degree_begin(PyTensorBasis* basis);
+
 
 #ifdef __cplusplus
 }

@@ -925,7 +925,7 @@ PyObject* py_dense_lie_to_tensor(
         // the newly constructed Tensor basis is guaranteed to have a contiguous
         // degree_begin array.
         tensor_basis.degree_begin = static_cast<npy_intp*>(PyArray_DATA(
-                reinterpret_cast<PyArrayObject*>(new_tb->degree_begin)
+               PyTensorBasis_degree_begin(new_tb)
         ));
     }
 
@@ -1179,7 +1179,7 @@ PyObject* py_dense_tensor_to_lie(
         // the newly constructed Tensor basis is guaranteed to have a contiguous
         // degree_begin array.
         tensor_basis.degree_begin = static_cast<npy_intp*>(PyArray_DATA(
-                reinterpret_cast<PyArrayObject*>(new_tb->degree_begin)
+            PyTensorBasis_degree_begin(new_tb)
         ));
     }
 
