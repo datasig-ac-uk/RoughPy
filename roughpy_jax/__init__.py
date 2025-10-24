@@ -1,0 +1,292 @@
+import ctypes
+import numpy as np
+from dataclasses import dataclass
+from typing import NamedTuple
+
+try:
+    import jax
+    import jax.numpy as jnp
+except ImportError as e:
+    raise ImportError("RoughPy JAX requires jax library. For install instructions please refer to https://docs.jax.dev/en/latest/installation.html") from e
+
+try:
+    # XLA functions loaded directly from .so rather than python module
+    _rpy_jax_internals = ctypes.cdll.LoadLibrary("roughpy_jax/_rpy_jax_internals.so")
+except OSError as e:
+    _rpy_jax_internals = None
+    raise OSError("RoughPy JAX CPU backend is not installed correctly") from e
+else:
+    # Register CPU functions by looking up expected names in .so
+    cpu_func_names = [
+        "cpu_dense_ft_fma",
+        "cpu_dense_ft_exp",
+        "cpu_dense_ft_log",
+        "cpu_dense_ft_fmexp",
+        "cpu_dense_ft_antipode",
+    ]
+    for func_name in cpu_func_names:
+        func_ptr = getattr(_rpy_jax_internals, func_name)
+        jax.ffi.register_ffi_target(
+            func_name,
+            jax.ffi.pycapsule(func_ptr),
+            platform="cpu"
+        )
+
+
+# FIXME review point: neatly load compute module from roughpy_jax dir
+import sys
+sys.path.append('roughpy/compute')
+import _rpy_compute_internals
+
+# FIXME replicate frozen dataclass
+class TensorBasis(_rpy_compute_internals.TensorBasis):
+    pass
+
+
+class DenseFreeTensor(NamedTuple):
+    """
+    Dense free tensor class built from basis and associated ndarray of data.
+    """
+    data: jnp.ndarray
+    basis: TensorBasis
+
+
+"""
+Free tensor alias. Tensors are assumed to be dense without prefix
+"""
+FreeTensor = DenseFreeTensor
+
+
+def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
+    out_width = out_basis.width
+
+    for i, basis in enumerate(other_bases):
+        if basis.width != out_width:
+            raise ValueError(f"Incompatible width for basis {i}")
+
+
+def _check_tensor_data_type(ft: FreeTensor, err_msg: str):
+    if ft.data.dtype != jnp.float32:
+        raise ValueError(err_msg)
+
+
+def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
+    """
+    Free tensor fused multiply-add
+
+    This function is equivalent to `b * c + a`.
+    Currently only floating point scalars (np.float32) are supported.
+    The basis is taken from `c`.
+
+    :param a: addition operand
+    :param b: left-hand multiply operand
+    :param c: right-hand multiple operand
+    :return: result
+    """
+    _check_tensor_data_type(a, "ft_fma a expecting float32 array data")
+    _check_tensor_data_type(b, "ft_fma b expecting float32 array data")
+    _check_tensor_data_type(c, "ft_fma c expecting float32 array data")
+    _check_basis_compat(a.basis, b.basis, c.basis)
+
+    # Use same basis convention as ft_fma in roughpy/compute
+    basis = c.basis
+    out_depth = c.basis.depth
+    lhs_depth = -1
+    rhs_depth = -1
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_fma",
+        jax.ShapeDtypeStruct(c.data.shape, c.data.dtype)
+    )
+
+    out_data = call(
+        a.data,
+        b.data,
+        c.data,
+        width=np.int32(basis.width),
+        depth=np.int32(basis.depth),
+        out_depth=np.int32(out_depth),
+        lhs_depth=np.int32(lhs_depth),
+        rhs_depth=np.int32(rhs_depth),
+        degree_begin=basis.degree_begin
+    )
+
+    return FreeTensor(out_data, basis)
+
+
+def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
+    """
+    Free tensor multiply
+
+    This function is equivalent to `a * b`.
+    Currently only floating point scalars (np.float32) are supported.
+    The basis is taken from `b`.
+
+    :param a: left-hand multiply operand
+    :param b: right-hand multiple operand
+    :return: result
+    """
+    _check_tensor_data_type(a, "ft_mul a expecting float32 array data")
+    _check_tensor_data_type(b, "ft_mul b expecting float32 array data")
+    _check_basis_compat(a.basis, b.basis)
+
+    zero_add_data = jnp.zeros_like(a.data)
+
+    # Use same basis convention as ft_mul in roughpy/compute
+    basis = b.basis
+    out_depth = b.basis.depth
+    lhs_depth = -1
+    rhs_depth = b.basis.depth
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_fma",
+        jax.ShapeDtypeStruct(b.data.shape, b.data.dtype)
+    )
+
+    out_data = call(
+        zero_add_data,
+        a.data,
+        b.data,
+        width=np.int32(basis.width),
+        depth=np.int32(basis.depth),
+        out_depth=np.int32(out_depth),
+        lhs_depth=np.int32(lhs_depth),
+        rhs_depth=np.int32(rhs_depth),
+        degree_begin=basis.degree_begin
+    )
+
+    return FreeTensor(out_data, basis)
+
+
+def antipode(a: FreeTensor) -> FreeTensor:
+    """
+    Antipode of a free tensor
+
+    :param a: argument
+    :return: new tensor with antipode of `a`
+    """
+    _check_tensor_data_type(a, "antipode a expecting float32 array data")
+
+    out_basis = a.basis
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_antipode",
+        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
+    )
+
+    out_data = call(
+        a.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        arg_depth=np.int32(a.basis.depth),
+        degree_begin=out_basis.degree_begin
+    )
+
+    return FreeTensor(out_data, out_basis)
+
+
+def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Free tensor exponent
+
+    This function is equivalent to `e ^ x`.
+    Currently only floating point scalars (np.float32) are supported.
+    If `out_basis` is not specified, the same basis as `x` is used.
+
+    :param x: argument
+    :param out_basis: optional output basis.
+    :return: tensor exponential of `x`
+    """
+    _check_tensor_data_type(x, "ft_exp x expecting float32 array data")
+
+    out_basis = out_basis or x.basis
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_exp",
+        jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
+    )
+
+    out_data = call(
+        x.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        arg_depth=np.int32(x.basis.depth),
+        degree_begin=out_basis.degree_begin
+    )
+
+    return FreeTensor(out_data, out_basis)
+
+
+def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Free tensor logarithm
+
+    This function is equivalent to `log(x)`.
+    Currently only floating point scalars (np.float32) are supported.
+    If `out_basis` is not specified, the same basis as `x` is used.
+
+    :param x: argument
+    :param out_basis: optional output basis.
+    :return: tensor logarithm of `x`
+    """
+    _check_tensor_data_type(x, "ft_log x expecting float32 array data")
+
+    out_basis = out_basis or x.basis
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_log",
+        jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
+    )
+
+    out_data = call(
+        x.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        arg_depth=np.int32(x.basis.depth),
+        degree_begin=out_basis.degree_begin
+    )
+
+    return FreeTensor(out_data, out_basis)
+
+
+def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+    """
+    Free tensor fused multiply-exponential
+
+    This function is equivalent to `a * exp(x)` where `a` is `multiplier` and `x` is `exponent`.
+    Currently only floating point scalars (np.float32) are supported.
+    If `out_basis` is not specified, the same basis as `multiplier` is used.
+
+    :param multiplier: Multiplier free tensor
+    :param exponent: Free tensor to exponential
+    :param out_basis: Optional output basis. If not specified, the same basis as `multiplier` is used.
+    :return: Resulting fused multiply-exponential of `multiplier` and `exponent`
+    """
+    _check_tensor_data_type(multiplier, "ft_fmexp multiplier expecting float32 array data")
+    _check_tensor_data_type(exponent, "ft_fmexp exponent expecting float32 array data")
+
+    out_basis = out_basis or multiplier.basis
+    _check_basis_compat(out_basis, multiplier.basis, exponent.basis)
+
+    basis = multiplier.basis
+    out_depth = multiplier.basis.depth
+    mul_depth = -1
+    exp_depth = -1
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_fmexp",
+        jax.ShapeDtypeStruct(multiplier.data.shape, multiplier.data.dtype)
+    )
+
+    out_data = call(
+        multiplier.data,
+        exponent.data,
+        width=np.int32(basis.width),
+        depth=np.int32(basis.depth),
+        out_depth=np.int32(out_depth),
+        mul_depth=np.int32(mul_depth),
+        exp_depth=np.int32(exp_depth),
+        degree_begin=out_basis.degree_begin
+    )
+
+    return FreeTensor(out_data, basis)
