@@ -12,12 +12,8 @@ namespace rpy::jax::cpu {
 
 namespace ffi = xla::ffi;
 
-// Data type for index buffers, e.g. degree_begin passed from python
-inline constexpr ffi::DataType XlaIndexType = ffi::DataType::S32; // FIXME change to 64 bit pending TensorBasis implementation
-using IndexBuffer = ffi::Buffer<XlaIndexType>;
-
-// Data type for float buffers. Currently hard-coded to 32 bit because JAX
-// prefers single-precision. See JAX_ENABLE_X64 in JAX gotcha docs for more info
+// We currently only support JAX single-precision floats. See JAX_ENABLE_X64 in
+// JAX gotcha docs for more information.
 using RpyFloatType = float;
 inline constexpr ffi::DataType XlaFloatType = ffi::DataType::F32;
 static_assert(
@@ -42,15 +38,6 @@ std::pair<int64_t, int64_t> get_buffer_dims(const ffi::Buffer<T>& buffer)
 
 // General pattern for determining max degree from python input degree
 int default_max_degree(int buffer_depth, int basis_depth);
-
-// Convert python degree_begin buffer (i32) into a native RoughPy buffer (i64).
-// Currently required because the internal TensorBasis degree_begin array is 64
-// bit ptrdiffs and we are passing 32 bit ints in python.
-// FIXME ideally this method can be removed with new python TensorBasis impl
-std::vector<rpy::compute::TensorBasis::BasisBase::Index> copy_degree_begin_i64(
-    const IndexBuffer& degree_begin,
-    const int64_t degree_begin_size
-);
 
 // Prepare result buffer based on output buffer. Currently necessary to allow
 // JAX interface to play well with underlying compute calls.

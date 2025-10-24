@@ -10,12 +10,16 @@ ffi::Error cpu_dense_ft_fmexp_impl(
     int out_depth,
     int mul_depth,
     int exp_depth,
-    IndexBuffer degree_begin,
+    ffi::Span<const int64_t> degree_begin,
     FloatBuffer multiplier,
     FloatBuffer exponent,
     ffi::ResultBuffer<XlaFloatType> result
 ) {
     using namespace rpy::compute;
+
+    if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp degree_begin size must be depth + 2");
+    }
 
     auto [mul_size, mul_dim] = get_buffer_dims(multiplier);
     if (mul_dim == 0) {
@@ -25,11 +29,6 @@ ffi::Error cpu_dense_ft_fmexp_impl(
     auto [exp_size, exp_dim] = get_buffer_dims(exponent);
     if (exp_dim == 0) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp exp must be an array");
-    }
-
-    auto [degree_begin_size, degree_begin_dim] = get_buffer_dims(degree_begin);
-    if (degree_begin_size != depth + 2) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp degree_begin size must be depth + 2");
     }
 
     // FIXME confirm if multiplier is correct size equivalent for result
@@ -42,13 +41,10 @@ ffi::Error cpu_dense_ft_fmexp_impl(
         return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp result size must match exponent array");
     }
 
-    // FIXME for review: narrowing conversion on width and depth, underlying types
-    auto degree_begin_i64 = copy_degree_begin_i64(degree_begin, degree_begin_size);
-    TensorBasis basis = { degree_begin_i64.data(), width, depth };
-
-    int out_max_degree = default_max_degree(out_depth, depth);
-    int mul_max_degree = default_max_degree(mul_depth, depth);
-    int exp_max_degree = default_max_degree(exp_depth, depth);
+    const int out_max_degree = default_max_degree(out_depth, depth);
+    const int mul_max_degree = default_max_degree(mul_depth, depth);
+    const int exp_max_degree = default_max_degree(exp_depth, depth);
+    TensorBasis basis = { degree_begin.begin(), width, depth };
     DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, 0, out_max_degree);
     DenseTensorView<const RpyFloatType*> mul_view(multiplier.typed_data(), basis, 0, mul_max_degree);
     DenseTensorView<const RpyFloatType*> exp_view(exponent.typed_data(), basis, 0, exp_max_degree);
@@ -68,7 +64,7 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
         .Attr<int>("out_depth")
         .Attr<int>("mul_depth")
         .Attr<int>("exp_depth")
-        .Arg<rpy::jax::cpu::IndexBuffer>()
+        .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
         .Arg<rpy::jax::cpu::FloatBuffer>()
         .Arg<rpy::jax::cpu::FloatBuffer>()
         .Ret<rpy::jax::cpu::FloatBuffer>()

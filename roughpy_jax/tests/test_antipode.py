@@ -19,7 +19,7 @@ def test_antipode_on_signature():
     x = rpj.FreeTensor(x_data, basis)
 
     sig = rpj.ft_exp(x)
-    asig =  rpj.ft_antipode(sig)
+    asig =  rpj.antipode(sig)
     product = rpj.ft_mul(asig, sig)
 
     # The result should be the identity
@@ -41,7 +41,7 @@ def test_antipode_idempotent():
     basis = rpj.TensorBasis(width, depth)
 
     x = rpj.FreeTensor(rng.standard_normal(size=(basis.size(),), dtype=np.float32), basis)
-    ax = rpj.ft_antipode(x)
-    aax = rpj.ft_antipode(ax)
+    ax = rpj.antipode(x)
+    aax = rpj.antipode(ax)
 
     assert jnp.allclose(x.data, aax.data)

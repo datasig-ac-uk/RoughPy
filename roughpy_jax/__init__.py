@@ -6,7 +6,6 @@ from typing import NamedTuple
 try:
     import jax
     import jax.numpy as jnp
-    import jax.lax as lax
 except ImportError as e:
     raise ImportError("RoughPy JAX requires jax library. For install instructions please refer to https://docs.jax.dev/en/latest/installation.html") from e
 
@@ -43,25 +42,20 @@ class TensorBasis:
     """
     width: int
     depth: int
-    degree_begin: jnp.ndarray # FIXME just use np array?
+    degree_begin: np.ndarray
 
     def __init__(self, width: int, depth: int, degree_begin=None):
         self.width = width
         self.depth = depth
 
-        # Build up a default free tensor degree array if not specified.
-        # Equivalent to data[0] = 0; data[i] = 1 + data[i - 1] * width;
-        if not degree_begin:
-            def degree_begin_fn(last_degree, _):
-                new_degree = 1 + last_degree * width
-                return new_degree, last_degree
-
-            _, degree_begin = lax.scan(degree_begin_fn, 0, length=depth + 2)
-        else:
-            # FIXME
-            # - check degree_begin type
-            # - check size of given degree_begin is at least depth + 2
+        # Degree begin buffer is int64 as in roughpy_jax C++ ptr internals
+        if degree_begin:
+            # FIXME convert to int64 if not already
             pass
+        else:
+            degree_begin = np.zeros(depth + 2, dtype=np.int64)
+            for i in range(1, depth + 2):
+                degree_begin[i] = 1 + width * degree_begin[i - 1]
 
         self.degree_begin = degree_begin
 
@@ -126,7 +120,6 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     )
 
     out_data = call(
-        basis.degree_begin,
         a.data,
         b.data,
         c.data,
@@ -134,7 +127,8 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
         depth=np.int32(basis.depth),
         out_depth=np.int32(out_depth),
         lhs_depth=np.int32(lhs_depth),
-        rhs_depth=np.int32(rhs_depth)
+        rhs_depth=np.int32(rhs_depth),
+        degree_begin=basis.degree_begin
     )
 
     return FreeTensor(out_data, basis)
@@ -170,7 +164,6 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     )
 
     out_data = call(
-        basis.degree_begin,
         zero_add_data,
         a.data,
         b.data,
@@ -178,14 +171,14 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
         depth=np.int32(basis.depth),
         out_depth=np.int32(out_depth),
         lhs_depth=np.int32(lhs_depth),
-        rhs_depth=np.int32(rhs_depth)
+        rhs_depth=np.int32(rhs_depth),
+        degree_begin=basis.degree_begin
     )
 
     return FreeTensor(out_data, basis)
 
 
-# FIXME review: should this have ft_ prefix? compute version does not
-def ft_antipode(a: FreeTensor) -> FreeTensor:
+def antipode(a: FreeTensor) -> FreeTensor:
     """
     Antipode of a free tensor
 
@@ -202,11 +195,11 @@ def ft_antipode(a: FreeTensor) -> FreeTensor:
     )
 
     out_data = call(
-        out_basis.degree_begin,
         a.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(a.basis.depth)
+        arg_depth=np.int32(a.basis.depth),
+        degree_begin=out_basis.degree_begin
     )
 
     return FreeTensor(out_data, out_basis)
@@ -234,11 +227,11 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     )
 
     out_data = call(
-        out_basis.degree_begin,
         x.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(x.basis.depth)
+        arg_depth=np.int32(x.basis.depth),
+        degree_begin=out_basis.degree_begin
     )
 
     return FreeTensor(out_data, out_basis)
@@ -266,11 +259,11 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     )
 
     out_data = call(
-        out_basis.degree_begin,
         x.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(x.basis.depth)
+        arg_depth=np.int32(x.basis.depth),
+        degree_begin=out_basis.degree_begin
     )
 
     return FreeTensor(out_data, out_basis)
@@ -306,14 +299,14 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     )
 
     out_data = call(
-        basis.degree_begin,
         multiplier.data,
         exponent.data,
         width=np.int32(basis.width),
         depth=np.int32(basis.depth),
         out_depth=np.int32(out_depth),
         mul_depth=np.int32(mul_depth),
-        exp_depth=np.int32(exp_depth)
+        exp_depth=np.int32(exp_depth),
+        degree_begin=out_basis.degree_begin
     )
 
     return FreeTensor(out_data, basis)

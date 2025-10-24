@@ -7,16 +7,20 @@ namespace rpy::jax::cpu {
 ffi::Error cpu_dense_ft_fma_impl(
     int width,
     int depth,
-    int out_depth, // FIXME review out naming; not strictly correct in JAX
+    int out_depth,
     int lhs_depth,
     int rhs_depth,
-    IndexBuffer degree_begin,
+    ffi::Span<const int64_t> degree_begin,
     FloatBuffer out,
     FloatBuffer lhs,
     FloatBuffer rhs,
     ffi::ResultBuffer<XlaFloatType> result
 ) {
     using namespace rpy::compute;
+
+    if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin size must be depth + 2");
+    }
 
     auto [out_size, out_dim] = get_buffer_dims(out);
     if (out_dim == 0) {
@@ -33,11 +37,6 @@ ffi::Error cpu_dense_ft_fma_impl(
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma rhs must be an array");
     }
 
-    auto [degree_begin_size, degree_begin_dim] = get_buffer_dims(degree_begin);
-    if (degree_begin_size != depth + 2) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fma degree_begin size must be depth + 2");
-    }
-
     auto [result_size, result_dim] = get_buffer_dims(*result);
     if (result_dim != out_dim) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma result dimension must match out array");
@@ -47,16 +46,13 @@ ffi::Error cpu_dense_ft_fma_impl(
         return ffi::Error::InvalidArgument("cpu_dense_ft_fma result size must match out array");
     }
 
-    // FIXME for review: narrowing conversion on width and depth, underlying types
-    auto degree_begin_i64 = copy_degree_begin_i64(degree_begin, degree_begin_size);
-    TensorBasis basis = { degree_begin_i64.data(), width, depth };
-
     // Compute fma into result originally copied from out array
     copy_result_buffer(out, out_size, result);
 
-    int out_max_degree = default_max_degree(out_depth, depth);
-    int lhs_max_degree = default_max_degree(lhs_depth, depth);
-    int rhs_max_degree = default_max_degree(rhs_depth, depth);
+    const int out_max_degree = default_max_degree(out_depth, depth);
+    const int lhs_max_degree = default_max_degree(lhs_depth, depth);
+    const int rhs_max_degree = default_max_degree(rhs_depth, depth);
+    TensorBasis basis = { degree_begin.begin(), width, depth };
     DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, 0, out_max_degree);
     DenseTensorView<const RpyFloatType*> lhs_view(lhs.typed_data(), basis, 0, lhs_max_degree);
     DenseTensorView<const RpyFloatType*> rhs_view(rhs.typed_data(), basis, 0, rhs_max_degree);
@@ -76,7 +72,7 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
         .Attr<int>("out_depth")
         .Attr<int>("lhs_depth")
         .Attr<int>("rhs_depth")
-        .Arg<rpy::jax::cpu::IndexBuffer>()
+        .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
         .Arg<rpy::jax::cpu::FloatBuffer>()
         .Arg<rpy::jax::cpu::FloatBuffer>()
         .Arg<rpy::jax::cpu::FloatBuffer>()

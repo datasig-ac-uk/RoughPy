@@ -11,20 +11,6 @@ int default_max_degree(int buffer_depth, int basis_depth) {
     return max_degree;
 }
 
-std::vector<rpy::compute::TensorBasis::BasisBase::Index> copy_degree_begin_i64(
-    const IndexBuffer& degree_begin,
-    const int64_t degree_begin_size
-) {
-    std::vector<rpy::compute::TensorBasis::BasisBase::Index> degree_begin_i64(degree_begin_size);
-    std::copy(
-        degree_begin.typed_data(),
-        degree_begin.typed_data() + degree_begin_size,
-        degree_begin_i64.begin()
-    );
-
-    return degree_begin_i64;
-}
-
 void copy_result_buffer(
     FloatBuffer out,
     const int64_t out_size,
