@@ -13,13 +13,15 @@
 #endif
 
 extern "C" {
-
 static void lmc_dealloc(PyObject* obj);
 
 static PyObject* lmc_repr(PyObject* obj);
 }
 
 namespace {
+
+
+PyObject* plm_cache_cache = nullptr;
 
 struct CacheEntryDeleter {
     void operator()(const LieMultiplicationCacheEntry* entry) const noexcept
@@ -88,8 +90,18 @@ struct LieWordHash {
     }
 };
 
-extern "C" {
-PyTypeObject PyLieMultiplicationCache_Type = {
+}// namespace
+
+/* clang-format off */
+struct PyLieMultiplicationCache {
+    PyObject_HEAD
+    std::unordered_map<LieWord, LieCacheEntryPtr, LieWordHash, LieWordEqual>
+                    cache;
+    int32_t width;
+};
+/* clang-format on */
+
+static PyTypeObject PyLieMultiplicationCache_Type = {
         PyVarObject_HEAD_INIT(NULL, 0)
                 RPY_CPT_TYPE_NAME(LieMultiplicationCache), /* tp_name */
         sizeof(PyLieMultiplicationCache),                  /* tp_basicsize */
@@ -131,72 +143,53 @@ PyTypeObject PyLieMultiplicationCache_Type = {
         nullptr,                              /* tp_free */
         nullptr,                              /* tp_is_gc */
 };
-}
 
-}// namespace
-
-struct PyLieMultiplicationCacheInner {
-    std::unordered_map<LieWord, LieCacheEntryPtr, LieWordHash, LieWordEqual>
-            cache;
-    int32_t width;
-};
-
-static PyObject* new_lmc(int32_t width) noexcept
+PyObject* PyLieMultiplicationCache_new(const int32_t width)
 {
-    PyLieMultiplicationCache* lmc = reinterpret_cast<PyLieMultiplicationCache*>(
+    auto* lmc = reinterpret_cast<PyLieMultiplicationCache*>(
             PyLieMultiplicationCache_Type
                     .tp_alloc(&PyLieMultiplicationCache_Type, 0)
     );
 
     if (lmc == nullptr) { return reinterpret_cast<PyObject*>(lmc); }
 
-    lmc->inner = static_cast<PyLieMultiplicationCacheInner*>(
-            PyMem_Malloc(sizeof(PyLieMultiplicationCacheInner))
-    );
-
-    if (lmc->inner == nullptr) {
-        Py_DECREF(lmc);
-        PyErr_NoMemory();
-        return nullptr;
-    }
-
     try {
         // I don't think the constructor can fail, but wrap anyway
-        ::new (&lmc->inner->cache)
+        ::new (&lmc->cache)
                 std::unordered_set<LieWord, LieWordHash, LieWordEqual>();
     } catch (...) {
-        PyMem_Free(lmc->inner);
         Py_DECREF(lmc);
         PyErr_NoMemory();
         return nullptr;
     }
 
-    lmc->inner->width = width;
+    lmc->width = width;
 
     return reinterpret_cast<PyObject*>(lmc);
 }
 
 PyObject* get_lie_multiplication_cache(PyLieBasis* basis)
 {
-    PyObject* rpc_internals
-            = PyImport_ImportModule("roughpy.compute._rpy_compute_internals");
-    if (rpc_internals == nullptr) { return nullptr; }
+    // PyObject* rpc_internals
+    //         = PyImport_ImportModule("roughpy.compute._rpy_compute_internals");
+    // if (rpc_internals == nullptr) { return nullptr; }
+    //
+    // PyObject* lmc_cache = PyObject_GetAttrString(rpc_internals, "_lmc_cache");
+    // Py_DECREF(rpc_internals);
+    // if (lmc_cache == nullptr) { return nullptr; }
+    if (plm_cache_cache == nullptr) { return nullptr; }
 
-    PyObject* lmc_cache = PyObject_GetAttrString(rpc_internals, "_lmc_cache");
-    Py_DECREF(rpc_internals);
-    if (lmc_cache == nullptr) { return nullptr; }
-
-    int32_t width = PyLieBasis_width(basis);
+    const int32_t width = PyLieBasis_width(basis);
     PyObject* py_width = PyLong_FromLong(width);
     if (py_width == nullptr) { return nullptr; }
 
-    PyObject* cache = PyDict_GetItem(lmc_cache, py_width);
+    PyObject* cache = PyDict_GetItem(plm_cache_cache, py_width);
     if (cache == nullptr) {
-        cache = new_lmc(width);
+        cache = PyLieMultiplicationCache_new(width);
 
         if (cache == nullptr) { goto finish; }
 
-        if (PyDict_SetItem(lmc_cache, py_width, cache) < 0) {
+        if (PyDict_SetItem(plm_cache_cache, py_width, cache) < 0) {
             Py_DECREF(cache);
             goto finish;
         }
@@ -205,7 +198,7 @@ PyObject* get_lie_multiplication_cache(PyLieBasis* basis)
     }
 
 finish:
-    Py_DECREF(lmc_cache);
+    // Py_DECREF(lmc_cache);
     Py_DECREF(py_width);
     return cache;
 }
@@ -255,7 +248,26 @@ static inline int compute_bracket_half(
     return 0;
 }
 
-static LieMultiplicationCacheEntry* compute_bracket_slow(
+static LieCacheEntryPtr new_entry(npy_intp size)
+{
+    assert(size >= 1);
+    LieCacheEntryPtr new_entry(
+            static_cast<LieMultiplicationCacheEntry*>(PyMem_Malloc(
+                    sizeof(LieMultiplicationCacheEntry)
+                    + 2 * (size - 1) * sizeof(npy_intp)
+            ))
+    );
+
+    if (!new_entry) {
+        PyErr_NoMemory();
+        return new_entry;
+    }
+
+    new_entry->size = size;
+    return new_entry;
+}
+
+static LieCacheEntryPtr compute_bracket_slow(
         PyLieMultiplicationCache* cache,
         PyLieBasis* basis,
         const LieWord& word,
@@ -266,9 +278,7 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
 
     std::map<npy_intp, npy_intp> vals;
 
-    if (const auto ret
-        = PyLieBasis_get_parents(basis, word.letters[1], &parents);
-        ret < 0) {
+    if (PyLieBasis_get_parents(basis, word.letters[1], &parents) < 0) {
         // error already set
         return nullptr;
     }
@@ -300,13 +310,14 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
     }
 
     const npy_intp size = vals.size();
-    npy_intp alloc_bytes = sizeof(LieMultiplicationCacheEntry);
-    alloc_bytes += 2 * (size - 1) * sizeof(npy_intp);
-    auto* entry = static_cast<LieMultiplicationCacheEntry*>(
-            PyMem_Malloc(alloc_bytes)
-    );
+    // npy_intp alloc_bytes = sizeof(LieMultiplicationCacheEntry);
+    // alloc_bytes += 2 * (size - 1) * sizeof(npy_intp);
+    // auto* entry = static_cast<LieMultiplicationCacheEntry*>(
+    //         PyMem_Malloc(alloc_bytes)
+    // );
+    auto entry = new_entry(size);
 
-    entry->size = size;
+    // entry->size = size;
     if (sign == 1) {
         entry->word = word;
     } else {
@@ -324,11 +335,11 @@ static LieMultiplicationCacheEntry* compute_bracket_slow(
     return entry;
 }
 
-static LieMultiplicationCacheEntry* compute_bracket(
+static LieCacheEntryPtr compute_bracket(
         PyLieMultiplicationCache* inner,
         PyLieBasis* basis,
         const LieWord* word,
-        int32_t degree
+        const int32_t degree
 ) noexcept
 {
 
@@ -342,22 +353,38 @@ static LieMultiplicationCacheEntry* compute_bracket(
     if (const npy_intp pos = PyLieBasis_find_word(basis, &target, degree);
         pos > 0) {
         // the pair belongs to the cache,
-        auto* entry = static_cast<LieMultiplicationCacheEntry*>(
-                PyMem_Malloc(sizeof(LieMultiplicationCacheEntry))
-        );
+        // auto* entry = static_cast<LieMultiplicationCacheEntry*>(
+        //         PyMem_Malloc(sizeof(LieMultiplicationCacheEntry))
+        // );
+        auto entry = new_entry(1);
 
-        if (entry == nullptr) {
-            PyErr_NoMemory();
-            return nullptr;
+        if (!entry) {
+            // error already set
+            return entry;
         }
 
         entry->word = *word;
-        entry->size = 1;
         entry->data[0] = pos;
         entry->data[1] = sign;
 
         return entry;
     }
+    //
+    // const LieWord rev_target = { {target.right, target.left }};
+    // if (const npy_intp pos = PyLieBasis_find_word(basis, &rev_target,
+    // degree); pos > 0) {
+    //     auto entry = new_entry(1);
+    //
+    //     if (!entry) {
+    //         return entry;
+    //     }
+    //
+    //     entry->word = *word;
+    //     entry->data[0] = pos;
+    //     entry->data[1] = -sign;
+    //
+    //     return entry;
+    // }
 
     try {
         return compute_bracket_slow(inner, basis, target, sign);
@@ -381,7 +408,7 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
     // }
     // auto* basis = reinterpret_cast<PyLieBasis*>(basis_ob);
 
-    if (PyLieBasis_width(basis) != cache->inner->width) {
+    if (PyLieBasis_width(basis) != cache->width) {
         PyErr_SetString(
                 PyExc_ValueError,
                 "width mismatch between basis and cache"
@@ -406,8 +433,30 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
         return &empty;
     }
 
-    auto& entry = cache->inner->cache[*word];
-    if (!entry) { entry.reset(compute_bracket(cache, basis, word, degree)); }
+    auto& entry = cache->cache[*word];
+    if (!entry) {
+        LieWord rev_word = {
+                {word->right, word->left}
+        };
+        auto it = cache->cache.find(rev_word);
+        if (it != cache->cache.end()) {
+            entry = new_entry(it->second->size);
+            if (!entry) {
+                return nullptr;
+            }
+
+            entry->word = *word;
+            for (npy_intp i=0; i<it->second->size; ++i) {
+                entry->data[2 * i] = it->second->data[2 * i];
+                entry->data[2 * i + 1] = -it->second->data[2 * i + 1];
+            }
+        } else {
+            entry = compute_bracket(cache, basis, word, degree);
+            if (!entry) {
+                return nullptr;
+            }
+        }
+    }
 
     return entry.get();
 }
@@ -423,26 +472,25 @@ PyObject* lie_multiplication_cache_clear(PyObject* cache)
     }
 
     auto* ptr = reinterpret_cast<PyLieMultiplicationCache*>(cache);
-    ptr->inner->cache.clear();
+    ptr->cache.clear();
 
     Py_RETURN_NONE;
-}
-
-PyLieMultiplicationCacheInner*
-lie_multiplication_cache_to_inner(PyObject* cache)
-{
-    return nullptr;
 }
 
 int init_lie_multiplication_cache(PyObject* module)
 {
     if (PyType_Ready(&PyLieMultiplicationCache_Type) < 0) { return -1; }
 
-    PyObject* lmc_cache = PyDict_New();
-    if (lmc_cache == nullptr) { return -1; }
+    // PyObject* lmc_cache = PyDict_New();
+    // if (lmc_cache == nullptr) { return -1; }
+    plm_cache_cache = PyDict_New();
+    // make this immortal?
+    if (plm_cache_cache == nullptr) {
+        return -1;
+    }
 
-    if (PyModule_AddObject(module, "_lmc_cache", lmc_cache) < 0) {
-        Py_DECREF(lmc_cache);
+    if (PyModule_AddObject(module, "_lmc_cache", plm_cache_cache) < 0) {
+        Py_DECREF(plm_cache_cache);
         return -1;
     }
 
@@ -452,17 +500,12 @@ int init_lie_multiplication_cache(PyObject* module)
 void lmc_dealloc(PyObject* obj)
 {
     auto* self = reinterpret_cast<PyLieMultiplicationCache*>(obj);
-    self->inner->cache.~unordered_map();
-    PyMem_Free(self->inner);
+    self->cache.~unordered_map();
     Py_TYPE(obj)->tp_free(obj);
 }
 
 PyObject* lmc_repr(PyObject* obj)
 {
-    auto* self = reinterpret_cast<PyLieMultiplicationCache*>(obj);
-    return PyUnicode_FromFormat(
-            "%s(%d)",
-            Py_TYPE(obj)->tp_name,
-            self->inner->width
-    );
+    const auto* self = reinterpret_cast<PyLieMultiplicationCache*>(obj);
+    return PyUnicode_FromFormat("%s(%d)", Py_TYPE(obj)->tp_name, self->width);
 }

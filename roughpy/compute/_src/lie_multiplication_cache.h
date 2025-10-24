@@ -16,13 +16,11 @@ typedef struct {
     npy_intp data[2];
 } LieMultiplicationCacheEntry;
 
-struct PyLieMultiplicationCacheInner;
 
-typedef struct PyLieMultiplicationCache {
-    PyObject_HEAD
-    struct PyLieMultiplicationCacheInner* inner;
-} PyLieMultiplicationCache;
+typedef struct PyLieMultiplicationCache PyLieMultiplicationCache;
 
+RPY_NO_EXPORT
+PyObject* PyLieMultiplicationCache_new(int32_t width);
 
 RPY_NO_EXPORT
 PyObject* get_lie_multiplication_cache(PyLieBasis* basis);
