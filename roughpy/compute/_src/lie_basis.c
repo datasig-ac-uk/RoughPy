@@ -1,4 +1,5 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
+// ReSharper disable CppLocalVariableMayBeConst
 #include "lie_basis.h"
 
 #include <math.h>
@@ -6,6 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "py_fnv1a_hash.h"
 #include "lie_multiplication_cache.h"
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
@@ -23,6 +25,10 @@ struct _PyLieBasis
     PyObject* l2t;
     PyObject* t2l;
     PyObject* multiplier_cache;
+
+
+
+    Py_hash_t cached_hash;
 };
 
 
@@ -36,6 +42,8 @@ static void lie_basis_dealloc(PyLieBasis* self);
 static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs);
 
 static PyObject* lie_basis_repr(PyLieBasis* self);
+static Py_hash_t lie_basis_hash(PyObject* obj);
+static PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op);
 
 // PylieBasis methods
 static PyObject* lie_basis_size(PyObject* self, PyObject* _unused_arg);
@@ -90,19 +98,22 @@ PyMethodDef PyLieBasis_methods[] = {
         {NULL}
 };
 
-PyTypeObject PyLieBasis_Type = {
-        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(LieBasis),
-        .tp_basicsize = sizeof(PyLieBasis),
-        .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "LieBasis",
-        .tp_methods = PyLieBasis_methods,
-        .tp_members = PyLieBasis_members,
-        .tp_init = (initproc) lie_basis_init,
-        .tp_dealloc = (destructor) lie_basis_dealloc,
-        .tp_repr = (reprfunc) lie_basis_repr,
-        .tp_new = (newfunc) lie_basis_new,
+PyTypeObject PyLieBasis_Type = {                                              //
+                .ob_base = PyVarObject_HEAD_INIT(NULL, 0)//
+                                   .tp_name
+                = RPY_CPT_TYPE_NAME(LieBasis),
+                .tp_basicsize = sizeof(PyLieBasis),
+                .tp_itemsize = 0,
+                .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                .tp_doc = "LieBasis",
+                .tp_methods = PyLieBasis_methods,
+                .tp_members = PyLieBasis_members,
+                .tp_init = (initproc) lie_basis_init,
+                .tp_dealloc = (destructor) lie_basis_dealloc,
+                .tp_repr = (reprfunc) lie_basis_repr,
+                .tp_new = (newfunc) lie_basis_new,
+                .tp_hash = (hashfunc) lie_basis_hash,
+                .tp_richcompare = (richcmpfunc) lie_basis_richcompare
 };
 
 /*******************************************************************************
@@ -135,6 +146,8 @@ static PyObject* lie_basis_new(
 
     Py_XSETREF(self->l2t, PyDict_New());
     Py_XSETREF(self->t2l, PyDict_New());
+
+    self->cached_hash = -1;
 
     return (PyObject*) self;
 }
@@ -469,6 +482,108 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
 
     return PyLong_FromLong(size - 1);
 }
+
+Py_hash_t lie_basis_hash(PyObject* obj)
+{
+    PyLieBasis* self = (PyLieBasis*) obj;
+
+    // This might need to be made atomic in the future
+    Py_hash_t hash = self->cached_hash;
+    if (hash != -1) {
+        return hash;
+    }
+
+    Py_uhash_t state = FNV1A_OFFSET_BASIS;
+    state = fnv1a_hash_bytes(state, "LieBasis", 8);
+    state = fnv1a_hash_i32(state, self->width);
+    state = fnv1a_hash_i32(state, self->depth);
+
+    /*
+     * We need to be a little careful here because the data table might actually
+     * contain more values than really belong to the basis. The basis size is
+     * thus derived from the PyLieBasis_true_size function, and we read the
+     * number of bytes to process from this.
+     */
+    const size_t data_bytes = 2*PyLieBasis_true_size(self) * sizeof(npy_intp);
+    const void* data = PyArray_DATA((PyArrayObject*) self->data);
+    state = fnv1a_hash_bytes(state, data, data_bytes);
+
+    /*
+     * we also need to hash the degree_begin array. Again this might actually be
+     * larger than the depth requires, so be sure to only process the first
+     * depth + 2 values.
+     */
+    const size_t db_bytes = (self->depth + 2) * sizeof(npy_intp);
+    const void* db_data = PyArray_DATA((PyArrayObject*) self->degree_begin);
+    state = fnv1a_hash_bytes(state, db_data, db_bytes);
+
+    // There may be other fields we need to hash in here, but not at the moment
+
+    hash = fnv1a_finalize_hash(state);
+
+    // room for atomic store
+    self->cached_hash = hash;
+
+    return hash;
+}
+
+static inline PyObject* lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right, long success)
+{
+    if (left->width != right->width) {
+        return PyBool_FromLong(!success);
+    }
+
+    if (left->depth != right->depth) {
+        return PyBool_FromLong(!success);
+    }
+
+    const npy_intp* l_db_data = PyArray_DATA((PyArrayObject*) left->degree_begin);
+    const npy_intp* r_db_data = PyArray_DATA((PyArrayObject*) right->degree_begin);
+
+    for (int32_t d=0; d<left->depth + 2; ++d) {
+        if (l_db_data[d] != r_db_data[d]) {
+            return PyBool_FromLong(!success);
+        }
+    }
+
+    // for now rely on the hash value too. Maybe later we can do something more
+    // careful to test that the data is the same.
+
+    Py_hash_t lhash = PyObject_Hash((PyObject*) left);
+    Py_hash_t rhash = PyObject_Hash((PyObject*) right);
+
+    if (lhash != rhash) {
+        return PyBool_FromLong(!success);
+    }
+
+    return PyBool_FromLong(success);
+}
+
+PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op)
+{
+    if (!PyLieBasis_Check(self) || !PyLieBasis_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    PyLieBasis* left = (PyLieBasis*) self;
+    PyLieBasis* right = (PyLieBasis*) other;
+
+    switch (op) {
+        case Py_EQ:
+            return lie_basis_test_equal(left, right, 1);
+        case Py_NE:
+            return lie_basis_test_equal(left, right, 0);
+        case Py_LE:
+        case Py_GE:
+        case Py_LT:
+        case Py_GT:
+        default:
+            break;
+    }
+
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
 
 /*
  * External methods
