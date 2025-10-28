@@ -23,7 +23,7 @@ on:
       - ".gitignore"
 
   pull_request:
-    # branches: [ "main" ] FIXME uncomment; testing merge int 220-roughpy-jax
+    branches: [ "main" ]
     paths-ignore: *generic-ignore-paths
 
 env:
@@ -66,19 +66,12 @@ jobs:
       run: |
         git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1.2.19
-      with:
-        key: ${{ matrix.os }}-${{ matrix.type }}
-
     - name: Configure CMake
       run: |
         cmake -B ${{github.workspace}}/build \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DROUGHPY_BUILD_TESTS=ON \
-          -DROUGHPY_JAX=ON \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DROUGHPY_JAX=ON
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
