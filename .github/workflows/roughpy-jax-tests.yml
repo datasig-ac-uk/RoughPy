@@ -23,7 +23,7 @@ on:
       - ".gitignore"
 
   pull_request:
-    # branches: [ "main" ] FIXME uncomment; disabled to test merge int 220-roughpy-jax
+    # branches: [ "main" ] FIXME uncomment; testing merge int 220-roughpy-jax
     paths-ignore: *generic-ignore-paths
 
 env:
