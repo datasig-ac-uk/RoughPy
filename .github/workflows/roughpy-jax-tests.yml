@@ -3,7 +3,7 @@ name: roughpy-jax-tests
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    # branches: [ "main" ] FIXME uncomment; disabled to test merge int 220-roughpy-jax
     paths-ignore: &generic-ignore-paths
       - "examples/**"
       - "doc/**"
@@ -23,7 +23,7 @@ on:
       - ".gitignore"
 
   pull_request:
-    branches: [ "main" ]
+    # branches: [ "main" ] FIXME uncomment; disabled to test merge int 220-roughpy-jax
     paths-ignore: *generic-ignore-paths
 
 env:
