@@ -32,8 +32,7 @@ option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 
-# FIXME hard-coded settings during dev, review defaults before merge to main
-option(ROUGHPY_JAX "Enable RoughPy JAX support" ON)
+option(ROUGHPY_JAX "Enable RoughPy JAX support" OFF)
 option(ROUGHPY_JAX_CUDA "Enable RoughPy JAX CUDA support" OFF)
 
 if (DEFINED CONAN_COMMAND

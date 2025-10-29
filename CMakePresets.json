@@ -36,7 +36,8 @@
       "hidden": true,
       "cacheVariables": {
         "ROUGHPY_ENABLE_ALL_WARNINGS": "ON",
-        "ROUGHPY_EXPERIMENTAL": "ON"
+        "ROUGHPY_EXPERIMENTAL": "ON",
+        "ROUGHPY_JAX": "ON"
       }
     },
     {
