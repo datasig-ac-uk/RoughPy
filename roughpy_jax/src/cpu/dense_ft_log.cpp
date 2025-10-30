@@ -2,6 +2,27 @@
 
 #include "xla_common.hpp"
 
+namespace {
+
+using namespace rpy::compute;
+
+struct ComputeTypedFtLog {
+    const int arg_max_degree;
+    TensorBasis basis;
+
+    template <typename T>
+    void compute(
+        T* result_data,
+        const T* arg_data
+    ) {
+        DenseTensorView<T*> result_view(result_data, basis, 0, arg_max_degree);
+        DenseTensorView<const T*> arg_view(arg_data, basis, 0, arg_max_degree);
+        intermediate::ft_log(result_view, arg_view);
+    }
+};
+
+} // namespace
+
 namespace rpy::jax::cpu {
 
 ffi::Error cpu_dense_ft_log_impl(
@@ -9,10 +30,12 @@ ffi::Error cpu_dense_ft_log_impl(
     int depth,
     int arg_depth,
     ffi::Span<const int64_t> degree_begin,
-    FloatBuffer arg,
-    ffi::ResultBuffer<XlaFloatType> result
+    ffi::AnyBuffer arg,
+    ffi::Result<ffi::AnyBuffer> result
 ) {
-    using namespace rpy::compute;
+    if (!all_buffers_valid_type(arg, *result)) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_exp all buffers types must match and be F32 or F64");
+    }
 
     if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_log degree_begin size must be depth + 2");
@@ -34,11 +57,28 @@ ffi::Error cpu_dense_ft_log_impl(
 
     zero_result_buffer(arg_size, result);
 
-    int arg_max_degree = default_max_degree(arg_depth, depth);
-    TensorBasis basis = { degree_begin.begin(), width, depth };
-    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, 0, arg_max_degree);
-    DenseTensorView<const RpyFloatType*> arg_view(arg.typed_data(), basis, 0, arg_max_degree);
-    intermediate::ft_log(result_view, arg_view);
+    // Dispatch log for appropriate type
+    ComputeTypedFtLog ft_log = {
+        default_max_degree(arg_depth, depth),
+        { degree_begin.begin(), width, depth }
+    };
+
+    switch (result->element_type()) {
+    case ffi::DataType::F32:
+        ft_log.compute(
+            result->typed_data<float>(),
+            arg.typed_data<float>()
+        );
+        break;
+    case ffi::DataType::F64:
+        ft_log.compute(
+            result->typed_data<double>(),
+            arg.typed_data<double>()
+        );
+        break;
+    default:
+        assert(false); // Unsupported type; reject with all_buffers_valid_type
+    }
 
     return ffi::Error::Success();
 }
@@ -53,6 +93,6 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
         .Attr<int>("depth")
         .Attr<int>("arg_depth")
         .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-        .Arg<rpy::jax::cpu::FloatBuffer>()
-        .Ret<rpy::jax::cpu::FloatBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
+        .Ret<xla::ffi::AnyBuffer>()
 );

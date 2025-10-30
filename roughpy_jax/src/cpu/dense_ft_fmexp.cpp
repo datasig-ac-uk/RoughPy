@@ -2,6 +2,31 @@
 
 #include "xla_common.hpp"
 
+namespace {
+
+using namespace rpy::compute;
+
+struct ComputeTypedFtFmExp {
+    const int out_max_degree;
+    const int mul_max_degree;
+    const int exp_max_degree;
+    TensorBasis basis;
+
+    template <typename T>
+    void compute(
+        T* result_data,
+        const T* multiplier_data,
+        const T* exponent_data
+    ) {
+        DenseTensorView<T*> result_view(result_data, basis, 0, out_max_degree);
+        DenseTensorView<const T*> mul_view(multiplier_data, basis, 0, mul_max_degree);
+        DenseTensorView<const T*> exp_view(exponent_data, basis, 0, exp_max_degree);
+        intermediate::ft_fmexp(result_view, mul_view, exp_view);
+    }
+};
+
+} // namespace
+
 namespace rpy::jax::cpu {
 
 ffi::Error cpu_dense_ft_fmexp_impl(
@@ -11,11 +36,13 @@ ffi::Error cpu_dense_ft_fmexp_impl(
     int mul_depth,
     int exp_depth,
     ffi::Span<const int64_t> degree_begin,
-    FloatBuffer multiplier,
-    FloatBuffer exponent,
-    ffi::ResultBuffer<XlaFloatType> result
+    ffi::AnyBuffer multiplier,
+    ffi::AnyBuffer exponent,
+    ffi::Result<ffi::AnyBuffer> result
 ) {
-    using namespace rpy::compute;
+    if (!all_buffers_valid_type(multiplier, exponent, *result)) {
+        return ffi::Error::InvalidArgument("cpu_dense_ft_exp all buffers types must match and be F32 or F64");
+    }
 
     if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
         return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp degree_begin size must be depth + 2");
@@ -41,14 +68,32 @@ ffi::Error cpu_dense_ft_fmexp_impl(
         return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp result size must match exponent array");
     }
 
-    const int out_max_degree = default_max_degree(out_depth, depth);
-    const int mul_max_degree = default_max_degree(mul_depth, depth);
-    const int exp_max_degree = default_max_degree(exp_depth, depth);
-    TensorBasis basis = { degree_begin.begin(), width, depth };
-    DenseTensorView<RpyFloatType*> result_view(result->typed_data(), basis, 0, out_max_degree);
-    DenseTensorView<const RpyFloatType*> mul_view(multiplier.typed_data(), basis, 0, mul_max_degree);
-    DenseTensorView<const RpyFloatType*> exp_view(exponent.typed_data(), basis, 0, exp_max_degree);
-    intermediate::ft_fmexp(result_view, mul_view, exp_view);
+    // Dispatch fmexp for appropriate type
+    ComputeTypedFtFmExp ft_fmexp = {
+        default_max_degree(out_depth, depth),
+        default_max_degree(mul_depth, depth),
+        default_max_degree(exp_depth, depth),
+        { degree_begin.begin(), width, depth }
+    };
+
+    switch (result->element_type()) {
+    case ffi::DataType::F32:
+        ft_fmexp.compute(
+            result->typed_data<float>(),
+            multiplier.typed_data<float>(),
+            exponent.typed_data<float>()
+        );
+        break;
+    case ffi::DataType::F64:
+        ft_fmexp.compute(
+            result->typed_data<double>(),
+            multiplier.typed_data<double>(),
+            exponent.typed_data<double>()
+        );
+        break;
+    default:
+        assert(false); // Unsupported type; reject with all_buffers_valid_type
+    }
 
     return ffi::Error::Success();
 }
@@ -65,7 +110,7 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
         .Attr<int>("mul_depth")
         .Attr<int>("exp_depth")
         .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-        .Arg<rpy::jax::cpu::FloatBuffer>()
-        .Arg<rpy::jax::cpu::FloatBuffer>()
-        .Ret<rpy::jax::cpu::FloatBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
+        .Ret<xla::ffi::AnyBuffer>()
 );

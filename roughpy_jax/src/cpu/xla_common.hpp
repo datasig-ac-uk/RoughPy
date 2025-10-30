@@ -12,29 +12,23 @@ namespace rpy::jax::cpu {
 
 namespace ffi = xla::ffi;
 
-// We currently only support JAX single-precision floats. See JAX_ENABLE_X64 in
-// JAX gotcha docs for more information.
-using RpyFloatType = float;
-inline constexpr ffi::DataType XlaFloatType = ffi::DataType::F32;
-static_assert(
-    std::is_same_v<
-        RpyFloatType,
-        ffi::NativeType<XlaFloatType>
-    >,
-    "XlaFloatType must match underlying float type"
-);
-using FloatBuffer = ffi::Buffer<XlaFloatType>;
+template <typename... BufferType>
+bool all_buffers_match_type(xla::ffi::DataType expected_type, const BufferType&... buffer) {
+    return ((buffer.element_type() == expected_type) && ...);
+}
+
+template <typename... BufferType>
+bool all_buffers_valid_type(const BufferType&... buffer) {
+    if (!all_buffers_match_type(ffi::DataType::F32, buffer...)) {
+        if (!all_buffers_match_type(ffi::DataType::F64, buffer...)) {
+            return false;
+        }
+    }
+    return true;
+}
 
 // Convenience function getting XLA dims when validating python buffer size
-template <ffi::DataType T>
-std::pair<int64_t, int64_t> get_buffer_dims(const ffi::Buffer<T>& buffer)
-{
-    auto dims = buffer.dimensions();
-    if (dims.size() == 0) {
-        return std::make_pair(0, 0);
-    }
-    return std::make_pair(buffer.element_count(), dims.back());
-}
+std::pair<int64_t, int64_t> get_buffer_dims(const ffi::AnyBuffer& buffer);
 
 // General pattern for determining max degree from python input degree
 int default_max_degree(int buffer_depth, int basis_depth);
@@ -42,15 +36,15 @@ int default_max_degree(int buffer_depth, int basis_depth);
 // Prepare result buffer based on output buffer. Currently necessary to allow
 // JAX interface to play well with underlying compute calls.
 void copy_result_buffer(
-    FloatBuffer out,
+    ffi::AnyBuffer out,
     const int64_t out_size,
-    ffi::ResultBuffer<XlaFloatType> result
+    ffi::Result<ffi::AnyBuffer> result
 );
 
 // Prepare result with zeros given size
 void zero_result_buffer(
     const int64_t out_size,
-    ffi::ResultBuffer<XlaFloatType> result
+    ffi::Result<ffi::AnyBuffer> result
 );
 
 } // namespace rpy::jax::cpu

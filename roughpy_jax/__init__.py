@@ -1,6 +1,5 @@
 import ctypes
 import numpy as np
-from dataclasses import dataclass
 from typing import NamedTuple
 
 try:
@@ -38,7 +37,7 @@ import sys
 sys.path.append('roughpy/compute')
 import _rpy_compute_internals
 
-# FIXME replicate frozen dataclass
+
 class TensorBasis(_rpy_compute_internals.TensorBasis):
     pass
 
@@ -57,17 +56,21 @@ Free tensor alias. Tensors are assumed to be dense without prefix
 FreeTensor = DenseFreeTensor
 
 
-def _check_basis_compat(out_basis: TensorBasis, *other_bases: TensorBasis):
-    out_width = out_basis.width
-
+def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
     for i, basis in enumerate(other_bases):
-        if basis.width != out_width:
-            raise ValueError(f"Incompatible width for basis {i}")
+        if basis.width != first_basis.width:
+            raise ValueError(f"Incompatible width between basis 0 and basis {i + 1}")
 
 
-def _check_tensor_data_type(ft: FreeTensor, err_msg: str):
-    if ft.data.dtype != jnp.float32:
-        raise ValueError(err_msg)
+def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
+    for i, ft in enumerate([first_tensor] + list(other_tensors)):
+        if ft.data.dtype != jnp.float32:
+            if ft.data.dtype != jnp.float64:
+                raise ValueError(f"Expecting jnp.float32 or jnp.float64 array for tensor {i}")
+
+    for i, tensor in enumerate(other_tensors):
+        if tensor.data.dtype != first_tensor.data.dtype:
+            raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
 
 
 def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
@@ -83,9 +86,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     :param c: right-hand multiple operand
     :return: result
     """
-    _check_tensor_data_type(a, "ft_fma a expecting float32 array data")
-    _check_tensor_data_type(b, "ft_fma b expecting float32 array data")
-    _check_tensor_data_type(c, "ft_fma c expecting float32 array data")
+    _check_tensor_dtype(a, b, c)
     _check_basis_compat(a.basis, b.basis, c.basis)
 
     # Use same basis convention as ft_fma in roughpy/compute
@@ -126,8 +127,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     :param b: right-hand multiple operand
     :return: result
     """
-    _check_tensor_data_type(a, "ft_mul a expecting float32 array data")
-    _check_tensor_data_type(b, "ft_mul b expecting float32 array data")
+    _check_tensor_dtype(a, b)
     _check_basis_compat(a.basis, b.basis)
 
     zero_add_data = jnp.zeros_like(a.data)
@@ -165,7 +165,7 @@ def antipode(a: FreeTensor) -> FreeTensor:
     :param a: argument
     :return: new tensor with antipode of `a`
     """
-    _check_tensor_data_type(a, "antipode a expecting float32 array data")
+    _check_tensor_dtype(a)
 
     out_basis = a.basis
 
@@ -197,7 +197,7 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     :param out_basis: optional output basis.
     :return: tensor exponential of `x`
     """
-    _check_tensor_data_type(x, "ft_exp x expecting float32 array data")
+    _check_tensor_dtype(x)
 
     out_basis = out_basis or x.basis
 
@@ -229,7 +229,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     :param out_basis: optional output basis.
     :return: tensor logarithm of `x`
     """
-    _check_tensor_data_type(x, "ft_log x expecting float32 array data")
+    _check_tensor_dtype(x)
 
     out_basis = out_basis or x.basis
 
@@ -262,8 +262,7 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     :param out_basis: Optional output basis. If not specified, the same basis as `multiplier` is used.
     :return: Resulting fused multiply-exponential of `multiplier` and `exponent`
     """
-    _check_tensor_data_type(multiplier, "ft_fmexp multiplier expecting float32 array data")
-    _check_tensor_data_type(exponent, "ft_fmexp exponent expecting float32 array data")
+    _check_tensor_dtype(multiplier, exponent)
 
     out_basis = out_basis or multiplier.basis
     _check_basis_compat(out_basis, multiplier.basis, exponent.basis)

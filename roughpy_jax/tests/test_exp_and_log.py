@@ -1,18 +1,25 @@
 import jax.numpy as jnp
 import numpy as np
+import pytest
 import roughpy_jax as rpj
+
+from test_common import type_mismatch_fixture, array_dtypes, jnp_to_np_float
+
+# FIXME add mismatch tests as in test_dense_ft_fma_array_mismatch
+# FIXME add JIT tests
 
 
 # FIXME confirming meaning of this method in compute tests and rename
-def _create_rng_zero_ft(rng, basis):
-    data = np.zeros(basis.size(), dtype=np.float32)
+def _create_rng_zero_ft(rng, basis, jnp_dtype):
+    data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
     data[1:basis.width + 1] = rng.normal(size=(basis.width,))
     return rpj.FreeTensor(data, basis)
 
 
-def test_dense_ft_exp_zero():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_dense_ft_exp_zero(jnp_dtype):
     basis = rpj.TensorBasis(2, 2)
-    a = rpj.FreeTensor(jnp.zeros(basis.size(), dtype=jnp.float32), basis)
+    a = rpj.FreeTensor(jnp.zeros(basis.size(), dtype=jnp_dtype), basis)
 
     exp_a = rpj.ft_exp(a)
 
@@ -21,9 +28,10 @@ def test_dense_ft_exp_zero():
     assert jnp.allclose(exp_a.data, expected)
 
 
-def test_dense_ft_exp_letter():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_dense_ft_exp_letter(jnp_dtype):
     basis = rpj.TensorBasis(2, 2)
-    a = rpj.FreeTensor(jnp.array([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
+    a = rpj.FreeTensor(jnp.array([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=jnp_dtype), basis)
 
     exp_a = rpj.ft_exp(a)
 
@@ -31,9 +39,10 @@ def test_dense_ft_exp_letter():
     assert jnp.allclose(exp_a.data, expected)
 
 
-def test_dense_ft_log_identity():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_dense_ft_log_identity(jnp_dtype):
     basis = rpj.TensorBasis(2, 2)
-    a = rpj.FreeTensor(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
+    a = rpj.FreeTensor(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=jnp_dtype), basis)
 
     log_a = rpj.ft_log(a)
 
@@ -41,10 +50,11 @@ def test_dense_ft_log_identity():
     assert jnp.allclose(log_a.data, expected)
 
 
-def test_dense_ft_exp_log_roundtrip():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_dense_ft_exp_log_roundtrip(jnp_dtype):
     rng = np.random.default_rng()
     basis = rpj.TensorBasis(2, 2)
-    a = _create_rng_zero_ft(rng, basis)
+    a = _create_rng_zero_ft(rng, basis, jnp_dtype)
 
     exp_a = rpj.ft_exp(a)
     log_exp_a = rpj.ft_log(exp_a)
@@ -52,24 +62,26 @@ def test_dense_ft_exp_log_roundtrip():
     assert jnp.allclose(log_exp_a.data, a.data)
 
 
-def test_dense_ft_exp_and_fmexp():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_dense_ft_exp_and_fmexp(jnp_dtype):
     rng = np.random.default_rng()
 
     basis = rpj.TensorBasis(2, 2)
-    e = rpj.FreeTensor(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), basis)
-    x = _create_rng_zero_ft(rng, basis)
+    e = rpj.FreeTensor(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=jnp_dtype), basis)
+    x = _create_rng_zero_ft(rng, basis, jnp_dtype)
 
     e_exp_b = rpj.ft_fmexp(e, x)
     exp_b = rpj.ft_exp(x)
     assert jnp.allclose(e_exp_b.data, exp_b.data)
 
 
-def test_dense_ft_fmexp():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_dense_ft_fmexp(jnp_dtype):
     rng = np.random.default_rng()
 
     basis = rpj.TensorBasis(2, 2)
-    a = rpj.FreeTensor(jnp.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0]), basis)
-    x = _create_rng_zero_ft(rng, basis)
+    a = rpj.FreeTensor(jnp.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0], dtype=jnp_dtype), basis)
+    x = _create_rng_zero_ft(rng, basis, jnp_dtype)
     b = rpj.ft_fmexp(a, x)
 
     expected = rpj.ft_mul(a, rpj.ft_exp(x))

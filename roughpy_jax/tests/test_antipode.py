@@ -1,9 +1,15 @@
 import jax.numpy as jnp
 import numpy as np
+import pytest
 import roughpy_jax as rpj
 
+from test_common import type_mismatch_fixture, array_dtypes, jnp_to_np_float
 
-def test_antipode_on_signature():
+# FIXME add mismatch tests as in test_dense_ft_fma_array_mismatch
+# FIXME add JIT tests
+
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_antipode_on_signature(jnp_dtype):
     """
     The antipode of a group-like free tensor (like a signature) is the
     inverse of said tensor. Thus the product of antipode(x) and x should
@@ -14,7 +20,7 @@ def test_antipode_on_signature():
     depth = 3
     basis = rpj.TensorBasis(width, depth)
 
-    x_data = np.zeros(basis.size(), dtype=np.float32)
+    x_data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
     x_data[1:width + 1] = rng.normal(size=(width,))
     x = rpj.FreeTensor(x_data, basis)
 
@@ -29,7 +35,8 @@ def test_antipode_on_signature():
     assert jnp.allclose(product.data, expected, atol=1e-7)
 
 
-def test_antipode_idempotent():
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_antipode_idempotent(jnp_dtype):
     """
     The antipode is an idempotent operation:
         if x is a free tensor then antipode(antipode(x)) == x
@@ -40,7 +47,7 @@ def test_antipode_idempotent():
     depth = 3
     basis = rpj.TensorBasis(width, depth)
 
-    x = rpj.FreeTensor(rng.standard_normal(size=(basis.size(),), dtype=np.float32), basis)
+    x = rpj.FreeTensor(rng.standard_normal(size=(basis.size(),), dtype=jnp_to_np_float(jnp_dtype)), basis)
     ax = rpj.antipode(x)
     aax = rpj.antipode(ax)
 
