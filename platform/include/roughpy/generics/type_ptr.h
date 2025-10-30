@@ -9,6 +9,8 @@
 #include "roughpy/core/meta.h"
 #include "roughpy/core/types.h"
 
+#include <roughpy/platform/reference_counting.h>
+
 namespace rpy::generics {
 
 class Type;
@@ -32,6 +34,11 @@ using BuiltinTypesList = meta::TypeList<
     float,
     double
     >;
+
+
+
+void intrusive_ptr_add_ref(const Type* ptr) noexcept;
+void intrusive_ptr_release(const Type* ptr) noexcept;
 
 
 

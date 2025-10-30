@@ -278,7 +278,22 @@ public:
      */
     static TypePtr of() noexcept { return get_type<decay_t<T> >(); }
 
+    friend void intrusive_ptr_add_ref(const Type* ptr) noexcept
+    {
+        ptr->inc_ref();
+    }
+    friend void intrusive_ptr_release(const Type* ptr) noexcept
+    {
+        if (ptr->dec_ref()) {
+            delete ptr;
+        }
+    }
 };
+
+
+
+
+
 
 /**
  * @brief Represents a collection of built-in types.
