@@ -42,12 +42,24 @@ class TensorBasis(_rpy_compute_internals.TensorBasis):
     pass
 
 
+@jax.tree_util.register_pytree_node_class
 class DenseFreeTensor(NamedTuple):
     """
     Dense free tensor class built from basis and associated ndarray of data.
     """
     data: jnp.ndarray
     basis: TensorBasis
+
+    def tree_flatten(self):
+        # Flatten dynamic data with static basis
+        return (self.data,), self.basis
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        # Reconstruct from static and dynamic data
+        (data,) = children
+        basis = aux_data
+        return cls(data, basis)
 
 
 """

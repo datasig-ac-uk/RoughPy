@@ -1,11 +1,12 @@
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
 import roughpy_jax as rpj
+import time
 
 from test_common import type_mismatch_fixture, array_dtypes, jnp_to_np_float
 
-# FIXME add JIT tests
 
 def test_dense_ft_fma_array_mismatch(type_mismatch_fixture):
     f = type_mismatch_fixture
@@ -72,3 +73,42 @@ def test_dense_ft_fma_construction(jnp_dtype):
 
     d = rpj.ft_fma(a, b, c)
     assert jnp.allclose(d.data, expected)
+
+
+@pytest.mark.parametrize("jnp_dtype", array_dtypes)
+def test_ft_fma_jit(jnp_dtype):
+    # Arbitrary combination of ft_fma for comparison and timing
+    def combined_fma(a, b, c):
+        d = rpj.ft_fma(a, b, c)
+        e = rpj.ft_fma(b, c, d)
+        f = rpj.ft_fma(c, d, e)
+        g = rpj.ft_fma(d, e, f)
+        h = rpj.ft_fma(e, f, g)
+        return h
+
+    basis = rpj.TensorBasis(3, 3)
+    data = jnp.linspace(0, 1, basis.size(), dtype=jnp_dtype)
+    a = rpj.FreeTensor(data, basis)
+    b = rpj.FreeTensor(data, basis)
+    c = rpj.FreeTensor(data, basis)
+
+    # Confirm that results are same for JIT and non-JIT runs
+    result_no_jit = combined_fma(a, b, c)
+    combined_fma_jit = jax.jit(combined_fma)
+    result_jit = combined_fma_jit(a, b, c)
+    assert jnp.allclose(result_no_jit.data, result_jit.data)
+
+    # Confirm that JIT is running faster
+    time_non_jit_start = time.time()
+    for _ in range(100):
+        combined_fma(a, b, c)
+    time_non_jit = time.time() - time_non_jit_start
+    print(f"ft_fma non-JIT time: {time_non_jit}")
+
+    time_jit_start = time.time()
+    for _ in range(100):
+        combined_fma_jit(a, b, c)
+    time_jit = time.time() - time_jit_start
+    print(f"ft_fma JIT time: {time_jit}")
+
+    assert time_jit < time_non_jit
