@@ -5,8 +5,41 @@ Many of these tests are moot because rpj.TensorBasis derives from the same
 _rpy_compute_internals.TensorBasis class. They are duplicated regardless to
 confirm that both rpc and rpj tensor basis behave the same.
 """
+import pytest
 import numpy as np
 import roughpy_jax as rpj
+
+
+sample_width_depth_degree_begin = [
+    (1, 1, [0, 1, 2]),
+    (2, 1, [0, 1, 3]),
+    (3, 1, [0, 1, 4]),
+    (1, 2, [0, 1, 2, 3]),
+    (2, 2, [0, 1, 3, 7]),
+    (3, 2, [0, 1, 4, 13]),
+    (1, 3, [0, 1, 2, 3, 4]),
+    (2, 3, [0, 1, 3, 7, 15]),
+    (3, 3, [0, 1, 4, 13, 40])
+]
+@pytest.mark.parametrize("width,depth,expected", sample_width_depth_degree_begin)
+def test_tensor_basis_degree_begin(width, depth, expected):
+    tensor_basis = rpj.TensorBasis(width=width, depth=depth)
+
+    # Absolute check that the degree begin matches sample
+    np.testing.assert_array_equal(
+        tensor_basis.degree_begin,
+        np.array(expected, dtype=np.int32)
+    )
+
+    # Defensive check that generated degree begin array has right size
+    assert tensor_basis.degree_begin.size == depth + 2
+
+
+@pytest.mark.parametrize("width,depth,expected", sample_width_depth_degree_begin)
+def test_tensor_basis_size(width, depth, expected):
+    # Last entry in degree_begin indicates overall size of data
+    tensor_basis = rpj.TensorBasis(width=width, depth=depth)
+    assert tensor_basis.size() == expected[depth + 1]
 
 
 def test_created_degree_begins():
