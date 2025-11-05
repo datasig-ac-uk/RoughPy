@@ -171,6 +171,17 @@ jobs:
           setapikey "${{ secrets.GITHUB_TOKEN }}" `
           -Source "${{ env.FEED_URL }}"
 
+    # Install gmp and mpfr separately and clear buildtrees.
+    # This should free up space taken up by msys2 to allow later dependencies to build successfully.
+    # Note: installing a specific package version is only possible in manifest mode
+    # https://github.com/microsoft/vcpkg/discussions/39369
+    # and we cannot install specific packages _in_ manifest mode, so we can't specify
+    # versioning when installing individual packages
+    - name: Install gmp and mpfr (Windows)
+      if: runner.os == 'Windows'
+      run: |
+         .\tools\vcpkg\vcpkg install --classic gmp mpfr --triplet x64-windows --clean-after-build --clean-buildtrees-after-build --clean-packages-after-build
+
     - name: Add NuGet sources (Linux/macOS)
       shell: bash
       if: runner.os != 'Windows'
