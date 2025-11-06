@@ -22,6 +22,7 @@ else:
         "cpu_dense_ft_log",
         "cpu_dense_ft_fmexp",
         "cpu_dense_ft_antipode",
+        "cpu_dense_st_fma",
     ]
     for func_name in cpu_func_names:
         func_ptr = getattr(_rpy_jax_internals, func_name)
@@ -62,11 +63,31 @@ class DenseFreeTensor(NamedTuple):
         return cls(data, basis)
 
 
+@jax.tree_util.register_pytree_node_class
+class DenseShuffleTensor(NamedTuple):
+    """
+    Dense shuffle tensor class built from basis and associated ndarray of data.
+    """
+    data: jnp.ndarray
+    basis: TensorBasis
+
+    def tree_flatten(self):
+        # Flatten dynamic data with static basis
+        return (self.data,), self.basis
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        # Reconstruct from static and dynamic data
+        (data,) = children
+        basis = aux_data
+        return cls(data, basis)
+
+
 """
-Free tensor alias. Tensors are assumed to be dense without prefix
+Tensor aliases. Tensors are assumed to be dense without prefix
 """
 FreeTensor = DenseFreeTensor
-
+ShuffleTensor = DenseShuffleTensor
 
 def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
     for i, basis in enumerate(other_bases):
@@ -90,7 +111,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     Free tensor fused multiply-add
 
     This function is equivalent to `b * c + a`.
-    Currently only floating point scalars (np.float32) are supported.
+    Supports float 32 or 64 but all data buffers must have matching type.
     The basis is taken from `c`.
 
     :param a: addition operand
@@ -132,7 +153,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     Free tensor multiply
 
     This function is equivalent to `a * b`.
-    Currently only floating point scalars (np.float32) are supported.
+    Supports float 32 or 64 but all data buffers must have matching type.
     The basis is taken from `b`.
 
     :param a: left-hand multiply operand
@@ -142,6 +163,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     _check_tensor_dtype(a, b)
     _check_basis_compat(a.basis, b.basis)
 
+    # Zero data for underlying fma
     zero_add_data = jnp.zeros_like(a.data)
 
     # Use same basis convention as ft_mul in roughpy/compute
@@ -197,12 +219,82 @@ def antipode(a: FreeTensor) -> FreeTensor:
     return FreeTensor(out_data, out_basis)
 
 
+def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
+    """
+    Shuffle tensor fused multiply-add
+
+    This function is equivalent to `b * c + a`.
+    Supports float 32 or 64 but all data buffers must have matching type.
+    The result basis is taken from `a`.
+
+    :param a: input and first operand
+    :param b: left-hand operand
+    :param c: right-hand operand
+    :return: shuffle fused multiply-add
+    """
+    _check_tensor_dtype(a, b)
+    _check_basis_compat(a.basis, b.basis, c.basis)
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_st_fma",
+        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
+    )
+
+    out_data = call(
+        a.data,
+        b.data,
+        c.data,
+        width=np.int32(a.width),
+        depth=np.int32(a.depth),
+        arg_depth=np.int32(a.basis.depth),
+        degree_begin=a.degree_begin
+    )
+
+    return ShuffleTensor(out_data, a.basis)
+
+
+def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
+    """
+    Shuffle tensor product
+
+    This function is equivalent to `lhs & rhs`.
+    Supports float 32 or 64 but all data buffers must have matching type.
+    The result basis is taken from `lhs`.
+
+    :param lhs: left-hand operand
+    :param rhs: right-hand operand
+    :return: the shuffle product of lhs and rhs
+    """
+    _check_tensor_dtype(lhs, rhs)
+    _check_basis_compat(lhs.basis, rhs.basis)
+
+    # Zero data for underlying fma
+    zero_add_data = jnp.zeros_like(lhs.data)
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_st_fma",
+        jax.ShapeDtypeStruct(lhs.data.shape, lhs.data.dtype)
+    )
+
+    out_data = call(
+        zero_add_data,
+        lhs.data,
+        rhs.data,
+        width=np.int32(lhs.basis.width),
+        depth=np.int32(lhs.basis.depth),
+        arg_depth=np.int32(lhs.basis.depth),
+        degree_begin=lhs.basis.degree_begin
+    )
+
+    return ShuffleTensor(out_data, lhs.basis)
+
+
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     """
     Free tensor exponent
 
     This function is equivalent to `e ^ x`.
-    Currently only floating point scalars (np.float32) are supported.
+    Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `x` is used.
 
     :param x: argument
@@ -234,7 +326,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     Free tensor logarithm
 
     This function is equivalent to `log(x)`.
-    Currently only floating point scalars (np.float32) are supported.
+    Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `x` is used.
 
     :param x: argument
@@ -266,7 +358,7 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     Free tensor fused multiply-exponential
 
     This function is equivalent to `a * exp(x)` where `a` is `multiplier` and `x` is `exponent`.
-    Currently only floating point scalars (np.float32) are supported.
+    Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `multiplier` is used.
 
     :param multiplier: Multiplier free tensor

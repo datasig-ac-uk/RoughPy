@@ -38,6 +38,7 @@ add_library(RoughPy_JaxModule SHARED
     src/cpu/dense_ft_log.cpp
     src/cpu/dense_ft_fmexp.cpp
     src/cpu/dense_ft_antipode.cpp
+    src/cpu/dense_st_fma.cpp
     src/cpu/xla_common.cpp
 )
 

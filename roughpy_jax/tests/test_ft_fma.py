@@ -5,11 +5,11 @@ import pytest
 import roughpy_jax as rpj
 import time
 
-from test_common import type_mismatch_fixture, array_dtypes, jnp_to_np_float
+from rpy_test_common import array_dtypes, jnp_to_np_float
 
 
-def test_dense_ft_fma_array_mismatch(type_mismatch_fixture):
-    f = type_mismatch_fixture
+def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
+    f = rpj_test_fixture_type_mismatch
 
     # Mismatch first and second widths
     with pytest.raises(ValueError):

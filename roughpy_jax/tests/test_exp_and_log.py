@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import roughpy_jax as rpj
 
-from test_common import type_mismatch_fixture, array_dtypes, jnp_to_np_float
+from rpy_test_common import array_dtypes, jnp_to_np_float
 
 # FIXME add mismatch tests as in test_dense_ft_fma_array_mismatch
 # FIXME add JIT tests
