@@ -348,12 +348,25 @@ static inline void add_assign(void* dst, const void* src, int typenum)
 //     --frame->size;
 // }
 
+/**
+ * @brief Removes zero entries from a sparse matrix frame by shifting non-zero
+ * elements and updating the size of the frame.
+ *
+ * This removes any explicit zeros so they don't have to be stored in the sparse
+ * matrix to keep the matrix "pure".
+ *
+ * @param frame Pointer to an SMHFrame structure representing a sparse matrix
+ * frame. Contains data and indices arrays.
+ * @param itemsize The size of each element in bytes within the data array.
+ * @param typenum The numerical type identifier used to interpret the data in
+ * the frame.
+ */
 void remove_zeros_from_frame(SMHFrame* frame, npy_intp itemsize, int typenum)
 {
     if (frame->size <= 0) { return; }
 
     // if earlier terms are zero, shuffle everything that follows down.
-    for (npy_intp i = 0; i < frame->size - 1; ++i) {
+    for (npy_intp i = frame->size - 1; i >= 0; --i) {
         if (is_zero(&frame->data[i * itemsize], typenum)) {
             const npy_intp remaining_elts = frame->size - i - 1;
 
