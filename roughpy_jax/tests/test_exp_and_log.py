@@ -9,8 +9,13 @@ from rpy_test_common import array_dtypes, jnp_to_np_float
 # FIXME add JIT tests
 
 
-# FIXME confirming meaning of this method in compute tests and rename
-def _create_rng_zero_ft(rng, basis, jnp_dtype):
+def _create_non_zero_ft(rng, basis, jnp_dtype):
+    """
+    The tests below need to operate on non-zero values otherwise exp/log will
+    end up always being zero and tests are not doing anything useful. Only the
+    vector part (directly after scalar part, hence [1:width+1]) needs to be set
+    to ensure the overall value does not collapse to zero.
+    """
     data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
     data[1:basis.width + 1] = rng.normal(size=(basis.width,))
     return rpj.FreeTensor(data, basis)
@@ -54,7 +59,7 @@ def test_dense_ft_log_identity(jnp_dtype):
 def test_dense_ft_exp_log_roundtrip(jnp_dtype):
     rng = np.random.default_rng()
     basis = rpj.TensorBasis(2, 2)
-    a = _create_rng_zero_ft(rng, basis, jnp_dtype)
+    a = _create_non_zero_ft(rng, basis, jnp_dtype)
 
     exp_a = rpj.ft_exp(a)
     log_exp_a = rpj.ft_log(exp_a)
@@ -68,7 +73,7 @@ def test_dense_ft_exp_and_fmexp(jnp_dtype):
 
     basis = rpj.TensorBasis(2, 2)
     e = rpj.FreeTensor(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=jnp_dtype), basis)
-    x = _create_rng_zero_ft(rng, basis, jnp_dtype)
+    x = _create_non_zero_ft(rng, basis, jnp_dtype)
 
     e_exp_b = rpj.ft_fmexp(e, x)
     exp_b = rpj.ft_exp(x)
@@ -81,7 +86,7 @@ def test_dense_ft_fmexp(jnp_dtype):
 
     basis = rpj.TensorBasis(2, 2)
     a = rpj.FreeTensor(jnp.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0], dtype=jnp_dtype), basis)
-    x = _create_rng_zero_ft(rng, basis, jnp_dtype)
+    x = _create_non_zero_ft(rng, basis, jnp_dtype)
     b = rpj.ft_fmexp(a, x)
 
     expected = rpj.ft_mul(a, rpj.ft_exp(x))
