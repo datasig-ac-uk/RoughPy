@@ -53,7 +53,7 @@ if (ROUGHPY_BUILD_TEST_PYTHON_EMBED)
 endif()
 
 
-find_package(Python 3.8 REQUIRED COMPONENTS ${_python_components})
+find_python_with_components(${_python_components})
 unset(_python_components)
 
 

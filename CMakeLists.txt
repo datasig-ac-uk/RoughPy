@@ -152,7 +152,8 @@ include(cmake/component_setup.cmake)
 # options in this file.
 include(cmake/developer_options_setup.cmake)
 
-
+# Common find_package for python to keep version consistent throughout build.
+include(cmake/find_python.cmake)
 
 
 set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
