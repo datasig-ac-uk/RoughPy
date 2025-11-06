@@ -333,9 +333,9 @@ class ROUGHPY_PLATFORM_EXPORT MultiPrecisionTypes
 public:
     TypePtr integer_type;
     TypePtr rational_type;
-
-    RPY_NO_DISCARD
-    TypePtr float_type(int n_precision) const;
+    //
+    // RPY_NO_DISCARD
+    // TypePtr float_type(int n_precision) const;
 
     RPY_NO_DISCARD
     static const MultiPrecisionTypes& get() noexcept;

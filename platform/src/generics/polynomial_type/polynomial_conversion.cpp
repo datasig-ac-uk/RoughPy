@@ -22,7 +22,8 @@ using namespace rpy::generics;
 boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory
 >> conv::make_poly_conversion_to_table()
 {
-    using type_list = BuiltinTypesList::Append<MPFloat, MPRational, MPInt>;
+    // using type_list = BuiltinTypesList::Append<MPFloat, MPRational, MPInt>;
+    using type_list = BuiltinTypesList::Append<MPRational, MPInt>;
     boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory>> table;
     table.reserve(type_list::size);
 
@@ -34,7 +35,8 @@ boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory
 boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory
 >> conv::make_poly_conversion_from_table()
 {
-    using type_list = BuiltinTypesList::Append<MPFloat, MPRational, MPInt>;
+    // using type_list = BuiltinTypesList::Append<MPFloat, MPRational, MPInt>;
+     using type_list = BuiltinTypesList::Append<MPRational, MPInt>;
     boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory>> table;
     table.reserve(type_list::size);
 

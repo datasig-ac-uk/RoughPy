@@ -71,10 +71,6 @@
       "version>=": "0.12.0#4"
     },
     {
-      "name": "mpfr",
-      "version>=": "4.2.2"
-    },
-    {
       "name": "gmp",
       "version>=": "6.3.0#3"
     },

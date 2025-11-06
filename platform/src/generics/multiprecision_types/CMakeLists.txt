@@ -26,16 +26,16 @@ target_sources(RoughPy_Platform PRIVATE
         integer_conversion.h
         integer_number.cpp
         integer_number.h
-        float_type.cpp
-        float_type.h
-        float_arithmetic.cpp
-        float_arithmetic.h
-        float_comparison.cpp
-        float_comparison.h
-        float_conversion.cpp
-        float_conversion.h
-        float_number.cpp
-        float_number.h
+#        float_type.cpp
+#        float_type.h
+#        float_arithmetic.cpp
+#        float_arithmetic.h
+#        float_comparison.cpp
+#        float_comparison.h
+#        float_conversion.cpp
+#        float_conversion.h
+#        float_number.cpp
+#        float_number.h
         multiprecision_type_ids.h
 )
 
@@ -47,7 +47,7 @@ target_sources(RoughPy_Platform PRIVATE
 
 target_link_libraries(RoughPy_Platform PRIVATE
         gmp::gmp
-        mpfr::mpfr
+#        mpfr::mpfr
 )
 
 
@@ -56,7 +56,7 @@ if (ROUGHPY_BUILD_TESTS)
     add_executable(test_multiprecision_types
             test_rational_type.cpp
             test_integer_type.cpp
-            test_float_type.cpp
+#            test_float_type.cpp
     )
 
     target_link_Libraries(test_multiprecision_types PRIVATE
