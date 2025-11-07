@@ -90,12 +90,6 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
-#    - name: install pkgconfig on windows
-#      if: runner.os == 'Windows'
-#      shell: bash
-#      run: |
-#        choco install pkgconfiglite
-
     - name: install autoconf on macos
       if: runner.os == 'macOS'
       shell: bash
@@ -171,17 +165,6 @@ jobs:
           setapikey "${{ secrets.GITHUB_TOKEN }}" `
           -Source "${{ env.FEED_URL }}"
 
-    # Install gmp and mpfr separately and clear buildtrees.
-    # This should free up space taken up by msys2 to allow later dependencies to build successfully.
-    # Note: installing a specific package version is only possible in manifest mode
-    # https://github.com/microsoft/vcpkg/discussions/39369
-    # and we cannot install specific packages _in_ manifest mode, so we can't specify
-    # versioning when installing individual packages
-    - name: Install gmp and mpfr (Windows)
-      if: runner.os == 'Windows'
-      run: |
-         .\tools\vcpkg\vcpkg install --classic gmp mpfr --triplet x64-windows --clean-after-build --clean-buildtrees-after-build --clean-packages-after-build
-
     - name: Add NuGet sources (Linux/macOS)
       shell: bash
       if: runner.os != 'Windows'
@@ -196,20 +179,6 @@ jobs:
         mono `${{ env.VCPKG_EXE }} fetch nuget | tail -n 1` \
           setapikey "${{ secrets.GITHUB_TOKEN }}" \
           -Source "${{ env.FEED_URL }}"
-# This probably requires the intervention of a package manager because of boost and gmp deps.
-#    - name: Build and test roughpy_compute
-#      shell: bash
-#      run:
-#        cmake -B ${{github.workspace}}/rpy_compute_build \
-#              -S ${{github.workspace}}/roughpy_compute \
-#              -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-#              -DROUGHPY_BUILD_TESTS=ON && \
-#        cmake --build ${{github.workspace}}/rpy_compute_build --config ${{env.BUILD_TYPE}} && \
-#        ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure --test-dir "${{github.workspace}}/rpy_compute_build"
-#      env:
-#        MACOSX_DEPLOYMENT_TARGET: 11.0.0
-#        CMAKE_GENERATOR: "Ninja"
-
 
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
