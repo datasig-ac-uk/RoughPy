@@ -301,20 +301,6 @@ static inline int is_zero(const void* value, int typenum)
     return 0;
 }
 
-static inline void assign(void* dst, const void* src, int typenum)
-{
-    switch (typenum) {
-        case NPY_FLOAT: *((float*) dst) = *((float*) src); break;
-        case NPY_DOUBLE: *((double*) dst) = *((double*) src); break;
-        case NPY_LONGDOUBLE:
-            *((long double*) dst) = *((long double*) src);
-            break;
-            // case NPY_HALF:
-            // *((npy_float16*) dst) = *((npy_float16*) src);
-            // break;
-    }
-}
-
 static inline void add_assign(void* dst, const void* src, int typenum)
 {
     switch (typenum) {
@@ -326,27 +312,6 @@ static inline void add_assign(void* dst, const void* src, int typenum)
         case NPY_HALF: *((npy_float16*) dst) += *((npy_float16*) src); break;
     }
 }
-//
-// void remove_value_at_pos(SMHFrame* frame, npy_intp pos, npy_intp itemsize)
-// {
-//     assert(pos >= 0 && pos < frame->size);
-//
-//     // Shift elements to fill the gap
-//     if (pos < frame->size - 1) {
-//         // Shift indices array
-//         memmove(&frame->indices[pos],
-//                 &frame->indices[pos + 1],
-//                 (frame->size - pos - 1) * sizeof(npy_intp));
-//
-//         // Shift data array
-//         memmove(frame->data + pos * itemsize,
-//                 frame->data + (pos + 1) * itemsize,
-//                 (frame->size - pos - 1) * itemsize);
-//     }
-//
-//     // Decrement the frame size
-//     --frame->size;
-// }
 
 /**
  * @brief Removes zero entries from a sparse matrix frame by shifting non-zero
@@ -596,61 +561,3 @@ PyObject* smh_build_matrix(SMHelper* helper)
 
     return (PyObject*) ret;
 }
-//
-// int smh_swap_format(SMHelper* helper)
-// {
-//     PyArrayObject* new_data = NULL;
-//     PyArrayObject* new_indices = NULL;
-//     PyArrayObject* new_indptr = NULL;
-//     int ret = -1;
-//
-//     // Make sure the matrix is finalized before we finish
-//     // no resize is needed because we reallocate anyway.
-//     if (smh_finalize(helper, 0) < 0) {
-//         goto finish;
-//     }
-//
-//     npy_intp new_outer_dim = (smh_is_csr(helper) ? helper->cols :
-//     helper->rows); npy_intp new_alloc = new_outer_dim + 1;
-//
-//     new_indptr = (PyArrayObject*) PyArray_SimpleNew(1, &new_alloc, NPY_INTP);
-//     if (new_indptr == NULL) {
-//         goto finish;
-//     }
-//
-//     new_data = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz,
-//     PyArray_TYPE(helper->data)); if (new_data == NULL) {
-//         goto finish;
-//     }
-//
-//     new_indices = (PyArrayObject*) PyArray_SimpleNew(1, &helper->nnz,
-//     NPY_INTP); if (new_indices == NULL) {
-//         goto finish;
-//     }
-//
-//     void* data_ptr = PyArray_DATA(helper->data);
-//     npy_intp* indices_ptr = PyArray_DATA(helper->indices);
-//     npy_intp* indptr_ptr = PyArray_DATA(helper->indptr);
-//
-//     void* new_data_ptr = PyArray_DATA(new_data);
-//     npy_intp* new_indices_ptr = PyArray_DATA(new_indices);
-//     npy_intp* new_indptr_ptr = PyArray_DATA(new_indptr);
-//
-//     /*
-//      * The procedure here is to walk over the old indices/data
-//      */
-//     new_indptr_ptr[0] = 0;
-//
-//
-//
-//
-//
-//
-//
-//     ret = 0;
-// finish:
-//     Py_XDECREF(new_data);
-//     Py_XDECREF(new_indices);
-//     Py_XDECREF(new_indptr);
-//     return ret;
-// }
