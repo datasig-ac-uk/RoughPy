@@ -278,7 +278,22 @@ public:
      */
     static TypePtr of() noexcept { return get_type<decay_t<T> >(); }
 
+    friend void intrusive_ptr_add_ref(const Type* ptr) noexcept
+    {
+        ptr->inc_ref();
+    }
+    friend void intrusive_ptr_release(const Type* ptr) noexcept
+    {
+        if (ptr->dec_ref()) {
+            delete ptr;
+        }
+    }
 };
+
+
+
+
+
 
 /**
  * @brief Represents a collection of built-in types.
@@ -318,9 +333,9 @@ class ROUGHPY_PLATFORM_EXPORT MultiPrecisionTypes
 public:
     TypePtr integer_type;
     TypePtr rational_type;
-
-    RPY_NO_DISCARD
-    TypePtr float_type(int n_precision) const;
+    //
+    // RPY_NO_DISCARD
+    // TypePtr float_type(int n_precision) const;
 
     RPY_NO_DISCARD
     static const MultiPrecisionTypes& get() noexcept;

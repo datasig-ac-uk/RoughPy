@@ -7,7 +7,7 @@
 #include <limits>
 
 #include <gmp.h>
-#include <mpfr.h>
+// #include <mpfr.h>
 #include <boost/container/flat_map.hpp>
 
 #include "generics/builtin_types/builtin_type_ids.h"

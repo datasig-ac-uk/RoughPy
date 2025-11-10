@@ -5,7 +5,7 @@
 #include "integer_conversion.h"
 
 #include <gmp.h>
-#include <mpfr.h>
+// #include <mpfr.h>
 
 #include "generics/builtin_types/builtin_type_ids.h"
 
