@@ -139,7 +139,6 @@ def ft_inplace_mul_fallback(a_data: jnp.ndarray,
     return jax.lax.fori_loop(a_min_deg, a_max_deg, level_d_func, a_data)
 
 
-
 @jax.vmap
 @partial(jax.jit, static_argnums=(2, 3))
 def antipode_fallback(out_data: jnp.ndarray, arg_data: jnp.ndarray, basis: TensorBasis, no_sign: bool) -> jnp.ndarray:
