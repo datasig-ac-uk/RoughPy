@@ -136,3 +136,33 @@ def ft_inplace_mul_fallback(a_data: jnp.ndarray,
         return jax.lax.fori_loop(left_deg_start, left_deg_end, level_f, val, unroll=True)
 
     return jax.lax.fori_loop(a_min_deg, a_max_deg, level_d_func, a_data)
+
+
+
+
+@partial(jax.jit, static_argnums=(2, 3))
+def antipode_fallback(out_data: jnp.ndarray, arg_data: jnp.ndarray, basis: TensorBasis, no_sign: bool) -> jnp.ndarray:
+    """
+    Fallback implementation of the tensor antipode to be used when no accelerated method is
+    available.
+
+    This operation performs the antipode, which is essentially a level-wise transposition
+    combined with multiplication by (-1)^degree.
+
+    This should not be used directly.
+
+    :param out_data: data for the output tensor
+    :param arg_data: data for the input tensor
+    :param basis: Basis for both tensors
+    :param no_sign: Flag to indicate if we should not sign tensors
+    :return: the out_data array filled with the antipode of arg_data.
+    """
+    db = basis.degree_begin
+    width = basis.width
+
+    def transpose_level(i, val):
+        sign = 1 if (no_sign or i % 2 == 0) else -1
+        level_data = arg_data[db[i]:db[i+1]].reshape((width,) * i)
+        return val.at[db[i]:db[i+1]].set(sign*jnp.transpose(level_data).ravel())
+
+    return jax.lax.fori_loop(0, basis.depth, transpose_level, out_data, unroll=True)
