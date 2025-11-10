@@ -11,7 +11,7 @@ from roughpy_jax.fallback.modifiers import _identity_modifier
 
 
 
-# TODO: This needs an appropriate vmap decorator
+@jax.vmap # A plain vmap should be enough?
 @partial(jax.jit, static_argnums=(3, 4, 5, 6, 7, 8))
 def ft_fma_fallback(a_data: jnp.ndarray,
                      b_data: jnp.ndarray,
@@ -68,6 +68,7 @@ def ft_fma_fallback(a_data: jnp.ndarray,
     return jax.lax.fori_loop(a_min_deg, a_max_deg, level_d_func, a_data)
 
 
+@jax.vmap
 @partial(jax.jit, static_argnums=(2, 3, 4, 5, 6, 7))
 def ft_inplace_mul_fallback(a_data: jnp.ndarray,
                             b_data: jnp.ndarray,
@@ -139,7 +140,7 @@ def ft_inplace_mul_fallback(a_data: jnp.ndarray,
 
 
 
-
+@jax.vmap
 @partial(jax.jit, static_argnums=(2, 3))
 def antipode_fallback(out_data: jnp.ndarray, arg_data: jnp.ndarray, basis: TensorBasis, no_sign: bool) -> jnp.ndarray:
     """
