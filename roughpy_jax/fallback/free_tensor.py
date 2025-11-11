@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from roughpy_jax import TensorBasis
+from roughpy_jax import TensorBasis # TODO: Causes circular import. Care needed
 from roughpy_jax.fallback.modifiers import _identity_modifier
 
 
