@@ -232,3 +232,47 @@ def ft_left_mul_adjoint_fallback(out_data: jnp.ndarray,
 
     return jax.lax.fori_loop(arg_min_deg, arg_max_deg, arg_deg_loop, out_data)
 
+
+def ft_right_mul_adjoint_fallback(out_data: jnp.ndarray,
+                                  op_data: jnp.ndarray,
+                                  arg_data: jnp.ndarray,
+                                  basis: TensorBasis,
+                                  op_max_deg: np.int32,
+                                  arg_max_deg: np.int32,
+                                  op_min_deg: np.int32 = 0,
+                                  arg_min_deg: np.int32 = 0
+                                  ) -> jnp.ndarray:
+    """
+    Fallback implementation of the adjoint of the right free-tensor multiplication operator.
+
+    This is the adjoint of the right multiplication operator R_A: T -> T given by R_A(B) = B*A
+    where * denotes the free tensor product. This is technically a map between shuffle tensors,
+    but it is occasionally useful to apply this to free tensors too.
+
+    This implementation is not intended to be used directly.
+
+    :param out_data: data for the output (shuffle) tensor
+    :param op_data: data for the operator (free) tensor
+    :param arg_data:  data for the argument (shuffle) tensor
+    :param basis: basis for the output tensor
+    :param op_max_deg: maximum degree for the operator tensor
+    :param arg_max_deg: maximum degree for the argument tensor
+    :param op_min_deg: optional minimum degree for the operator tensor (default 0)
+    :param arg_min_deg: optional minimum degree for the argument tensor (default 0)
+    :return: data from the result of the adjoint of right multiplication operator
+    """
+    from roughpy_jax import DenseFreeTensor, antipode
+
+    op_basis = TensorBasis(basis.width, min(op_max_deg, basis.depth), basis.degree_begin)
+    antipode_op = antipode(DenseFreeTensor(op_data, op_basis))
+
+    arg_basis = TensorBasis(basis.width, min(arg_max_deg, basis.depth), basis.degree_begin)
+    antipode_arg = antipode(DenseFreeTensor(arg_data, arg_basis))
+
+    out_data = ft_left_mul_adjoint_fallback(out_data, antipode_op.data, antipode_arg.data, basis, op_max_deg,
+                                            arg_max_deg, op_min_deg, arg_min_deg)
+
+
+    out_data = antipode(DenseFreeTensor(out_data, basis)).data
+
+    return out_data
