@@ -34,10 +34,12 @@ else:
         )
 
 
+
 # FIXME review point: neatly load compute module from roughpy_jax dir
 import sys
 sys.path.append('roughpy/compute')
 import _rpy_compute_internals
+
 
 
 class TensorBasis(_rpy_compute_internals.TensorBasis):
@@ -139,7 +141,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
         degree_begin=basis.degree_begin
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
 def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
@@ -183,7 +185,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
         degree_begin=basis.degree_begin
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
 def antipode(a: FreeTensor) -> FreeTensor:
@@ -210,7 +212,7 @@ def antipode(a: FreeTensor) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
@@ -244,7 +246,7 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
         degree_begin=a.degree_begin
     )
 
-    return ShuffleTensor(out_data, a.basis)
+    return DenseShuffleTensor(out_data, a.basis)
 
 
 def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
@@ -280,7 +282,7 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
         degree_begin=lhs.basis.degree_begin
     )
 
-    return ShuffleTensor(out_data, lhs.basis)
+    return DenseShuffleTensor(out_data, lhs.basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -312,7 +314,7 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -344,7 +346,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -386,4 +388,55 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
+
+
+
+def adj_left_ft_mul(operator: FreeTensor, argument: ShuffleTensor, out_basis: TensorBasis | None = None) -> ShuffleTensor:
+
+
+    from .fallback import ft_left_mul_adjoint_fallback
+    result_type = jnp.result_type(operator.data.dtype, argument.data.dtype, jnp.float32)
+
+    out_basis = out_basis or argument.basis
+    _check_basis_compat(out_basis, argument.basis, operator.basis)
+
+
+    # TODO: replace this with a registered ffi call when available
+
+    result_data = ft_left_mul_adjoint_fallback(
+        jnp.zeros((out_basis.size(),), dtype=result_type),
+        operator.data.astype(result_type),
+        argument.data.astype(result_type),
+        out_basis,
+        operator.basis.depth,
+        argument.basis.depth
+    )
+
+    return DenseShuffleTensor(result_data, out_basis)
+
+
+
+
+def adj_right_ft_mul(operator: FreeTensor, argument: ShuffleTensor, out_basis: TensorBasis | None = None) -> ShuffleTensor:
+    from .fallback import ft_right_mul_adjoint_fallback
+
+    result_type = jnp.result_type(operator.data.dtype, argument.data.dtype, jnp.float32)
+
+    out_basis = out_basis or argument.basis
+    _check_basis_compat(out_basis, argument.basis, operator.basis)
+
+
+    # TODO: replace this with a registered ffi call when available
+
+    result_data = ft_right_mul_adjoint_fallback(
+        jnp.zeros((out_basis.size(),), dtype=result_type),
+        operator.data.astype(result_type),
+        argument.data.astype(result_type),
+        out_basis,
+        operator.basis.depth,
+        argument.basis.depth
+    )
+
+    return DenseShuffleTensor(result_data, out_basis)
+
