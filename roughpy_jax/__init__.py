@@ -102,6 +102,7 @@ def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
             raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
 
 
+@jax.custom_vjp
 def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     """
     Free tensor fused multiply-add
@@ -144,6 +145,30 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     return DenseFreeTensor(out_data, basis)
 
 
+
+
+@ft_fma.fwd
+def _ft_fma_fwd(a, b, c):
+    result = ft_fma(a, b, c)
+    return result, (b, c)
+
+
+@ft_fma.bwd
+def _ft_fma_bwd(res, ct_d):
+    """
+    d = a + b*c
+    """
+    b, c = res
+
+    ct_b = adj_left_ft_mul(b.data, ct_d, b.basis)
+    ct_c = adj_right_ft_mul(c.data, ct_d, c.basis)
+
+    return ct_d, ct_b, ct_c
+
+
+
+
+@jax.custom_vjp
 def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     """
     Free tensor multiply
@@ -188,6 +213,26 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     return DenseFreeTensor(out_data, basis)
 
 
+@ft_mul.fwd
+def _ft_mul_fwd(a, b):
+    result = ft_mul(a, b)
+    return result, (a, b)
+
+@ft_mul.bwd
+def _ft_mul_bwd(res, ct_c):
+    """
+    c = a * b
+    """
+    a, b = res
+
+    ct_a = adj_left_ft_mul(a.data, ct_c, a.basis)
+    ct_b = adj_right_ft_mul(b.data, ct_c, b.basis)
+
+    return ct_a, ct_b
+
+
+
+@jax.custom_vjp
 def antipode(a: FreeTensor) -> FreeTensor:
     """
     Antipode of a free tensor
@@ -213,6 +258,17 @@ def antipode(a: FreeTensor) -> FreeTensor:
     )
 
     return DenseFreeTensor(out_data, out_basis)
+
+
+
+@antipode.fwd
+def _ft_antipode_fwd(a):
+    return antipode(a), ()
+
+@antipode.bwd
+def _ft_antipode_bwd(res, ct_c):
+    return (antipode(ct_c), )
+
 
 
 def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
