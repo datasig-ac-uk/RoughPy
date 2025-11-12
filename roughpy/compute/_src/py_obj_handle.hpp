@@ -5,10 +5,8 @@
 
 namespace rpy::compute {
 
-class PyErrAlreadySet final : public std::runtime_error
+class PyErrAlreadySet final : public std::exception
 {
-public:
-    PyErrAlreadySet() : std::runtime_error("") {}
 };
 
 class ObjectRef;
