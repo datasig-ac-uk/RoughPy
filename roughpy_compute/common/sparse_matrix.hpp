@@ -246,25 +246,25 @@ public:
 
     constexpr difference_type non_zeros() const noexcept { return n_non_zero_; }
 
-    decltype(auto) at(difference_type row, difference_type col) const noexcept
-    {
-        const auto& zero = scalars::ScalarTraits<Scalar>::zero;
-        auto compr_dim = (CompressedDim_ == CompressedRow) ? row : col;
-        auto inner_dim = (CompressedDim_ == CompressedRow) ? col : row;
-
-        auto dim_begin = offsets_[compr_dim];
-        auto dim_end = offsets_[compr_dim + 1];
-
-        if (dim_begin == dim_end) { return zero; }
-
-        const auto inner_begin = indices_[dim_begin];
-        const auto inner_end = indices_[dim_end];
-        auto inner = std::find(inner_begin, inner_end, inner_dim);
-        if (inner == inner_end) { return zero; }
-
-        return data_
-                [dim_begin + static_cast<difference_type>(inner - inner_begin)];
-    }
+    // decltype(auto) at(difference_type row, difference_type col) const noexcept
+    // {
+    //     const auto& zero = scalars::ScalarTraits<Scalar>::zero;
+    //     auto compr_dim = (CompressedDim_ == CompressedRow) ? row : col;
+    //     auto inner_dim = (CompressedDim_ == CompressedRow) ? col : row;
+    //
+    //     auto dim_begin = offsets_[compr_dim];
+    //     auto dim_end = offsets_[compr_dim + 1];
+    //
+    //     if (dim_begin == dim_end) { return zero; }
+    //
+    //     const auto inner_begin = indices_[dim_begin];
+    //     const auto inner_end = indices_[dim_end];
+    //     auto inner = std::find(inner_begin, inner_end, inner_dim);
+    //     if (inner == inner_end) { return zero; }
+    //
+    //     return data_
+    //             [dim_begin + static_cast<difference_type>(inner - inner_begin)];
+    // }
 };
 
 }// namespace rpy::compute
