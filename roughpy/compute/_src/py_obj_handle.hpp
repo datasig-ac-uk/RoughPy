@@ -32,17 +32,31 @@ public:
         Py_XDECREF(ptr_);
     }
 
+    PyObjHandle(const PyObjHandle& other) noexcept
+        : ptr_(other.ptr_)
+    {
+        Py_XINCREF(ptr_);
+    }
+
     PyObjHandle(PyObjHandle&& other) noexcept : ptr_(other.ptr_)
     {
         other.ptr_ = nullptr;
     }
 
+    PyObjHandle& operator=(const PyObjHandle& other) noexcept
+    {
+        Py_XINCREF(ptr_);
+        Py_XSETREF(ptr_, other.ptr_);
+        return *this;
+    }
     PyObjHandle& operator=(PyObjHandle&& other) noexcept
     {
         Py_XSETREF(ptr_, other.ptr_);
         other.ptr_ = nullptr;
         return *this;
     }
+
+
 
     void reset(PyObject* new_obj, bool incref=true)
     {
