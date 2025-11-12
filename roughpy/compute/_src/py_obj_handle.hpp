@@ -3,6 +3,8 @@
 
 #include "py_headers.h"
 
+#include <exception>
+
 namespace rpy::compute {
 
 class PyErrAlreadySet final : public std::exception
