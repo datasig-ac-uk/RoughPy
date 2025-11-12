@@ -2,23 +2,24 @@
 #define ROUGHPY_COMPUTE_DENSE_INTERMEDIATE_FREE_TENSOR_LOG_HPP
 
 #include "roughpy_compute/common/operations.hpp"
-
+#include "rouhgpy_compute/common/scalars.hpp"
 #include "roughpy_compute/dense/views.hpp"
 #include "roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp"
 
 namespace rpy::compute::intermediate {
 inline namespace v1 {
 
-template <typename OutIter, typename ArgIter>
-void ft_log(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
+template <typename Context, typename OutIter, typename ArgIter>
+void ft_log(
+    Context const& ctx,
+    DenseTensorView<OutIter> out,
+    DenseTensorView<ArgIter> arg)
 {
     using OutView = DenseTensorView<OutIter>;
     using Degree = typename OutView::Degree;
     using Scalar = typename OutView::Scalar;
 
-
     constexpr Scalar unit { 1 };
-
 
     auto const max_degree = out.max_degree();
     for (Degree deg=max_degree; deg > 0; --deg) {
@@ -31,11 +32,22 @@ void ft_log(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
         }
 
         basic::ft_inplace_mul(
+            ctx,
             out.truncate(max_level),
             arg.truncate(max_level, 1)
         );
 
     }
+}
+
+
+template <typename OutIter, typename ArgIter>
+void ft_log(
+    DenseTensorView<OutIter> out,
+    DenseTensorView<ArgIter> arg)
+{
+    using Traits = scalars::Traits<typename DenseTensorView<OutIter>::Scalar>;
+    return ft_log(Traits{}, std::move(out), std::move(arg));
 }
 
 } // version namespace

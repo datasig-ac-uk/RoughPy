@@ -5,16 +5,20 @@
 
 #include "roughpy_compute/common/operations.hpp"
 #include "roughpy_compute/dense/views.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 
 namespace rpy::compute::basic {
 inline namespace v1 {
 
 
-template <typename OutIter, typename LhsIter, typename RhsIter, typename Op=ops::Identity>
-void ft_fma(DenseTensorView<OutIter> out,
-            DenseTensorView<LhsIter> lhs,
-            DenseTensorView<RhsIter> rhs,
-            Op&& op=Op{})
+template <typename Context, typename OutIter, typename LhsIter, typename RhsIter, typename Op=ops::Identity>
+void ft_fma(
+        Context const& ctx,
+        DenseTensorView<OutIter> out,
+        DenseTensorView<LhsIter> lhs,
+        DenseTensorView<RhsIter> rhs,
+        Op&& op = Op{}
+)
 {
     using Degree = typename DenseTensorView<OutIter>::Degree;
     using Index = typename DenseTensorView<OutIter>::Index;
@@ -52,6 +56,21 @@ void ft_fma(DenseTensorView<OutIter> out,
 
 }
 
+template <typename OutIter, typename LhsIter, typename RhsIter, typename Op=ops::Identity>
+void ft_fma(DenseTensorView<OutIter> out,
+            DenseTensorView<LhsIter> lhs,
+            DenseTensorView<RhsIter> rhs,
+            Op&& op=Op{})
+{
+    using Traits = scalars::Traits<typename DenseTensorView<OutIter>::Scalar>;
+    return ft_fma(
+            Traits{},
+            std::move(out),
+            std::move(lhs),
+            std::move(rhs),
+            std::forward<Op>(op)
+    );
+}
 
 }// version namespce
 }// namespace rpy::compute::basic

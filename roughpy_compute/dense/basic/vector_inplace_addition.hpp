@@ -3,14 +3,16 @@
 
 
 #include "roughpy_compute/common/operations.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 #include "roughpy_compute/dense/views.hpp"
 
 namespace rpy::compute::basic {
 inline namespace v1 {
 
 
-template <typename LhsIter, typename RhsIter, typename Basis, typename Op=ops::Identity>
+template <typename Context, typename LhsIter, typename RhsIter, typename Basis, typename Op=ops::Identity>
 void vector_inplace_addition(
+    Context const& ctx,
     DenseVectorView<LhsIter, Basis> lhs,
     DenseVectorView<RhsIter, Basis> rhs,
     Op&& op=Op{}
@@ -30,6 +32,22 @@ void vector_inplace_addition(
 
 }
 
+template <typename LhsIter, typename RhsIter, typename Basis, typename Op=ops::Identity>
+void vector_inplace_addition(
+    DenseVectorView<LhsIter, Basis> lhs,
+    DenseVectorView<RhsIter, Basis> rhs,
+    Op&& op=Op{}
+)
+{
+    using Traits = scalars::Traits<typename DenseVectorView<LhsIter, Basis>::Scalar>;
+
+    return vector_inplace_addition(
+        Traits{},
+        std::move(lhs),
+        std::move(rhs),
+        std::forward<Op>(op)
+    );
+}
 } // version namespace
 } // namespace rpy::compute::basic
 

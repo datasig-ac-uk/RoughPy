@@ -5,14 +5,16 @@
 #include <cassert>
 
 #include "roughpy_compute/common/operations.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 #include "roughpy_compute/dense/views.hpp"
 
 
 namespace rpy::compute::basic {
 inline namespace v1 {
 
-template <typename OutIter, typename LhsIter, typename RhsIter, typename Basis, typename LhsOp=ops::Identity, typename RhsOp=ops::Identity>
+template <typename Context, typename OutIter, typename LhsIter, typename RhsIter, typename Basis, typename LhsOp=ops::Identity, typename RhsOp=ops::Identity>
 void vector_addition(
+    Context const& ctx,
     DenseVectorView<OutIter, Basis> out,
     DenseVectorView<LhsIter, Basis> lhs,
     DenseVectorView<RhsIter, Basis> rhs,
@@ -40,6 +42,25 @@ void vector_addition(
         out[i] = rhs_op(rhs[i]);
     }
 
+}
+
+template <typename OutIter, typename LhsIter, typename RhsIter, typename Basis, typename LhsOp=ops::Identity, typename RhsOp=ops::Identity>
+void vector_addition(
+    DenseVectorView<OutIter, Basis> out,
+    DenseVectorView<LhsIter, Basis> lhs,
+    DenseVectorView<RhsIter, Basis> rhs,
+    LhsOp&& lhs_op=LhsOp{},
+    RhsOp&& rhs_op=RhsOp{}
+)
+{
+    return vector_addition(
+        0,
+        std::move(out),
+        std::move(lhs),
+        std::move(rhs),
+        std::forward<LhsOp>(lhs_op),
+        std::forward<RhsOp>(rhs_op)
+    );
 }
 
 } // version namespace

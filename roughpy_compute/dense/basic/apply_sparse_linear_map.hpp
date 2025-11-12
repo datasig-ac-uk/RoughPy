@@ -3,17 +3,20 @@
 
 #include "roughpy_compute/common/operations.hpp"
 #include "roughpy_compute/common/sparse_matrix.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 #include "roughpy_compute/dense/views.hpp"
 
 namespace rpy::compute::basic {
 inline namespace v1 {
 
 template <
+        typename Context,
         typename OutIter,
         typename CompressedSparseMatrix,
         typename ArgIter,
         typename Op = ops::Identity>
 [[gnu::always_inline]] inline void apply_sparse_linear_map(
+        Context const& ctx,
         DenseVectorFragment<OutIter> out,
         CompressedSparseMatrix const& matrix,
         DenseVectorFragment<ArgIter> arg,
@@ -52,6 +55,30 @@ template <
     //     }
     //
     // }
+}
+
+
+template <
+        typename OutIter,
+        typename CompressedSparseMatrix,
+        typename ArgIter,
+        typename Op = ops::Identity>
+[[gnu::always_inline]] inline void apply_sparse_linear_map(
+        DenseVectorFragment<OutIter> out,
+        CompressedSparseMatrix const& matrix,
+        DenseVectorFragment<ArgIter> arg,
+        Op&& op = {}
+)
+{
+    using Traits = scalars::Traits<typename DenseVectorFragment<OutIter>::Scalar>;
+
+    return apply_sparse_linear_map(
+        Traits{},
+        std::move(out),
+        std::move(matrix),
+        std::move(arg),
+        std::forward<Op>(op)
+        );
 }
 
 }// namespace v1

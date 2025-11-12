@@ -3,12 +3,15 @@
 
 
 #include "roughpy_compute/dense/views.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 
 
 namespace rpy::compute::basic {
 inline namespace v1 {
-template<typename OutIter, typename OpIter, typename ArgIter>
-void ft_adj_lmul(DenseTensorView<OutIter> out,
+template<typename Context, typename OutIter, typename OpIter, typename ArgIter>
+void ft_adj_lmul(
+    Context const& ctx,
+    DenseTensorView<OutIter> out,
                  DenseTensorView<OpIter> op,
                  DenseTensorView<ArgIter> arg) {
     using Degree = typename DenseTensorView<OutIter>::Degree;
@@ -75,6 +78,18 @@ void ft_adj_lmul(DenseTensorView<OutIter> out,
         }
     }
 }
+
+template <typename OutIter, typename OpIter, typename ArgIter>
+void ft_adj_lmul(
+        DenseTensorView<OutIter> out,
+        DenseTensorView<OpIter> op,
+        DenseTensorView<ArgIter> arg
+)
+{
+    using Traits = scalars::Traits<typename DenseTensorView<OutIter>::Scalar>;
+    return ft_adj_lmul(Traits{}, std::move(out), std::move(op), std::move(arg));
+}
+
 } // version namespace
 } // namespace rpy::compute::basic
 

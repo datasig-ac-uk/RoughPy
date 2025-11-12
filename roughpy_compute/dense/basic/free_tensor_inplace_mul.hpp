@@ -5,13 +5,24 @@
 
 #include "roughpy_compute/common/operations.hpp"
 #include "roughpy_compute/dense/views.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 
 
 namespace rpy::compute::basic {
 inline namespace v1 {
 
-template <typename LhsIter, typename RhsIter, typename Op=ops::Identity>
-void ft_inplace_mul(DenseTensorView<LhsIter> lhs, DenseTensorView<RhsIter> rhs, Op&& op=Op{}) {
+template <
+        typename Context,
+        typename LhsIter,
+        typename RhsIter,
+        typename Op = ops::Identity>
+void ft_inplace_mul(
+        Context const& ctx,
+        DenseTensorView<LhsIter> lhs,
+        DenseTensorView<RhsIter> rhs,
+        Op&& op = Op{}
+)
+{
 
     using Degree = typename DenseTensorView<LhsIter>::Degree;
     using Index = typename DenseTensorView<RhsIter>::Index;
@@ -86,6 +97,21 @@ void ft_inplace_mul(DenseTensorView<LhsIter> lhs, DenseTensorView<RhsIter> rhs, 
     }
 }
 
+template <typename LhsIter, typename RhsIter, typename Op = ops::Identity>
+void ft_inplace_mul(
+        DenseTensorView<LhsIter> lhs,
+        DenseTensorView<RhsIter> rhs,
+        Op&& op = Op{}
+)
+{
+    using Traits = scalars::Traits<typename DenseTensorView<LhsIter>::Scalar>;
+    return ft_inplace_mul(
+            Traits{},
+            std::move(lhs),
+            std::move(rhs),
+            std::forward<Op>(op)
+    );
+}
 
 } // version namespace
 } // namespace rpy::compute::basic

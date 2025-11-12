@@ -6,17 +6,23 @@ namespace rpy::compute::scalars {
 
 
 template <typename T>
-struct ScalarTraits
+struct Traits
 {
     using Scalar = T;
     using Rational = T;
     using Real = T;
+    using error_type = void;
 
-    static const T zero;
+    using reference = T&;
+    using const_reference = const T&;
+
+
+
+
+
+
 };
 
-template <typename T>
-const T ScalarTraits<T>::zero = T(0);
 
 
 } // namespace rpy::compute::scalars

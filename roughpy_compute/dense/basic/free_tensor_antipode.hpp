@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "roughpy_compute/common/cache_array.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 #include "roughpy_compute/dense/views.hpp"
 
 namespace rpy::compute::basic {
@@ -43,11 +44,13 @@ struct DefaultSigner {
 };
 
 template <
+        typename Context,
         typename OutIter,
         typename InIter,
         typename AntipodeConfig,
         typename Signer>
 void ft_antipode(
+        Context const& ctx,
         DenseTensorView<OutIter> out,
         DenseTensorView<InIter> arg,
         AntipodeConfig const& config,
@@ -97,6 +100,29 @@ void ft_antipode(
             out_level[rev_idx] = signer(arg_level[i]);
         }
     }
+}
+
+template <
+        typename OutIter,
+        typename InIter,
+        typename AntipodeConfig,
+        typename Signer>
+void ft_antipode(
+        DenseTensorView<OutIter> out,
+        DenseTensorView<InIter> arg,
+        AntipodeConfig const& config,
+        Signer&& signer
+)
+{
+    using Traits = scalars::Traits<typename DenseTensorView<OutIter>::Scalar>;
+
+    return ft_antipode(
+            Traits{},
+            std::move(out),
+            std::move(arg),
+            config,
+            std::forward<Signer>(signer)
+    );
 }
 
 }// namespace v1
