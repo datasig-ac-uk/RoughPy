@@ -2,12 +2,13 @@
 
 
 
-int32_t RPC_PyLongAsInt32(PyObject* pylong)
+int RPC_PyLongAsInt32(PyObject* pylong, int32_t* value)
 {
     const long result = PyLong_AsLong(pylong);
-    // we would usually need to test if result is -1 and if error occurred, but
-    // actually the following tests will always pass if result == -1 so we can
-    // just rely on the caller to do that.
+
+    if (result == -1 && PyErr_Occurred()) {
+        return -1;
+    }
 
     if (result < INT32_MIN || result > INT32_MAX) {
         PyErr_SetString(PyExc_ValueError,
@@ -15,5 +16,7 @@ int32_t RPC_PyLongAsInt32(PyObject* pylong)
         return -1;
     }
 
-    return (int32_t) result;
+    *value = result;
+
+    return 0;
 }
