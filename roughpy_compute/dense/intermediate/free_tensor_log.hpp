@@ -2,7 +2,7 @@
 #define ROUGHPY_COMPUTE_DENSE_INTERMEDIATE_FREE_TENSOR_LOG_HPP
 
 #include "roughpy_compute/common/operations.hpp"
-#include "rouhgpy_compute/common/scalars.hpp"
+#include "roughpy_compute/common/scalars.hpp"
 #include "roughpy_compute/dense/views.hpp"
 #include "roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp"
 

@@ -41,7 +41,7 @@ template <typename OutIter, typename ArgIter>
 void ft_exp(DenseTensorView<OutIter> out, DenseTensorView<ArgIter> arg)
 {
     using Traits = scalars::Traits<typename DenseTensorView<OutIter>::Scalar>;
-    return ft_exp(Traits{}, std::move(arg), std::move(arg));
+    return ft_exp(Traits{}, std::move(out), std::move(arg));
 }
 
 } // version namespace
