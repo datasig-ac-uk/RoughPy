@@ -5,6 +5,15 @@
 
 namespace rpy::compute {
 
+class PyErrAlreadySet final : public std::runtime_error
+{
+public:
+    PyErrAlreadySet() : std::runtime_error("") {}
+};
+
+class ObjectRef;
+class MutableObjectRef;
+
 class PyObjHandle
 {
     PyObject* ptr_ = nullptr;
@@ -43,6 +52,8 @@ public:
         Py_XSETREF(ptr_, new_obj);
     }
 
+
+    constexpr PyObject* obj() const noexcept { return ptr_;}
     // Must be followed by inc_ref if the object should be preserved
     constexpr PyObject*& obj() { return ptr_; }
     void drop() noexcept
@@ -74,8 +85,177 @@ public:
         // Py_INCREF(ptr);
         return *this;
     }
+
+    PyObjHandle& operator+=(const ObjectRef& other);
+    PyObjHandle& operator+=(const PyObjHandle& other);
+    PyObjHandle& operator-=(const ObjectRef& other);
+    PyObjHandle& operator-=(const PyObjHandle& other);
+    PyObjHandle& operator*=(const ObjectRef& other);
+    PyObjHandle& operator*=(const PyObjHandle& other);
+    PyObjHandle& operator/=(const ObjectRef& other);
+    PyObjHandle& operator/=(const PyObjHandle& other);
 };
 
+
+
+class ObjectRef {
+    PyObject** const data_;
+
+    friend class MutableObjectRef;
+    friend class PyObjHandle;
+
+public:
+    constexpr explicit ObjectRef(PyObject** const data) : data_(data) {}
+
+    PyObjHandle strong() const noexcept { return PyObjHandle(*data_); }
+
+    PyObject* obj() const noexcept { return *data_; }
+
+};
+
+
+
+class MutableObjectRef : public ObjectRef {
+    friend class ObjectRef;
+    friend class PyObjHandle;
+
+public:
+    constexpr explicit MutableObjectRef(PyObject** const data) : ObjectRef(data) {}
+
+    MutableObjectRef& operator=(const ObjectRef & rhs) noexcept
+    {
+        Py_SETREF(*data_, *rhs.data_);
+        return *this;
+    }
+
+    MutableObjectRef& operator=(PyObjHandle&& rhs) noexcept
+    {
+        Py_SETREF(*data_, rhs.release());
+        return *this;
+    }
+
+    MutableObjectRef& operator=(const PyObjHandle& rhs) noexcept
+    {
+        Py_SETREF(*data_, rhs.obj());
+        return *this;
+    }
+
+#define INPLACE_BINOP(sym, pyname)                                             \
+    MutableObjectRef& operator sym(const ObjectRef & rhs)                      \
+    {                                                                          \
+        PyObject* ret = PyNumber_##pyname(*data_, *rhs.data_);                 \
+        if (ret == nullptr) { throw PyErrAlreadySet(); }                       \
+        if (ret != *data_) { Py_SETREF(*data_, ret); }                         \
+        return *this;                                                          \
+    }                                                                          \
+    MutableObjectRef& operator sym(const PyObjHandle & rhs)                    \
+    {                                                                          \
+        PyObject* ret = PyNumber_##pyname(*data_, rhs.obj());                  \
+        if (ret == nullptr) { throw PyErrAlreadySet(); }                       \
+        if (ret != *data_) { Py_SETREF(*data_, ret); }                         \
+        return *this;                                                          \
+    }
+
+    INPLACE_BINOP(+=, InPlaceAdd)
+    INPLACE_BINOP(-=, InPlaceSubtract)
+    INPLACE_BINOP(/=, InPlaceTrueDivide)
+    INPLACE_BINOP(*=, InPlaceMultiply)
+
+#undef INPLACE_BINOP
+};
+
+#define INPLACE_BINOP(sym, pyname)                                             \
+    inline PyObjHandle& PyObjHandle::operator sym(const ObjectRef & other)     \
+    {                                                                          \
+        PyObject* ret = PyNumber_##pyname(ptr_, *other.data_);                 \
+        if (ret == nullptr) { throw PyErrAlreadySet(); }                       \
+        if (ret != ptr_) { Py_SETREF(ptr_, ret); }                             \
+        return *this;                                                          \
+    }                                                                          \
+    inline PyObjHandle& PyObjHandle::operator sym(const PyObjHandle & other)   \
+    {                                                                          \
+        PyObject* ret = PyNumber_##pyname(ptr_, other.ptr_);                   \
+        if (ret == nullptr) { throw PyErrAlreadySet(); }                       \
+        if (ret != ptr_) { Py_SETREF(ptr_, ret); }                             \
+        return *this;                                                          \
+    }
+
+INPLACE_BINOP(+=, InPlaceAdd)
+INPLACE_BINOP(-=, InPlaceSubtract)
+INPLACE_BINOP(/=, InPlaceTrueDivide)
+INPLACE_BINOP(*=, InPlaceMultiply)
+
+#undef INPLACE_BINOP
+
+#define BINOP(sym, pyname)                                                     \
+    inline PyObjHandle operator sym(                                           \
+            const ObjectRef& lhs,                                              \
+            const ObjectRef& rhs                                               \
+    )                                                                          \
+    {                                                                          \
+        PyObjHandle ret(PyNumber_##pyname(lhs.obj(), rhs.obj()), false);       \
+        if (!ret) { throw PyErrAlreadySet(); }                                 \
+        return ret;                                                            \
+    }                                                                          \
+    inline PyObjHandle operator sym(                                           \
+            const PyObjHandle& lhs,                                            \
+            const ObjectRef& rhs                                               \
+    )                                                                          \
+    {                                                                          \
+        PyObjHandle ret(PyNumber_##pyname(lhs.obj(), rhs.obj()), false);       \
+        if (!ret) { throw PyErrAlreadySet(); }                                 \
+        return ret;                                                            \
+    }                                                                          \
+    inline PyObjHandle operator sym(                                           \
+            const ObjectRef& lhs,                                              \
+            const PyObjHandle& rhs                                             \
+    )                                                                          \
+    {                                                                          \
+        PyObjHandle ret(PyNumber_##pyname(lhs.obj(), rhs.obj()), false);       \
+        if (!ret) { throw PyErrAlreadySet(); }                                 \
+        return ret;                                                            \
+    }                                                                          \
+    inline PyObjHandle operator sym(                                           \
+            const PyObjHandle& lhs,                                            \
+            const PyObjHandle& rhs                                             \
+    )                                                                          \
+    {                                                                          \
+        PyObjHandle ret(PyNumber_##pyname(lhs.obj(), rhs.obj()), false);       \
+        if (!ret) { throw PyErrAlreadySet(); }                                 \
+        return ret;                                                            \
+    }                                                                          \
+    inline PyObjHandle operator sym(PyObjHandle&& lhs, const ObjectRef& rhs)   \
+    {                                                                          \
+        lhs sym## = rhs;                                                       \
+        return lhs;                                                            \
+    }                                                                          \
+    inline PyObjHandle operator sym(PyObjHandle&& lhs, const PyObjHandle& rhs) \
+    {                                                                          \
+        lhs sym## = rhs;                                                       \
+        return lhs;                                                            \
+    }                                                                          \
+
+BINOP(+, Add)
+BINOP(-, Subtract)
+BINOP(*, Multiply)
+BINOP(/, TrueDivide)
+
+#undef BINOP
+
+
+inline PyObjHandle operator-(const ObjectRef& arg)
+{
+    PyObjHandle ret(PyNumber_Negative(arg.obj()), false);
+    if (!ret) { throw PyErrAlreadySet(); }
+    return ret;
+}
+
+inline PyObjHandle operator-(const PyObjHandle& arg)
+{
+    PyObjHandle ret(PyNumber_Negative(arg.obj()), false);
+    if (!ret) { throw PyErrAlreadySet(); }
+    return ret;
+}
 
 } // namespace rpy::compute
 
