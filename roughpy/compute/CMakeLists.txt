@@ -18,6 +18,7 @@ set_target_properties(RoughPyComputeModule PROPERTIES
 
 target_include_directories(RoughPyComputeModule PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../..
+        ${CMAKE_CURRENT_LIST_DIR}/_src
 )
 
 target_link_libraries(RoughPyComputeModule
@@ -29,6 +30,7 @@ target_link_libraries(RoughPyComputeModule
 
 
 target_sources(RoughPyComputeModule PRIVATE
+        _src/object_arrays/object_array_iterator.hpp
         _src/call_config.hpp
         _src/call_config.cpp
         _src/check_dims.hpp
