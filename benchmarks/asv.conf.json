@@ -1,0 +1,54 @@
+{
+    "version": 1,
+    "project": "roughpy",
+    "project_url": "https://github.com/datasig-ac-uk/RoughPy",
+    "repo": "..",
+    "branches": [
+        "jl/benchmarks"
+    ],
+    "dvcs": "git",
+    "environment_type": "virtualenv",
+    "show_commit_url": "https://github.com/datasig-ac-uk/RoughPy/commit/",
+    "pythons": ["3.12"],
+    
+    "matrix": {
+        "jax": ["0.8.0"],
+        "jaxlib": ["0.8.0"],
+        "numpy": ["2.3.4"]
+    },
+
+    "exclude": [
+        {"python": "3.12", "jax": null}
+    ],
+
+    "benchmark_dir": ".",
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+
+    "install_command": [
+        "python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme",
+        "CMAKE_ARGS='-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DROUGHPY_BUILD_TESTS=OFF -DROUGHPY_BUILD_DOCS=OFF -DROUGHPY_JAX=ON' VCPKG_ROOT=/tools/vcpkg VCPKG_FORCE_SYSTEM_BINARIES=1 CMAKE_GENERATOR=Ninja python -m pip install --no-build-isolation -v {wheel_file}"
+    ],
+    
+    "uninstall_command": [
+        "return-code=any python -m pip uninstall -y {project}"
+    ],
+
+    "build_command": [
+        "python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme",
+        "CMAKE_ARGS='-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DROUGHPY_BUILD_TESTS=OFF -DROUGHPY_BUILD_DOCS=OFF -DROUGHPY_JAX=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DCMAKE_VERBOSE_MAKEFILE=ON' VCPKG_ROOT=/tools/vcpkg VCPKG_FORCE_SYSTEM_BINARIES=1 CMAKE_GENERATOR=Ninja NINJA_STATUS='[%f/%t] ' python -m pip install --no-build-isolation -vvv -e .",
+        "python -c \"import roughpy_jax; print('RoughPy JAX build successful')\""
+    ],
+
+    "benchmark_pattern": "^(Bench|Track|Suite)",
+    "regressions_first_commits": {},
+    "regressions_thresholds": {
+        "factors": {"factor": 2.0},
+        "percentages": {"percentage": 20.0}
+    },
+
+    "hash_length": 8,
+    "cpu_count": null,
+    "wheel_cache_size": 0
+}

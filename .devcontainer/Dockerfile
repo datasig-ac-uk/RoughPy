@@ -31,7 +31,9 @@ RUN pip install \
     "jax" \
     absl-py \
     pytest \
-    pytest-cov
+    pytest-cov \ 
+    pytest-benchmark \
+    asv
 
 # Use system tools for vcpkg when building aarch64 (Linux on MacOS)
 ENV VCPKG_FORCE_SYSTEM_BINARIES=0
