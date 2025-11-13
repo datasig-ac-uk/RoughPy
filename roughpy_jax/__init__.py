@@ -34,10 +34,12 @@ else:
         )
 
 
+
 # FIXME review point: neatly load compute module from roughpy_jax dir
 import sys
 sys.path.append('roughpy/compute')
 import _rpy_compute_internals
+
 
 
 class TensorBasis(_rpy_compute_internals.TensorBasis):
@@ -100,6 +102,7 @@ def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
             raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
 
 
+@jax.custom_vjp
 def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     """
     Free tensor fused multiply-add
@@ -139,9 +142,33 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
         degree_begin=basis.degree_begin
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
+
+
+@ft_fma.fwd
+def _ft_fma_fwd(a, b, c):
+    result = ft_fma(a, b, c)
+    return result, (b, c)
+
+
+@ft_fma.bwd
+def _ft_fma_bwd(res, ct_d):
+    """
+    d = a + b*c
+    """
+    b, c = res
+
+    ct_b = adj_left_ft_mul(b.data, ct_d, b.basis)
+    ct_c = adj_right_ft_mul(c.data, ct_d, c.basis)
+
+    return ct_d, ct_b, ct_c
+
+
+
+
+@jax.custom_vjp
 def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     """
     Free tensor multiply
@@ -183,9 +210,29 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
         degree_begin=basis.degree_begin
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
+@ft_mul.fwd
+def _ft_mul_fwd(a, b):
+    result = ft_mul(a, b)
+    return result, (a, b)
+
+@ft_mul.bwd
+def _ft_mul_bwd(res, ct_c):
+    """
+    c = a * b
+    """
+    a, b = res
+
+    ct_a = adj_left_ft_mul(a.data, ct_c, a.basis)
+    ct_b = adj_right_ft_mul(b.data, ct_c, b.basis)
+
+    return ct_a, ct_b
+
+
+
+@jax.custom_vjp
 def antipode(a: FreeTensor) -> FreeTensor:
     """
     Antipode of a free tensor
@@ -210,7 +257,18 @@ def antipode(a: FreeTensor) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
+
+
+
+@antipode.fwd
+def _ft_antipode_fwd(a):
+    return antipode(a), ()
+
+@antipode.bwd
+def _ft_antipode_bwd(res, ct_c):
+    return (antipode(ct_c), )
+
 
 
 def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
@@ -244,7 +302,7 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
         degree_begin=a.degree_begin
     )
 
-    return ShuffleTensor(out_data, a.basis)
+    return DenseShuffleTensor(out_data, a.basis)
 
 
 def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
@@ -280,7 +338,7 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
         degree_begin=lhs.basis.degree_begin
     )
 
-    return ShuffleTensor(out_data, lhs.basis)
+    return DenseShuffleTensor(out_data, lhs.basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -312,7 +370,7 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -344,7 +402,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -386,4 +444,55 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
+
+
+
+def adj_left_ft_mul(operator: FreeTensor, argument: ShuffleTensor, out_basis: TensorBasis | None = None) -> ShuffleTensor:
+
+
+    from .fallback import ft_left_mul_adjoint_fallback
+    result_type = jnp.result_type(operator.data.dtype, argument.data.dtype, jnp.float32)
+
+    out_basis = out_basis or argument.basis
+    _check_basis_compat(out_basis, argument.basis, operator.basis)
+
+
+    # TODO: replace this with a registered ffi call when available
+
+    result_data = ft_left_mul_adjoint_fallback(
+        jnp.zeros((out_basis.size(),), dtype=result_type),
+        operator.data.astype(result_type),
+        argument.data.astype(result_type),
+        out_basis,
+        operator.basis.depth,
+        argument.basis.depth
+    )
+
+    return DenseShuffleTensor(result_data, out_basis)
+
+
+
+
+def adj_right_ft_mul(operator: FreeTensor, argument: ShuffleTensor, out_basis: TensorBasis | None = None) -> ShuffleTensor:
+    from .fallback import ft_right_mul_adjoint_fallback
+
+    result_type = jnp.result_type(operator.data.dtype, argument.data.dtype, jnp.float32)
+
+    out_basis = out_basis or argument.basis
+    _check_basis_compat(out_basis, argument.basis, operator.basis)
+
+
+    # TODO: replace this with a registered ffi call when available
+
+    result_data = ft_right_mul_adjoint_fallback(
+        jnp.zeros((out_basis.size(),), dtype=result_type),
+        operator.data.astype(result_type),
+        argument.data.astype(result_type),
+        out_basis,
+        operator.basis.depth,
+        argument.basis.depth
+    )
+
+    return DenseShuffleTensor(result_data, out_basis)
+
