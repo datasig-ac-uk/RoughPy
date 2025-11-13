@@ -5,8 +5,14 @@ import roughpy_jax as rpj
 
 from rpy_test_common import array_dtypes, jnp_to_np_float
 
-# FIXME add mismatch tests as in test_dense_ft_fma_array_mismatch
-# FIXME add JIT tests
+
+def test_antipode_array_mismatch(rpj_test_fixture_type_mismatch):
+    f = rpj_test_fixture_type_mismatch
+
+    # Unsupported array types
+    with pytest.raises(ValueError):
+        rpj.antipode(f.ft_i32())
+
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
 def test_antipode_on_signature(jnp_dtype):

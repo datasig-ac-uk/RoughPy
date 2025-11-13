@@ -25,7 +25,23 @@ def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
 
     # Unsupported array types
     with pytest.raises(ValueError):
-        rpj.ft_fma(f.ft_f32(), f.ft_f32(), f.ft_i32())
+        rpj.ft_fma(f.ft_i32(), f.ft_i32(), f.ft_i32())
+
+
+def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
+    f = rpj_test_fixture_type_mismatch
+
+    # Mismatch first and second widths
+    with pytest.raises(ValueError):
+        rpj.ft_mul(f.ft_f32(2, 2), f.ft_f32(3, 2))
+
+    # Mismatched array float types
+    with pytest.raises(ValueError):
+        rpj.ft_mul(f.ft_f32(), f.ft_f64())
+
+    # Unsupported array types
+    with pytest.raises(ValueError):
+        rpj.ft_mul(f.ft_i32(), f.ft_i32())
 
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
