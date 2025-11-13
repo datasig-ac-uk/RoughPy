@@ -32,7 +32,20 @@
 
 #define RPY_CPT_TYPE_NAME(type) "_rpy_compute_internals." # type
 
+#define RPY_STATUS_OR_RETURN(status, ret)                                      \
+    do {                                                                       \
+        int code = (status);                                                   \
+        if (code < 0) { return (ret); }                                        \
+    } while (0)
 
+#define RPY_OBJ_OR_RETURN(obj, ret)                                            \
+    do {                                                                       \
+        if ((obj) == NULL) { return (ret); }                                   \
+    } while (0)
 
+#define RPY_STATUS_OR_RETURN_NULL(status) RPY_STATUS_OR_RETURN(status, NULL)
+#define RPY_STATUS_OR_RETURN_INT(status) RPY_STATUS_OR_RETURN(status, -1)
+#define RPY_OBJ_OR_RETURN_NULL(obj) RPY_OBJ_OR_RETURN(obj, NULL)
+#define RPY_OBJ_OR_RETURN_INT(obj) RPY_OBJ_OR_RETURN(obj, -1)
 
 #endif //ROUGHPY_COMPUTE__SRC_PY_HEADERS_H
