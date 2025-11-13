@@ -15,7 +15,8 @@
                 "ms-python.vscode-pylance",
                 "ms-vscode.cmake-tools",
                 "ms-vscode.cpptools",
-                "ms-vscode.cpptools-extension-pack"
+                "ms-vscode.cpptools-extension-pack",
+                "eamodio.gitlens"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/tools/venv/bin/python",
@@ -41,7 +42,7 @@
         "--device", "/dev/nvidiactl",
         "--device", "/dev/nvidia-modeset",
         "--device", "/dev/nvidia-uvm",
-        "--device", "/dev/nvidia-uvm-tools"
+        "--device", "/dev/nvidia-uvm-tools",
         "--env", "NVIDIA_VISIBLE_DEVICES=all",
         "--env", "NVIDIA_DRIVER_CAPABILITIES=all"
     ],
