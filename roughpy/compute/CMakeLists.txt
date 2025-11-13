@@ -31,6 +31,8 @@ target_link_libraries(RoughPyComputeModule
 
 target_sources(RoughPyComputeModule PRIVATE
         _src/object_arrays/object_array_iterator.hpp
+        _src/object_arrays/object_compute_context.cpp
+        _src/object_arrays/object_compute_context.hpp
         _src/call_config.hpp
         _src/call_config.cpp
         _src/check_dims.hpp
