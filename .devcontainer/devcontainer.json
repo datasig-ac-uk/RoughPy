@@ -21,7 +21,6 @@
                 "python.defaultInterpreterPath": "/tools/venv/bin/python",
                 "python.languageServer": "Pylance",
                 "python.testing.pytestEnabled": true,
-                "cmake.cmakePath": "/tools/venv/bin/cmake",
                 "cmake.configureArgs": [
                     "-DCMAKE_MAKE_PROGRAM=/tools/venv/bin/ninja",
                     "-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
@@ -33,5 +32,17 @@
     // Enable debugging in container
     "capAdd": [
         "SYS_PTRACE"
-    ]
+    ],
+
+    // Run args for CUDA in devcontainer
+    "runArgs": [
+        "--hooks-dir=/usr/share/containers/oci/hooks.d",
+        "--device", "/dev/nvidia0",
+        "--device", "/dev/nvidiactl",
+        "--device", "/dev/nvidia-modeset",
+        "--device", "/dev/nvidia-uvm",
+        "--device", "/dev/nvidia-uvm-tools"
+        "--env", "NVIDIA_VISIBLE_DEVICES=all",
+        "--env", "NVIDIA_DRIVER_CAPABILITIES=all"
+    ],
 }
