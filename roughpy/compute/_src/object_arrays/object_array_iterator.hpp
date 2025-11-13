@@ -3,74 +3,86 @@
 
 #include "py_headers.h"
 
+
+#include <iterator>
+#include <type_traits>
+
 #include "py_obj_handle.hpp"
 
 namespace rpy::compute {
 
-template <typename Ref>
+template <typename Ref, typename Iterator>
 class ObjectArrayIterator
 {
-    PyObject** ptr_;
+    using Traits = std::iterator_traits<Iterator>;
+    static_assert(
+            std::is_base_of_v<
+                    std::random_access_iterator_tag,
+                    typename Traits::iterator_category>,
+            "base iterator must be random access"
+    );
+
+
+    Iterator base_;
 
 public:
-    using value_type = Ref;
+    using value_type = typename Traits::value_type;
     using reference = Ref;
-    using difference_type = Py_ssize_t;
-    using pointer = PyObject**;
+    using difference_type = typename Traits::difference_type;
 
     using iterator_category = std::random_access_iterator_tag;
 
-    constexpr explicit ObjectArrayIterator(PyObject** ptr) : ptr_(ptr) {}
+    constexpr explicit ObjectArrayIterator(Iterator ptr) : base_(ptr) {}
 
     constexpr ObjectArrayIterator* operator++() noexcept
     {
-        ++ptr_;
+        ++base_;
         return *this;
     }
 
     constexpr ObjectArrayIterator* operator++(int) noexcept
     {
         ObjectArrayIterator* result(*this);
-        ++ptr_;
+        ++base_;
         return result;
     }
 
     constexpr ObjectArrayIterator* operator--() noexcept
     {
-        --ptr_;
+        --base_;
         return *this;
     }
 
     constexpr ObjectArrayIterator* operator--(int) noexcept
     {
         ObjectArrayIterator* result(*this);
-        --ptr_;
+        --base_;
         return result;
     }
 
     constexpr ObjectArrayIterator& operator+=(const difference_type n) noexcept
     {
-        ptr_ += n;
+        base_ += n;
         return *this;
     }
 
     constexpr ObjectArrayIterator& operator-=(const difference_type n) noexcept
     {
-        ptr_ -= n;
+        base_ -= n;
         return *this;
     }
 
-    constexpr reference operator*() const noexcept { return reference(ptr_); }
+    constexpr reference operator*() const noexcept { return reference(std::addressof(*base_)); }
 
     constexpr reference operator[](const difference_type n) const noexcept
     {
-        return reference(ptr_ + n);
+        return reference(std::addressof(*(base_ + n)));
     }
 
     friend constexpr ObjectArrayIterator
     operator+(const ObjectArrayIterator& lhs, difference_type rhs) noexcept
     {
-        return ObjectArrayIterator(lhs.ptr_ + rhs);
+        return ObjectArrayIterator(lhs.base_ + rhs);
     }
 
     friend constexpr difference_type operator-(
@@ -78,7 +90,7 @@ public:
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return static_cast<difference_type>(lhs.ptr_ - rhs.ptr_);
+        return static_cast<difference_type>(lhs.base_ - rhs.base_);
     }
 
     friend constexpr bool operator==(
@@ -86,47 +98,50 @@ public:
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return lhs.ptr_ == rhs.ptr_;
+        return lhs.base_ == rhs.base_;
     }
     friend constexpr bool operator!=(
             const ObjectArrayIterator& lhs,
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return lhs.ptr_ != rhs.ptr_;
+        return lhs.base_ != rhs.base_;
     }
     friend constexpr bool operator<(
             const ObjectArrayIterator& lhs,
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return lhs.ptr_ < rhs.ptr_;
+        return lhs.base_ < rhs.base_;
     }
     friend constexpr bool operator<=(
             const ObjectArrayIterator& lhs,
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return lhs.ptr_ <= rhs.ptr_;
+        return lhs.base_ <= rhs.base_;
     }
     friend constexpr bool operator>(
             const ObjectArrayIterator& lhs,
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return lhs.ptr_ > rhs.ptr_;
+        return lhs.base_ > rhs.base_;
     }
     friend constexpr bool operator>=(
             const ObjectArrayIterator& lhs,
             const ObjectArrayIterator& rhs
     ) noexcept
     {
-        return lhs.ptr_ >= rhs.ptr_;
+        return lhs.base_ >= rhs.base_;
     }
 };
 
-using MutableObjectArrayIterator = ObjectArrayIterator<MutableObjectRef>;
-using ConstObjectArrayIterator = ObjectArrayIterator<ObjectRef>;
+template <typename Iter>
+using MutableObjectArrayIterator = ObjectArrayIterator<MutableObjectRef, Iter>;
+
+template <typename Iter>
+using ConstObjectArrayIterator = ObjectArrayIterator<ObjectRef, Iter>;
 
 }// namespace rpy::compute
 
