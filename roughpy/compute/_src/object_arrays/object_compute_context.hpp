@@ -1,7 +1,8 @@
 #ifndef ROUGHPY_COMPUTE__SRC_OBJECT_ARRAYS_OBJECT_COMPUTE_CONTEXT_HPP
 #define ROUGHPY_COMPUTE__SRC_OBJECT_ARRAYS_OBJECT_COMPUTE_CONTEXT_HPP
 
-#include "py_headers.hpp"
+#include "py_headers.h"
+
 #include "py_obj_handle.hpp"
 
 namespace rpy::compute {

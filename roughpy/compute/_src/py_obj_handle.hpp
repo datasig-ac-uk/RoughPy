@@ -7,9 +7,7 @@
 
 namespace rpy::compute {
 
-class PyErrAlreadySet final : public std::exception
-{
-};
+
 
 class ObjectRef;
 class MutableObjectRef;
@@ -273,4 +271,4 @@ inline PyObjHandle operator-(const PyObjHandle& arg)
 
 } // namespace rpy::compute
 
-#endif //ROUGHPY_COMPUTE__SRC_PY_OBJ_HANDLE_HPP
+#endif //ROUGHPY_COMPUTE__SRC_PY_
