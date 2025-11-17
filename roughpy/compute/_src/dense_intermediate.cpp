@@ -6,11 +6,12 @@
 #include <roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp>
 #include <roughpy_compute/dense/intermediate/free_tensor_log.hpp>
 
+#include "py_obj_handle.hpp"
 #include "call_config.hpp"
 #include "py_binary_array_fn.hpp"
 #include "py_compat.h"
-#include "py_obj_handle.hpp"
 #include "py_ternary_array_fn.hpp"
+#include "call_utils.hpp"
 
 using namespace rpy::compute;
 
@@ -21,38 +22,19 @@ using namespace rpy::compute;
 namespace {
 
 template <typename Scalar_>
-struct DenseFTExp {
+struct DenseFTExp : ComputeCallFunctor<1, 0, 0> {
     using Scalar = Scalar_;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 2;
-    static constexpr npy_intp arg_basis_mapping[2] = {0, 0};
-
-    CallConfig const* config_;
-
-    explicit DenseFTExp(CallConfig const& config) : config_(&config) {}
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter) const
+    int operator()(OutIter out_iter, ArgIter arg_iter) const
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out = make_tensor_view(0, std::move(out_iter));
+        auto arg = make_tensor_view(1, std::move(arg_iter));
 
-        DenseTensorView<OutIter> out(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+        return RPY_CATCH_ERRORS(
+                intermediate::ft_exp(this->get_context(out[0]), out, arg)
         );
-
-        DenseTensorView<ArgIter> arg(
-                arg_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
-        );
-
-        intermediate::ft_exp(out, arg);
     }
 };
 
@@ -107,43 +89,20 @@ PyObject* py_dense_ft_exp(
 namespace {
 
 template <typename Scalar_>
-struct FtFMExp {
+struct FtFMExp : ComputeCallFunctor<1, 0, 0, 0>{
     using Scalar = Scalar_;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 3;
-    static constexpr npy_intp arg_basis_mapping[3] = {0, 0, 0};
-
-    CallConfig const* config_;
-
-    explicit FtFMExp(CallConfig const& config) : config_(&config) {}
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename AIter, typename XIter>
-    void operator()(OutIter out_iter, AIter a_iter, XIter x_iter) const
+    int operator()(OutIter out_iter, AIter a_iter, XIter x_iter) const
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out = make_tensor_view(0, std::move(out_iter));
+        auto a = make_tensor_view(1, std::move(a_iter));
+        auto x = make_tensor_view(2, std::move(x_iter));
 
-        DenseTensorView<OutIter> out(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+        return RPY_CATCH_ERRORS(
+                intermediate::ft_fmexp(this->get_context(out[0]), out, a, x)
         );
-        DenseTensorView<AIter> a(
-                a_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
-        );
-        DenseTensorView<XIter> x(
-                x_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
-        );
-
-        intermediate::ft_fmexp(out, a, x);
     }
 };
 
@@ -213,38 +172,19 @@ PyObject* py_dense_ft_fmexp(
 namespace {
 
 template <typename Scalar_>
-struct FTLog {
+struct FTLog : ComputeCallFunctor<1, 0, 0>{
     using Scalar = Scalar_;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 2;
-    static constexpr npy_intp arg_basis_mapping[2] = {0, 0};
-
-    CallConfig const* config_;
-
-    explicit FTLog(CallConfig const& config) : config_(&config) {}
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter) const
+    int operator()(OutIter out_iter, ArgIter arg_iter) const
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out = make_tensor_view(0, std::move(out_iter));
+        auto arg = make_tensor_view(1, std::move(arg_iter));
 
-        DenseTensorView<OutIter> out(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+        return RPY_CATCH_ERRORS(
+                intermediate::ft_log(this->get_context(out[0]), out, arg)
         );
-
-        DenseTensorView<ArgIter> arg(
-                arg_iter,
-                *basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
-        );
-
-        intermediate::ft_log(out, arg);
     }
 };
 
