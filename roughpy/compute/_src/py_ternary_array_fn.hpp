@@ -9,6 +9,9 @@
 #include "check_dims.hpp"
 
 namespace rpy::compute {
+
+
+
 template<typename Fn>
 RPY_NO_EXPORT
 PyObject *outer_loop_ternary(
@@ -54,12 +57,12 @@ PyObject *outer_loop_ternary(
         // if the stride is one then pass the raw pointer instead so we can
         // benefit from contiguous iteration.
         if (out_stride == 1 && lhs_stride == 1 && rhs_stride == 1) {
-            fn(out_ptr, lhs_ptr, rhs_ptr);
+            RPY_STATUS_OR_RETURN_NULL(fn(out_ptr, lhs_ptr, rhs_ptr));
         } else {
-            fn(
+            RPY_STATUS_OR_RETURN_NULL(fn(
                 StridedDenseIterator<Scalar *>(out_ptr, out_stride),
                 StridedDenseIterator<Scalar const *>(lhs_ptr, lhs_stride),
-                StridedDenseIterator<Scalar const *>(rhs_ptr, rhs_stride));
+                StridedDenseIterator<Scalar const *>(rhs_ptr, rhs_stride)));
         }
     }
 
