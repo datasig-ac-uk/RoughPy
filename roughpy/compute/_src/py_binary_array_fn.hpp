@@ -50,11 +50,11 @@ PyObject *outer_loop_binary(
         // if the stride is one then pass the raw pointer instead so we can
         // benefit from contiguous iteration.
         if (out_stride == 1 && arg_stride == 1) {
-            fn(out_ptr, arg_ptr);
+            RPY_STATUS_OR_RETURN_NULL(fn(out_ptr, arg_ptr));
         } else {
-            fn(
+            RPY_STATUS_OR_RETURN_NULL(fn(
                 StridedDenseIterator<Scalar *>(out_ptr, out_stride),
-                StridedDenseIterator<Scalar const *>(arg_ptr, arg_stride));
+                StridedDenseIterator<Scalar const *>(arg_ptr, arg_stride)));
         }
     }
 
