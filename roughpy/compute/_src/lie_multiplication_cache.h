@@ -1,8 +1,8 @@
 #ifndef ROUGHPY_COMPUTE__SRC_LIE_MULTIPLICATION_CACHE_H
 #define ROUGHPY_COMPUTE__SRC_LIE_MULTIPLICATION_CACHE_H
 
-#include "py_headers.h"
 #include "lie_basis.h"
+#include "py_headers.h"
 
 #ifdef __cplusplus
 extern "C" {

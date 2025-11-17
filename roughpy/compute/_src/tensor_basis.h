@@ -4,7 +4,6 @@
 
 #include "py_headers.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
