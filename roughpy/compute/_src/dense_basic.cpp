@@ -29,6 +29,7 @@
 #include "py_ternary_array_fn.hpp"
 #include "tensor_basis.h"
 
+
 using namespace rpy::compute;
 
 /*******************************************************************************
@@ -36,45 +37,23 @@ using namespace rpy::compute;
  ******************************************************************************/
 namespace {
 template <typename Scalar_>
-struct DenseFTFma {
+struct DenseFTFma : ComputeCallFunctor<1, 0, 0, 0> {
+
+    using ComputeCallFunctor::ComputeCallFunctor;
     using Scalar = Scalar_;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 3;
-    static constexpr npy_intp arg_basis_mapping[3] = {0, 0, 0};
-
-    CallConfig const* config_;
-
-    explicit DenseFTFma(CallConfig const& config) : config_(&config) {}
 
     template <typename OutIter, typename LhsIter, typename RhsIter>
-    void operator()(OutIter out_iter, LhsIter lhs_iter, RhsIter rhs_iter) const
+    int operator()(
+            OutIter out_iter,
+            LhsIter lhs_iter,
+            RhsIter rhs_iter
+    ) const noexcept
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out_view = make_tensor_view(0, std::move(out_iter));
+        auto lhs_view = make_tensor_view(1, std::move(lhs_iter));
+        auto rhs_view = make_tensor_view(2, std::move(rhs_iter));
 
-        DenseTensorView<OutIter> out_view(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
-        );
-
-        DenseTensorView<LhsIter> lhs_view(
-                lhs_iter,
-                *basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
-        );
-
-        DenseTensorView<RhsIter> rhs_view(
-                rhs_iter,
-                *basis,
-                config_->degree_bounds[2].min_degree,
-                config_->degree_bounds[2].max_degree
-        );
-
-        basic::ft_fma(out_view, lhs_view, rhs_view);
+        return RPY_CATCH_ERRORS(basic::ft_fma(out_view, lhs_view, rhs_view));
     }
 };
 
@@ -154,38 +133,23 @@ PyObject* py_dense_ft_fma(
 namespace {
 
 template <typename Scalar_>
-struct DenseFTInplaceMul {
+struct DenseFTInplaceMul : ComputeCallFunctor<1, 0, 0> {
     using Scalar = Scalar_;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 2;
-    static constexpr npy_intp arg_basis_mapping[2] = {0, 0};
-
-    CallConfig const* config_;
-
-    explicit DenseFTInplaceMul(CallConfig const& config) : config_(&config) {}
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename RhsIter>
-    void operator()(OutIter out_iter, RhsIter rhs_iter) const
+    int operator()(OutIter out_iter, RhsIter rhs_iter) const
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out_view = make_tensor_view(0, std::move(out_iter));
+        auto rhs_view = make_tensor_view(1, std::move(rhs_iter));
 
-        DenseTensorView<OutIter> out_view(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+        return RPY_CATCH_ERRORS(
+                basic::ft_inplace_mul(
+                        this->get_context(out_view[0]),
+                        out_view,
+                        rhs_view
+                )
         );
-
-        DenseTensorView<RhsIter> rhs_view(
-                rhs_iter,
-                *basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
-        );
-
-        basic::ft_inplace_mul(out_view, rhs_view);
     }
 };
 
@@ -240,51 +204,24 @@ PyObject* py_dense_ft_inplace_mul(
 namespace {
 
 template <typename S>
-struct DenseAntipode {
+struct DenseAntipode : ComputeCallFunctor<1, 0, 0> {
     using Scalar = S;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 2;
-    static constexpr npy_intp arg_basis_mapping[2] = {0, 0};
-
-    CallConfig const* config_;
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename ArgIter>
-    void operator()(
-            OutIter out_iter,
-            ArgIter arg_iter,
-            CallConfig const& config
-    ) const
-    {}
-
-    explicit constexpr DenseAntipode(CallConfig const& config)
-        : config_(&config)
-    {}
-
-    template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter) const
+    int operator()(OutIter out_iter, ArgIter arg_iter) const
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out = make_tensor_view(0, std::move(out_iter));
+        auto arg = make_tensor_view(1, std::move(arg_iter));
 
-        DenseTensorView<OutIter> out(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
-        );
-        DenseTensorView<ArgIter> arg(
-                arg_iter,
-                *basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
-        );
-
-        basic::ft_antipode(
-                out,
-                arg,
-                basic::BasicAntipodeConfig{},
-                basic::DefaultSigner{}
+        return RPY_CATCH_ERRORS(
+                basic::ft_antipode(
+                        this->get_context(out[0]),
+                        out,
+                        arg,
+                        basic::BasicAntipodeConfig{},
+                        basic::DefaultSigner{}
+                )
         );
     }
 };
@@ -338,45 +275,20 @@ PyObject* py_dense_antipode(
 namespace {
 
 template <typename S>
-struct DenseFTAdjLMul {
+struct DenseFTAdjLMul : ComputeCallFunctor<1, 0, 0, 0> {
     using Scalar = S;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 3;
-    static constexpr npy_intp arg_basis_mapping[3] = {0, 0, 0};
-
-    const CallConfig* config_;
-
-    explicit DenseFTAdjLMul(CallConfig const& config) : config_(&config) {}
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename OpIter, typename ArgIter>
-    void operator()(OutIter out_iter, OpIter op_iter, ArgIter arg_iter) const
+    int operator()(OutIter out_iter, OpIter op_iter, ArgIter arg_iter) const
     {
-        auto const* basis
-                = static_cast<TensorBasis const*>(config_->basis_data[0]);
+        auto out = make_tensor_view(0, std::move(out_iter));
+        auto op = make_tensor_view(1, std::move(op_iter));
+        auto arg = make_tensor_view(2, std::move(arg_iter));
 
-        DenseTensorView<OutIter> out(
-                out_iter,
-                *basis,
-                config_->degree_bounds[0].min_degree,
-                config_->degree_bounds[0].max_degree
+        return RPY_CATCH_ERRORS(
+                basic::ft_adj_lmul(this->get_context(out[0]), out, op, arg)
         );
-
-        DenseTensorView<OpIter> op(
-                op_iter,
-                *basis,
-                config_->degree_bounds[1].min_degree,
-                config_->degree_bounds[1].max_degree
-        );
-
-        DenseTensorView<ArgIter> arg(
-                arg_iter,
-                *basis,
-                config_->degree_bounds[2].min_degree,
-                config_->degree_bounds[2].max_degree
-        );
-
-        basic::ft_adj_lmul(out, op, arg);
     }
 };
 
@@ -444,68 +356,50 @@ PyObject* py_dense_ft_adj_lmul(
 namespace {
 
 template <typename S>
-struct DenseSTFma
-{
+struct DenseSTFma : ComputeCallFunctor<1, 0, 0, 0> {
     using Scalar = S;
-    static constexpr npy_intp CoreDims = 1;
-    static constexpr npy_intp n_args = 3;
-    static constexpr npy_intp arg_basis_mapping[3] = {0, 0, 0};
-
-    const CallConfig* config_;
-
-    explicit DenseSTFma(CallConfig const& config) : config_(&config) {}
+    using ComputeCallFunctor::ComputeCallFunctor;
 
     template <typename OutIter, typename LhsIter, typename RhsIter>
-    void operator()(OutIter out_iter, LhsIter lhs_iter, RhsIter rhs_iter)
+    int operator()(OutIter out_iter, LhsIter lhs_iter, RhsIter rhs_iter)
     {
-        auto const* tensor_basis
-                = static_cast<const TensorBasis *>(config_->basis_data[0]);
+        auto out_view = make_tensor_view(0, std::move(out_iter));
+        auto lhs_view = make_tensor_view(1, std::move(lhs_iter));
+        auto rhs_view = make_tensor_view(2, std::move(rhs_iter));
 
-
-        DenseTensorView<OutIter> out_view(
-            out_iter,
-            *tensor_basis,
-            config_->degree_bounds[0].min_degree,
-            config_->degree_bounds[0].max_degree
-            );
-
-        DenseTensorView<LhsIter> lhs_view(
-            lhs_iter, *tensor_basis,
-            config_->degree_bounds[1].min_degree,
-            config_->degree_bounds[1].max_degree
-            );
-
-        DenseTensorView<RhsIter> rhs_view(
-            rhs_iter, *tensor_basis,
-            config_->degree_bounds[2].min_degree,
-            config_->degree_bounds[2].max_degree
+        return RPY_CATCH_ERRORS(
+                basic::st_fma(
+                        this->get_context(out_view[0]),
+                        out_view,
+                        lhs_view,
+                        rhs_view
+                )
         );
-
-        basic::st_fma(out_view, lhs_view, rhs_view);
     }
 };
 
-}
+}// namespace
 
-PyObject* py_dense_st_fma(PyObject* Py_UNUSED(self), PyObject* args, PyObject* kwargs)
+PyObject*
+py_dense_st_fma(PyObject* Py_UNUSED(self), PyObject* args, PyObject* kwargs)
 {
-    static constexpr char const* const kwords[] = {
-        "out", "lhs", "rhs", "basis", nullptr
-    };
+    static constexpr char const* const kwords[]
+            = {"out", "lhs", "rhs", "basis", nullptr};
 
-    PyObject* out_obj, *lhs_obj, *rhs_obj;
+    PyObject *out_obj, *lhs_obj, *rhs_obj;
     PyObject* basis_obj = nullptr;
 
     std::array<DegreeBounds, 3> degree_bounds;
 
     if (!PyArg_ParseTupleAndKeywords(
-        args, kwargs,
-        "OOOO",
-        RPC_PY_KWORD_CAST(kwords),
-        &out_obj,
-        &lhs_obj,
-        &rhs_obj,
-        &basis_obj
+                args,
+                kwargs,
+                "OOOO",
+                RPC_PY_KWORD_CAST(kwords),
+                &out_obj,
+                &lhs_obj,
+                &rhs_obj,
+                &basis_obj
         )) {
         return nullptr;
     }
@@ -522,16 +416,15 @@ PyObject* py_dense_st_fma(PyObject* Py_UNUSED(self), PyObject* args, PyObject* k
 
     basis_data[0] = &basis;
 
-    CallConfig config {
-        degree_bounds.data(),
-        basis_data,
-        nullptr
-    };
+    CallConfig config{degree_bounds.data(), basis_data, nullptr};
 
-    return ternary_function_outer<DenseSTFma>(out_obj, lhs_obj, rhs_obj, config);
+    return ternary_function_outer<DenseSTFma>(
+            out_obj,
+            lhs_obj,
+            rhs_obj,
+            config
+    );
 }
-
-
 
 /*******************************************************************************
  * Lie to tensor
@@ -560,12 +453,8 @@ struct CompressedMatrixData {
 };
 
 template <typename S, CompressedDim Compression = CompressedCol>
-struct DenseLieToTensor {
+struct DenseLieToTensor : ComputeCallFunctor<1, 1, 0> {
     using Scalar = S;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 2;
-    static constexpr npy_intp arg_basis_mapping[2] = {1, 0};
 
     using Matrix = CompressedMatrix<
             const S*,
@@ -573,28 +462,21 @@ struct DenseLieToTensor {
             const npy_intp*,
             Compression>;
 
-    const CallConfig* config_;
     const CompressedMatrixData* matrix_;
 
     explicit constexpr DenseLieToTensor(
             const CallConfig& config,
             const CompressedMatrixData& matrix
     )
-        : config_(&config),
+        : ComputeCallFunctor(config),
           matrix_(&matrix)
     {}
 
     template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
+    int operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
     {
-        const auto& lie_basis
-                = *static_cast<const LieBasis*>(config_->basis_data[0]);
-        const auto& tensor_basis
-                = *static_cast<const TensorBasis*>(config_->basis_data[1]);
-
-        DenseVectorFragment<OutIter> out(out_iter, tensor_basis.size());
-
-        DenseVectorFragment<ArgIter> arg(arg_iter, lie_basis.size());
+        auto out = make_vector_fragment(0, std::move(out_iter));
+        auto arg = make_vector_fragment(1, std::move(arg_iter));
 
         Matrix matrix{
                 static_cast<const S*>(matrix_->data),
@@ -606,16 +488,27 @@ struct DenseLieToTensor {
         };
 
         if (config_->ops != nullptr) {
-            basic::apply_sparse_linear_map(
-                    out,
-                    matrix,
-                    arg,
-                    ops::MultiplyBy<Scalar>{*static_cast<const S*>(config_->ops)
-                    }
+            return RPY_CATCH_ERRORS(
+                    basic::apply_sparse_linear_map(
+                            this->get_context(out[0]),
+                            out,
+                            matrix,
+                            arg,
+                            ops::MultiplyBy<Scalar>{
+                                    *static_cast<const S*>(config_->ops)
+                            }
+                    )
             );
-        } else {
-            basic::apply_sparse_linear_map(out, matrix, arg);
         }
+
+        return RPY_CATCH_ERRORS(
+                basic::apply_sparse_linear_map(
+                        this->get_context(out[0]),
+                        out,
+                        matrix,
+                        arg
+                )
+        );
     }
 };
 
@@ -924,9 +817,9 @@ PyObject* py_dense_lie_to_tensor(
 
         // the newly constructed Tensor basis is guaranteed to have a contiguous
         // degree_begin array.
-        tensor_basis.degree_begin = static_cast<npy_intp*>(PyArray_DATA(
-               PyTensorBasis_degree_begin(new_tb)
-        ));
+        tensor_basis.degree_begin = static_cast<npy_intp*>(
+                PyArray_DATA(PyTensorBasis_degree_begin(new_tb))
+        );
     }
 
     basis_data[1] = &tensor_basis;
@@ -1051,12 +944,8 @@ PyObject* py_dense_lie_to_tensor(
 namespace {
 
 template <typename S, CompressedDim Compression = CompressedCol>
-struct DenseTensorToLie {
+struct DenseTensorToLie : ComputeCallFunctor<1, 0, 1> {
     using Scalar = S;
-    static constexpr npy_intp CoreDims = 1;
-
-    static constexpr npy_intp n_args = 2;
-    static constexpr npy_intp arg_basis_mapping[2] = {0, 1};
 
     using Matrix = CompressedMatrix<
             const S*,
@@ -1064,28 +953,21 @@ struct DenseTensorToLie {
             const npy_intp*,
             Compression>;
 
-    const CallConfig* config_;
     const CompressedMatrixData* matrix_;
 
     explicit constexpr DenseTensorToLie(
             const CallConfig& config,
             const CompressedMatrixData& matrix
     )
-        : config_(&config),
+        : ComputeCallFunctor(config),
           matrix_(&matrix)
     {}
 
     template <typename OutIter, typename ArgIter>
-    void operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
+    int operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
     {
-        const auto& lie_basis
-                = *static_cast<const LieBasis*>(config_->basis_data[0]);
-        const auto& tensor_basis
-                = *static_cast<const TensorBasis*>(config_->basis_data[1]);
-
-        DenseVectorFragment<OutIter> out(out_iter, lie_basis.size());
-
-        DenseVectorFragment<ArgIter> arg(arg_iter, tensor_basis.size());
+        auto out = make_vector_fragment(0, std::move(out_iter));
+        auto arg = make_vector_fragment(1, std::move(arg_iter));
 
         Matrix matrix{
                 static_cast<const S*>(matrix_->data),
@@ -1097,15 +979,27 @@ struct DenseTensorToLie {
         };
 
         if (config_->ops != nullptr) {
-            basic::apply_sparse_linear_map(
-                    out,
-                    matrix,
-                    arg,
-                    ops::MultiplyBy<S>{*static_cast<const S*>(config_->ops)}
+            return RPY_CATCH_ERRORS(
+                    basic::apply_sparse_linear_map(
+                            this->get_context(out[0]),
+                            out,
+                            matrix,
+                            arg,
+                            ops::MultiplyBy<S>{
+                                    *static_cast<const S*>(config_->ops)
+                            }
+                    )
             );
-        } else {
-            basic::apply_sparse_linear_map(out, matrix, arg);
         }
+
+        return RPY_CATCH_ERRORS(
+                basic::apply_sparse_linear_map(
+                        this->get_context(out[0]),
+                        out,
+                        matrix,
+                        arg
+                )
+        );
     }
 };
 
@@ -1178,9 +1072,9 @@ PyObject* py_dense_tensor_to_lie(
 
         // the newly constructed Tensor basis is guaranteed to have a contiguous
         // degree_begin array.
-        tensor_basis.degree_begin = static_cast<npy_intp*>(PyArray_DATA(
-            PyTensorBasis_degree_begin(new_tb)
-        ));
+        tensor_basis.degree_begin = static_cast<npy_intp*>(
+                PyArray_DATA(PyTensorBasis_degree_begin(new_tb))
+        );
     }
 
     basis_data[1] = &tensor_basis;
