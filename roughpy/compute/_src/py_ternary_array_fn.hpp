@@ -146,17 +146,24 @@ PyObject *ternary_function_outer(PyObject *out_obj [[maybe_unused]],
     }
 
     switch (dtype) {
+        case NPY_FLOAT32: return outer_loop_ternary(
+                out_arr,
+                lhs_arr,
+                rhs_arr,
+                Fn<float>{config}
+            );
         case NPY_FLOAT64: return outer_loop_ternary(
                 out_arr,
                 lhs_arr,
                 rhs_arr,
                 Fn<double>{config}
             );
-        case NPY_FLOAT32: return outer_loop_ternary(
-                out_arr,
-                lhs_arr,
-                rhs_arr,
-                Fn<float>{config}
+        case NPY_OBJECT:
+            return outer_loop_ternary(
+                    out_arr,
+                    lhs_arr,
+                    rhs_arr,
+                    Fn<PyObject*>{config}
             );
         default: PyErr_SetString(PyExc_TypeError, "unsupported dtype");
             return nullptr;

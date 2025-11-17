@@ -129,15 +129,21 @@ PyObject *binary_function_outer(PyObject *out_obj,
     }
 
     switch (dtype) {
+        case NPY_FLOAT32: return outer_loop_binary(
+                out_arr,
+                arg_arr,
+                Fn<float>{config}
+            );
         case NPY_FLOAT64: return outer_loop_binary(
                 out_arr,
                 arg_arr,
                 Fn<double>{config}
             );
-        case NPY_FLOAT32: return outer_loop_binary(
+        case NPY_OBJECT:
+            return outer_loop_binary(
                 out_arr,
                 arg_arr,
-                Fn<float>{config}
+                Fn<PyObject*>{config}
             );
         default: PyErr_SetString(PyExc_TypeError, "unsupported dtype");
             return nullptr;
