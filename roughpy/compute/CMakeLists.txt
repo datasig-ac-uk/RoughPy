@@ -35,6 +35,7 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/object_arrays/object_compute_context.hpp
         _src/call_config.hpp
         _src/call_config.cpp
+        _src/call_utils.hpp
         _src/check_dims.hpp
         _src/dense_basic.cpp
         _src/dense_basic.h
