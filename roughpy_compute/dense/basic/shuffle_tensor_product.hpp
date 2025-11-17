@@ -20,18 +20,19 @@ inline namespace v1 {
  */
 
 template <
+        typename Context,
         typename OutIter,
         typename LhsIter,
         typename RhsIter,
         typename Op = ops::Identity>
 void st_fma(
+        Context const& ctx,
         DenseTensorView<OutIter> out,
         DenseTensorView<LhsIter> lhs,
         DenseTensorView<RhsIter> rhs,
         Op&& op = {}
 )
 {
-
     using Scalar = typename DenseTensorView<OutIter>::Scalar;
     using Degree = typename DenseTensorView<OutIter>::Degree;
     using Index = typename DenseTensorView<OutIter>::Index;
@@ -85,6 +86,28 @@ void st_fma(
 
         out_size *= width;
     }
+}
+
+template <
+        typename OutIter,
+        typename LhsIter,
+        typename RhsIter,
+        typename Op = ops::Identity>
+void st_fma(
+        DenseTensorView<OutIter> out,
+        DenseTensorView<LhsIter> lhs,
+        DenseTensorView<RhsIter> rhs,
+        Op&& op = {}
+)
+{
+  using Traits = scalars::Traits<typename DenseTensorView<OutIter>::Scalar>;
+  return st_fma(
+          Traits{},
+          std::move(out),
+          std::move(lhs),
+          std::move(rhs),
+          std::forward<Op>(op)
+  );
 }
 
 }// namespace v1
