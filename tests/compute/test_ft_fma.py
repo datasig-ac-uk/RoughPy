@@ -2,6 +2,7 @@ import numpy as np
 from roughpy import compute
 from numpy.random import default_rng
 from numpy.testing import assert_array_almost_equal
+from fractions import Fraction
 
 
 def test_dense_ftfma_explicit():
@@ -47,3 +48,27 @@ def test_dense_ftfma_construction():
 
     compute.ft_fma(a, b, c)
     assert_array_almost_equal(expected, a.data)
+
+
+def test_dense_ftfma_fractions():
+    basis = compute.TensorBasis(2, 2)
+    b_data = np.array([Fraction(2, 3), Fraction(1, 2), Fraction(3, 4), Fraction(1, 2),
+                       Fraction(-1, 3), Fraction(2, 5), Fraction(0, 1)], dtype=object)
+    c_data = np.array([Fraction(-1, 2), Fraction(4, 3), Fraction(0, 1), Fraction(1, 4),
+                       Fraction(1, 5), Fraction(0, 1), Fraction(2, 7)], dtype=object)
+    a = compute.FreeTensor(np.zeros(basis.size(), dtype=object), basis)
+    b = compute.FreeTensor(b_data, basis)
+    c = compute.FreeTensor(c_data, basis)
+
+    compute.ft_fma(a, b, c)
+
+    expected = np.array([
+        b_data[0] * c_data[0],
+        b_data[1] * c_data[0] + b_data[0] * c_data[1],
+        b_data[2] * c_data[0] + b_data[0] * c_data[2],
+        b_data[3] * c_data[0] + b_data[1] * c_data[1] + b_data[0] * c_data[3],
+        b_data[4] * c_data[0] + b_data[1] * c_data[2] + b_data[0] * c_data[4],
+        b_data[5] * c_data[0] + b_data[2] * c_data[1] + b_data[0] * c_data[5],
+        b_data[6] * c_data[0] + b_data[2] * c_data[2] + b_data[0] * c_data[6],
+    ], dtype=object)
+    np.testing.assert_array_equal(a.data, expected)
