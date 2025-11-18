@@ -135,26 +135,7 @@ struct ComputeCallFunctor {
             bounds.max_degree
         );
     }
-
-
-    template <typename S>
-    constexpr auto get_context(const S& arg) const noexcept
-    {
-        if constexpr (!std::is_same_v<std::remove_cv_t<S>, ObjectRef>) {
-            // is not a python object
-            return scalars::Traits<S> {};
-        } else {
-            // is a python object, needs a python context
-            return ObjectComputeContext(Py_TYPE(arg.obj()));
-        }
-    }
-
 };
-
-
-
-
-
 
 
 struct LieBasisArrayHolder
