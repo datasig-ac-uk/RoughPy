@@ -4,36 +4,67 @@
 #include "py_headers.h"
 
 #include <exception>
+#include <type_traits>
 
 namespace rpy::compute {
 
-
-
 class ObjectRef;
 class MutableObjectRef;
+class PyObjHandle;
+
+namespace obj_handle_dtl {
+// Helpers for converting form C/C++ types to Python for implementing operators
+
+inline PyObject* to_pyobj(int32_t val) { return PyLong_FromLong(val); }
+inline PyObject* to_pyobj(uint32_t val) { return PyLong_FromUnsignedLong(val); }
+inline PyObject* to_pyobj(int64_t val) { return PyLong_FromLongLong(val); }
+inline PyObject* to_pyobj(uint64_t val)
+{
+    return PyLong_FromUnsignedLongLong(val);
+}
+inline PyObject* to_pyobj(double val) { return PyFloat_FromDouble(val); }
+inline PyObject* to_pyobj(float val) { return PyFloat_FromDouble(val); }
+
+template <typename T>
+inline constexpr bool is_obj_wrapper_v = false;
+
+template <>
+inline constexpr bool is_obj_wrapper_v<ObjectRef> = true;
+
+template <>
+inline constexpr bool is_obj_wrapper_v<MutableObjectRef> = true;
+
+template <>
+inline constexpr bool is_obj_wrapper_v<PyObjHandle> = true;
+
+}// namespace obj_handle_dtl
+
+// Define inplace binary operators for C/C++ scalars
+#define NUMERIC_INPLACE_BINOP(RetType, sym)                                    \
+    template <typename T>                                                      \
+    std::enable_if_t<!obj_handle_dtl::is_obj_wrapper_v<T>, RetType&>           \
+    operator sym(T rhs)                                                        \
+    {                                                                          \
+        PyObjHandle rhs_obj(obj_handle_dtl::to_pyobj(rhs), false);             \
+        if (!rhs_obj) { throw PyErrAlreadySet(); }                             \
+        return *this sym rhs_obj;                                              \
+    }
 
 class PyObjHandle
 {
     PyObject* ptr_ = nullptr;
 
 public:
-
     PyObjHandle() = default;
 
-    PyObjHandle(PyObject* ptr, bool incref=true) : ptr_(ptr)
+    PyObjHandle(PyObject* ptr, bool incref = true) : ptr_(ptr)
     {
-        if (incref) {
-            Py_INCREF(ptr_);
-        }
+        if (incref) { Py_INCREF(ptr_); }
     }
 
-    ~PyObjHandle()
-    {
-        Py_XDECREF(ptr_);
-    }
+    ~PyObjHandle() { Py_XDECREF(ptr_); }
 
-    PyObjHandle(const PyObjHandle& other) noexcept
-        : ptr_(other.ptr_)
+    PyObjHandle(const PyObjHandle& other) noexcept : ptr_(other.ptr_)
     {
         Py_XINCREF(ptr_);
     }
@@ -56,16 +87,13 @@ public:
         return *this;
     }
 
-
-
-    void reset(PyObject* new_obj, bool incref=true)
+    void reset(PyObject* new_obj, bool incref = true)
     {
         if (incref) { Py_INCREF(ptr_); }
         Py_XSETREF(ptr_, new_obj);
     }
 
-
-    constexpr PyObject* obj() const noexcept { return ptr_;}
+    constexpr PyObject* obj() const noexcept { return ptr_; }
     // Must be followed by inc_ref if the object should be preserved
     constexpr PyObject*& obj() { return ptr_; }
     void drop() noexcept
@@ -98,6 +126,18 @@ public:
         return *this;
     }
 
+    PyObjHandle operator+() const
+    {
+        return PyObjHandle(ptr_);
+    }
+
+    PyObjHandle operator-() const
+    {
+        PyObjHandle ret(PyNumber_Negative(ptr_), false);
+        if (!ret) { throw PyErrAlreadySet(); }
+        return ret;
+    }
+
     PyObjHandle& operator+=(const ObjectRef& other);
     PyObjHandle& operator+=(const PyObjHandle& other);
     PyObjHandle& operator-=(const ObjectRef& other);
@@ -106,11 +146,15 @@ public:
     PyObjHandle& operator*=(const PyObjHandle& other);
     PyObjHandle& operator/=(const ObjectRef& other);
     PyObjHandle& operator/=(const PyObjHandle& other);
+
+    NUMERIC_INPLACE_BINOP(PyObjHandle, +=)
+    NUMERIC_INPLACE_BINOP(PyObjHandle, -=)
+    NUMERIC_INPLACE_BINOP(PyObjHandle, *=)
+    NUMERIC_INPLACE_BINOP(PyObjHandle, /=)
 };
 
-
-
-class ObjectRef {
+class ObjectRef
+{
     PyObject** const data_;
 
     friend class MutableObjectRef;
@@ -118,23 +162,25 @@ class ObjectRef {
 
 public:
     constexpr explicit ObjectRef(PyObject** const data) : data_(data) {}
+    constexpr explicit ObjectRef(PyObject* const* data)
+        : data_(const_cast<PyObject**>(data))
+    {}
 
     PyObjHandle strong() const noexcept { return PyObjHandle(*data_); }
 
     PyObject* obj() const noexcept { return *data_; }
-
 };
 
-
-
-class MutableObjectRef : public ObjectRef {
+class MutableObjectRef : public ObjectRef
+{
     friend class ObjectRef;
     friend class PyObjHandle;
 
 public:
-    constexpr explicit MutableObjectRef(PyObject** const data) : ObjectRef(data) {}
+    constexpr explicit MutableObjectRef(PyObject** const data) : ObjectRef(data)
+    {}
 
-    MutableObjectRef& operator=(const ObjectRef & rhs) noexcept
+    MutableObjectRef& operator=(const ObjectRef& rhs) noexcept
     {
         Py_SETREF(*data_, *rhs.data_);
         return *this;
@@ -151,6 +197,7 @@ public:
         Py_SETREF(*data_, rhs.obj());
         return *this;
     }
+
 
 #define INPLACE_BINOP(sym, pyname)                                             \
     MutableObjectRef& operator sym(const ObjectRef & rhs)                      \
@@ -174,7 +221,14 @@ public:
     INPLACE_BINOP(*=, InPlaceMultiply)
 
 #undef INPLACE_BINOP
+
+    NUMERIC_INPLACE_BINOP(MutableObjectRef, +=)
+    NUMERIC_INPLACE_BINOP(MutableObjectRef, -=)
+    NUMERIC_INPLACE_BINOP(MutableObjectRef, *=)
+    NUMERIC_INPLACE_BINOP(MutableObjectRef, /=)
 };
+
+#undef NUMERIC_INPLACE_BINOP
 
 #define INPLACE_BINOP(sym, pyname)                                             \
     inline PyObjHandle& PyObjHandle::operator sym(const ObjectRef & other)     \
@@ -245,7 +299,7 @@ INPLACE_BINOP(*=, InPlaceMultiply)
     {                                                                          \
         lhs sym## = rhs;                                                       \
         return lhs;                                                            \
-    }                                                                          \
+    }
 
 BINOP(+, Add)
 BINOP(-, Subtract)
@@ -254,6 +308,15 @@ BINOP(/, TrueDivide)
 
 #undef BINOP
 
+inline PyObjHandle operator+(const ObjectRef& arg)
+{
+    return PyObjHandle(arg.obj());
+}
+
+inline PyObjHandle operator+(const PyObjHandle& arg)
+{
+    return PyObjHandle(arg.obj());
+}
 
 inline PyObjHandle operator-(const ObjectRef& arg)
 {
@@ -269,6 +332,46 @@ inline PyObjHandle operator-(const PyObjHandle& arg)
     return ret;
 }
 
-} // namespace rpy::compute
+#define NUMERIC_BINOP(sym, pyname)                                             \
+    template <typename T>                                                      \
+    inline std::enable_if_t<!obj_handle_dtl::is_obj_wrapper_v<T>, PyObjHandle> \
+    operator sym(const PyObjHandle & lhs, T rhs)                               \
+    {                                                                          \
+        PyObjHandle rhs_obj(obj_handle_dtl::to_pyobj(rhs), false);             \
+        if (!rhs_obj) { throw PyErrAlreadySet(); }                             \
+        return lhs sym rhs_obj;                                                \
+    }                                                                          \
+    template <typename T>                                                      \
+    inline std::enable_if_t<!obj_handle_dtl::is_obj_wrapper_v<T>, PyObjHandle> \
+    operator sym(T lhs, const PyObjHandle & rhs)                               \
+    {                                                                          \
+        PyObjHandle lhs_obj(obj_handle_dtl::to_pyobj(lhs), false);             \
+        if (!lhs_obj) { throw PyErrAlreadySet(); }                             \
+        return lhs_obj sym rhs;                                                \
+    }                                                                          \
+    template <typename T>                                                      \
+    inline std::enable_if_t<!obj_handle_dtl::is_obj_wrapper_v<T>, PyObjHandle> \
+    operator sym(const ObjectRef & lhs, T rhs)                                 \
+    {                                                                          \
+        PyObjHandle rhs_obj(obj_handle_dtl::to_pyobj(rhs), false);             \
+        if (!rhs_obj) { throw PyErrAlreadySet(); }                             \
+        return lhs sym rhs_obj;                                                \
+    }                                                                          \
+    template <typename T>                                                      \
+    inline std::enable_if_t<!obj_handle_dtl::is_obj_wrapper_v<T>, PyObjHandle> \
+    operator sym(T lhs, const ObjectRef & rhs)                                 \
+    {                                                                          \
+        PyObjHandle lhs_obj(obj_handle_dtl::to_pyobj(lhs), false);             \
+        if (!lhs_obj) { throw PyErrAlreadySet(); }                             \
+        return lhs_obj sym rhs;                                                \
+    }
 
-#endif //ROUGHPY_COMPUTE__SRC_PY_
+NUMERIC_BINOP(+, Add)
+NUMERIC_BINOP(-, Subtract)
+NUMERIC_BINOP(*, Multiply)
+NUMERIC_BINOP(/, TrueDivide)
+
+#undef NUMERIC_BINOP
+}// namespace rpy::compute
+
+#endif// ROUGHPY_COMPUTE__SRC_PY_
