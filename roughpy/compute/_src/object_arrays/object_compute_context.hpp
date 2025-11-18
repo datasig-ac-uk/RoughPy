@@ -28,8 +28,17 @@ public:
 
     ~ObjectComputeContext();
 
-    constexpr ObjectRef zero() { return ObjectRef(&zero_); }
-    constexpr ObjectRef one() { return ObjectRef(&one_); }
+    // Python objects are inherently mutable, the wrapper maintains the
+    // const invariant, rather than the pointer.
+    constexpr ObjectRef zero() const
+    {
+        return ObjectRef(const_cast<PyObject**>(&zero_));
+    }
+    constexpr ObjectRef one() const
+    {
+        return ObjectRef(const_cast<PyObject**>(&one_));
+    }
+
 
 
 
