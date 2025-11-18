@@ -22,38 +22,38 @@ class ObjectArrayIterator
             "base iterator must be random access"
     );
 
-
     Iterator base_;
 
 public:
-    using value_type = typename Traits::value_type;
+    using value_type = PyObjHandle;
     using reference = Ref;
     using difference_type = typename Traits::difference_type;
+    using pointer = PyObject*;
 
     using iterator_category = std::random_access_iterator_tag;
 
     constexpr explicit ObjectArrayIterator(Iterator ptr) : base_(ptr) {}
 
-    constexpr ObjectArrayIterator* operator++() noexcept
+    constexpr ObjectArrayIterator& operator++() noexcept
     {
         ++base_;
         return *this;
     }
 
-    constexpr ObjectArrayIterator* operator++(int) noexcept
+    constexpr ObjectArrayIterator operator++(int) noexcept
     {
         ObjectArrayIterator* result(*this);
         ++base_;
         return result;
     }
 
-    constexpr ObjectArrayIterator* operator--() noexcept
+    constexpr ObjectArrayIterator& operator--() noexcept
     {
         --base_;
         return *this;
     }
 
-    constexpr ObjectArrayIterator* operator--(int) noexcept
+    constexpr ObjectArrayIterator operator--(int) noexcept
     {
         ObjectArrayIterator* result(*this);
         --base_;
