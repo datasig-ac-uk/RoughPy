@@ -17,18 +17,17 @@ void ft_log(
 {
     using OutView = DenseTensorView<OutIter>;
     using Degree = typename OutView::Degree;
-    using Scalar = typename OutView::Scalar;
 
-    constexpr Scalar unit { 1 };
+    const auto unit = ctx.one();
 
     auto const max_degree = out.max_degree();
     for (Degree deg=max_degree; deg > 0; --deg) {
         auto const max_level = max_degree - deg + 1;
 
         if (deg % 2 == 0) {
-            out[0] -= unit / static_cast<Scalar>(deg);
+            out[0] -= unit / deg;
         } else {
-            out[0] += unit / static_cast<Scalar>(deg);
+            out[0] += unit / deg;
         }
 
         basic::ft_inplace_mul(

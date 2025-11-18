@@ -17,7 +17,7 @@ void ft_exp(Context const& ctx, DenseTensorView<OutIter> out, DenseTensorView<Ar
     using Degree = typename OutView::Degree;
     using Scalar = typename OutView::Scalar;
 
-    constexpr Scalar unit { 1 };
+    const auto unit = ctx.one();
 
 
     out[0] = unit;
@@ -30,7 +30,7 @@ void ft_exp(Context const& ctx, DenseTensorView<OutIter> out, DenseTensorView<Ar
             ctx,
             out.truncate(max_level),
             arg.truncate(max_level, 1),
-            ops::DivideBy<Scalar>(deg)
+            ops::RightMultiplyBy<Scalar>(unit / deg)
         );
 
         out[0] += unit;
