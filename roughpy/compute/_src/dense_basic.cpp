@@ -29,7 +29,6 @@
 #include "py_ternary_array_fn.hpp"
 #include "tensor_basis.h"
 
-
 using namespace rpy::compute;
 
 /*******************************************************************************
@@ -42,8 +41,13 @@ struct DenseFTFma : ComputeCallFunctor<1, 0, 0, 0> {
     using ComputeCallFunctor::ComputeCallFunctor;
     using Scalar = Scalar_;
 
-    template <typename OutIter, typename LhsIter, typename RhsIter>
+    template <
+            typename Ctx,
+            typename OutIter,
+            typename LhsIter,
+            typename RhsIter>
     int operator()(
+            const Ctx& ctx,
             OutIter out_iter,
             LhsIter lhs_iter,
             RhsIter rhs_iter
@@ -53,7 +57,9 @@ struct DenseFTFma : ComputeCallFunctor<1, 0, 0, 0> {
         auto lhs_view = make_tensor_view(1, std::move(lhs_iter));
         auto rhs_view = make_tensor_view(2, std::move(rhs_iter));
 
-        return RPY_CATCH_ERRORS(basic::ft_fma(out_view, lhs_view, rhs_view));
+        return RPY_CATCH_ERRORS(
+                basic::ft_fma(ctx, out_view, lhs_view, rhs_view)
+        );
     }
 };
 
@@ -137,19 +143,13 @@ struct DenseFTInplaceMul : ComputeCallFunctor<1, 0, 0> {
     using Scalar = Scalar_;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename RhsIter>
-    int operator()(OutIter out_iter, RhsIter rhs_iter) const
+    template <typename Ctx, typename OutIter, typename RhsIter>
+    int operator()(const Ctx& ctx, OutIter out_iter, RhsIter rhs_iter) const
     {
         auto out_view = make_tensor_view(0, std::move(out_iter));
         auto rhs_view = make_tensor_view(1, std::move(rhs_iter));
 
-        return RPY_CATCH_ERRORS(
-                basic::ft_inplace_mul(
-                        this->get_context(out_view[0]),
-                        out_view,
-                        rhs_view
-                )
-        );
+        return RPY_CATCH_ERRORS(basic::ft_inplace_mul(ctx, out_view, rhs_view));
     }
 };
 
@@ -208,15 +208,15 @@ struct DenseAntipode : ComputeCallFunctor<1, 0, 0> {
     using Scalar = S;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename ArgIter>
-    int operator()(OutIter out_iter, ArgIter arg_iter) const
+    template <typename Ctx, typename OutIter, typename ArgIter>
+    int operator()(const Ctx& ctx, OutIter out_iter, ArgIter arg_iter) const
     {
         auto out = make_tensor_view(0, std::move(out_iter));
         auto arg = make_tensor_view(1, std::move(arg_iter));
 
         return RPY_CATCH_ERRORS(
                 basic::ft_antipode(
-                        this->get_context(out[0]),
+                        ctx,
                         out,
                         arg,
                         basic::BasicAntipodeConfig{},
@@ -279,16 +279,19 @@ struct DenseFTAdjLMul : ComputeCallFunctor<1, 0, 0, 0> {
     using Scalar = S;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename OpIter, typename ArgIter>
-    int operator()(OutIter out_iter, OpIter op_iter, ArgIter arg_iter) const
+    template <typename Ctx, typename OutIter, typename OpIter, typename ArgIter>
+    int operator()(
+            const Ctx& ctx,
+            OutIter out_iter,
+            OpIter op_iter,
+            ArgIter arg_iter
+    ) const
     {
         auto out = make_tensor_view(0, std::move(out_iter));
         auto op = make_tensor_view(1, std::move(op_iter));
         auto arg = make_tensor_view(2, std::move(arg_iter));
 
-        return RPY_CATCH_ERRORS(
-                basic::ft_adj_lmul(this->get_context(out[0]), out, op, arg)
-        );
+        return RPY_CATCH_ERRORS(basic::ft_adj_lmul(ctx, out, op, arg));
     }
 };
 
@@ -360,20 +363,24 @@ struct DenseSTFma : ComputeCallFunctor<1, 0, 0, 0> {
     using Scalar = S;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename LhsIter, typename RhsIter>
-    int operator()(OutIter out_iter, LhsIter lhs_iter, RhsIter rhs_iter)
+    template <
+            typename Ctx,
+            typename OutIter,
+            typename LhsIter,
+            typename RhsIter>
+    int operator()(
+            const Ctx& ctx,
+            OutIter out_iter,
+            LhsIter lhs_iter,
+            RhsIter rhs_iter
+    )
     {
         auto out_view = make_tensor_view(0, std::move(out_iter));
         auto lhs_view = make_tensor_view(1, std::move(lhs_iter));
         auto rhs_view = make_tensor_view(2, std::move(rhs_iter));
 
         return RPY_CATCH_ERRORS(
-                basic::st_fma(
-                        this->get_context(out_view[0]),
-                        out_view,
-                        lhs_view,
-                        rhs_view
-                )
+                basic::st_fma(ctx, out_view, lhs_view, rhs_view)
         );
     }
 };
@@ -472,8 +479,12 @@ struct DenseLieToTensor : ComputeCallFunctor<1, 1, 0> {
           matrix_(&matrix)
     {}
 
-    template <typename OutIter, typename ArgIter>
-    int operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
+    template <typename Ctx, typename OutIter, typename ArgIter>
+    int operator()(
+            const Ctx& ctx,
+            OutIter out_iter,
+            ArgIter arg_iter
+    ) const noexcept
     {
         auto out = make_vector_fragment(0, std::move(out_iter));
         auto arg = make_vector_fragment(1, std::move(arg_iter));
@@ -490,7 +501,7 @@ struct DenseLieToTensor : ComputeCallFunctor<1, 1, 0> {
         if (config_->ops != nullptr) {
             return RPY_CATCH_ERRORS(
                     basic::apply_sparse_linear_map(
-                            this->get_context(out[0]),
+                            ctx,
                             out,
                             matrix,
                             arg,
@@ -502,12 +513,7 @@ struct DenseLieToTensor : ComputeCallFunctor<1, 1, 0> {
         }
 
         return RPY_CATCH_ERRORS(
-                basic::apply_sparse_linear_map(
-                        this->get_context(out[0]),
-                        out,
-                        matrix,
-                        arg
-                )
+                basic::apply_sparse_linear_map(ctx, out, matrix, arg)
         );
     }
 };
@@ -910,7 +916,8 @@ PyObject* py_dense_lie_to_tensor(
                     DenseLieToTensor<Scalar, CompressedCol>{                   \
                             config,                                            \
                             matrix_data                                        \
-                    }                                                          \
+                    },                                                         \
+                    scalars::Traits<Scalar>{}                                  \
             );                                                                 \
         case CompressedRow:                                                    \
             return outer_loop_binary(                                          \
@@ -919,7 +926,8 @@ PyObject* py_dense_lie_to_tensor(
                     DenseLieToTensor<Scalar, CompressedRow>{                   \
                             config,                                            \
                             matrix_data                                        \
-                    }                                                          \
+                    },                                                         \
+                    scalars::Traits<Scalar>{}                                  \
             );                                                                 \
     }
 
@@ -963,8 +971,12 @@ struct DenseTensorToLie : ComputeCallFunctor<1, 0, 1> {
           matrix_(&matrix)
     {}
 
-    template <typename OutIter, typename ArgIter>
-    int operator()(OutIter out_iter, ArgIter arg_iter) const noexcept
+    template <typename Ctx, typename OutIter, typename ArgIter>
+    int operator()(
+            const Ctx& ctx,
+            OutIter out_iter,
+            ArgIter arg_iter
+    ) const noexcept
     {
         auto out = make_vector_fragment(0, std::move(out_iter));
         auto arg = make_vector_fragment(1, std::move(arg_iter));
@@ -981,7 +993,7 @@ struct DenseTensorToLie : ComputeCallFunctor<1, 0, 1> {
         if (config_->ops != nullptr) {
             return RPY_CATCH_ERRORS(
                     basic::apply_sparse_linear_map(
-                            this->get_context(out[0]),
+                            ctx,
                             out,
                             matrix,
                             arg,
@@ -993,12 +1005,7 @@ struct DenseTensorToLie : ComputeCallFunctor<1, 0, 1> {
         }
 
         return RPY_CATCH_ERRORS(
-                basic::apply_sparse_linear_map(
-                        this->get_context(out[0]),
-                        out,
-                        matrix,
-                        arg
-                )
+                basic::apply_sparse_linear_map(ctx, out, matrix, arg)
         );
     }
 };
@@ -1163,7 +1170,8 @@ PyObject* py_dense_tensor_to_lie(
                     DenseTensorToLie<Scalar, CompressedCol>{                   \
                             config,                                            \
                             matrix_data                                        \
-                    }                                                          \
+                    },                                                         \
+                    scalars::Traits<Scalar>{}                                  \
             );                                                                 \
         case CompressedRow:                                                    \
             return outer_loop_binary(                                          \
@@ -1172,7 +1180,8 @@ PyObject* py_dense_tensor_to_lie(
                     DenseTensorToLie<Scalar, CompressedRow>{                   \
                             config,                                            \
                             matrix_data                                        \
-                    }                                                          \
+                    },                                                         \
+                    scalars::Traits<Scalar>{}                                  \
             );                                                                 \
     }
 

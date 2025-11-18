@@ -26,14 +26,14 @@ struct DenseFTExp : ComputeCallFunctor<1, 0, 0> {
     using Scalar = Scalar_;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename ArgIter>
-    int operator()(OutIter out_iter, ArgIter arg_iter) const
+    template <typename Ctx,typename OutIter, typename ArgIter>
+    int operator()(const Ctx& ctx, OutIter out_iter, ArgIter arg_iter) const
     {
         auto out = make_tensor_view(0, std::move(out_iter));
         auto arg = make_tensor_view(1, std::move(arg_iter));
 
         return RPY_CATCH_ERRORS(
-                intermediate::ft_exp(this->get_context(out[0]), out, arg)
+                intermediate::ft_exp(ctx, out, arg)
         );
     }
 };
@@ -93,15 +93,15 @@ struct FtFMExp : ComputeCallFunctor<1, 0, 0, 0>{
     using Scalar = Scalar_;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename AIter, typename XIter>
-    int operator()(OutIter out_iter, AIter a_iter, XIter x_iter) const
+    template <typename Ctx, typename OutIter, typename AIter, typename XIter>
+    int operator()(const Ctx& ctx, OutIter out_iter, AIter a_iter, XIter x_iter) const
     {
         auto out = make_tensor_view(0, std::move(out_iter));
         auto a = make_tensor_view(1, std::move(a_iter));
         auto x = make_tensor_view(2, std::move(x_iter));
 
         return RPY_CATCH_ERRORS(
-                intermediate::ft_fmexp(this->get_context(out[0]), out, a, x)
+                intermediate::ft_fmexp(ctx, out, a, x)
         );
     }
 };
@@ -176,14 +176,14 @@ struct FTLog : ComputeCallFunctor<1, 0, 0>{
     using Scalar = Scalar_;
     using ComputeCallFunctor::ComputeCallFunctor;
 
-    template <typename OutIter, typename ArgIter>
-    int operator()(OutIter out_iter, ArgIter arg_iter) const
+    template <typename Ctx, typename OutIter, typename ArgIter>
+    int operator()(const Ctx& ctx, OutIter out_iter, ArgIter arg_iter) const
     {
         auto out = make_tensor_view(0, std::move(out_iter));
         auto arg = make_tensor_view(1, std::move(arg_iter));
 
         return RPY_CATCH_ERRORS(
-                intermediate::ft_log(this->get_context(out[0]), out, arg)
+                intermediate::ft_log(ctx, out, arg)
         );
     }
 };
