@@ -18,7 +18,15 @@ struct Traits
 
 
 
+    static constexpr T zero() noexcept
+    {
+        return T(0);
+    }
 
+    static constexpr T one() noexcept
+    {
+        return T(1);
+    }
 
 
 };
