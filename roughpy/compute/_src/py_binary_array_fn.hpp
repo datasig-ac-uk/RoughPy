@@ -155,18 +155,25 @@ binary_function_outer(PyObject* out_obj, PyObject* arg_obj, CallConfig& config)
                     scalars::Traits<double>{}
             );
         case NPY_OBJECT:
-            return outer_loop_binary(
-                    out_arr,
-                    arg_arr,
-                    Fn<PyObject*>{config},
-                    ObjectComputeContext(
+            return [&]() -> PyObject* {
+                try {
+                    ObjectComputeContext ctx(
                             reinterpret_cast<PyObject*>(
                                     Py_TYPE(*static_cast<PyObject**>(
                                             PyArray_DATA(out_arr)
                                     ))
                             )
-                    )
-            );
+                    );
+                    return outer_loop_binary(
+                            out_arr,
+                            arg_arr,
+                            Fn<PyObject*>{config},
+                            ctx
+                    );
+                } catch (PyErrAlreadySet& err) {
+                    return nullptr;
+                }
+        }();
         default:
             PyErr_SetString(PyExc_TypeError, "unsupported dtype");
             return nullptr;
