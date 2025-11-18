@@ -195,7 +195,7 @@ template <template <typename> class Fn>
                             Fn<PyObject*>{config},
                             ctx
                     );
-                } catch (PyErrAlreadySet& err) {
+                } catch (PyErrAlreadySet& err [[maybe_unused]]) {
                     return nullptr;
                 }
             }();

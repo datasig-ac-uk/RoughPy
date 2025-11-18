@@ -170,7 +170,7 @@ binary_function_outer(PyObject* out_obj, PyObject* arg_obj, CallConfig& config)
                             Fn<PyObject*>{config},
                             ctx
                     );
-                } catch (PyErrAlreadySet& err) {
+                } catch (PyErrAlreadySet& err [[maybe_unused]]) {
                     return nullptr;
                 }
         }();
