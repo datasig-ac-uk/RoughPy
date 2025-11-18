@@ -37,9 +37,9 @@ struct DefaultSigner {
     }
 
     template <typename Scalar>
-    constexpr Scalar operator()(Scalar arg) const noexcept
+    constexpr auto operator()(Scalar arg) const
     {
-        return (is_odd) ? -arg : arg;
+        return (is_odd) ? -arg : +arg;
     }
 };
 
