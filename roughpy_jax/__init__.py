@@ -1,5 +1,7 @@
 import ctypes
 from dataclasses import dataclass
+from pathlib import Path
+import sys
 
 import numpy as np
 
@@ -11,7 +13,8 @@ except ImportError as e:
 
 try:
     # XLA functions loaded directly from .so rather than python module
-    _rpy_jax_internals = ctypes.cdll.LoadLibrary("_rpy_jax_internals.so")
+    curr_dir = Path(__file__).parent
+    _rpy_jax_internals = ctypes.cdll.LoadLibrary(str(curr_dir / "_rpy_jax_internals.so"))
 except OSError as e:
     _rpy_jax_internals = None
     raise OSError("RoughPy JAX CPU backend is not installed correctly") from e
