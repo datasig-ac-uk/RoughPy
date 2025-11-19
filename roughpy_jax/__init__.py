@@ -11,7 +11,7 @@ except ImportError as e:
 
 try:
     # XLA functions loaded directly from .so rather than python module
-    _rpy_jax_internals = ctypes.cdll.LoadLibrary("roughpy_jax/_rpy_jax_internals.so")
+    _rpy_jax_internals = ctypes.cdll.LoadLibrary("_rpy_jax_internals.so")
 except OSError as e:
     _rpy_jax_internals = None
     raise OSError("RoughPy JAX CPU backend is not installed correctly") from e
