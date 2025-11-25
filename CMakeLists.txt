@@ -265,11 +265,27 @@ target_include_directories(RoughPy_Compute INTERFACE
 if (ROUGHPY_BUILD_PYLIB)
     add_subdirectory(roughpy)
 
+    if (NOT DEFINED SKBUILD_NULL_DIR)
+        set(SKBUILD_NULL_DIR roughpy/null)
+    endif()
 
     install(TARGETS RoughPy_PyModule
             RUNTIME DESTINATION roughpy
             LIBRARY
             DESTINATION roughpy
+            NAMELINK_SKIP
+            ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
+            INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            FRAMEWORK DESTINATION roughpy
+            EXCLUDE_FROM_ALL
+    )
+
+    install(TARGETS RoughPyComputeModule
+            RUNTIME DESTINATION roughpy/compute
+            LIBRARY DESTINATION roughpy/compute
             NAMELINK_SKIP
             ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
             COMPONENT Development
@@ -286,7 +302,12 @@ if (ROUGHPY_BUILD_PYLIB)
             PATTERN "py.typed"
             PATTERN "*.py"
             PATTERN "*.pyi"
-            PATTERN "src/*" EXCLUDE)
+            PATTERN "compute/*.pyi?"
+            PATTERN "src" EXCLUDE
+            PATTERN "compute/_src" EXCLUDE
+            PATTERN "ocl_kernels" EXCLUDE
+    )
+
 
 endif ()
 
