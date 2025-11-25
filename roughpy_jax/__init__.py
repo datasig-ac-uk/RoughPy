@@ -1,7 +1,13 @@
+import jax
+import jax.numpy as jnp
 import numpy as np
 
 from .ffi import *
-from .basis import *
+from .basis import TensorBasis, LieBasis
+from .tensor import FreeTensor, ShuffleTensor, Lie
+
+# FIXME temporary import for l2t and l2t
+import _rpy_compute_internals
 
 
 def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
@@ -308,3 +314,40 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     )
 
     return FreeTensor(out_data, basis)
+
+
+def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
+    """
+    Compute the embedding of a Lie algebra element as a free tensor.
+
+    :param arg: Lie to embed into the tensor algebra
+    :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
+    :return: new FreeTensor containing the embedding of "arg"
+    """
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+
+    # FIXME placeholder code, running with compute code before migration to JAX
+    result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
+    _rpy_compute_internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return FreeTensor(result, tensor_basis)
+
+
+def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
+    """
+    Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
+
+    :param arg:
+    :param lie_basis:
+    :return:
+    """
+    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
+
+    # FIXME placeholder code, running with compute code before migration to JAX
+    result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
+    _rpy_compute_internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return Lie(result, lie_basis)
