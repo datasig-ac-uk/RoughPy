@@ -1,89 +1,13 @@
-import ctypes
-from dataclasses import dataclass
-from pathlib import Path
-import sys
-
+import jax
+import jax.numpy as jnp
 import numpy as np
 
-try:
-    import jax
-    import jax.numpy as jnp
-except ImportError as e:
-    raise ImportError("RoughPy JAX requires jax library. For install instructions please refer to https://docs.jax.dev/en/latest/installation.html") from e
+from .ffi import *
+from .basis import TensorBasis, LieBasis
+from .tensor import FreeTensor, ShuffleTensor, Lie
 
-try:
-    # XLA functions loaded directly from .so rather than python module
-    curr_dir = Path(__file__).parent
-    _rpy_jax_internals = ctypes.cdll.LoadLibrary(str(curr_dir / "_rpy_jax_internals.so"))
-except OSError as e:
-    _rpy_jax_internals = None
-    raise OSError("RoughPy JAX CPU backend is not installed correctly") from e
-else:
-    # Register CPU functions by looking up expected names in .so
-    cpu_func_names = [
-        "cpu_dense_ft_fma",
-        "cpu_dense_ft_exp",
-        "cpu_dense_ft_log",
-        "cpu_dense_ft_fmexp",
-        "cpu_dense_ft_antipode",
-        "cpu_dense_st_fma",
-    ]
-    for func_name in cpu_func_names:
-        func_ptr = getattr(_rpy_jax_internals, func_name)
-        jax.ffi.register_ffi_target(
-            func_name,
-            jax.ffi.pycapsule(func_ptr),
-            platform="cpu"
-        )
-
-
-# FIXME review point: neatly load compute module from roughpy_jax dir
-import sys
-sys.path.append('roughpy/compute')
+# FIXME temporary import for l2t and l2t
 import _rpy_compute_internals
-
-
-class TensorBasis(_rpy_compute_internals.TensorBasis):
-    pass
-
-
-def _tensor_dataclass(cls):
-    """
-    Combined decorator for roughpy_jax tensor objects
-
-    Registers dataclass and JAX data class with dynamic data and static basis
-    """
-    cls = dataclass(cls)
-    return jax.tree_util.register_dataclass(
-        cls,
-        data_fields=["data"],
-        meta_fields=["basis"]
-    )
-
-
-@_tensor_dataclass
-class DenseFreeTensor:
-    """
-    Dense free tensor class built from basis and associated ndarray of data.
-    """
-    data: jnp.ndarray
-    basis: TensorBasis
-
-
-@_tensor_dataclass
-class DenseShuffleTensor:
-    """
-    Dense shuffle tensor class built from basis and associated ndarray of data.
-    """
-    data: jnp.ndarray
-    basis: TensorBasis
-
-
-"""
-Tensor aliases. Tensors are assumed to be dense without prefix
-"""
-FreeTensor = DenseFreeTensor
-ShuffleTensor = DenseShuffleTensor
 
 
 def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
@@ -390,3 +314,40 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     )
 
     return FreeTensor(out_data, basis)
+
+
+def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
+    """
+    Compute the embedding of a Lie algebra element as a free tensor.
+
+    :param arg: Lie to embed into the tensor algebra
+    :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
+    :return: new FreeTensor containing the embedding of "arg"
+    """
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+
+    # FIXME placeholder code, running with compute code before migration to JAX
+    result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
+    _rpy_compute_internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return FreeTensor(result, tensor_basis)
+
+
+def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
+    """
+    Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
+
+    :param arg:
+    :param lie_basis:
+    :return:
+    """
+    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
+
+    # FIXME placeholder code, running with compute code before migration to JAX
+    result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
+    _rpy_compute_internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+
+    return Lie(result, lie_basis)

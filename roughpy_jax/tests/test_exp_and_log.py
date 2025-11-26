@@ -5,9 +5,6 @@ import roughpy_jax as rpj
 
 from rpy_test_common import array_dtypes, jnp_to_np_float
 
-# FIXME add mismatch tests as in test_dense_ft_fma_array_mismatch
-# FIXME add JIT tests
-
 
 def _create_non_zero_ft(rng, basis, jnp_dtype):
     """
@@ -19,6 +16,17 @@ def _create_non_zero_ft(rng, basis, jnp_dtype):
     data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
     data[1:basis.width + 1] = rng.normal(size=(basis.width,))
     return rpj.FreeTensor(data, basis)
+
+
+def test_dense_ft_exp_array_mismatch(rpj_test_fixture_type_mismatch):
+    f = rpj_test_fixture_type_mismatch
+
+    # Unsupported array types
+    with pytest.raises(ValueError):
+        rpj.ft_exp(f.ft_i32())
+
+    with pytest.raises(ValueError):
+        rpj.ft_log(f.ft_i32())
 
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)

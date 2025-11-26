@@ -33,5 +33,17 @@ def rpj_test_fixture_type_mismatch():
             basis = rpj.TensorBasis(basis_width, basis_depth)
             return rpj.FreeTensor(self.zeros_i32, basis)
 
+        def st_f32(self, basis_width: int=2, basis_depth: int=2):
+            basis = rpj.TensorBasis(basis_width, basis_depth)
+            return rpj.ShuffleTensor(self.zeros_f32, basis)
+
+        def st_f64(self, basis_width: int=2, basis_depth: int=2):
+            basis = rpj.TensorBasis(basis_width, basis_depth)
+            return rpj.ShuffleTensor(self.zeros_f64, basis)
+
+        def st_i32(self, basis_width: int=2, basis_depth: int=2):
+            basis = rpj.TensorBasis(basis_width, basis_depth)
+            return rpj.ShuffleTensor(self.zeros_i32, basis)
+
     return BasisFixture()
 
