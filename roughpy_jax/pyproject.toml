@@ -1,5 +1,5 @@
 [project]
-name = "roughpy-jax"
+name = "RoughPyJax"
 version = "0.1.0"
 authors = [
     { name="The RoughPy Authors", email = "info@datasig.ac.uk" }
@@ -9,7 +9,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "BSD-3-Clause" }
 dependencies = [
-    "roughpy",  # or specify version
+    "RoughPy",  # or specify version
     "jax>=0.4.0",
     "jaxlib>=0.4.0",
     "numpy>=1.23.5",
@@ -41,4 +41,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["roughpy_jax*"]
+include = ["*"]

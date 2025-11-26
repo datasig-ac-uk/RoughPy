@@ -65,3 +65,29 @@ set_target_properties(RoughPy_JaxModule PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     LIBRARY_OUTPUT_NAME _rpy_jax_internals
 )
+
+
+if (ROUGHPY_BUILD_PYLIB)
+    install(TARGETS RoughPy_JaxModule
+            RUNTIME DESTINATION roughpy/jax
+            LIBRARY
+            DESTINATION roughpy/jax
+            NAMELINK_SKIP
+            ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
+            INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            FRAMEWORK DESTINATION roughpy/jax
+            EXCLUDE_FROM_ALL
+    )
+
+    # install(DIRECTORY roughpy
+    #         DESTINATION .
+    #         FILES_MATCHING
+    #         PATTERN "py.typed"
+    #         PATTERN "*.py"
+    #         PATTERN "*.pyi"
+    #         PATTERN "src/*" EXCLUDE)
+
+endif ()

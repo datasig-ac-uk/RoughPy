@@ -8,12 +8,22 @@ measuring core tensor algebra operations with different sizes and data types.
 import numpy as np
 import jax.numpy as jnp
 
+# # Ensure the parent directory is in sys.path for local imports
+# upper_dir = Path(__file__).parent.parent
+# sys.path.insert(0, str(upper_dir))
+import os
+
+print(os.getcwd())
+
 try:
     import roughpy_jax as rpj
     from roughpy_jax.tests.rpy_test_common import jnp_to_np_float
 except ImportError:
-    # Skip if roughpy_jax not available
-    pass
+    raise ImportError(
+        "roughpy_jax is required to run these benchmarks. "
+        "Please install it via 'pip install roughpy-jax'."
+    )
+    
 
 # Standard benchmark configurations
 TENSOR_SIZES = [
@@ -35,6 +45,10 @@ def _create_tensor_with_data(rng, basis, jnp_dtype):
     data[1:basis.width + 1] = rng.normal(size=(basis.width,))
     return rpj.FreeTensor(data, basis)
 
+def _create_zero_tensor(basis, jnp_dtype):
+    """Create a FreeTensor initialized to zero."""
+    data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
+    return rpj.FreeTensor(data, basis)
 
 class FreeTensorBenchmarks:
     """Benchmarks for free tensor multiplication operations."""
@@ -81,6 +95,25 @@ class FreeTensorBenchmarks:
         """Time free tensor antipode"""
         return rpj.antipode(self.signature_tensor)
 
+class FreeTensorZeroBenchmarks(FreeTensorBenchmarks):
+    """Benchmarks for free tensor operations on zero-initialized tensors."""
+    
+    params = [TENSOR_SIZES, DTYPES]
+    param_names = ['size', 'jnp_dtype']
+    
+    def setup(self, size, jnp_dtype):
+        """Setup zero-initialized test tensors for each parameter combination."""
+        width, depth = size
+        self.basis = rpj.TensorBasis(width, depth)
+        
+        self.a = _create_zero_tensor(self.basis, jnp_dtype)
+        self.b = _create_zero_tensor(self.basis, jnp_dtype)
+        self.c = _create_zero_tensor(self.basis, jnp_dtype)
+    
+
+if __name__ == "__main__":
+    import asv
+    asv.run_benchmarks()
 
     
 

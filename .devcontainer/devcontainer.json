@@ -45,5 +45,5 @@
         "--device", "/dev/nvidia-uvm-tools",
         "--env", "NVIDIA_VISIBLE_DEVICES=all",
         "--env", "NVIDIA_DRIVER_CAPABILITIES=all"
-    ],
+    ]
 }

@@ -1,0 +1,72 @@
+{
+    "version": 1,
+    "project": "roughpy",
+    "project_url": "https://github.com/datasig-ac-uk/RoughPy",
+    "repo": ".",
+    "branches": [
+        "jl/benchmarks"
+    ],
+    "dvcs": "git",
+    "environment_type": "virtualenv",
+    "show_commit_url": "https://github.com/datasig-ac-uk/RoughPy/commit/",
+    "pythons": ["3.12"],
+    
+    "matrix": {
+        "jax": ["0.8.0"],
+        "jaxlib": ["0.8.0"],
+        "numpy": ["2.3.4"]
+    },
+
+    "exclude": [
+        {"python": "3.12", "jax": null}
+    ],
+
+    "benchmark_dir": "benchmarks/",
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+
+    "install_command": [
+        //"python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme",
+        //"CMAKE_ARGS='-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DROUGHPY_BUILD_TESTS=OFF -DROUGHPY_BUILD_DOCS=OFF -DROUGHPY_JAX=ON' VCPKG_ROOT=/tools/vcpkg VCPKG_FORCE_SYSTEM_BINARIES=1 CMAKE_GENERATOR=Ninja python -m pip install --no-build-isolation -v {wheel_file}" 
+        // "python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme jax",
+        // "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip install --no-build-isolation -vvv -e \".[dev]\"",
+        "/usr/bin/pwd",
+        // "python -m pip install {wheel_file}",
+        "python -m pip list",
+        "python -c \"import roughpy_jax; print('RoughPy JAX build successful')\""
+    ],
+    
+    "uninstall_command": [
+        "return-code=any python -m pip uninstall -y {project}"
+    ],
+
+    "build_command": [
+        "/usr/bin/echo $PATH",
+        "/usr/bin/which python",
+        "/usr/bin/pwd",
+        "python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme jax",
+        "python -c \"from jax import ffi; print(ffi.include_dir())\"",
+        "python -m pip list", 
+        // "python -c \"print({build_dir})\"",
+        //"CMAKE_ARGS='-DCMAKE_EXPORT_COMPILE_COMMANDS=yes -DCMAKE_MAKE_PROGRAM=/tools/venv/bin/ninja -DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DROUGHPY_BUILD_TESTS=OFF -DROUGHPY_BUILD_DOCS=OFF -DROUGHPY_JAX=ON -DCMAKE_BUILD_TYPE=Release' VCPKG_ROOT=/tools/vcpkg VCPKG_FORCE_SYSTEM_BINARIES=1 CMAKE_GENERATOR=Ninja NINJA_STATUS='[%f/%t] ' python -m pip install --no-build-isolation -vvv -e .",
+        "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip install --no-build-isolation -vvv -e .",
+        "python -m pip install --no-deps --no-build-isolation --no-index {build_dir}/roughpy_jax/", // -w {build_cache_dir}",
+        "/usr/bin/ls -l {build_cache_dir}",
+        // "/usr/bin/mkdir -p {build_dir}/wheelhouse/",
+        // "/usr/bin/cp {build_cache_dir}/roughpy_jax-0.1.0-py3-none-any.whl {build_dir}/wheelhouse/",
+        // "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip wheel -vvv -e \"{build_dir}[dev]\" -w {build_cache_dir}"
+        "python -c \"import roughpy_jax; print('RoughPy JAX build successful')\""
+    ],
+
+    "benchmark_pattern": "^(Bench|Track|Suite)",
+    "regressions_first_commits": {},
+    "regressions_thresholds": {
+        "factors": {"factor": 2.0},
+        "percentages": {"percentage": 20.0}
+    },
+
+    "hash_length": 8,
+    "cpu_count": null,
+    "build_cache_size": 1
+}

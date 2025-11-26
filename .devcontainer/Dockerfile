@@ -48,4 +48,4 @@ RUN /tools/vcpkg/bootstrap-vcpkg.sh
 ENV VCPKG_ROOT=/tools/vcpkg
 
 # This is required to be able to run pytest in the VSCode terminal
-ENV PYTHONPATH=.
+ENV PYTHONPATH="/workspaces/RoughPy:$PYTHONPATH"
