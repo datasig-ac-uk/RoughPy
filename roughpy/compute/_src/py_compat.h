@@ -156,16 +156,10 @@ static inline PyObject* Py_XNewRef(PyObject* obj)
 // systems). We implement it here if it is not defined.
 
 RPY_NO_EXPORT
-int32_t RPC_PyLongAsInt32(PyObject* pylong);
+int RPC_PyLongAsInt32(PyObject* pylong, int32_t* value);
 
 #if PY_VERSION_HEX < PYVER_HEX(3, 14)
-#if LONG_MAX == INT32_MAX
-#define PyLong_AsInt32(obj) PyLong_AsLong((obj))
-#elif PY_VERSION_HEX >= PYVER_HEX(3, 13) && INT_MAX == INT32_MAX
-#define PyLong_AsInt32(obj) PyLong_AsInt((obj))
-#else
-#define PyLong_AsInt32(obj) RPC_PyLongAsInt32((obj))
-#endif
+#define PyLong_AsInt32(obj, value) RPC_PyLongAsInt32((obj), (value))
 #endif
 
 

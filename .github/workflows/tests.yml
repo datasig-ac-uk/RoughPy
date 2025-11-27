@@ -42,11 +42,17 @@ on:
       - "CITATION.cff"
       - ".gitignore"
 
+permissions:
+  packages: write
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+  # vcpkg binary cache information
+  USERNAME: datasig-ac-uk
+  VCPKG_EXE: ${{ github.workspace }}/tools/vcpkg/vcpkg
+  FEED_URL: https://nuget.pkg.github.com/datasig-ac-uk/index.json
+  VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/datasig-ac-uk/index.json,readwrite"
 
 jobs:
   build:
@@ -72,13 +78,6 @@ jobs:
       with:
         python-version: 3.13
 
-    - name: Setup gha caching for vcpkg
-      uses: actions/github-script@v7
-      with:
-        script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
     - name: Setup msbuild on Windows
       if: runner.os == 'Windows'
       uses: microsoft/setup-msbuild@v2
@@ -91,57 +90,125 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
-#    - name: install pkgconfig on windows
-#      if: runner.os == 'Windows'
-#      shell: bash
-#      run: |
-#        choco install pkgconfiglite
-
     - name: install autoconf on macos
-      if: runner.os == 'macOs'
+      if: runner.os == 'macOS'
       shell: bash
       run: |
         brew install autoconf automake libtool m4 ninja
+        ninja --version
+
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y ninja-build llvm mono-complete
+
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: brew install mono
 
     - name: Python dependencies
       shell: bash
       run: |
-        python -m pip install numpy ninja pytest "pybind11<3.0.0"
+        python -m pip install numpy pytest "pybind11<3.0.0"
 
     - name: setup vcpkg
       shell: bash
       run: |
-        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
+        git clone --depth=1 https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
+    - name: Bootstrap vcpkg (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        ./tools/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        ./tools/vcpkg/vcpkg version
 
-# This probably requires the intervention of a package manager because of boost and gmp deps.
-#    - name: Build and test roughpy_compute
-#      shell: bash
-#      run:
-#        cmake -B ${{github.workspace}}/rpy_compute_build \
-#              -S ${{github.workspace}}/roughpy_compute \
-#              -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-#              -DROUGHPY_BUILD_TESTS=ON && \
-#        cmake --build ${{github.workspace}}/rpy_compute_build --config ${{env.BUILD_TYPE}} && \
-#        ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure --test-dir "${{github.workspace}}/rpy_compute_build"
-#      env:
-#        MACOSX_DEPLOYMENT_TARGET: 11.0.0
-#        CMAKE_GENERATOR: "Ninja"
+    - name: Bootstrap vcpkg (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        .\tools\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+        .\tools\vcpkg\vcpkg version
 
+    - name: Show vcpkg bootstrap log (if any)
+      if: always()
+      shell: bash
+      run: |
+        LOG="build/vcpkg-bootstrap.log"
+        test -f "$LOG" && { echo "==== $LOG ===="; sed -n '1,200p' "$LOG"; } || echo "No bootstrap log found."
 
+    - name: Create vcpkg cache directory
+      run: |
+        mkdir ${{ github.workspace }}/_vcpkg_cache
+        mkdir ${{ github.workspace }}/_vcpkg_downloads
+        
+    - name: Cache vcpkg binaries + downloads
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/_vcpkg_cache
+          ${{ github.workspace }}/_vcpkg_downloads
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+        restore-keys: |
+          vcpkg-${{ runner.os }}-
 
-    - name: Configure CMake
+    - name: Add NuGet sources (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          sources add `
+          -Source "${{ env.FEED_URL }}" `
+          -StorePasswordInClearText `
+          -Name GitHubPackages `
+          -UserName "${{ env.USERNAME }}" `
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          setapikey "${{ secrets.GITHUB_TOKEN }}" `
+          -Source "${{ env.FEED_URL }}"
+
+    - name: Add NuGet sources (Linux/macOS)
+      shell: bash
+      if: runner.os != 'Windows'
+      run: |
+        mono `${{ env.VCPKG_EXE }} fetch nuget | tail -n 1` \
+          sources add \
+          -Source "${{ env.FEED_URL }}" \
+          -StorePasswordInClearText \
+          -Name GitHubPackages \
+          -UserName "${{ env.USERNAME }}" \
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        mono `${{ env.VCPKG_EXE }} fetch nuget | tail -n 1` \
+          setapikey "${{ secrets.GITHUB_TOKEN }}" \
+          -Source "${{ env.FEED_URL }}"
+
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+    - name: Configure CMake (macOS/Linux)
+      if: runner.os != 'Windows'
       run: |
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=${{env.ROUGHPY_BUILD_TEST_PYTHON_EMBED}}
+        NINJA_BIN="$(command -v ninja)"
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DROUGHPY_BUILD_TESTS=ON \
+          -DCMAKE_MAKE_PROGRAM="$NINJA_BIN" \
+          -DROUGHPY_BUILD_TEST_PYTHON_EMBED=ON \
+          -DVCPKG_BUILD_TYPE=release
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
+        VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/_vcpkg_cache
+        VCPKG_DOWNLOADS: ${{ github.workspace }}/_vcpkg_downloads
+        CMAKE_GENERATOR: "Ninja"
+
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      # Disable embedded tests (ROUGHPY_BUILD_TEST_PYTHON_EMBED) on Windows to avoid runner path issues on CI
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=OFF -DVCPKG_BUILD_TYPE=release
+      env:
+        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/_vcpkg_cache
+        VCPKG_DOWNLOADS: ${{ github.workspace }}/_vcpkg_downloads
         VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
-        # Disable embedded tests on Windows to avoid runner path issues on CI
-        ROUGHPY_BUILD_TEST_PYTHON_EMBED: ${{ runner.os == 'Windows' && 'OFF' || 'ON' }}
 
     - name: Build
       # Build your program with the given configuration
