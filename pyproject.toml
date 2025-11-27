@@ -142,6 +142,10 @@ repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} --ignore
 dev = [
     "jax"
 ]
+jax = [
+    "jax>=0.4.0",
+    "jaxlib>=0.4.0",
+]
 benchmarks = [
     "asv",
     "virtualenv",
