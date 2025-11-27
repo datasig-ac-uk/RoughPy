@@ -90,7 +90,7 @@ if (ROUGHPY_BUILD_PYLIB)
             PATTERN "py.typed"
             PATTERN "*.py"
             PATTERN "*.pyi"
-            PATTERN "src/*" EXCLUDE
-            PATTERN "tests/*" EXCLUDE)
+            PATTERN "tests/*"
+            PATTERN "src/*" EXCLUDE)
 
 endif ()
