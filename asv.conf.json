@@ -32,8 +32,9 @@
         // "python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme jax",
         // "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip install --no-build-isolation -vvv -e \".[dev]\"",
         "/usr/bin/pwd",
-        // "python -m pip install {wheel_file}",
+        "python -m pip install {wheel_file}",
         "python -m pip list",
+        "/usr/bin/ls -l {env_dir}/lib/python3.12/site-packages/roughpy_jax/",
         "python -c \"import roughpy_jax; print('RoughPy JAX build successful')\""
     ],
     
@@ -45,17 +46,16 @@
         "/usr/bin/echo $PATH",
         "/usr/bin/which python",
         "/usr/bin/pwd",
-        "python -m pip install scikit-build-core[pyproject] pybind11 numpy hatch-fancy-pypi-readme jax",
+        "python -m pip install scikit-build-core[pyproject] 'pybind11<3.0.0' numpy hatch-fancy-pypi-readme jax",
         "python -c \"from jax import ffi; print(ffi.include_dir())\"",
-        "python -m pip list", 
         // "python -c \"print({build_dir})\"",
         //"CMAKE_ARGS='-DCMAKE_EXPORT_COMPILE_COMMANDS=yes -DCMAKE_MAKE_PROGRAM=/tools/venv/bin/ninja -DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DROUGHPY_BUILD_TESTS=OFF -DROUGHPY_BUILD_DOCS=OFF -DROUGHPY_JAX=ON -DCMAKE_BUILD_TYPE=Release' VCPKG_ROOT=/tools/vcpkg VCPKG_FORCE_SYSTEM_BINARIES=1 CMAKE_GENERATOR=Ninja NINJA_STATUS='[%f/%t] ' python -m pip install --no-build-isolation -vvv -e .",
-        "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip install --no-build-isolation -vvv -e .",
-        "python -m pip install --no-deps --no-build-isolation --no-index {build_dir}/roughpy_jax/", // -w {build_cache_dir}",
-        "/usr/bin/ls -l {build_cache_dir}",
+        "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip wheel --no-build-isolation --no-deps -vvv -e {build_dir} -w {build_cache_dir}",
+        // "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip install --no-build-isolation -vvv .",
+        // "python -m pip install --no-deps --no-build-isolation --no-index {build_dir}/roughpy_jax/", // -w {build_cache_dir}",
+        // "/usr/bin/ls -l {build_cache_dir}",
         // "/usr/bin/mkdir -p {build_dir}/wheelhouse/",
         // "/usr/bin/cp {build_cache_dir}/roughpy_jax-0.1.0-py3-none-any.whl {build_dir}/wheelhouse/",
-        // "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip wheel -vvv -e \"{build_dir}[dev]\" -w {build_cache_dir}"
         "python -c \"import roughpy_jax; print('RoughPy JAX build successful')\""
     ],
 
