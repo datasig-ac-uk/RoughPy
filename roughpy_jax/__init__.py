@@ -7,7 +7,7 @@ from .basis import TensorBasis, LieBasis
 from .tensor import FreeTensor, ShuffleTensor, Lie
 
 # FIXME temporary import for l2t and l2t
-import _rpy_compute_internals
+from roughpy.compute import _rpy_compute_internals
 
 
 def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):

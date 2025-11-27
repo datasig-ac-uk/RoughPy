@@ -68,26 +68,29 @@ set_target_properties(RoughPy_JaxModule PROPERTIES
 
 
 if (ROUGHPY_BUILD_PYLIB)
+    # python_add_library(RoughPy_JaxModule MODULE WITH_SOABI)
+
     install(TARGETS RoughPy_JaxModule
-            RUNTIME DESTINATION roughpy/jax
+            RUNTIME DESTINATION roughpy_jax
             LIBRARY
-            DESTINATION roughpy/jax
+            DESTINATION roughpy_jax
             NAMELINK_SKIP
             ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
             COMPONENT Development
             EXCLUDE_FROM_ALL
             INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
             COMPONENT Development
-            FRAMEWORK DESTINATION roughpy/jax
+            FRAMEWORK DESTINATION roughpy_jax
             EXCLUDE_FROM_ALL
     )
 
-    # install(DIRECTORY roughpy
-    #         DESTINATION .
-    #         FILES_MATCHING
-    #         PATTERN "py.typed"
-    #         PATTERN "*.py"
-    #         PATTERN "*.pyi"
-    #         PATTERN "src/*" EXCLUDE)
+    install(DIRECTORY .
+            DESTINATION roughpy_jax
+            FILES_MATCHING
+            PATTERN "py.typed"
+            PATTERN "*.py"
+            PATTERN "*.pyi"
+            PATTERN "src/*" EXCLUDE
+            PATTERN "tests/*" EXCLUDE)
 
 endif ()
