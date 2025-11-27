@@ -106,9 +106,9 @@ class FreeTensorZeroBenchmarks(FreeTensorBenchmarks):
         width, depth = size
         self.basis = rpj.TensorBasis(width, depth)
         
-        self.a = _create_zero_tensor(self.basis, jnp_dtype)
-        self.b = _create_zero_tensor(self.basis, jnp_dtype)
-        self.c = _create_zero_tensor(self.basis, jnp_dtype)
+        self.tensor_a = _create_zero_tensor(self.basis, jnp_dtype)
+        self.tensor_b = _create_zero_tensor(self.basis, jnp_dtype)
+        self.tensor_c = _create_zero_tensor(self.basis, jnp_dtype)
     
 
 if __name__ == "__main__":
