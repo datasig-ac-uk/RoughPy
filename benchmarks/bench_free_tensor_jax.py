@@ -21,7 +21,7 @@ try:
 except ImportError:
     raise ImportError(
         "roughpy_jax is required to run these benchmarks. "
-        "Please install it via 'pip install roughpy-jax'."
+        "Please install it via 'pip install roughpy_jax'."
     )
     
 
