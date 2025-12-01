@@ -34,6 +34,6 @@ else:
         func_ptr = getattr(_rpy_jax_internals, func_name)
         jax.ffi.register_ffi_target(
             func_name,
-            jax.ffi.pycapsule(func_ptr),
+            func_ptr,
             platform="cpu",
         )
