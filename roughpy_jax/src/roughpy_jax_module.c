@@ -6,17 +6,18 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h> 
 
-#include "cpu/dense_ft_antipode.h"
+// #include "cpu/dense_ft_antipode.h"
+// #include "cpu/dense_ft_fma.h"
 
 static PyMethodDef rpy_jax_methods[] = {
-    {"cpu_dense_ft_fma", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor fused multiply-add."},
-    {"cpu_dense_ft_inplace_mul", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor inplace multiply."},
-    {"cpu_dense_ft_antipode", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor antipode."},
-    {"cpu_dense_st_fma", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense shuffle tensor fused multiply-add."},
-    {"cpu_dense_ft_exp", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor exponential."},
-    {"cpu_dense_ft_fmexp", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor fused-multiply exponential."},
-    {"cpu_dense_ft_log", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor logarithm."},
-    {"cpu_dense_st_fma", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense shuffle tensor fused multiply-add."},
+    // {"cpu_dense_ft_fma", (PyCFunction) cpu_dense_ft_fma, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor fused multiply-add."},
+    // {"cpu_dense_ft_inplace_mul", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor inplace multiply."},
+    // {"cpu_dense_ft_antipode", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor antipode."},
+    // {"cpu_dense_st_fma", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense shuffle tensor fused multiply-add."},
+    // {"cpu_dense_ft_exp", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor exponential."},
+    // {"cpu_dense_ft_fmexp", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor fused-multiply exponential."},
+    // {"cpu_dense_ft_log", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor logarithm."},
+    // {"cpu_dense_st_fma", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense shuffle tensor fused multiply-add."},
     // {"cpu_dense_ft_adjoint_left_mul", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor adjoint left multiply."},
     // {"cpu_dense_lie_to_tensor", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor Lie to tensor map."},
     // {"cpu_dense_tensor_to_lie", (PyCFunction) NULL, METH_VARARGS | METH_KEYWORDS, "cpu dense free tensor tensor to Lie map."},

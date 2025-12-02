@@ -30,10 +30,11 @@ else:
         "cpu_dense_ft_antipode",
         "cpu_dense_st_fma",
     ]
+    lib = ctypes.CDLL(_rpy_jax_internals.__file__)
     for func_name in cpu_func_names:
-        func_ptr = getattr(_rpy_jax_internals, func_name)
+        func_ptr = getattr(lib, func_name)
         jax.ffi.register_ffi_target(
             func_name,
-            func_ptr,
+            jax.ffi.pycapsule(func_ptr),
             platform="cpu",
         )
