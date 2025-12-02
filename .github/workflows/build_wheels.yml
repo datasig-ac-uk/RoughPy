@@ -102,7 +102,7 @@ jobs:
         run:  brew install autoconf automake libtool m4 ninja
 
       - name: Build and test
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.3.0
         env:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
