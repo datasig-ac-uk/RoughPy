@@ -8,13 +8,6 @@ measuring core tensor algebra operations with different sizes and data types.
 import numpy as np
 import jax.numpy as jnp
 
-# # Ensure the parent directory is in sys.path for local imports
-# upper_dir = Path(__file__).parent.parent
-# sys.path.insert(0, str(upper_dir))
-import os
-
-print(os.getcwd())
-
 try:
     import roughpy_jax as rpj
     from roughpy_jax.tests.rpy_test_common import jnp_to_np_float
