@@ -10,7 +10,7 @@
 #include <utility>
 
 #include <gmp.h>
-#include <mpfr.h>
+// #include <mpfr.h>
 
 #include "roughpy/core/types.h"
 #include "roughpy/core/traits.h"
@@ -322,247 +322,247 @@ struct ConversionHelper<MPRational, MPRational, void>
     }
 };
 
-
-template <typename I>
-struct ConversionHelper<MPFloat, I, enable_if_t<is_integral_v<I> > >
-{
-    using from_ptr = mpfr_srcptr;
-    using to_ptr = I*;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = true;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        if constexpr (is_signed_v<I>) {
-            *dst = mpfr_get_si(src, MPFR_RNDN);
-        } else { *dst = mpfr_get_ui(src, MPFR_RNDN); }
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~MPFR_FLAGS_INEXACT) { return ConversionResult::Failed; }
-        if (ensure_exact && t & MPFR_FLAGS_INEXACT) {
-            return ConversionResult::Inexact;
-        }
-
-        return ConversionResult::Success;
-    }
-};
-
-template <typename I>
-struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I> > >
-{
-    using from_ptr = const I*;
-    using to_ptr = mpfr_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = true;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        if constexpr (is_signed_v<I>) {
-            if constexpr (sizeof(I) < 2) {
-                if (ensure_exact && !mpfr_fits_sshort_p(dst, MPFR_RNDN)) {
-                    return ConversionResult::Inexact;
-                }
-            } else if constexpr (sizeof(I) == 4) {
-                if (ensure_exact && !mpfr_fits_sint_p(dst, MPFR_RNDN)) {
-                    return ConversionResult::Inexact;
-                }
-            } else if constexpr (sizeof(I) == 8) {
-                if (ensure_exact && !mpfr_fits_slong_p(dst, MPFR_RNDN)) {
-                    return ConversionResult::Inexact;
-                }
-            }
-
-            mpfr_set_si(dst, *src, MPFR_RNDN);
-            return ConversionResult::Success;
-        } else {
-            if constexpr (sizeof(I) < 2) {
-                if (ensure_exact && !mpfr_fits_ushort_p(dst, MPFR_RNDN)) {
-                    return ConversionResult::Inexact;
-                }
-            } else if constexpr (sizeof(I) == 4) {
-                if (ensure_exact && !mpfr_fits_uint_p(dst, MPFR_RNDN)) {
-                    return ConversionResult::Inexact;
-                }
-            } else if constexpr (sizeof(I) == 8) {
-                if (ensure_exact && !mpfr_fits_ulong_p(dst, MPFR_RNDN)) {
-                    return ConversionResult::Inexact;
-                }
-            }
-
-            mpfr_set_ui(dst, *src, MPFR_RNDN);
-            return ConversionResult::Success;
-        }
-
-    }
-};
-
-template <typename F>
-struct ConversionHelper<MPFloat, F, enable_if_t<is_floating_point_v<F> > >
-{
-    using from_ptr = mpfr_srcptr;
-    using to_ptr = const F*;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = false;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        *dst = mpfr_get_d(src, MPFR_RNDN);
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-};
-
-
-template <typename F>
-struct ConversionHelper<F, MPFloat, enable_if_t<is_floating_point_v<F> > >
-{
-    using from_ptr = const F*;
-    using to_ptr = mpfr_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = false;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        if (ensure_exact) {
-            if (mpfr_fits_d_p(dst, *src, MPFR_RNDN) != 0) {
-                return ConversionResult::Inexact;
-            }
-        }
-        mpfr_set_d(dst, *src, MPFR_RNDN);
-        return ConversionResult::Success;
-    }
-};
-
-template <>
-struct ConversionHelper<MPFloat, MPInt, void>
-{
-    using from_ptr = mpfr_srcptr;
-    using to_ptr = mpz_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = false;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        mpfr_get_z(dst, src, MPFR_RNDN);
-
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-};
-
-template <>
-struct ConversionHelper<MPInt, MPFloat, void>
-{
-    using from_ptr = mpz_srcptr;
-    using to_ptr = mpfr_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = false;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        mpfr_set_z(dst, src, MPFR_RNDN);
-
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-};
-
-
-template <>
-struct ConversionHelper<MPFloat, MPRational, void>
-{
-    using from_ptr = mpfr_srcptr;
-    using to_ptr = mpq_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = true;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        ignore_unused(ensure_exact);
-        mpfr_get_q(dst, src);
-        return ConversionResult::Success;
-    }
-};
-
-template <>
-struct ConversionHelper<MPRational, MPFloat, void>
-{
-    using from_ptr = mpq_srcptr;
-    using to_ptr = mpfr_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = false;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        mpfr_set_q(dst, src, MPFR_RNDN);
-
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-};
-
-
-template <>
-struct ConversionHelper<MPFloat, MPFloat, void>
-{
-    using from_ptr = mpfr_srcptr;
-    using to_ptr = mpfr_ptr;
-
-    static constexpr bool is_possible = true;
-    static constexpr bool is_always_exact = false;
-
-    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
-    {
-        mpfr_set(dst, src, MPFR_RNDN);
-
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-};
+//
+// template <typename I>
+// struct ConversionHelper<MPFloat, I, enable_if_t<is_integral_v<I> > >
+// {
+//     using from_ptr = mpfr_srcptr;
+//     using to_ptr = I*;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = true;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         if constexpr (is_signed_v<I>) {
+//             *dst = mpfr_get_si(src, MPFR_RNDN);
+//         } else { *dst = mpfr_get_ui(src, MPFR_RNDN); }
+//
+//         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+//         mpfr_flags_clear(MPFR_FLAGS_ALL);
+//         if (t & ~MPFR_FLAGS_INEXACT) { return ConversionResult::Failed; }
+//         if (ensure_exact && t & MPFR_FLAGS_INEXACT) {
+//             return ConversionResult::Inexact;
+//         }
+//
+//         return ConversionResult::Success;
+//     }
+// };
+//
+// template <typename I>
+// struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I> > >
+// {
+//     using from_ptr = const I*;
+//     using to_ptr = mpfr_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = true;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         if constexpr (is_signed_v<I>) {
+//             if constexpr (sizeof(I) < 2) {
+//                 if (ensure_exact && !mpfr_fits_sshort_p(dst, MPFR_RNDN)) {
+//                     return ConversionResult::Inexact;
+//                 }
+//             } else if constexpr (sizeof(I) == 4) {
+//                 if (ensure_exact && !mpfr_fits_sint_p(dst, MPFR_RNDN)) {
+//                     return ConversionResult::Inexact;
+//                 }
+//             } else if constexpr (sizeof(I) == 8) {
+//                 if (ensure_exact && !mpfr_fits_slong_p(dst, MPFR_RNDN)) {
+//                     return ConversionResult::Inexact;
+//                 }
+//             }
+//
+//             mpfr_set_si(dst, *src, MPFR_RNDN);
+//             return ConversionResult::Success;
+//         } else {
+//             if constexpr (sizeof(I) < 2) {
+//                 if (ensure_exact && !mpfr_fits_ushort_p(dst, MPFR_RNDN)) {
+//                     return ConversionResult::Inexact;
+//                 }
+//             } else if constexpr (sizeof(I) == 4) {
+//                 if (ensure_exact && !mpfr_fits_uint_p(dst, MPFR_RNDN)) {
+//                     return ConversionResult::Inexact;
+//                 }
+//             } else if constexpr (sizeof(I) == 8) {
+//                 if (ensure_exact && !mpfr_fits_ulong_p(dst, MPFR_RNDN)) {
+//                     return ConversionResult::Inexact;
+//                 }
+//             }
+//
+//             mpfr_set_ui(dst, *src, MPFR_RNDN);
+//             return ConversionResult::Success;
+//         }
+//
+//     }
+// };
+//
+// template <typename F>
+// struct ConversionHelper<MPFloat, F, enable_if_t<is_floating_point_v<F> > >
+// {
+//     using from_ptr = mpfr_srcptr;
+//     using to_ptr = const F*;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = false;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         *dst = mpfr_get_d(src, MPFR_RNDN);
+//         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+//             | MPFR_FLAGS_UNDERFLOW);
+//
+//         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+//         mpfr_flags_clear(MPFR_FLAGS_ALL);
+//         if (t & ~flags) { return ConversionResult::Failed; }
+//         if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+//
+//         return ConversionResult::Success;
+//     }
+// };
+//
+//
+// template <typename F>
+// struct ConversionHelper<F, MPFloat, enable_if_t<is_floating_point_v<F> > >
+// {
+//     using from_ptr = const F*;
+//     using to_ptr = mpfr_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = false;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         if (ensure_exact) {
+//             if (mpfr_fits_d_p(dst, *src, MPFR_RNDN) != 0) {
+//                 return ConversionResult::Inexact;
+//             }
+//         }
+//         mpfr_set_d(dst, *src, MPFR_RNDN);
+//         return ConversionResult::Success;
+//     }
+// };
+//
+// template <>
+// struct ConversionHelper<MPFloat, MPInt, void>
+// {
+//     using from_ptr = mpfr_srcptr;
+//     using to_ptr = mpz_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = false;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         mpfr_get_z(dst, src, MPFR_RNDN);
+//
+//         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+//             | MPFR_FLAGS_UNDERFLOW);
+//
+//         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+//         mpfr_flags_clear(MPFR_FLAGS_ALL);
+//         if (t & ~flags) { return ConversionResult::Failed; }
+//         if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+//
+//         return ConversionResult::Success;
+//     }
+// };
+//
+// template <>
+// struct ConversionHelper<MPInt, MPFloat, void>
+// {
+//     using from_ptr = mpz_srcptr;
+//     using to_ptr = mpfr_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = false;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         mpfr_set_z(dst, src, MPFR_RNDN);
+//
+//         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+//             | MPFR_FLAGS_UNDERFLOW);
+//
+//         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+//         mpfr_flags_clear(MPFR_FLAGS_ALL);
+//         if (t & ~flags) { return ConversionResult::Failed; }
+//         if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+//
+//         return ConversionResult::Success;
+//     }
+// };
+//
+//
+// template <>
+// struct ConversionHelper<MPFloat, MPRational, void>
+// {
+//     using from_ptr = mpfr_srcptr;
+//     using to_ptr = mpq_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = true;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         ignore_unused(ensure_exact);
+//         mpfr_get_q(dst, src);
+//         return ConversionResult::Success;
+//     }
+// };
+//
+// template <>
+// struct ConversionHelper<MPRational, MPFloat, void>
+// {
+//     using from_ptr = mpq_srcptr;
+//     using to_ptr = mpfr_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = false;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         mpfr_set_q(dst, src, MPFR_RNDN);
+//
+//         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+//             | MPFR_FLAGS_UNDERFLOW);
+//
+//         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+//         mpfr_flags_clear(MPFR_FLAGS_ALL);
+//         if (t & ~flags) { return ConversionResult::Failed; }
+//         if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+//
+//         return ConversionResult::Success;
+//     }
+// };
+//
+//
+// template <>
+// struct ConversionHelper<MPFloat, MPFloat, void>
+// {
+//     using from_ptr = mpfr_srcptr;
+//     using to_ptr = mpfr_ptr;
+//
+//     static constexpr bool is_possible = true;
+//     static constexpr bool is_always_exact = false;
+//
+//     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+//     {
+//         mpfr_set(dst, src, MPFR_RNDN);
+//
+//         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+//             | MPFR_FLAGS_UNDERFLOW);
+//
+//         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+//         mpfr_flags_clear(MPFR_FLAGS_ALL);
+//         if (t & ~flags) { return ConversionResult::Failed; }
+//         if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+//
+//         return ConversionResult::Success;
+//     }
+// };
 
 }
 

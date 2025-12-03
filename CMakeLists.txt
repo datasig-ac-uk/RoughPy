@@ -200,12 +200,12 @@ if (RPY_USING_CONAN)
     find_package(OpenCLHeaders CONFIG REQUIRED)
     find_package(pcg-cpp CONFIG REQUIRED)
     find_package(gmp CONFIG REQUIRED)
-    find_package(mpfr CONFIG REQUIRED)
+#    find_package(mpfr CONFIG REQUIRED)
 else()
     find_package(OpenCL CONFIG REQUIRED)
     find_package(PCGRandom REQUIRED)
     find_package(GMP REQUIRED)
-    find_package(MPFR REQUIRED)
+#    find_package(MPFR REQUIRED)
 endif()
 
 message(STATUS "Target architecture ${RPY_ARCH}")
@@ -274,13 +274,35 @@ endif ()
 
 
 if (ROUGHPY_BUILD_PYLIB)
+    add_library(PythonCAPICompat INTERFACE)
+    set_target_properties(PythonCAPICompat PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/vendored/pythoncapi_compat/"
+    )
+
     add_subdirectory(roughpy)
 
+
+    if (NOT DEFINED SKBUILD_NULL_DIR)
+        set(SKBUILD_NULL_DIR roughpy/null)
+    endif()
 
     install(TARGETS RoughPy_PyModule
             RUNTIME DESTINATION roughpy
             LIBRARY
             DESTINATION roughpy
+            NAMELINK_SKIP
+            ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
+            INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            FRAMEWORK DESTINATION roughpy
+            EXCLUDE_FROM_ALL
+    )
+
+    install(TARGETS RoughPyComputeModule
+            RUNTIME DESTINATION roughpy/compute
+            LIBRARY DESTINATION roughpy/compute
             NAMELINK_SKIP
             ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
             COMPONENT Development
@@ -297,7 +319,12 @@ if (ROUGHPY_BUILD_PYLIB)
             PATTERN "py.typed"
             PATTERN "*.py"
             PATTERN "*.pyi"
-            PATTERN "src/*" EXCLUDE)
+            PATTERN "compute/*.pyi?"
+            PATTERN "src" EXCLUDE
+            PATTERN "compute/_src" EXCLUDE
+            PATTERN "ocl_kernels" EXCLUDE
+    )
+
 
 endif ()
 

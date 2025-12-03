@@ -7,6 +7,15 @@
 #include <stdint.h>
 
 /*
+ * The pythoncapi_compat header contains backports of a large number of number
+ * of functions from the CAPI of convenient functions and macros that have been
+ * added in more recent versions of Python that are extremely useful for
+ * writing extensions. This header was originally our attempt to recreate this
+ * header before it was known to exist.
+ */
+#include <pythoncapi_compat.h>
+
+/*
  * structmember.h was deprecated in Python 3.12 with the functionality folded
  * into the main Python headers. Unfortunately, they also renamed all the
  * constants in this process and didn't include any compatibility. If we need
@@ -118,95 +127,5 @@
 #define RPC_PY_KWORD_CAST(ARG) ARG
 #endif
 
-
-// Python 3.10 added Py_Is and Py_IsNone which are both useful
-#if !defined(Py_Is)
-#define Py_Is(x, y) ((x) == (y))
-#endif
-#if !defined(Py_IsNone)
-#define Py_IsNone(x) Py_Is((x), Py_None)
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-// Python 3.10 added new functions Py_NewRef and Py_XNewRef which are very useful
-// we need those all over the place, so backport
-#if PY_VERSION_HEX < PYVER_HEX(3, 10)
-static inline PyObject* Py_NewRef(PyObject* obj)
-{
-  Py_INCREF(obj);
-  return obj;
-}
-
-static inline PyObject* Py_XNewRef(PyObject* obj)
-{
-  Py_XINCREF(obj);
-  return obj;
-}
-
-
-#endif
-
-
-// Python 3.14 introduced PyLong_AsInt32 which we use in places to convert to a
-// 32-bit integer when int and long are not the same size (e.g. most 64-bit Unix
-// systems). We implement it here if it is not defined.
-
-RPY_NO_EXPORT
-int32_t RPC_PyLongAsInt32(PyObject* pylong);
-
-#if PY_VERSION_HEX < PYVER_HEX(3, 14)
-#if LONG_MAX == INT32_MAX
-#define PyLong_AsInt32(obj) PyLong_AsLong((obj))
-#elif PY_VERSION_HEX >= PYVER_HEX(3, 13) && INT_MAX == INT32_MAX
-#define PyLong_AsInt32(obj) PyLong_AsInt((obj))
-#else
-#define PyLong_AsInt32(obj) RPC_PyLongAsInt32((obj))
-#endif
-#endif
-
-
-/*
- * Python 3.10 added the PyModule_AddObjectRef, which is the new way that objects
- * should be added to a Python module. This function does not steal a reference
- * to the object, so it must always be decremented from the calling scope after
- * completion. For the benefit of Python 3.9 we replicate a version of this here
- * which is not quite as sophisticated as the "real" implementation but does
- * the same job.
- */
-#if PY_VERSION_HEX < PYVER_HEX(3, 10)
-static inline int PyModule_AddObjectRef(PyObject* module, const char* name, PyObject* object)
-{
-  if (object == NULL) { return -1; }
-  Py_INCREF(object);
-  if (PyModule_AddObject(module, name, object) < 0) {
-    Py_DECREF(object);
-    return -1;
-  }
-  return 0;
-}
-#endif
-
-
-/*
- * Similarly, Python 3.13 added PyModule_Add which always steals a reference to
- * obj even on failure.
- */
-#if PY_VERSION_HEX < PYVER_HEX(3, 13)
-static inline int PyModule_Add(PyObject* module, const char* name, PyObject* obj)
-{
-  int result = PyModule_AddObjectRef(module, name, obj);
-  Py_XDECREF(obj);
-  return result;
-}
-#endif
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif// ROUGHPY_COMPUTE__SRC_PY_COMPAT_H

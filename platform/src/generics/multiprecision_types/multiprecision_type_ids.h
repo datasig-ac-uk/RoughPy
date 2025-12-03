@@ -7,7 +7,7 @@
 
 
 #include <gmp.h>
-#include <mpfr.h>
+// #include <mpfr.h>
 
 #include "roughpy/core/types.h"
 #include "roughpy/core/traits.h"
@@ -18,7 +18,7 @@ namespace rpy::generics {
 
 using MPInt = remove_pointer_t<mpz_ptr>;
 using MPRational = remove_pointer_t<mpq_ptr>;
-using MPFloat = remove_pointer_t<mpfr_ptr>;
+// using MPFloat = remove_pointer_t<mpfr_ptr>;
 
 
 template <>
@@ -27,9 +27,9 @@ inline constexpr string_view type_id_of<MPInt> = "apz";
 template <>
 inline constexpr string_view type_id_of<MPRational> = "apq";
 
-template <>
-inline constexpr string_view type_id_of<MPFloat> = "apf";
-
+// template <>
+// inline constexpr string_view type_id_of<MPFloat> = "apf";
+//
 
 
 }

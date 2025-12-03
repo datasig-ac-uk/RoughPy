@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -58,7 +58,7 @@ jobs:
           twine check dist/*
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sdist
           path: ./dist/*
@@ -78,7 +78,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -102,14 +102,14 @@ jobs:
         run:  brew install autoconf automake libtool m4 ninja
 
       - name: Build and test
-        uses: pypa/cibuildwheel@v3.1.4
+        uses: pypa/cibuildwheel@v3.3.0
         env:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CMAKE_GENERATOR: "Ninja"
           CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -130,13 +130,13 @@ jobs:
         run: python -m pip install twine
 
       - name: Retrieve sdist
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: sdist
           path: dist
 
       - name: Retrieve wheels
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: "cibw-*"
           path: dist
