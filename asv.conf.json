@@ -33,7 +33,6 @@
         "/usr/bin/ls -l {env_dir}/lib/python3.12/site-packages/roughpy_jax/",
         "/usr/bin/ls -l {env_dir}/lib/python3.12/site-packages/roughpy/",
         "/usr/bin/which python"
-        // "PYTHONPATH='' python -c \"import roughpy_jax; print('RoughPy JAX build successful')\""
     ],
     
     "uninstall_command": [
