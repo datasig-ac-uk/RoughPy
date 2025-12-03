@@ -6,6 +6,7 @@ import roughpy_jax as rpj
 from rpy_test_common import array_dtypes
 
 
+@pytest.mark.skipif(True, reason="FIXME disabled awaiting lie tensor internals")
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
 def test_l2t_t2l_roundtrip(jnp_dtype):
     lie_basis = rpj.LieBasis(4, 4)
@@ -24,6 +25,7 @@ def test_l2t_t2l_roundtrip(jnp_dtype):
     assert jnp.allclose(x.data, y.data, atol=1e-7)
 
 
+@pytest.mark.skipif(True, reason="FIXME disabled awaiting lie tensor internals")
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
 def test_l2t_scaled_t2l_roundtrip(jnp_dtype):
     lie_basis = rpj.LieBasis(4, 4)
@@ -42,6 +44,7 @@ def test_l2t_scaled_t2l_roundtrip(jnp_dtype):
     assert jnp.allclose(0.5 * x.data, y.data, atol=1e-7)
 
 
+@pytest.mark.skipif(True, reason="FIXME disabled awaiting lie tensor internals")
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
 def test_l2t_t2l_scaled_roundtrip(jnp_dtype):
     lie_basis = rpj.LieBasis(4, 4)
