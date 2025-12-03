@@ -36,12 +36,14 @@ def _create_tensor_with_data(rng, basis, jnp_dtype):
     """
     data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
     data[1:basis.width + 1] = rng.normal(size=(basis.width,))
-    return rpj.FreeTensor(data, basis)
+    j_data = jnp.array(data, dtype=jnp_dtype)
+    return rpj.FreeTensor(j_data, basis)
 
 def _create_zero_tensor(basis, jnp_dtype):
     """Create a FreeTensor initialized to zero."""
     data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
-    return rpj.FreeTensor(data, basis)
+    j_data = jnp.array(data, dtype=jnp_dtype)
+    return rpj.FreeTensor(j_data, basis)
 
 class FreeTensorBenchmarks:
     """Benchmarks for free tensor multiplication operations."""
@@ -102,6 +104,8 @@ class FreeTensorZeroBenchmarks(FreeTensorBenchmarks):
         self.tensor_a = _create_zero_tensor(self.basis, jnp_dtype)
         self.tensor_b = _create_zero_tensor(self.basis, jnp_dtype)
         self.tensor_c = _create_zero_tensor(self.basis, jnp_dtype)
+        
+        self.signature_tensor = rpj.ft_exp(self.tensor_a)
     
 
 if __name__ == "__main__":
