@@ -108,7 +108,7 @@ def main():
 
         resources = nbconvert.exporters.ResourcesDict()
         resources["unique_key"] = p.stem
-        toc_entries.append(f"{TOC_INDENT}{p.stem}")
+        toc_entries.append(f"{TOC_INDENT}{p.stem}\n")
 
         out_path = Path(args.output_dir, p.stem).with_suffix(".rst")
         (nb, r) = exporter.from_filename(str(p), resources=resources)
