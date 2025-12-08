@@ -1,0 +1,12 @@
+sphinx
+ipython
+myst-parser
+
+numpydoc
+
+sphinx-design
+sphinx-autodoc-typehints
+sphinxcontrib-bibtex
+
+sphinx_rtd_theme
+pydata-sphinx-theme
