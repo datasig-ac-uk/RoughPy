@@ -123,7 +123,7 @@ def main():
             shutil.copy(in_path, op)
 
     tutorial_file = output_dir / "tutorials.rst"
-    tutorial_file_src = output_dir / "tutorial.rst.in"
+    tutorial_file_src = output_dir / "tutorials.rst.in"
 
     shutil.copy(tutorial_file_src, tutorial_file)
     with open(tutorial_file, "at") as fp:
