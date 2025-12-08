@@ -35,6 +35,7 @@ jobs:
         run: |
           pip install -r "docs/requirements.txt"
           pip install roughpy
+          sudo apt install pandoc
 
       - name: convert notebooks
         run: |
