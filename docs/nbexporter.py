@@ -94,16 +94,19 @@ def main():
 
     parser.add_argument("-o", "--output-dir", type=Path, default=Path.cwd())
 
-    parser.add_argument("notebooks", type=Path, nargs="+")
+    parser.add_argument("notebooks_dir", type=Path, nargs="+")
 
     args = parser.parse_args()
 
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(exist_ok=True, parents=True)
 
+    notebooks_dir = args.notebooks_dir.resolve()
+    notebooks = notebooks_dir.rglob("*.ipynb")
+
     toc_entries = []
 
-    for p in args.notebooks:
+    for p in notebooks:
         exporter = get_exporter()
 
         resources = nbconvert.exporters.ResourcesDict()
