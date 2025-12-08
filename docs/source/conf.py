@@ -23,7 +23,6 @@ extensions = [
     'myst_parser',
     'IPython.sphinxext.ipython_console_highlighting',
     'sphinxcontrib.bibtex',
-    "sphinxcontrib.video",
 ]
 
 bibtex_bibfiles = ['references.bib']

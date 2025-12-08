@@ -7,6 +7,8 @@ import nbconvert
 from nbconvert.preprocessors import Preprocessor
 
 
+TOC_INDENT = "   "
+
 class DatasigPreprocessor(Preprocessor):
 
     def __init__(self, *args, **kwargs):
@@ -76,6 +78,17 @@ def get_exporter():
     return nbconvert.exporters.RSTExporter(config=config)
 
 
+def get_referenced_images(resources):
+    if "referenced_images" not in resources:
+        return {}
+
+    images = resources["referenced_images"]
+    if not isinstance(images, dict):
+        return {}
+
+    return images
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -88,11 +101,14 @@ def main():
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(exist_ok=True, parents=True)
 
+    toc_entries = []
+
     for p in args.notebooks:
         exporter = get_exporter()
 
         resources = nbconvert.exporters.ResourcesDict()
         resources["unique_key"] = p.stem
+        toc_entries.append(f"{TOC_INDENT}{p.stem}\n")
 
         out_path = Path(args.output_dir, p.stem).with_suffix(".rst")
         (nb, r) = exporter.from_filename(str(p), resources=resources)
@@ -102,9 +118,18 @@ def main():
             op = output_dir / out_name
             op.write_bytes(data)
 
-        for out_path, in_path in r["referenced_images"].items():
+        for out_path, in_path in get_referenced_images(r).items():
             op = output_dir / out_path
             shutil.copy(in_path, op)
+
+    tutorial_file = output_dir / "tutorials.rst"
+    tutorial_file_src = output_dir / "tutorials.rst.in"
+
+    shutil.copy(tutorial_file_src, tutorial_file)
+    with open(tutorial_file, "at") as fp:
+        fp.writelines(toc_entries)
+
+
 
 
 if __name__ == "__main__":

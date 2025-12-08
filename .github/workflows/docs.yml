@@ -1,0 +1,75 @@
+name: docs.yml
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+
+      - name: Retrieve wheel
+        uses: actions/download-artifact@v6
+        with:
+          pattern: "cibw-*"
+          path: dist
+          merge-multiple: true
+
+      - name: clone repo
+        uses: actions/checkout@v6
+
+      - name: Clone application notebooks
+        uses: actions/checkout@v6
+        with:
+          repository: 'datasig-ac-uk/signature_applications'
+          ref: 'c4cc8303eb9eae88a5a25c50696d27b502d2217f'
+          path: 'notebooks'
+
+      - name: install deps
+        run: |
+          pip install -r "docs/requirements.txt"
+          pip install roughpy
+
+      - name: convert notebooks
+        run: |
+          python docs/nbexporter.py -o docs/source/user "${{ github.workspace }}/notebooks/**/*.ipynb"
+          
+      - name: build docs
+        run: |
+          make html
+        working-directory: "${{ github.workspace }}/docs"
+
+      - name: upload docs to GH Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/build/html/
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event_name == 'push' }}
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    permissions:
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to Github pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+
+
+
+

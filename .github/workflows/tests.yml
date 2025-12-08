@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - "examples/**"
-      - "doc/**"
+      - "docs/**"
       - "README.md"
       - "CHANGELOG"
       - "tools/*.py"
@@ -26,7 +26,7 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - "examples/**"
-      - "doc/**"
+      - "docs/**"
       - "README.md"
       - "CHANGELOG"
       - "tools/*.py"
