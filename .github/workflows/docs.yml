@@ -38,7 +38,7 @@ jobs:
 
       - name: convert notebooks
         run: |
-          python docs/nbexporter.py -o docs/source/user "${{ github.workspace }}/notebooks/**/*.ipynb"
+          python docs/nbexporter.py -o docs/source/user "${{ github.workspace }}/notebooks"
           
       - name: build docs
         run: |
