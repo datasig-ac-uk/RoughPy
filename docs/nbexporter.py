@@ -94,7 +94,7 @@ def main():
 
     parser.add_argument("-o", "--output-dir", type=Path, default=Path.cwd())
 
-    parser.add_argument("notebooks_dir", type=Path, nargs="+")
+    parser.add_argument("notebooks_dir", type=Path)
 
     args = parser.parse_args()
 
