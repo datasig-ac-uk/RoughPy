@@ -20,3 +20,8 @@ from roughpy_jax.algebra import (
     lie_to_tensor,
     tensor_to_lie,
 )
+
+from roughpy_jax.intervals import (Interval, IntervalType, RealInterval, DyadicInterval, Partition)
+
+from roughpy_jax.streams import (Stream, ValueStream, PiecewiseAbelianStream, DyadicCachedTickStream,
+                                 TensorValuedStream)
