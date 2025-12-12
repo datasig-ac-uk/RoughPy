@@ -208,6 +208,36 @@ class DenseOperation:
 
 
 ## Basic operations
+def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, basis,
+                                    b_min_deg, b_max_deg, c_min_deg, c_max_deg,
+                                    dtype, batch_dims):
+    db = basis.degree_begin
+
+    out_b = db[a_deg]
+    out_e = db[a_deg]
+    out_size = out_e - out_b
+
+
+    acc = jnp.zeros(batch_dims + (out_size,), dtype=dtype)
+
+    b_deg_b = max(b_min_deg, a_deg - c_max_deg)
+    b_deg_e = min(b_max_deg, a_deg - c_min_deg) + 1
+
+    for b_deg in range(b_deg_b, b_deg_e):
+        c_deg = a_deg - b_deg
+        b_b = db[b_deg]
+        b_e = db[b_deg+1]
+        c_b = db[c_deg]
+        c_e = db[c_deg+1]
+
+        b_level = b_data[..., b_b:b_e]
+        c_level = c_data[..., c_b:c_e]
+
+        acc = acc + jnp.tensordot(b_level, c_level, axes=0).reshape(-1)
+
+    return acc
+
+
 
 def _get_dense_level_func(b_data, c_data, basis, a_max_deg, b_min_deg, b_max_deg, c_min_deg, c_max_deg) -> Callable[
     [int, Array], Array]:
@@ -252,24 +282,44 @@ class DenseFTFma(Operation, DenseOperation):
     def fallback(a_data: Array,
                  b_data: Array,
                  c_data: Array,
+                 basis: Any,
                  a_max_deg: np.int32,
                  b_max_deg: np.int32,
                  c_max_deg: np.int32,
-                 degree_begin: np.ndarray[np.intp.dtype],
                  a_min_deg: np.int32 = 0,
                  b_min_deg: np.int32 = 0,
                  c_min_deg: np.int32 = 0,
                  shape_dtypes: tuple[jax.ShapeDtypeStruct] = ()
                  ) -> Array:
         a_max_deg = min(a_max_deg, b_max_deg + c_max_deg)
-        a_min_deg = max(a_min_deg, b_min_deg + c_min_deg)
 
-        out_data = jnp.zeros_like(a_data)
+        dtype = jnp.result_type(a_data.dtype, b_data.dtype, c_data.dtype)
 
-        level_d_func = _get_dense_level_func(degree_begin, b_data, c_data, a_max_deg, b_min_deg, b_max_deg, c_min_deg,
-                                             c_max_deg)
+        batch_dims = a_data.shape[:-1]
+        assert batch_dims == b_data.shape[:-1] == c_data.shape[:-1]
 
-        return a_data + jax.lax.fori_loop(a_min_deg, a_max_deg, level_d_func, out_data)
+        level_gen = partial(
+            _dense_ft_mul_level_accumulator,
+            b_data=b_data,
+            c_data=c_data,
+            basis=basis,
+            b_min_deg=b_min_deg,
+            b_max_deg=b_max_deg,
+            c_min_deg=c_min_deg,
+            c_max_deg=c_max_deg,
+            dtype=dtype,
+            batch_dims=batch_dims
+        )
+
+        return jnp.concatenate([
+            level_gen(i) for i in range(0, a_max_deg)
+        ], axis=-1)
+
+
+
+
+
+
 
 
 @_init_operation
