@@ -229,7 +229,7 @@ class Operation:
     def convert_args_dtypes(self, *data_args):
         return tuple(arg.astype(self.data_dtype) for arg in data_args)
 
-    def __call__(self, *data_args):
+    def __call__(self, *data_args) -> cabc.Sequence[Array]:
         # Most operations will require homogeneous data arguments
         converted_args = self.convert_args_dtypes(*data_args)
 
@@ -299,7 +299,7 @@ class DenseFTFma(Operation, DenseOperation):
                  c_max_deg: np.int32,
                  b_min_deg: np.int32 = 0,
                  c_min_deg: np.int32 = 0,
-                 ) -> Array:
+                 ) -> tuple[Array, ...]:
         level_gen = partial(
             _dense_ft_mul_level_accumulator,
             b_data=b_data,
@@ -313,30 +313,27 @@ class DenseFTFma(Operation, DenseOperation):
 
         mul = jnp.concatenate([level_gen(i) for i in range(0, a_max_deg)], axis=-1)
 
-        return a_data + mul
+        return (a_data + mul,)
 
 
 class DenseFTMul(Operation, DenseOperation):
     fn_name = "ft_mul"
 
     class StaticArgs(TypedDict):
-        width: np.int32
-        depth: np.int32
-        degree_begin: np.ndarray[np.intp.dtype]
-        out_depth: np.int32
-        lhs_depth: np.int32
-        rhs_depth: np.int32
+        out_max_deg: np.int32
+        lhs_max_deg: np.int32
+        rhs_max_deg: np.int32
 
     @staticmethod
     def fallback(b_data: Array,
                  c_data: Array,
                  basis: Any,
-                 a_max_deg: np.int32,
-                 b_max_deg: np.int32,
-                 c_max_deg: np.int32,
-                 b_min_deg: np.int32 = 0,
-                 c_min_deg: np.int32 = 0,
-                 ) -> Array:
+                 out_max_deg: np.int32,
+                 lhs_max_deg: np.int32,
+                 rhs_max_deg: np.int32,
+                 lhs_min_deg: np.int32 = 0,
+                 rhs_min_deg: np.int32 = 0,
+                 ) -> tuple[Array]:
 
         batch_dims = b_data.shape[:-1]
         assert batch_dims == c_data.shape[:-1]
@@ -346,15 +343,15 @@ class DenseFTMul(Operation, DenseOperation):
             b_data=b_data,
             c_data=c_data,
             basis=basis,
-            b_min_deg=b_min_deg,
-            b_max_deg=b_max_deg,
-            c_min_deg=c_min_deg,
-            c_max_deg=c_max_deg,
+            b_min_deg=lhs_min_deg,
+            b_max_deg=lhs_max_deg,
+            c_min_deg=rhs_min_deg,
+            c_max_deg=rhs_max_deg,
         )
 
-        return jnp.concatenate([
-            level_gen(i) for i in range(0, a_max_deg)
-        ], axis=-1)
+        return (jnp.concatenate([
+            level_gen(i) for i in range(0, out_max_deg)
+        ], axis=-1),)
 
 
 
@@ -370,7 +367,7 @@ class DenseAntipode(Operation, DenseOperation):
             arg_data: Array,
             basis: Any,
             no_sign: bool = False,
-    ) -> Array:
+    ) -> tuple[Array]:
         db = basis.degree_begin
 
         def transpose_level(i):
@@ -383,7 +380,9 @@ class DenseAntipode(Operation, DenseOperation):
             axis=-1
         )
 
-        return data
+        return (data, )
+
+
 
 
 class DenseSTFma(Operation, DenseOperation):
@@ -395,6 +394,43 @@ class DenseSTFma(Operation, DenseOperation):
         c_max_deg: np.int32
         b_min_deg: np.int32 # not required
         c_min_deg: np.int32 # not required
+
+    @staticmethod
+    def fallback(
+            a_data: Array,
+            b_data: Array,
+            c_data: Array,
+            basis: BasisLike,
+            a_max_deg: np.int32,
+            b_max_deg: np.int32,
+            c_max_deg: np.int32,
+            b_min_deg: np.int32 = 0,
+            c_min_deg: np.int32 = 0,
+    ) -> tuple[Array]:
+        raise NotImplementedError
+
+class DenseSTMul(Operation, DenseOperation):
+    ft_name = "st_mul"
+
+    class StaticArgs(TypedDict):
+        lhs_max_deg: np.int32
+        rhs_max_deg: np.int32
+        lhs_min_deg: np.int32 # not required
+        rhs_min_deg: np.int32 # not required
+
+    @staticmethod
+    def fallback(
+            b_data: Array,
+            c_data: Array,
+            basis: BasisLike,
+            out_max_deg: np.int32,
+            lhs_max_deg: np.int32,
+            rhs_max_deg: np.int32,
+            lhs_min_deg: np.int32 = 0,
+            rhs_min_deg: np.int32 = 0,
+    ) -> tuple[Array]:
+        raise NotImplementedError
+
 
 
 
