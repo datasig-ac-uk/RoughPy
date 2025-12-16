@@ -173,7 +173,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
 
     dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
     basis = a.basis
-    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, 1)
+    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
 
     a_max_deg = basis.depth
 
@@ -205,7 +205,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     _check_basis_compat(a.basis, b.basis)
 
     dtype = jnp.result_type(a.data.dtype, b.data.dtype)
-    batch_dims = _get_and_check_batch_dims(a.data, b.data, 1)
+    batch_dims = _get_and_check_batch_dims(a.data, b.data, core_dims=1)
 
     basis = a.basis
 
@@ -235,7 +235,7 @@ def antipode(a: FreeTensor) -> FreeTensor:
     """
 
     op_cls = Operation.get_operation("ft_antipode", "dense")
-    batch_dims = _get_and_check_batch_dims(a.data)
+    batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
     basis = a.basis
     op = op_cls(basis, a.data.dtype, batch_dims)
@@ -261,7 +261,7 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
     _check_basis_compat(a.basis, b.basis, c.basis)
 
     basis = a.basis
-    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data)
+    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
     dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
 
     op_cls = Operation.get_operation("st_fma", "dense")
@@ -293,7 +293,7 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
 
     basis = lhs.basis
     dtype = jnp.result_type(lhs.data.dtype, rhs.data.dtype)
-    batch_dims = _get_and_check_batch_dims(lhs.data, rhs.data)
+    batch_dims = _get_and_check_batch_dims(lhs.data, rhs.data, core_dims=1)
 
     op_cls = Operation.get_operation("st_mul", "dense")
     out_max_deg = basis.depth
