@@ -43,12 +43,76 @@ class BasisLike(typing.Protocol, cabc.Hashable):
     depth: np.int32
     depth: np.ndarray[np.int32.dtype]
 
+    def size(self) -> int:
+        ...
+
 
 
 class EmptyStaticArgs(TypedDict):
     ...
 
+
 class Operation:
+    """
+    Represents a base class for defining JAX-based operations with support for
+    platform-specific implementations, fallback mechanisms, static argument
+    construction, and FFI calls.
+
+    This class provides a structured framework for efficiently handling rough-path
+    extensions to the set of operations provided by JAX. It includes mechanisms to
+    register new operations, manage platform-specific implementations, define
+    fallback procedures, and prepare attributes required for FFI calls. The
+    functionality is built to support extensibility and should primarily be
+    subclassed.
+
+    :cvar no_acceleration: Indicates whether to disable the use of accelerated
+        routines and fall back to pure JAX implementations.
+    :type no_acceleration: ClassVar[bool]
+
+    :cvar data_layout: Defines the supported data layout for algebra objects.
+        Currently, only dense representation is supported.
+    :type data_layout: ClassVar[str]
+
+    :cvar fn_name: Stores the unique name of the specific operation.
+    :type fn_name: ClassVar[str]
+
+    :cvar supported_platforms: A set of platform names indicating platforms
+        with accelerator support for at least one data type.
+    :type supported_platforms: ClassVar[set[str]]
+
+    :cvar implementations: A dictionary mapping platform and data type tuples
+        to operation function names.
+    :type implementations: ClassVar[dict[tuple[str, str], str]]
+
+    :cvar default_ffi_call_args: Default arguments for FFI calls when generating
+        platform-specific lowerings of the operation.
+    :type default_ffi_call_args: ClassVar[dict[str, Any]]
+
+    :cvar StaticArgs: TypedDict subclass that describes static arguments required
+        for FFI implementations and fallback operations.
+    :type StaticArgs: ClassVar[type[TypedDict]]
+
+    :ivar basis: The primary basis object associated with the operation.
+    :type basis: BasisLike
+
+    :ivar data_dtype: The data type for all input and output data for the operation.
+    :type data_dtype: jnp.dtype
+
+    :ivar batch_dims: Configuration of batching dimensions for the current
+        operation instance.
+    :type batch_dims: tuple[int, ...]
+
+    :ivar static_args: Dictionary of static arguments passed to FFI calls or
+        fallback implementations.
+    :type static_args: type[TypedDict]
+
+    :ivar result_shape_dtypes: Shape and type information for the output arrays,
+        used in FFI call generation.
+    :type result_shape_dtypes: tuple[jax.ShapeDtypeStruct, ...]
+
+    :ivar ffi_call_args: Additional arguments provided for FFI calls.
+    :type ffi_call_args: dict[str, Any]
+    """
     # Flag to disable the use of accelerated routines in any operation entirely
     # and fall back to using the pure JAX implementations
     #
@@ -87,16 +151,32 @@ class Operation:
     }
 
 
+    # A description of the static arguments that are passed to both the FFI
+    # implementors of the operation and the fallback (if it has one). This
+    # should not contain the static arguments provided via the basis. These
+    # are handled separately as it might be specific to each operation.
+    #
+    # This should be a TypedDict instance, containing a complete description
+    # of all the required and optional arguments. This will be passed to the
+    # FFI calls by ** unpacking. Using a TypedDict gives some level of
+    # argument checking
     StaticArgs: ClassVar[type[TypedDict]]
 
+    ## The following instance attributes are used by the class upon call to
+    ## select from available implementations and populate static arguments.
 
-    # Instance parameters, static attributes
+    # The primary basis associated with the operation
     basis: BasisLike
+    # data type for all data inputs and outputs
     data_dtype: jnp.dtype
+    # the configuration of batching
     batch_dims: tuple[int, ...]
+    # dictionary of static arguments
     static_args: type[TypedDict]
 
+    # For FFI calls, the shape of the output array(s)
     result_shape_dtypes: tuple[jax.ShapeDtypeStruct, ...]
+    # Additional arguments to be passed to the ffi call
     ffi_call_args: dict[str, Any]
 
 
@@ -170,6 +250,16 @@ class Operation:
         raise AttributeError("{type(self)} does not name a fallback operation")
 
     def make_ffi_static_args(self) -> dict:
+        """
+        Creates a dictionary of arguments containing static attributes for FFI (Foreign Function
+        Interface) with specific keys and values derived from basis properties and additional static
+        arguments.
+
+        :return: A dictionary containing static arguments with keys 'width', 'depth', and
+            'degree_begin', derived from the basis attributes, along with additional static
+            arguments merged from `self.static_args`.
+        :rtype: dict
+        """
         return {
             "width": self.basis.width,
             "depth": self.basis.depth,
@@ -227,6 +317,17 @@ class Operation:
         }
 
     def convert_args_dtypes(self, *data_args):
+        """
+        Converts the data types of the provided arguments to match the instance's data
+        dtype attribute. This operation ensures the consistency of data types within
+        the instance's context.
+
+        :param data_args: Positional arguments whose data types need to be converted.
+        :type data_args: tuple
+        :return: A tuple containing arguments with their data types converted to
+            the instance's `data_dtype` data type.
+        :rtype: tuple
+        """
         return tuple(arg.astype(self.data_dtype) for arg in data_args)
 
     def __call__(self, *data_args) -> cabc.Sequence[Array]:
