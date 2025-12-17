@@ -15,8 +15,7 @@
                 "ms-python.vscode-pylance",
                 "ms-vscode.cmake-tools",
                 "ms-vscode.cpptools",
-                "ms-vscode.cpptools-extension-pack",
-                "eamodio.gitlens"
+                "ms-vscode.cpptools-extension-pack"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/tools/venv/bin/python",
