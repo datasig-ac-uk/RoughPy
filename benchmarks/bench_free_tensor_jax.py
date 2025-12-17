@@ -23,7 +23,7 @@ TENSOR_SIZES = [
     (2, 3),  # Small - development/testing
     (3, 4),  # Medium - typical use
     (4, 5),  # Large - stress testing  
-    (2, 6),  # Deep - high-depth signatures
+    (4, 10),  # Deep - high-depth signatures
 ]
 
 DTYPES = [jnp.float32, jnp.float64]
