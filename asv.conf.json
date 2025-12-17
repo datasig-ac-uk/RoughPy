@@ -27,12 +27,7 @@
     "html_dir": ".asv/html",
 
     "install_command": [
-        "/usr/bin/pwd",
-        "python -m pip install {wheel_file}",
-        "python -m pip list",
-        "/usr/bin/ls -l {env_dir}/lib/python3.12/site-packages/roughpy_jax/",
-        "/usr/bin/ls -l {env_dir}/lib/python3.12/site-packages/roughpy/",
-        "/usr/bin/which python"
+        "python -m pip install {wheel_file}"
     ],
     
     "uninstall_command": [
@@ -40,11 +35,7 @@
     ],
 
     "build_command": [
-        "/usr/bin/echo $PATH",
-        "/usr/bin/which python",
-        "/usr/bin/pwd",
         "python -m pip install scikit-build-core[pyproject] 'pybind11<3.0.0' numpy hatch-fancy-pypi-readme jax",
-        "python -c \"from jax import ffi; print(ffi.include_dir())\"",
         "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip wheel --no-build-isolation --no-deps -vvv {build_dir} -w {build_cache_dir}"
     ],
 
