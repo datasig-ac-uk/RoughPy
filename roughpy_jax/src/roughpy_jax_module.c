@@ -32,16 +32,16 @@ static inline int add_fn_capsule(PyObject* dict, const char* name, void* fn_ptr)
 
 
 static int make_jax_function_dict(PyObject* module) {
-   int ret = -1;
-   PyObject* dict = PyDict_New();
-   if (dict == NULL) { return ret; }
+    int ret = -1;
+    PyObject* dict = PyDict_New();
+    if (dict == NULL) { return ret; }
 
-   if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_ft_antipode) < 0) {
-       goto finish;
-   }
-   if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_ft_exp) < 0) {
-       goto finish;
-   }
+    if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_ft_antipode) < 0) {
+        goto finish;
+    }
+    if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_ft_exp) < 0) {
+        goto finish;
+    }
     if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_ft_fma) < 0) {
          goto finish;
     }
@@ -56,10 +56,10 @@ static int make_jax_function_dict(PyObject* module) {
     }
 
 
-   ret = PyModule_AddObjectRef(module, "cpu_functions", dict); // possibly needs the compat header
+    ret = PyModule_AddObjectRef(module, "cpu_functions", dict); // possibly needs the compat header
 finish:
-   Py_DECREF(dict);
-   return ret;
+    Py_DECREF(dict);
+    return ret;
 }
 
 static PyMethodDef rpy_jax_methods[] = {
