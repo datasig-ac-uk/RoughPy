@@ -41,7 +41,6 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/lie_multiplication_cache.cpp
         _src/lie_multiplication_cache.h
         _src/py_binary_array_fn.hpp
-        _src/py_compat.c
         _src/py_compat.h
         _src/py_fnv1a_hash.h
         _src/py_headers.h
@@ -53,4 +52,7 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/tensor_basis.c
         _src/tensor_basis.h
 )
+
+
+target_link_libraries(RoughPyComputeModule PRIVATE PythonCAPICompat)
 

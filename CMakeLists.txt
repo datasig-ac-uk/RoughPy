@@ -274,7 +274,13 @@ endif ()
 
 
 if (ROUGHPY_BUILD_PYLIB)
+    add_library(PythonCAPICompat INTERFACE)
+    set_target_properties(PythonCAPICompat PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/vendored/pythoncapi_compat/"
+    )
+
     add_subdirectory(roughpy)
+
 
     if (NOT DEFINED SKBUILD_NULL_DIR)
         set(SKBUILD_NULL_DIR roughpy/null)

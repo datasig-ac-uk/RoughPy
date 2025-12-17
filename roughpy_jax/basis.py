@@ -4,8 +4,6 @@ import jax
 import jax.numpy as jnp
 
 # FIXME review point: neatly load compute module
-# import sys
-# sys.path.append('roughpy/compute')
 from roughpy.compute import _rpy_compute_internals
 
 

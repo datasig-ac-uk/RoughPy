@@ -1,0 +1,3 @@
+[submodule "vendored/pythoncapi_compat"]
+	path = vendored/pythoncapi_compat
+	url = https://github.com/python/pythoncapi-compat.git
