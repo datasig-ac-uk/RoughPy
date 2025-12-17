@@ -26,8 +26,8 @@ cd benchmarks
 # Initialize ASV (first time only)
 asv machine --yes
 
-# Run benchmarks on current branch
-asv run
+# Run benchmarks on current branch (use spawn so jax doesn't complain)
+asv run --launch-method spawn
 ```
 
 #### Continuous Use
@@ -38,7 +38,7 @@ asv run
 asv run main^..HEAD
 
 # Run specific benchmark categories
-asv run --bench "FreeTensor"
+asv run --launch-method spawn --bench "FreeTensor"
 
 # Generate HTML report
 asv publish
