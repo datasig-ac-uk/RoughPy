@@ -219,7 +219,7 @@ class Operation:
         choice, *other = bases
 
         if preferred_basis is not None and choice.width != preferred_basis.width:
-            raise ValueError(f"mismatched width on basis {0}, expected {preferred_basis.width} but got {choice.width}")
+            raise ValueError(f"mismatched width on basis 0, expected {preferred_basis.width} but got {choice.width}")
 
         for i, basis in enumerate(other, start=1):
             if basis.width != choice.width:
