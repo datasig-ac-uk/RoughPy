@@ -6,6 +6,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h> 
 #include <xla/ffi/api/c_api.h>
+#include <pythoncapi_compat.h>
 
 #include "cpu/dense_ft_antipode.h"
 #include "cpu/dense_ft_exp.h"
@@ -54,7 +55,6 @@ static int make_jax_function_dict(PyObject* module) {
     if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_st_fma) < 0) {
          goto finish;
     }
-
 
     ret = PyModule_AddObjectRef(module, "cpu_functions", dict); // possibly needs the compat header
 finish:

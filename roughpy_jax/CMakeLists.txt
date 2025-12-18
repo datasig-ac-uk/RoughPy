@@ -40,6 +40,10 @@ python_add_library(RoughPy_JaxModule MODULE
     src/cpu/xla_common.cpp
     src/roughpy_jax_module.c
 )
+# add_library(PythonCAPICompat INTERFACE)
+# set_target_properties(PythonCAPICompat PROPERTIES
+#         INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../vendored/pythoncapi_compat/"
+# )
 
 # Ensure that XLA FFI definitions are visible in genreated .so
 set_target_properties(RoughPy_JaxModule PROPERTIES
@@ -57,6 +61,7 @@ endif ()
 
 target_include_directories(RoughPy_JaxModule PRIVATE
     ${XLA_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/../vendored/pythoncapi_compat
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/..
 )
