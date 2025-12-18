@@ -31,7 +31,9 @@ RUN pip install \
     "jax" \
     absl-py \
     pytest \
-    pytest-cov
+    pytest-cov \ 
+    pytest-benchmark \
+    asv
 
 # Use system tools for vcpkg when building aarch64 (Linux on MacOS)
 ENV VCPKG_FORCE_SYSTEM_BINARIES=0
@@ -46,4 +48,4 @@ RUN /tools/vcpkg/bootstrap-vcpkg.sh
 ENV VCPKG_ROOT=/tools/vcpkg
 
 # This is required to be able to run pytest in the VSCode terminal
-ENV PYTHONPATH=.
+ENV PYTHONPATH="/workspaces/RoughPy:$PYTHONPATH"

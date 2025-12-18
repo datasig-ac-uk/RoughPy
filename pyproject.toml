@@ -35,7 +35,7 @@ classifiers = [
     "Operating System :: MacOS"
 ]
 dependencies = [
-    "numpy >= 1.23.5"
+    "numpy >= 1.23.5",
 ]
 #dependencies=[
 #    "intel-openmp; platform_system!='Windows'"
@@ -141,4 +141,13 @@ repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} --ignore
 [project.optional-dependencies]
 dev = [
     "jax"
+]
+jax = [
+    "jax>=0.4.0",
+    "jaxlib>=0.4.0",
+]
+benchmarks = [
+    "asv",
+    "virtualenv",
+    "psutil"
 ]
