@@ -212,6 +212,30 @@ class Operation:
         ),)
 
     @classmethod
+    def get_result_basis(cls, bases: tuple[BasisLike, ...], preferred_basis) -> BasisLike:
+        if not bases and preferred_basis is None:
+            raise ValueError("basis list should be non-empty")
+
+        choice, *other = bases
+
+        if preferred_basis is not None and choice.width != preferred_basis.width:
+            raise ValueError(f"mismatched width on basis {0}, expected {preferred_basis.width} but got {choice.width}")
+
+        for i, basis in enumerate(other, start=1):
+            if basis.width != choice.width:
+                raise ValueError(f"mismatched width on basis {i}, expected {choice.width} but got {basis.width}")
+
+            if basis.depth >= choice.depth:
+                choice = basis
+
+        if preferred_basis is not None:
+            return preferred_basis
+
+        return choice
+
+
+
+    @classmethod
     def __init_subclass__(cls, **kwargs):
         if not hasattr(cls, "supported_platforms"):
             cls.supported_platforms = set()
@@ -224,8 +248,9 @@ class Operation:
 
         Operation.__all_operations[cls.fn_name, cls.data_layout] = cls
 
-    def __init__(self, basis, dtype, batch_dims, ffi_call_args: Optional[dict[str, Any]]=None, **kwargs):
-        self.basis = basis
+    def __init__(self, bases, dtype, batch_dims, ffi_call_args: Optional[dict[str, Any]] = None,
+                 specific_basis: Optional[BasisLike] = None, **kwargs):
+        self.basis = basis = self.get_result_basis(bases, specific_basis)
         self.data_dtype = dtype
         self.batch_dims = batch_dims
         self.static_args = self.StaticArgs(**kwargs)
