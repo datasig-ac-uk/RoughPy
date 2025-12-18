@@ -56,7 +56,7 @@ static int make_jax_function_dict(PyObject* module) {
          goto finish;
     }
 
-    ret = PyModule_AddObjectRef(module, "cpu_functions", dict); // possibly needs the compat header
+    ret = PyModule_AddObjectRef(module, "cpu_functions", dict);
 finish:
     Py_DECREF(dict);
     return ret;
