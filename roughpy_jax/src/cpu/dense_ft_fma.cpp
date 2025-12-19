@@ -1,9 +1,10 @@
+#include "dense_ft_fma.h"
+
 #include <algorithm>
 
 #include "roughpy_compute/dense/basic/free_tensor_fma.hpp"
 
 #include "xla_common.hpp"
-
 #include "batching_loop.hpp"
 
 using namespace rpy::compute;
