@@ -176,7 +176,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
 
     op_cls = Operation.get_operation("ft_fma", "dense")
 
-    op = op_cls(basis, dtype, batch_dims,
+    op = op_cls((a.basis, b.basis, c.basis), dtype, batch_dims,
                 a_max_deg=a_max_deg,
                 b_max_deg=min(a_max_deg, b.basis.depth),
                 c_max_deg=min(a_max_deg, c.basis.depth),
@@ -203,15 +203,12 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     batch_dims = _get_and_check_batch_dims(a.data, b.data, core_dims=1)
 
     # Use same basis convention as ft_mul in roughpy/compute
-    out_max_deg = b.basis.depth
-
-    a_max_deg = a.basis.depth
     op_cls = Operation.get_operation("ft_mul", "dense")
 
-    op = op_cls(basis, dtype, batch_dims,
-                out_max_deg=basis.depth,
-                lhs_max_deg=min(out_max_deg, a.basis.depth),
-                rhs_max_deg=min(out_max_deg, b.basis.depth))
+    op = op_cls((a.basis, b.basis), dtype, batch_dims,
+                out_max_deg=a.basis.depth,
+                lhs_max_deg=min(a.basis.depth, a.basis.depth),
+                rhs_max_deg=min(a.basis.depth, b.basis.depth))
 
 
     out_data = op(a.data, b.data)
