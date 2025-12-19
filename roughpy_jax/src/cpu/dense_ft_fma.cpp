@@ -4,8 +4,8 @@
 
 #include "roughpy_compute/dense/basic/free_tensor_fma.hpp"
 
-#include "xla_common.hpp"
 #include "batching_loop.hpp"
+#include "xla_common.hpp"
 
 using namespace rpy::compute;
 
@@ -31,7 +31,6 @@ struct DenseFTFmaFunctor : DenseFTFmaStaticArgs {
     explicit DenseFTFmaFunctor(DenseFTFmaStaticArgs args)
         : DenseFTFmaStaticArgs(std::move(args))
     {}
-
 
     ffi::Error operator()(
             Scalar* a_data,
@@ -67,12 +66,14 @@ ffi::Error cpu_dense_ft_fma_impl(
         ffi::AnyBuffer a,
         ffi::AnyBuffer b,
         ffi::AnyBuffer c,
-        int width,
-        int depth,
+        int32_t width,
+        int32_t depth,
         ffi::Span<const int64_t> degree_begin,
-        int a_max_deg,
-        int b_max_deg,
-        int c_max_deg
+        int32_t a_max_deg,
+        int32_t b_max_deg,
+        int32_t c_max_deg,
+        int32_t b_min_deg,
+        int32_t c_min_deg
 )
 {
 
@@ -80,7 +81,9 @@ ffi::Error cpu_dense_ft_fma_impl(
             TensorBasis{degree_begin.begin(), width, depth},
             a_max_deg,
             b_max_deg,
-            c_max_deg
+            c_max_deg,
+            b_min_deg,
+            c_min_deg
     };
 
     RPY_XLA_SUCCESS_OR_RETURN(
@@ -97,13 +100,13 @@ ffi::Error cpu_dense_ft_fma_impl(
     );
 
     return select_implementation_and_go<DenseFTFmaFunctor>(
-        std::move(static_args),
-        out->element_type(),
-        out,
-        a,
-        b,
-        c
-        );
+            std::move(static_args),
+            out->element_type(),
+            out,
+            a,
+            b,
+            c
+    );
 }
 
 ffi::Error cpu_dense_ft_mul_impl(
@@ -115,7 +118,9 @@ ffi::Error cpu_dense_ft_mul_impl(
         ffi::Span<const int64_t> degree_begin,
         int32_t out_max_deg,
         int32_t lhs_max_deg,
-        int32_t rhs_max_deg
+        int32_t rhs_max_deg,
+        int32_t lhs_min_deg,
+        int32_t rhs_min_deg
 )
 {
     if (out_max_deg == -1 || out_max_deg > depth) { out_max_deg = depth; }
@@ -124,7 +129,9 @@ ffi::Error cpu_dense_ft_mul_impl(
             TensorBasis{degree_begin.begin(), width, depth},
             std::min(out_max_deg, lhs_max_deg + rhs_max_deg),
             lhs_max_deg,
-            rhs_max_deg
+            rhs_max_deg,
+        lhs_min_deg,
+        rhs_min_deg
     };
 
     RPY_XLA_SUCCESS_OR_RETURN(
@@ -156,12 +163,15 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
                 .Arg<xla::ffi::AnyBuffer>()
                 .Arg<xla::ffi::AnyBuffer>()
                 .Arg<xla::ffi::AnyBuffer>()
-                .Attr<int>("width")
-                .Attr<int>("depth")
+                .Attr<int32_t>("width")
+                .Attr<int32_t>("depth")
                 .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-                .Attr<int>("out_depth")
-                .Attr<int>("lhs_depth")
-                .Attr<int>("rhs_depth")
+                .Attr<int32_t>("a_max_deg")
+                .Attr<int32_t>("b_max_deg")
+                .Attr<int32_t>("c_max_deg")
+                .Attr<int32_t>("b_min_deg")
+                .Attr<int32_t>("c_min_deg")
+
 );
 
 XLA_FFI_DEFINE_HANDLER_SYMBOL(
@@ -177,4 +187,6 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
                 .Attr<int32_t>("out_max_deg")
                 .Attr<int32_t>("lhs_max_deg")
                 .Attr<int32_t>("rhs_max_deg")
+                .Attr<int32_t>("lhs_min_deg")
+                .Attr<int32_t>("rhs_min_deg")
 );
