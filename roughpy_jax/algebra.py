@@ -169,13 +169,10 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     :param c: right-hand multiple operand
     :return: result
     """
-    _check_basis_compat(a.basis, b.basis, c.basis)
-
     dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
-    basis = a.basis
     batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
 
-    a_max_deg = basis.depth
+    a_max_deg = a.basis.depth
 
     op_cls = Operation.get_operation("ft_fma", "dense")
 
@@ -187,7 +184,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
 
     out_data = op(a.data, b.data, c.data)
 
-    return DenseFreeTensor(*out_data, basis)
+    return DenseFreeTensor(*out_data, op.basis)
 
 
 def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
@@ -202,17 +199,13 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     :param b: right-hand multiple operand
     :return: result
     """
-    _check_basis_compat(a.basis, b.basis)
-
     dtype = jnp.result_type(a.data.dtype, b.data.dtype)
     batch_dims = _get_and_check_batch_dims(a.data, b.data, core_dims=1)
-
-    basis = a.basis
 
     # Use same basis convention as ft_mul in roughpy/compute
     out_max_deg = b.basis.depth
 
-    a_max_deg = basis.depth
+    a_max_deg = a.basis.depth
     op_cls = Operation.get_operation("ft_mul", "dense")
 
     op = op_cls(basis, dtype, batch_dims,
@@ -223,7 +216,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
 
     out_data = op(a.data, b.data)
 
-    return DenseFreeTensor(*out_data, basis)
+    return DenseFreeTensor(*out_data, op.basis)
 
 
 def antipode(a: FreeTensor) -> FreeTensor:
@@ -233,12 +226,11 @@ def antipode(a: FreeTensor) -> FreeTensor:
     :param a: argument
     :return: new tensor with antipode of `a`
     """
-
     op_cls = Operation.get_operation("ft_antipode", "dense")
     batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
     basis = a.basis
-    op = op_cls(basis, a.data.dtype, batch_dims)
+    op = op_cls((basis,), a.data.dtype, batch_dims)
 
     out_data = op(a.data)
 
@@ -258,23 +250,19 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
     :param c: right-hand operand
     :return: shuffle fused multiply-add
     """
-    _check_basis_compat(a.basis, b.basis, c.basis)
-
-    basis = a.basis
     batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
     dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
 
     op_cls = Operation.get_operation("st_fma", "dense")
 
-    a_max_deg = basis.depth
-    op = op_cls(basis, dtype, batch_dims,
-                a_max_deg=a_max_deg,
-                b_max_deg=min(a_max_deg, b.basis.depth),
-                c_max_deg=min(a_max_deg, c.basis.depth)
+    op = op_cls((a.basis, b.basis, c.basis), dtype, batch_dims,
+                a_max_deg=a.basis.depth,
+                b_max_deg=min(a.basis.depth, b.basis.depth),
+                c_max_deg=min(b.basis.depth, c.basis.depth)
                 )
     out_data = op(a.data, b.data, c.data)
 
-    return DenseShuffleTensor(*out_data, basis)
+    return DenseShuffleTensor(*out_data, op.basis)
 
 
 def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
@@ -289,16 +277,13 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
     :param rhs: right-hand operand
     :return: the shuffle product of lhs and rhs
     """
-    _check_basis_compat(lhs.basis, rhs.basis)
-
-    basis = lhs.basis
     dtype = jnp.result_type(lhs.data.dtype, rhs.data.dtype)
     batch_dims = _get_and_check_batch_dims(lhs.data, rhs.data, core_dims=1)
 
     op_cls = Operation.get_operation("st_mul", "dense")
-    out_max_deg = basis.depth
+    out_max_deg = lhs.basis.depth
 
-    op = op_cls(basis, dtype, batch_dims,
+    op = op_cls((lhs.basis, rhs.basis), dtype, batch_dims,
                 out_max_deg=out_max_deg,
                 lhs_max_deg=min(out_max_deg, lhs.basis.depth),
                 rhs_max_deg=min(out_max_deg, rhs.basis.depth)
@@ -306,7 +291,7 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
 
     out_data = op(lhs.data, rhs.data)
 
-    return DenseShuffleTensor(*out_data, lhs.basis)
+    return DenseShuffleTensor(*out_data, op.basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
