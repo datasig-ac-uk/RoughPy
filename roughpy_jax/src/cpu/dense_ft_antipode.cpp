@@ -1,6 +1,7 @@
 #include "roughpy_compute/dense/basic/free_tensor_antipode.hpp"
 
 #include "xla_common.hpp"
+#include "batching_loop.hpp"
 
 namespace {
 
@@ -31,60 +32,77 @@ struct ComputeTypedFtAntipode {
 
 namespace rpy::jax::cpu {
 
+struct DenseFTAntipodeStaticArgs
+{
+    TensorBasis basis;
+    int32_t max_degree;
+    bool no_sign;
+};
+
+template <ffi::DataType DType>
+struct DenseFTAntipode : DenseFTAntipodeStaticArgs
+{
+    using Scalar = ffi::NativeType<DType>;
+    static constexpr size_t core_dims = 1;
+    using StaticData = DenseFTAntipodeStaticArgs;
+
+    explicit DenseFTAntipode(StaticData arg)
+        : DenseFTAntipodeStaticArgs(std::move(arg)) {}
+
+
+    ffi::Error operator()(Scalar* out_data, const Scalar* arg_data) noexcept
+    {
+        DenseTensorView<Scalar*> result_view(out_data, basis, 0, max_degree);
+        DenseTensorView<const Scalar*> arg_view(arg_data, basis, 0, max_degree);
+
+        if (no_sign) {
+            basic::ft_antipode(
+                result_view,
+                arg_view,
+                basic::BasicAntipodeConfig{},
+                basic::DefaultSigner{}
+            );
+        } else {
+            basic::ft_antipode(
+                result_view,
+                arg_view,
+                basic::BasicAntipodeConfig{},
+                basic::DefaultSigner{}
+            );
+        }
+
+        return ffi::Error::Success();
+    }
+};
+
+
+
 ffi::Error cpu_dense_ft_antipode_impl(
-    int width,
-    int depth,
-    int arg_depth,
-    ffi::Span<const int64_t> degree_begin,
+    ffi::Result<ffi::AnyBuffer> result,
     ffi::AnyBuffer arg,
-    ffi::Result<ffi::AnyBuffer> result
+    int32_t width,
+    int32_t depth,
+    ffi::Span<const int64_t> degree_begin,
+    int32_t max_deg,
+    bool no_sign
 ) {
-    if (!all_buffers_valid_type(arg, *result)) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_exp all buffers types must match and be F32 or F64");
-    }
 
-    if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_antipode degree_begin size must be depth + 2");
-    }
 
-    auto [arg_size, arg_dim] = get_buffer_dims(arg);
-    if (arg_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_antipode arg must be an array");
-    }
-
-    auto [result_size, result_dim] = get_buffer_dims(*result);
-    if (result_dim != arg_dim) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_antipode result dimension must match out array");
-    }
-
-    if (result_size != arg_size) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_antipode result size must match out array");
-    }
-
-    // Dispatch antipode for appropriate type
-    ComputeTypedFtAntipode ft_antipode = {
-        default_max_degree(arg_depth, depth),
-        { degree_begin.begin(), width, depth }
+    DenseFTAntipodeStaticArgs static_args {
+        TensorBasis{ degree_begin.begin(), width, depth},
+        max_deg,
+        no_sign
     };
 
-    switch (result->element_type()) {
-    case ffi::DataType::F32:
-        ft_antipode.compute(
-            result->typed_data<float>(),
-            arg.typed_data<float>()
-        );
-        break;
-    case ffi::DataType::F64:
-        ft_antipode.compute(
-            result->typed_data<double>(),
-            arg.typed_data<double>()
-        );
-        break;
-    default:
-        assert(false); // Unsupported type; reject with all_buffers_valid_type
-    }
+    RPY_XLA_SUCCESS_OR_RETURN(check_data_degree(result, static_args.basis, max_deg));
+    RPY_XLA_SUCCESS_OR_RETURN(check_data_degree(arg, static_args.basis, max_deg));
 
-    return ffi::Error::Success();
+    return select_implementation_and_go<DenseFTAntipode>(
+        std::move(static_args),
+        result->element_type(),
+        result,
+        arg
+        );
 }
 
 } // namespace rpy::jax::cpu
@@ -93,10 +111,11 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
     cpu_dense_ft_antipode,
     rpy::jax::cpu::cpu_dense_ft_antipode_impl,
     xla::ffi::Ffi::Bind()
+        .Ret<xla::ffi::AnyBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
         .Attr<int>("width")
         .Attr<int>("depth")
-        .Attr<int>("arg_depth")
         .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-        .Arg<xla::ffi::AnyBuffer>()
-        .Ret<xla::ffi::AnyBuffer>()
+        .Attr<int>("max_degree")
+        .Attr<bool>("no_sign")
 );
