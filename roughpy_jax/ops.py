@@ -167,6 +167,8 @@ class Operation:
 
     # The primary basis associated with the operation
     basis: BasisLike
+    # The bases for each argument
+    bases: tuple[BasisLike, ...]
     # data type for all data inputs and outputs
     data_dtype: jnp.dtype
     # the configuration of batching
@@ -299,6 +301,7 @@ class Operation:
     def __init__(self, bases, dtype, batch_dims, ffi_call_args: Optional[dict[str, Any]] = None,
                  specific_basis: Optional[BasisLike] = None, **kwargs):
         self.basis = basis = self.get_result_basis(bases, specific_basis)
+        self.bases = bases
         self.data_dtype = dtype
         self.batch_dims = batch_dims
         self.static_args = self.StaticArgs(**kwargs)
