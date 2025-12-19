@@ -201,11 +201,42 @@ class Operation:
 
     @classmethod
     def get_operation(cls, fn_name: str, layout: str = "dense") -> Optional[type[Operation]]:
+        """
+        Retrieves a registered operation class based on the function name and layout.
+
+        This method attempts to fetch an operation class that corresponds to the given
+        combination of function name and layout. If a matching operation is found in the
+        registry, it will be returned. Otherwise, it returns None.
+
+        :param fn_name: The name of the function associated with the operation.
+        :type fn_name: str
+        :param layout: The layout type for the operation, with a default value of "dense".
+        :type layout: str
+        :return: The operation class matching the specified function name and layout,
+            or None if not found.
+        :rtype: Optional[type[Operation]]
+        """
         key = (fn_name, layout)
         return Operation.__all_operations.get(key, None)
 
     @classmethod
     def make_result_dtypes(cls, basis, dtype, batch_dims):
+        """
+        Creates result dtypes for use in computations based on the provided basis, data type, and batch dimensions.
+
+        This method generates a shape and dtype structure that matches the expected result of a computation.
+        The shape is determined by combining the batch dimensions with the size of the basis. The dtype specifies
+        the data type of the elements within this structure.
+
+        :param basis: Basis object containing size information.
+        :type basis: Any
+        :param dtype: The data type of the computation results.
+        :type dtype: Any
+        :param batch_dims: A tuple representing the batch dimensions to include in the shape.
+        :type batch_dims: tuple
+        :return: A tuple containing a shape and dtype structure for the computation.
+        :rtype: tuple
+        """
         return (jax.ShapeDtypeStruct(
             batch_dims + (basis.size(),),
             dtype
@@ -213,6 +244,23 @@ class Operation:
 
     @classmethod
     def get_result_basis(cls, bases: tuple[BasisLike, ...], preferred_basis) -> BasisLike:
+        """
+        Determines the appropriate basis from a list of bases, considering an optional
+        preferred basis. The method ensures that all bases in the list have matching
+        widths, and it selects the basis with the greatest depth if no preferred basis
+        is provided. If a preferred basis is supplied and valid, it returns that basis.
+
+        :param bases: A tuple of BasisLike objects. These represent the candidate bases
+                      to be considered. The method ensures all bases have the same width
+                      and selects the deepest valid basis.
+        :param preferred_basis: An optional BasisLike object. If supplied and valid, this
+                                basis will be returned instead of evaluating the others.
+        :return: The selected BasisLike object, either the preferred basis (if provided
+                 and valid) or the valid deepest basis from the `bases` tuple.
+        :raises ValueError: If the `bases` tuple is empty or if any basis in the tuple
+                            does not match the width of the first basis. Also raised if
+                            the `preferred_basis` width does not match the base width.
+        """
         if not bases and preferred_basis is None:
             raise ValueError("basis list should be non-empty")
 
