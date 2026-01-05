@@ -1,103 +1,157 @@
 #include "roughpy_compute/dense/basic/shuffle_tensor_product.hpp"
 
 #include "xla_common.hpp"
-
-namespace {
+#include "batching_loop.hpp"
 
 using namespace rpy::compute;
 
-struct ComputeTypedStFma {
-    const int arg_max_degree;
-    TensorBasis basis;
+namespace rpy::jax::cpu {
 
-    template <typename T>
-    void compute(
-        T* result_data,
-        const T* lhs_data,
-        const T* rhs_data
-    ) {
-        DenseTensorView<T*> result_view(result_data, basis, 0, arg_max_degree);
-        DenseTensorView<const T*> lhs_view(lhs_data, basis, 0, arg_max_degree);
-        DenseTensorView<const T*> rhs_view(rhs_data, basis, 0, arg_max_degree);
-        basic::st_fma(result_view, lhs_view, rhs_view);
+
+struct DenseSTFmaStaticArgs
+{
+    TensorBasis basis;
+    int32_t a_max_degree;
+    int32_t b_max_degree;
+    int32_t c_max_degree;
+
+    int32_t b_min_degree = 0;
+    int32_t c_min_degree = 0;
+};
+
+
+template <ffi::DataType DType>
+struct DenseSTFmaFunctor : DenseSTFmaStaticArgs
+{
+    using Scalar = ffi::NativeType<DType>;
+    static constexpr size_t core_dims = 1;
+
+    using StaticData = DenseSTFmaStaticArgs;
+
+    explicit DenseSTFmaFunctor(DenseSTFmaStaticArgs args)
+        : DenseSTFmaStaticArgs(std::move(args))
+    {}
+
+
+    ffi::Error operator()(
+        Scalar* a_data,
+        const Scalar* b_data,
+        const Scalar* c_data
+        )
+    {
+        DenseTensorView<Scalar*> result_view(a_data, basis, 0, a_max_degree);
+        DenseTensorView<const Scalar*>
+                b_view(b_data, basis, b_min_degree, b_max_degree);
+        DenseTensorView<const Scalar*>
+                c_view(c_data, basis, c_min_degree, c_max_degree);
+
+        basic::st_fma(result_view, b_view, c_view);
+
+        return ffi::Error::Success();
+    }
+
+
+    ffi::Error operator()(
+        Scalar* out_data,
+        const Scalar* a_data,
+        const Scalar* b_data,
+        const Scalar* c_data)
+    {
+        std::copy_n(a_data, data_size_to_degree(basis, a_max_degree), out_data);
+        return operator()(out_data, b_data, c_data);
     }
 };
 
-} // namespace
 
-namespace rpy::jax::cpu {
 
 ffi::Error cpu_dense_st_fma_impl(
-    int width,
-    int depth,
-    int arg_depth,
+    ffi::Result<ffi::AnyBuffer> result,
+    ffi::AnyBuffer a,
+    ffi::AnyBuffer b,
+    ffi::AnyBuffer c,
+    int32_t width,
+    int32_t depth,
     ffi::Span<const int64_t> degree_begin,
-    ffi::AnyBuffer out,
-    ffi::AnyBuffer lhs,
-    ffi::AnyBuffer rhs,
-    ffi::Result<ffi::AnyBuffer> result
-) {
-    if (!all_buffers_valid_type(out, lhs, rhs, *result)) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma all buffers types must match and be F32 or F64");
-    }
+    int32_t a_max_deg,
+    int32_t b_max_deg,
+    int32_t c_max_deg,
+    int32_t b_min_deg,
+    int32_t c_min_deg
+) noexcept {
 
-    if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma degree_begin size must be depth + 2");
-    }
-
-    auto [out_size, out_dim] = get_buffer_dims(out);
-    if (out_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma out must be an array");
-    }
-
-    auto [lhs_size, lhs_dim] = get_buffer_dims(lhs);
-    if (lhs_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma lhs must be an array");
-    }
-
-    auto [rhs_size, rhs_dim] = get_buffer_dims(rhs);
-    if (rhs_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma rhs must be an array");
-    }
-
-    auto [result_size, result_dim] = get_buffer_dims(*result);
-    if (result_dim != out_dim) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma result dimension must match out array");
-    }
-
-    if (result_size != out_size) {
-        return ffi::Error::InvalidArgument("cpu_dense_st_fma result size must match out array");
-    }
-
-    // Compute fma into result originally copied from out array
-    copy_result_buffer(out, out_size, result);
-
-    // Dispatch fma for appropriate type
-    ComputeTypedStFma st_fma = {
-        default_max_degree(arg_depth, depth),
-        { degree_begin.begin(), width, depth }
+    DenseSTFmaStaticArgs static_args {
+        TensorBasis { degree_begin.begin(), width, depth},
+        a_max_deg,
+        b_max_deg,
+        c_max_deg,
+        b_min_deg,
+        c_min_deg
     };
 
-    switch (result->element_type()) {
-    case ffi::DataType::F32:
-        st_fma.compute(
-            result->typed_data<float>(),
-            lhs.typed_data<float>(),
-            rhs.typed_data<float>()
-        );
-        break;
-    case ffi::DataType::F64:
-        st_fma.compute(
-            result->typed_data<double>(),
-            lhs.typed_data<double>(),
-            rhs.typed_data<double>()
-        );
-        break;
-    default:
-        assert(false); // Unsupported type; reject with all_buffers_valid_type
-    }
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(result, static_args.basis, a_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(a, static_args.basis, a_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(b, static_args.basis, b_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(c, static_args.basis, c_max_deg)
+    );
 
-    return ffi::Error::Success();
+    return select_implementation_and_go<DenseSTFmaFunctor>(
+        std::move(static_args),
+        result->element_type(),
+        result,
+        a,
+        b,
+        c
+        );
+}
+
+
+ffi::Error cpu_dense_st_mul_impl(
+    ffi::Result<ffi::AnyBuffer> result,
+    ffi::AnyBuffer lhs,
+    ffi::AnyBuffer rhs,
+    int32_t width,
+    int32_t depth,
+    ffi::Span<const int64_t> degree_begin,
+    int32_t out_max_deg,
+    int32_t lhs_max_deg,
+    int32_t rhs_max_deg,
+    int32_t lhs_min_deg,
+    int32_t rhs_min_deg
+    ) noexcept
+{
+    DenseSTFmaStaticArgs static_args {
+        TensorBasis { degree_begin.begin(), width, depth },
+        out_max_deg,
+        lhs_max_deg,
+        rhs_max_deg,
+        lhs_min_deg,
+        rhs_min_deg
+    };
+
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(result, static_args.basis, out_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(lhs, static_args.basis, lhs_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(rhs, static_args.basis, rhs_max_deg)
+    );
+
+    return select_implementation_and_go<DenseSTFmaFunctor>(
+            std::move(static_args),
+            result->element_type(),
+            result,
+            lhs,
+            rhs
+    );
 }
 
 } // namespace rpy::jax::cpu
@@ -106,12 +160,33 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
     cpu_dense_st_fma,
     rpy::jax::cpu::cpu_dense_st_fma_impl,
     xla::ffi::Ffi::Bind()
+        .Ret<xla::ffi::AnyBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
+        .Arg<xla::ffi::AnyBuffer>()
         .Attr<int>("width")
         .Attr<int>("depth")
-        .Attr<int>("arg_depth")
         .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-        .Arg<xla::ffi::AnyBuffer>()
-        .Arg<xla::ffi::AnyBuffer>()
-        .Arg<xla::ffi::AnyBuffer>()
-        .Ret<xla::ffi::AnyBuffer>()
+        .Attr<int32_t>("a_max_deg")
+        .Attr<int32_t>("b_max_deg")
+        .Attr<int32_t>("c_max_deg")
+        .Attr<int32_t>("b_min_deg")
+        .Attr<int32_t>("c_min_deg")
+);
+
+XLA_FFI_DEFINE_HANDLER_SYMBOL(
+        cpu_dense_st_mul,
+        rpy::jax::cpu::cpu_dense_st_mul_impl,
+        xla::ffi::Ffi::Bind()
+                .Ret<xla::ffi::AnyBuffer>()
+                .Arg<xla::ffi::AnyBuffer>()
+                .Arg<xla::ffi::AnyBuffer>()
+                .Attr<int32_t>("width")
+                .Attr<int32_t>("depth")
+                .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
+                .Attr<int32_t>("out_max_deg")
+                .Attr<int32_t>("lhs_max_deg")
+                .Attr<int32_t>("rhs_max_deg")
+                .Attr<int32_t>("lhs_min_deg")
+                .Attr<int32_t>("rhs_min_deg")
 );
