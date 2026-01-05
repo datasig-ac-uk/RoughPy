@@ -426,7 +426,7 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_facto
     if scale_factor:
         result = result * scale_factor
 
-    return FreeTensor(result, tensor_basis)
+    return DenseFreeTensor(result, tensor_basis)
 
 
 def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
