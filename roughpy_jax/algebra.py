@@ -6,6 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from roughpy import compute as rpc
+from .sparse import csc_matvec
 
 
 # For exposition only
@@ -40,7 +41,7 @@ class LieBasis(rpc.LieBasis):
 
     The default constructor requires only width and depth and constructs a
     Hall set greedily, minimizing the degree of the left parent. For instance,
-    for width 2 and depth 4, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
+    for width 2 and depth 4©, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
     3 -> (1, 2) (which represents the bracket [1,2]), 4 -> (1, 3) ([1,[1,2]]),
     and 5 -> (2, 3) ([2,[1,2]]).
 
@@ -410,41 +411,6 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     return FreeTensor(out_data, basis)
 
 
-def _csc_cols_from_indptr(indptr):
-    """
-    Reconstruct columns indices from column start array
-
-    indptr:     column starts in indices and data
-    returns:    (n,) colums where n = indptr[-1]
-    """
-    # Take the difference between adjacent element as number of repeats at each index, e.g.
-    # indptr [0 1 5 5 6] -> cols [0 1 1 1 1 3], e.g. second adjacent 1-5 generates four 1s,
-    # and next adjacent 5-5 generates zero 2s, so jumps straight to 3.
-    lengths = indptr[1:] - indptr[:-1]
-    return jnp.repeat(jnp.arange(lengths.shape[0], dtype=jnp.int32), lengths)
-
-
-def _csc_matvec(data, indices, indptr, output_n_rows, x):
-    """
-    Product of compressed sparse column matrix and dense matrix
-
-    data:           sparse matrix A nonzero values
-    indices:        sparse matrix A row indices
-    indptr:         sparse matrix A column
-    out_rows:       number of rows in result (n)
-    x:              (n,) dense vector data to multiply
-    returns:        (n,) result of A @ x
-    """
-    # Generate a compact array of which non-zero cells to update
-    cols = _csc_cols_from_indptr(indptr)
-    updates = data * x[cols]
-
-    # Add the corresponding update for row index
-    y = jnp.zeros((output_n_rows,), dtype=updates.dtype)
-    y = y.at[indices].add(updates)
-    return y
-
-
 def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
@@ -456,7 +422,7 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_facto
 
     l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
     tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
-    result = _csc_matvec(l2t.data, l2t.indices, l2t.indptr, tensor_basis.size(), arg.data)
+    result = csc_matvec(l2t.data, l2t.indices, l2t.indptr, tensor_basis.size(), arg.data)
     if scale_factor:
         result = result * scale_factor
 
@@ -474,7 +440,7 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
     l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
 
-    result = _csc_matvec(l2t.data, l2t.indices, l2t.indptr, lie_basis.size(), arg.data)
+    result = csc_matvec(l2t.data, l2t.indices, l2t.indptr, lie_basis.size(), arg.data)
     if scale_factor:
         result = result * scale_factor
 
