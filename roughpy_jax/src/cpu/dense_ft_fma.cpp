@@ -90,8 +90,7 @@ ffi::Error cpu_dense_ft_fma_impl(
             check_data_degree(out, static_args.basis, a_max_deg)
     );
     RPY_XLA_SUCCESS_OR_RETURN(
-            check_data_degree(a, static_args.basis, a_max_deg)
-    );
+            check_data_degree(a, static_args.basis, a_max_deg) );
     RPY_XLA_SUCCESS_OR_RETURN(
             check_data_degree(b, static_args.basis, b_max_deg)
     );
