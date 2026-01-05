@@ -13,7 +13,6 @@ struct DenseFTExpStaticArgs
 {
     TensorBasis basis;
     int32_t arg_max_degree;
-    bool no_sign;
 };
 
 template <ffi::DataType DType>
@@ -46,8 +45,7 @@ ffi::Error cpu_dense_ft_exp_impl(
     int32_t width,
     int32_t depth,
     ffi::Span<const int64_t> degree_begin,
-    int32_t arg_max_degree,
-    bool no_sign
+    int32_t arg_max_degree
 ) {
 
     if (arg_max_degree == -1 || arg_max_degree > depth) {
@@ -56,8 +54,7 @@ ffi::Error cpu_dense_ft_exp_impl(
 
     DenseFTExpStaticArgs static_args {
         TensorBasis {degree_begin.begin(), width, depth},
-        arg_max_degree,
-        no_sign
+        arg_max_degree
     };
 
     RPY_XLA_SUCCESS_OR_RETURN(
@@ -86,5 +83,4 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
         .Attr<int32_t>("depth")
         .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
         .Attr<int32_t>("arg_max_degree")
-        .Attr<bool>("no_sign")
 );
