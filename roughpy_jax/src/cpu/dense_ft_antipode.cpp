@@ -1,3 +1,5 @@
+#include "dense_ft_antipode.h"
+
 #include "roughpy_compute/dense/basic/free_tensor_antipode.hpp"
 
 #include "xla_common.hpp"

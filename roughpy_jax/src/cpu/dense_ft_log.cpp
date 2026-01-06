@@ -1,3 +1,5 @@
+#include "dense_ft_log.h"
+
 #include "roughpy_compute/dense/intermediate/free_tensor_log.hpp"
 
 #include "xla_common.hpp"

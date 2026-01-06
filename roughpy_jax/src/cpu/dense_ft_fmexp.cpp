@@ -1,3 +1,5 @@
+#include "dense_ft_fmexp.h"
+
 #include "roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp"
 
 #include "xla_common.hpp"

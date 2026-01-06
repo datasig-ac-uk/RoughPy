@@ -1,3 +1,5 @@
+#include "dense_ft_fma.h"
+
 #include "roughpy_compute/dense/basic/shuffle_tensor_product.hpp"
 
 #include "xla_common.hpp"
