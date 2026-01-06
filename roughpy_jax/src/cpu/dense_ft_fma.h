@@ -3,7 +3,6 @@
 
 #include <xla/ffi/api/c_api.h>
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

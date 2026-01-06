@@ -1,4 +1,4 @@
-#include "dense_ft_fma.h"
+#include "dense_st_fma.h"
 
 #include "roughpy_compute/dense/basic/shuffle_tensor_product.hpp"
 
