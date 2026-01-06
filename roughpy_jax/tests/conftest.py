@@ -47,3 +47,10 @@ def rpj_test_fixture_type_mismatch():
 
     return BasisFixture()
 
+
+
+@pytest.fixture(params=[(), (2,), (2, 2), (2, 2, 2)])
+def batch_shape(request) -> tuple[int, ...]:
+    return request.param
+
+

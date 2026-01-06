@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import jax.random
 import numpy as np
 import pytest
 import roughpy_jax as rpj
@@ -99,3 +100,23 @@ def test_dense_ft_fmexp(jnp_dtype):
 
     expected = rpj.ft_mul(a, rpj.ft_exp(x))
     assert jnp.allclose(b.data, expected.data)
+
+
+
+def test_dense_ft_fmexp_batched(batch_shape):
+    basis = rpj.TensorBasis(3, 3)
+    rng_key = jax.random.key(12345)
+
+    x_data = jnp.array(jax.random.uniform(rng_key, shape=(*batch_shape, basis.size())))
+    a_data = jnp.array(jax.random.uniform(rng_key, shape=(*batch_shape, basis.size())))
+
+    x = rpj.FreeTensor(x_data, basis)
+    a = rpj.FreeTensor(a_data, basis)
+
+    result = rpj.ft_fmexp(a, x)
+    assert result.data.shape[:-1] == batch_shape
+
+    expected = rpj.ft_mul(a, rpj.ft_exp(x))
+    assert expected.data.shape == result.data.shape
+
+    assert jnp.allclose(result.data, expected.data)
