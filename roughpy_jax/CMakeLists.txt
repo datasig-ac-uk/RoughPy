@@ -32,6 +32,8 @@ message(STATUS "XLA include directory: ${XLA_DIR}")
 python_add_library(RoughPy_JaxModule MODULE
     WITH_SOABI
     src/cpu/batching_loop.hpp
+    src/cpu/dense_ft_adj_mul.cpp
+    src/cpu/dense_ft_adj_mul.h
     src/cpu/dense_ft_fma.cpp
     src/cpu/dense_ft_exp.cpp
     src/cpu/dense_ft_log.cpp
