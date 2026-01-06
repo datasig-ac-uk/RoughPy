@@ -80,7 +80,7 @@ ffi::Error cpu_dense_st_fma_impl(
 ) noexcept {
 
     DenseSTFmaStaticArgs static_args {
-        TensorBasis { degree_begin.begin(), width, depth},
+        TensorBasis { degree_begin.begin(), width, depth },
         a_max_deg,
         b_max_deg,
         c_max_deg,
