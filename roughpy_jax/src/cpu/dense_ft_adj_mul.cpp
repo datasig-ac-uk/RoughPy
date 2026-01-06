@@ -124,8 +124,12 @@ struct DenseFTAdjRMulFunctor : DenseFTAdjLMulFunctor<DType>
                 this->op_max_deg
         );
 
-        DenseTensorView<Scalar*>
-                out_workspace_view(arg_view, arg_data, 0, this->basis.depth);
+        DenseTensorView<Scalar*> out_workspace_view(
+                out_workspace.data(),
+                this->basis,
+                0,
+                this->basis.depth
+        );
 
         basic::ft_antipode(
                 op_workspace_view,
@@ -136,7 +140,7 @@ struct DenseFTAdjRMulFunctor : DenseFTAdjLMulFunctor<DType>
 
         RPY_XLA_SUCCESS_OR_RETURN(
                 Base::
-                operator()(out_workspace, op_workspace.data(), arg_data)
+                operator()(out_workspace.data(), op_workspace.data(), arg_data)
         );
 
         basic::ft_antipode(
