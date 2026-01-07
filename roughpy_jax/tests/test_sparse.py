@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 
-from roughpy_jax.sparse import csc_cols_from_indptr, csc_matvec
+from roughpy_jax.csc import csc_cols_from_indptr, csc_matvec
 
 
 def _indptr_from_csc_cols(cols):

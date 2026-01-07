@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from roughpy import compute as rpc
-from .sparse import csc_matvec
+from .csc import csc_matvec
 
 
 # For exposition only
