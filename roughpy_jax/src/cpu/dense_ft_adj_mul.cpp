@@ -45,6 +45,9 @@ struct DenseFTAdjLMulFunctor : DenseFTAdjLMulStaticArgs
         DenseTensorView<const Scalar*>
                 arg_view(arg_data, basis, 0, arg_max_deg);
 
+
+        std::fill_n(out_view.data(), out_view.size(), Scalar{});
+
         basic::ft_adj_lmul(out_view, mul_view, arg_view);
 
         return ffi::Error::Success();

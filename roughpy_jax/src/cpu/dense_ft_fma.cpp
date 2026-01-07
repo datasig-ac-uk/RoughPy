@@ -19,6 +19,8 @@ struct DenseFTFmaStaticArgs {
 
     int32_t b_min_degree = 0;
     int32_t c_min_degree = 0;
+
+    bool zero_out_a = false;
 };
 
 template <ffi::DataType DType>
@@ -44,6 +46,11 @@ struct DenseFTFmaFunctor : DenseFTFmaStaticArgs {
                 lhs_view(b_data, this->basis, b_min_degree, b_max_degree);
         DenseTensorView<const Scalar*>
                 rhs_view(c_data, this->basis, c_min_degree, c_max_degree);
+
+        if (zero_out_a) {
+            std::fill_n(a_data, basis.size(), Scalar{});
+        }
+
         basic::ft_fma(result_view, lhs_view, rhs_view);
 
         return ffi::Error::Success();
@@ -56,7 +63,10 @@ struct DenseFTFmaFunctor : DenseFTFmaStaticArgs {
             const Scalar* c_data
     ) noexcept
     {
-        std::copy_n(a_data, data_size_to_degree(basis, a_max_degree), out_data);
+        auto size = data_size_to_degree(basis, a_max_degree);
+        auto it = std::copy_n(a_data, size, out_data);
+        std::fill(it, out_data + basis.size(), Scalar{});
+
         return operator()(out_data, b_data, c_data);
     }
 };
@@ -130,7 +140,8 @@ ffi::Error cpu_dense_ft_mul_impl(
             lhs_max_deg,
             rhs_max_deg,
         lhs_min_deg,
-        rhs_min_deg
+        rhs_min_deg,
+        true
     };
 
     RPY_XLA_SUCCESS_OR_RETURN(

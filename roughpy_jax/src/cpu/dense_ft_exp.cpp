@@ -35,6 +35,8 @@ struct DenseFTExpFunctor : DenseFTExpStaticArgs
         DenseTensorView<const Scalar*>
                 arg_view(arg_data, basis, 0, arg_max_degree);
 
+        std::fill_n(out_data, result_view.size(), Scalar{});
+
         intermediate::ft_exp(result_view, arg_view);
 
         return ffi::Error::Success();

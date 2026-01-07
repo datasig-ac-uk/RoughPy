@@ -1,5 +1,7 @@
 #include "dense_st_fma.h"
 
+#include <algorithm>
+
 #include "roughpy_compute/dense/basic/shuffle_tensor_product.hpp"
 
 #include "xla_common.hpp"
@@ -19,6 +21,8 @@ struct DenseSTFmaStaticArgs
 
     int32_t b_min_degree = 0;
     int32_t c_min_degree = 0;
+
+    bool zero_out_a = false;
 };
 
 
@@ -47,6 +51,10 @@ struct DenseSTFmaFunctor : DenseSTFmaStaticArgs
         DenseTensorView<const Scalar*>
                 c_view(c_data, basis, c_min_degree, c_max_degree);
 
+        if (zero_out_a) {
+            std::fill(result_view.data(), result_view.data() + result_view.size(), 0);
+        }
+
         basic::st_fma(result_view, b_view, c_view);
 
         return ffi::Error::Success();
@@ -59,7 +67,11 @@ struct DenseSTFmaFunctor : DenseSTFmaStaticArgs
         const Scalar* b_data,
         const Scalar* c_data)
     {
-        std::copy_n(a_data, data_size_to_degree(basis, a_max_degree), out_data);
+        const auto size = data_size_to_degree(basis, a_max_degree);
+
+        auto it = std::copy_n(a_data, data_size_to_degree(basis, a_max_degree), out_data);
+        std::fill(it, out_data + basis.size(), Scalar{});
+
         return operator()(out_data, b_data, c_data);
     }
 };
@@ -134,7 +146,8 @@ ffi::Error cpu_dense_st_mul_impl(
         lhs_max_deg,
         rhs_max_deg,
         lhs_min_deg,
-        rhs_min_deg
+        rhs_min_deg,
+        true
     };
 
     RPY_XLA_SUCCESS_OR_RETURN(

@@ -51,6 +51,7 @@ struct DenseFTFMExpFunctor : DenseFTFMExpStaticArgs {
                 exp_max_degree
         );
 
+        std::fill_n(out_data, result_view.size(), Scalar{});
         intermediate::ft_fmexp(result_view, multiplier_view, exponent_view);
 
         return ffi::Error::Success();

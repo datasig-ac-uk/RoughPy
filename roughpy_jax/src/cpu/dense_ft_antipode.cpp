@@ -49,6 +49,7 @@ struct DenseFTAntipode : DenseFTAntipodeStaticArgs
             );
         }
 
+        std::fill(out_data + data_size_to_degree(basis, max_degree), out_data + basis.size(), Scalar{});
         return ffi::Error::Success();
     }
 };

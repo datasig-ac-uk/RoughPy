@@ -34,6 +34,9 @@ struct DenseFTLogFunctor : DenseFTLogStaticArgs
     {
         DenseTensorView<Scalar*> result_view(out_data, basis, 0, arg_max_degree);
         DenseTensorView<const Scalar*> arg_view(arg_data, basis, 0, arg_max_degree);
+
+        std::fill_n(out_data, result_view.size(), Scalar{});
+
         intermediate::ft_log(result_view, arg_view);
 
         return ffi::Error::Success();
