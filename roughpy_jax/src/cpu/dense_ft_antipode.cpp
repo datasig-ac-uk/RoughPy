@@ -94,6 +94,6 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
         .Attr<int>("width")
         .Attr<int>("depth")
         .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-        .Attr<int>("max_degree")
+        .Attr<int>("arg_max_deg")
         .Attr<bool>("no_sign")
 );
