@@ -5,32 +5,8 @@
 #include "xla_common.hpp"
 #include "batching_loop.hpp"
 
-namespace {
 
 using namespace rpy::compute;
-
-struct ComputeTypedFtAntipode {
-    const int arg_max_degree;
-    TensorBasis basis;
-
-    template <typename T>
-    void compute(
-        T* result_data,
-        const T* arg_data
-    ) {
-        DenseTensorView<T*> result_view(result_data, basis, 0, arg_max_degree);
-        DenseTensorView<const T*> arg_view(arg_data, basis, 0, arg_max_degree);
-
-        basic::ft_antipode(
-            result_view,
-            arg_view,
-            basic::BasicAntipodeConfig{},
-            basic::DefaultSigner{}
-        );
-    }
-};
-
-} // namespace
 
 namespace rpy::jax::cpu {
 
