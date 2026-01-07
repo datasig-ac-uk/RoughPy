@@ -28,17 +28,21 @@ def csc_matvec(data, indices, indptr, output_n_rows, x):
     # Generate a compact array of which non-zero cells to update
     cols = csc_cols_from_indptr(indptr)
 
-    # Use a batched view of x so same logic applies to batched and flat arrays
-    is_batched = x.ndim == 2
-    x_batched = x if is_batched else x[:, None]
+    # Coerce the data into a shape that can be broadcasted to given the shape of x, which may
+    # be unbatched (N,) or batched any number of dimensions, e.g. (N, D1), (N, D1, D2) etc.
+    # The reshaped data is a view of the original with trailing 1s to the right allowing
+    # broadcast in multiplication, e.g. for a 3x4 2D batch of tensors of length 10,
+    # data_reshaped would be (10, 1, 1) for broadcast from x_by_col (10, 3, 4)
+    x_by_col = x[cols]
+    missing_dims = x_by_col.ndim - data.ndim
+    data_shape = (data.shape[0],) + (1,) * missing_dims
+    data_reshaped = jnp.reshape(data, data_shape)
 
-    # Calculate how much to add to sparse element (by indices). Reshaped data
-    # allows broadcasting over batch dimensions
-    updates = data[:, None] * x_batched[cols]
+    # The updates are all the sparse additions at every location in all tensors
+    updates = data_reshaped * x_by_col
 
     # Accumulate the updates into batched output tensor data
-    y = jnp.zeros((output_n_rows, x_batched.shape[1]), dtype=updates.dtype)
-    y = y.at[indices, :].add(updates)
-
-    # Unbatch the result if required
-    return y if is_batched else y[:, 0]
+    batched_shape = x_by_col.shape[1:]
+    y = jnp.zeros((output_n_rows, *batched_shape), dtype=updates.dtype)
+    y = y.at[indices, ...].add(updates)
+    return y

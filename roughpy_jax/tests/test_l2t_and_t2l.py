@@ -5,15 +5,18 @@ import roughpy_jax as rpj
 
 from rpy_test_common import array_dtypes
 
+# Extra dimensions appended to lie data dim for testing batched behaviour
+batch_dims = [(), (10,), (10, 5)]
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_l2t_t2l_roundtrip(jnp_dtype):
+@pytest.mark.parametrize("batch_dims", batch_dims)
+def test_l2t_t2l_roundtrip(jnp_dtype, batch_dims):
     rng = np.random.default_rng(1234)
 
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(),)).astype(jnp_dtype)
+    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), *batch_dims)).astype(jnp_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis)
@@ -24,13 +27,14 @@ def test_l2t_t2l_roundtrip(jnp_dtype):
 
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_l2t_scaled_t2l_roundtrip(jnp_dtype):
+@pytest.mark.parametrize("batch_dims", batch_dims)
+def test_l2t_scaled_t2l_roundtrip(jnp_dtype, batch_dims):
     rng = np.random.default_rng(1234)
 
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(),)).astype(jnp_dtype)
+    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), *batch_dims)).astype(jnp_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis, scale_factor=0.5)
@@ -41,13 +45,14 @@ def test_l2t_scaled_t2l_roundtrip(jnp_dtype):
 
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_l2t_t2l_scaled_roundtrip(jnp_dtype):
+@pytest.mark.parametrize("batch_dims", batch_dims)
+def test_l2t_t2l_scaled_roundtrip(jnp_dtype, batch_dims):
     rng = np.random.default_rng(1234)
 
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(),)).astype(jnp_dtype)
+    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), *batch_dims)).astype(jnp_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis)
@@ -55,22 +60,3 @@ def test_l2t_t2l_scaled_roundtrip(jnp_dtype):
 
     assert y.data.dtype == x.data.dtype == jnp_dtype
     assert jnp.allclose(0.5 * x.data, y.data, atol=1e-7)
-
-
-@pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_l2t_t2l_roundtrip_batched(jnp_dtype):
-    rng = np.random.default_rng(1234)
-
-    lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
-
-    batch_size = 10
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), batch_size)).astype(jnp_dtype)
-
-    x = rpj.Lie(x_data, lie_basis)
-
-    tensor_x = rpj.lie_to_tensor(x, tensor_basis)
-    y = rpj.tensor_to_lie(tensor_x, lie_basis)
-
-    assert y.data.dtype == x.data.dtype == jnp_dtype
-    assert jnp.allclose(x.data, y.data, atol=1e-7)
