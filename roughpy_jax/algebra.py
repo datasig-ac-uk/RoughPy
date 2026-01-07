@@ -140,8 +140,8 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     # Use same basis convention as ft_fma in roughpy/compute
     basis = c.basis
     out_depth = c.basis.depth
-    lhs_depth = -1
-    rhs_depth = -1
+    lhs_depth = b.basis.depth
+    rhs_depth = c.basis.depth
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_fma",
@@ -154,13 +154,15 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
         c.data,
         width=np.int32(basis.width),
         depth=np.int32(basis.depth),
-        out_depth=np.int32(out_depth),
-        lhs_depth=np.int32(lhs_depth),
-        rhs_depth=np.int32(rhs_depth),
-        degree_begin=basis.degree_begin
+        degree_begin=basis.degree_begin,
+        a_max_deg=np.int32(out_depth),
+        b_max_deg=np.int32(lhs_depth),
+        c_max_deg=np.int32(rhs_depth),
+        b_min_deg=np.int32(0),
+        c_min_deg=np.int32(0),
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
 def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
@@ -178,9 +180,6 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     _check_tensor_dtype(a, b)
     _check_basis_compat(a.basis, b.basis)
 
-    # Zero data for underlying fma
-    zero_add_data = jnp.zeros_like(a.data)
-
     # Use same basis convention as ft_mul in roughpy/compute
     basis = b.basis
     out_depth = b.basis.depth
@@ -188,23 +187,24 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     rhs_depth = b.basis.depth
 
     call = jax.ffi.ffi_call(
-        "cpu_dense_ft_fma",
+        "cpu_dense_ft_mul",
         jax.ShapeDtypeStruct(b.data.shape, b.data.dtype)
     )
 
     out_data = call(
-        zero_add_data,
         a.data,
         b.data,
         width=np.int32(basis.width),
         depth=np.int32(basis.depth),
-        out_depth=np.int32(out_depth),
-        lhs_depth=np.int32(lhs_depth),
-        rhs_depth=np.int32(rhs_depth),
-        degree_begin=basis.degree_begin
+        degree_begin=basis.degree_begin,
+        out_max_deg=np.int32(out_depth),
+        lhs_max_deg=np.int32(lhs_depth),
+        rhs_max_deg=np.int32(rhs_depth),
+        lhs_min_deg=np.int32(0),
+        rhs_min_deg=np.int32(0),
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
 def antipode(a: FreeTensor) -> FreeTensor:
@@ -227,11 +227,12 @@ def antipode(a: FreeTensor) -> FreeTensor:
         a.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(a.basis.depth),
-        degree_begin=out_basis.degree_begin
+        degree_begin=out_basis.degree_begin,
+        arg_max_deg=np.int32(a.basis.depth),
+        no_sign=False
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
@@ -259,13 +260,17 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
         a.data,
         b.data,
         c.data,
-        width=np.int32(a.width),
-        depth=np.int32(a.depth),
-        arg_depth=np.int32(a.basis.depth),
-        degree_begin=a.degree_begin
+        width=np.int32(a.basis.width),
+        depth=np.int32(a.basis.depth),
+        degree_begin=a.basis.degree_begin,
+        a_max_deg=np.int32(a.basis.depth),
+        b_max_deg=np.int32(b.basis.depth),
+        c_max_deg=np.int32(c.basis.depth),
+        b_min_deg=np.int32(0),
+        c_min_deg=np.int32(0),
     )
 
-    return ShuffleTensor(out_data, a.basis)
+    return DenseShuffleTensor(out_data, a.basis)
 
 
 def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
@@ -283,25 +288,25 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
     _check_tensor_dtype(lhs, rhs)
     _check_basis_compat(lhs.basis, rhs.basis)
 
-    # Zero data for underlying fma
-    zero_add_data = jnp.zeros_like(lhs.data)
-
     call = jax.ffi.ffi_call(
-        "cpu_dense_st_fma",
+        "cpu_dense_st_mul",
         jax.ShapeDtypeStruct(lhs.data.shape, lhs.data.dtype)
     )
 
     out_data = call(
-        zero_add_data,
         lhs.data,
         rhs.data,
         width=np.int32(lhs.basis.width),
         depth=np.int32(lhs.basis.depth),
-        arg_depth=np.int32(lhs.basis.depth),
-        degree_begin=lhs.basis.degree_begin
+        degree_begin=lhs.basis.degree_begin,
+        out_max_deg=np.int32(lhs.basis.depth),
+        lhs_max_deg=np.int32(lhs.basis.depth),
+        rhs_max_deg=np.int32(rhs.basis.depth),
+        lhs_min_deg=np.int32(0),
+        rhs_min_deg=np.int32(0),
     )
 
-    return ShuffleTensor(out_data, lhs.basis)
+    return DenseShuffleTensor(out_data, lhs.basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -329,11 +334,11 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         x.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(x.basis.depth),
-        degree_begin=out_basis.degree_begin
+        degree_begin=out_basis.degree_begin,
+        arg_max_deg=np.int32(x.basis.depth),
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -361,11 +366,11 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         x.data,
         width=np.int32(out_basis.width),
         depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(x.basis.depth),
-        degree_begin=out_basis.degree_begin
+        degree_begin=out_basis.degree_begin,
+        arg_max_deg=np.int32(x.basis.depth)
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -401,13 +406,15 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
         exponent.data,
         width=np.int32(basis.width),
         depth=np.int32(basis.depth),
-        out_depth=np.int32(out_depth),
-        mul_depth=np.int32(mul_depth),
-        exp_depth=np.int32(exp_depth),
-        degree_begin=out_basis.degree_begin
+        degree_begin=out_basis.degree_begin,
+        out_max_deg=np.int32(out_depth),
+        mul_max_deg=np.int32(mul_depth),
+        exp_max_deg=np.int32(exp_depth),
+        mul_min_deg=np.int32(0),
+        exp_min_deg=np.int32(0)
     )
 
-    return FreeTensor(out_data, basis)
+    return DenseFreeTensor(out_data, basis)
 
 
 def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
@@ -426,7 +433,7 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_facto
     result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
     rpc.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
 
-    return FreeTensor(result, tensor_basis)
+    return DenseFreeTensor(result, tensor_basis)
 
 
 def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
@@ -444,4 +451,4 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
     rpc.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
 
-    return Lie(result, lie_basis)
+    return DenseLie(result, lie_basis)
