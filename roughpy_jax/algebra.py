@@ -127,7 +127,6 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
 
     This function is equivalent to `b * c + a`.
     Supports float 32 or 64 but all data buffers must have matching type.
-    The basis is taken from `c`.
 
     :param a: addition operand
     :param b: left-hand multiply operand
@@ -138,14 +137,14 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     _check_basis_compat(a.basis, b.basis, c.basis)
 
     # Use same basis convention as ft_fma in roughpy/compute
-    basis = c.basis
-    out_depth = c.basis.depth
+    basis = a.basis
+    out_depth = a.basis.depth
     lhs_depth = b.basis.depth
     rhs_depth = c.basis.depth
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_fma",
-        jax.ShapeDtypeStruct(c.data.shape, c.data.dtype)
+        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
     )
 
     out_data = call(
@@ -183,7 +182,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     # Use same basis convention as ft_mul in roughpy/compute
     basis = b.basis
     out_depth = b.basis.depth
-    lhs_depth = -1
+    lhs_depth = a.basis.depth
     rhs_depth = b.basis.depth
 
     call = jax.ffi.ffi_call(
