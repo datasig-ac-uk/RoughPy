@@ -27,9 +27,18 @@ def csc_matvec(data, indices, indptr, output_n_rows, x):
     """
     # Generate a compact array of which non-zero cells to update
     cols = csc_cols_from_indptr(indptr)
-    updates = data * x[cols]
 
-    # Add the corresponding update for row index
-    y = jnp.zeros((output_n_rows,), dtype=updates.dtype)
-    y = y.at[indices].add(updates)
-    return y
+    # Use a batched view of x so same logic applies to batched and flat arrays
+    is_batched = x.ndim == 2
+    x_batched = x if is_batched else x[:, None]
+
+    # Calculate how much to add to sparse element (by indices). Reshaped data
+    # allows broadcasting over batch dimensions
+    updates = data[:, None] * x_batched[cols]
+
+    # Accumulate the updates into batched output tensor data
+    y = jnp.zeros((output_n_rows, x_batched.shape[1]), dtype=updates.dtype)
+    y = y.at[indices, :].add(updates)
+
+    # Unbatch the result if required
+    return y if is_batched else y[:, 0]
