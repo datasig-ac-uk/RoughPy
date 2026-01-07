@@ -41,7 +41,7 @@ class LieBasis(rpc.LieBasis):
 
     The default constructor requires only width and depth and constructs a
     Hall set greedily, minimizing the degree of the left parent. For instance,
-    for width 2 and depth 4©, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
+    for width 2 and depth 4, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
     3 -> (1, 2) (which represents the bracket [1,2]), 4 -> (1, 3) ([1,[1,2]]),
     and 5 -> (2, 3) ([2,[1,2]]).
 
