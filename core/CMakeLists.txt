@@ -2,13 +2,14 @@
 
 setup_roughpy_component(Core)
 
-add_library(RoughPy_Core INTERFACE
+add_library(RoughPy_Core STATIC
         include/roughpy/core/detail/config.h
         include/roughpy/core/detail/bit_cast.h
         include/roughpy/core/construct_inplace.h
         include/roughpy/core/check.h
         include/roughpy/core/check_helpers.h
         include/roughpy/core/debug_assertion.h
+        include/roughpy/core/fnv1a_hash.h
         include/roughpy/core/hash.h
         include/roughpy/core/types.h
         include/roughpy/core/traits.h
@@ -19,6 +20,7 @@ add_library(RoughPy_Core INTERFACE
         include/roughpy/core/string_utils.h
         include/roughpy/core/ranges.h
         include/roughpy/core/meta.h
+        src/fnv1a_hash.c
 )
 add_library(RoughPy::Core ALIAS RoughPy_Core)
 
