@@ -392,8 +392,8 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
 
     basis = multiplier.basis
     out_depth = multiplier.basis.depth
-    mul_depth = -1
-    exp_depth = -1
+    mul_depth = multiplier.basis.depth
+    exp_depth = exponent.basis.depth
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_fmexp",
@@ -451,3 +451,76 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     rpc.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
 
     return DenseLie(result, lie_basis)
+
+
+
+def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
+    """
+    Compute the adjoint action of left free-tensor multiplication on shuffles.
+
+    Computes the adjoint action of the left multiplier operator L_a: b -> ab
+    as an operator on shuffle tensors. That is, the shuffle tensor given
+    by L_a^*(s) where * denotes adjoint.
+
+    :param op: a in the notation above
+    :param arg: The ShuffleTensor to be acted upon.
+    :return: The result of the adjoint action as a ShuffleTensor.
+    """
+
+    out_basis = arg.basis
+    op_max_deg = op.basis.depth
+    arg_max_deg = arg.basis.depth
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_adj_lmul",
+        jax.ShapeDtypeStruct(arg.data.shape, arg.data.dtype)
+    )
+
+
+    out_data = call(
+        op.data,
+        arg.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        degree_begin=out_basis.degree_begin,
+        op_max_deg=np.int32(op_max_deg),
+        arg_max_deg=np.int32(arg_max_deg)
+    )
+
+    return DenseShuffleTensor(out_data, out_basis)
+
+
+def ft_adjoint_right_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
+    """
+    Compute the adjoint action of right free-tensor multiplication on shuffles.
+
+    Computes the adjoint action of the right multiplier operator R_a: b -> ba
+    as an operator on shuffle tensors. That is, the shuffle tensor given
+    by R_a^*(s) where * denotes adjoint.
+
+    :param op: The FreeTensor representing the Lie algebra element.
+    :param arg: The ShuffleTensor to be acted upon.
+    :return: The result of the adjoint action as a ShuffleTensor.
+    """
+
+    out_basis = arg.basis
+    op_max_deg = op.basis.depth
+    arg_max_deg = arg.basis.depth
+
+    call = jax.ffi.ffi_call(
+        "cpu_dense_ft_adj_rmul",
+        jax.ShapeDtypeStruct(arg.data.shape, arg.data.dtype)
+    )
+
+    out_data = call(
+        op.data,
+        arg.data,
+        width=np.int32(out_basis.width),
+        depth=np.int32(out_basis.depth),
+        degree_begin=out_basis.degree_begin,
+        op_max_deg=np.int32(op_max_deg),
+        arg_max_deg=np.int32(arg_max_deg)
+    )
+
+    return DenseShuffleTensor(out_data, out_basis)
+
