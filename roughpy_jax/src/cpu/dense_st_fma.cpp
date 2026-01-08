@@ -69,7 +69,7 @@ struct DenseSTFmaFunctor : DenseSTFmaStaticArgs
     {
         const auto size = data_size_to_degree(basis, a_max_degree);
 
-        auto it = std::copy_n(a_data, data_size_to_degree(basis, a_max_degree), out_data);
+        auto it = std::copy_n(a_data, size, out_data);
         std::fill(it, out_data + basis.size(), Scalar{});
 
         return operator()(out_data, b_data, c_data);
