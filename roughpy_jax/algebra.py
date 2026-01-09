@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
+from typing import TypeVar
 
 import jax
 import jax.numpy as jnp
@@ -7,6 +8,11 @@ import numpy as np
 
 from roughpy import compute as rpc
 
+
+
+FreeTensorT = TypeVar('FreeTensorT')
+ShuffleTensorT = TypeVar('ShuffleTensorT')
+LieT = TypeVar('LieT')
 
 # For exposition only
 # class TensorBasis:
@@ -121,7 +127,7 @@ def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
             raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
 
 
-def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
+def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     """
     Free tensor fused multiply-add
 
@@ -164,7 +170,7 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     return DenseFreeTensor(out_data, basis)
 
 
-def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
+def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     """
     Free tensor multiply
 
@@ -206,7 +212,7 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     return DenseFreeTensor(out_data, basis)
 
 
-def antipode(a: FreeTensor) -> FreeTensor:
+def antipode(a: FreeTensorT) -> FreeTensorT:
     """
     Antipode of a free tensor
 
@@ -234,7 +240,7 @@ def antipode(a: FreeTensor) -> FreeTensor:
     return DenseFreeTensor(out_data, out_basis)
 
 
-def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
+def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
     """
     Shuffle tensor fused multiply-add
 
@@ -272,7 +278,7 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
     return DenseShuffleTensor(out_data, a.basis)
 
 
-def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
+def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     """
     Shuffle tensor product
 
@@ -308,7 +314,7 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
     return DenseShuffleTensor(out_data, lhs.basis)
 
 
-def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor exponent
 
@@ -340,7 +346,7 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     return DenseFreeTensor(out_data, out_basis)
 
 
-def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor logarithm
 
@@ -372,7 +378,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     return DenseFreeTensor(out_data, out_basis)
 
 
-def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor fused multiply-exponential
 
@@ -416,7 +422,7 @@ def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasi
     return DenseFreeTensor(out_data, basis)
 
 
-def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
+def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensorT:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
 
@@ -435,7 +441,7 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_facto
     return DenseFreeTensor(result, tensor_basis)
 
 
-def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
+def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None) -> LieT:
     """
     Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
 
@@ -454,7 +460,7 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
 
 
 
-def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
+def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of left free-tensor multiplication on shuffles.
 
@@ -490,7 +496,7 @@ def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
     return DenseShuffleTensor(out_data, out_basis)
 
 
-def ft_adjoint_right_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
+def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of right free-tensor multiplication on shuffles.
 
