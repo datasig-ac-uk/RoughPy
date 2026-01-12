@@ -22,27 +22,25 @@ def csc_matvec(data, indices, indptr, output_n_rows, x):
     indices:        sparse matrix A row indices
     indptr:         sparse matrix A column
     out_rows:       number of rows in result (n)
-    x:              (n,) dense vector data to multiply
-    returns:        (n,) result of A @ x
+    x:              (*batch_dims, n,) dense vector data to multiply
+    returns:        (*batch_dims, n,) result of A @ x
     """
     # Generate a compact array of which non-zero cells to update
     cols = csc_cols_from_indptr(indptr)
 
-    # Coerce the data into a shape that can be broadcasted to given the shape of x, which may
-    # be unbatched (N,) or batched any number of dimensions, e.g. (N, D1), (N, D1, D2) etc.
-    # The reshaped data is a view of the original with trailing 1s to the right allowing
-    # broadcast in multiplication, e.g. for a 3x4 2D batch of tensors of length 10,
-    # data_reshaped would be (10, 1, 1) for broadcast from x_by_col (10, 3, 4)
-    x_by_col = x[cols]
-    missing_dims = x_by_col.ndim - data.ndim
-    data_shape = (data.shape[0],) + (1,) * missing_dims
-    data_reshaped = jnp.reshape(data, data_shape)
+    # Index x values given the columns, accommodating for leading batch dimensions
+    # if present. For example a 1D batch of data x will be 2D (D1, N), and for a 2D
+    # batch x will be 3D (D1, D2, N).
+    x_by_col = x[..., cols]
 
-    # The updates are all the sparse additions at every location in all tensors
-    updates = data_reshaped * x_by_col
+    # Updates are all the sparse additions at every location in all tensors
+    updates = data * x_by_col
 
-    # Accumulate the updates into batched output tensor data
-    batched_shape = x_by_col.shape[1:]
-    y = jnp.zeros((output_n_rows, *batched_shape), dtype=updates.dtype)
-    y = y.at[indices, ...].add(updates)
+    # Accumulate the updates into batched output tensor data, taking x's leading
+    # dimensions as the batch shape; the tensors themselves are always 1D trailing.
+    batched_shape = x_by_col.shape[:-1]
+    y = jnp.zeros((*batched_shape, output_n_rows), dtype=updates.dtype)
+
+    # Scatter-add updates using indices, i.e y[..., indices[i]] += updates[..., i]
+    y = y.at[..., indices].add(updates)
     return y

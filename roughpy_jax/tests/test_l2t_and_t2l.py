@@ -16,7 +16,7 @@ def test_l2t_t2l_roundtrip(jnp_dtype, batch_dims):
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), *batch_dims)).astype(jnp_dtype)
+    x_data = rng.uniform(-1.0, 1.0, (*batch_dims, lie_basis.size())).astype(jnp_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis)
@@ -34,7 +34,7 @@ def test_l2t_scaled_t2l_roundtrip(jnp_dtype, batch_dims):
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), *batch_dims)).astype(jnp_dtype)
+    x_data = rng.uniform(-1.0, 1.0, (*batch_dims, lie_basis.size())).astype(jnp_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis, scale_factor=0.5)
@@ -52,7 +52,7 @@ def test_l2t_t2l_scaled_roundtrip(jnp_dtype, batch_dims):
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
-    x_data = rng.uniform(-1.0, 1.0, (lie_basis.size(), *batch_dims)).astype(jnp_dtype)
+    x_data = rng.uniform(-1.0, 1.0, (*batch_dims, lie_basis.size())).astype(jnp_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis)
