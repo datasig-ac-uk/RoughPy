@@ -85,6 +85,12 @@ inline bool is_C_contiguous(
 ) noexcept
 {
     if (strides.empty()) { return true; }
+
+    const size_t strides_sum = std::accumulate(strides.begin(), strides.end(), 0);
+    if (strides_sum == 0) {
+        return true;
+    }
+
     T compressed_size = (itemsize) ? *itemsize : 1;
     for (auto i = strides.size(); i > 0;) {
         if (strides[--i] != compressed_size) { return false; }
