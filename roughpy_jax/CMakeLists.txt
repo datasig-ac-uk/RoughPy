@@ -1,3 +1,20 @@
+if(ROUGHPY_TEST_BUILD)
+    # FIXME experimental wheel building work see test_build for notes
+
+    # If running python build, this is the CMakeLists.txt root, so need cmake version
+    cmake_minimum_required(VERSION 3.28)
+
+    if (NOT EXISTS "_deps/find_python.cmake")
+        message(FATAL_ERROR "Cannot find find_python.cmake. Please run via test_build.sh")
+    endif()
+
+    if (NOT EXISTS "_deps/roughpy_compute")
+        message(FATAL_ERROR "Cannot find roughpy_compute. Please run via test_build.sh")
+    endif()
+
+    include(_deps/find_python.cmake)
+endif()
+
 project(RoughPy_JaxModule LANGUAGES CXX)
 
 # Optionally enable CUDA build
@@ -27,6 +44,9 @@ execute_process(
             "-c" "from jax import ffi; print(ffi.include_dir())"
     OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE XLA_DIR
 )
+if ("${XLA_DIR}" STREQUAL "")
+    message(FATAL_ERROR "Could not find XLA include directory")
+endif()
 message(STATUS "XLA include directory: ${XLA_DIR}")
 
 python_add_library(RoughPy_JaxModule MODULE
@@ -61,6 +81,13 @@ target_include_directories(RoughPy_JaxModule PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/..
 )
+
+if (ROUGHPY_TEST_BUILD)
+    # FIXME experimental work as above with _deps
+    target_include_directories(RoughPy_JaxModule PRIVATE
+        _deps
+    )
+endif ()
 
 # Use same naming convention as rpy_compute (except without cpython versioning)
 set_target_properties(RoughPy_JaxModule PROPERTIES PREFIX "")
