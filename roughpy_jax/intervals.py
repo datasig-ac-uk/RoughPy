@@ -71,6 +71,13 @@ class Dyadic:
 
 @dataclass(frozen=True)
 class DyadicInterval(Dyadic):
+    """
+    This subclass represents a dyadic interval, and therefore conforms to the
+    Interval protocol. Crucially this is a subclass of Dyadic becuase its 
+    endpoints (and width) are fully defined by the k and n parameters of Dyadic 
+    and whether the interval is closed or open on either end.  
+    """
+    
     _interval_type: IntervalType
 
     @property
