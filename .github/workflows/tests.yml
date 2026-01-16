@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - "examples/**"
-      - "doc/**"
+      - "docs/**"
       - "README.md"
       - "CHANGELOG"
       - "tools/*.py"
@@ -26,7 +26,7 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - "examples/**"
-      - "doc/**"
+      - "docs/**"
       - "README.md"
       - "CHANGELOG"
       - "tools/*.py"
@@ -141,7 +141,7 @@ jobs:
         mkdir ${{ github.workspace }}/_vcpkg_downloads
         
     - name: Cache vcpkg binaries + downloads
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ${{ github.workspace }}/_vcpkg_cache
