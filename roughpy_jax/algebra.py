@@ -305,8 +305,14 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     :return: tensor exponential of `x`
     """
     _check_tensor_dtype(x)
+    dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
+    batch_dims = x.data.shape[:-1]
+
+    op_cls = Operation.get_operation("ft_exp", "dense")
+    op = op_cls((out_basis, x.basis), dtype, batch_dims,
+                out_max_deg=out_basis.depth)
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_exp",
@@ -354,7 +360,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -432,4 +438,4 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     if scale_factor:
         result = result * scale_factor
 
-    return Lie(result, lie_basis)
+    return DenseLie(result, lie_basis)
