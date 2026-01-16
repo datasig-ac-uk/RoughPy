@@ -13,20 +13,20 @@ from roughpy_jax.intervals import (
 
 def test_dyadic_float_conversion_basic():
     d1 = Dyadic(k=3, n=1)
-    assert float(d1) == pytest.approx(1.5)
+    assert float(d1) == 1.5
 
     d2 = Dyadic(k=-1, n=2)
-    assert float(d2) == pytest.approx(-0.25)
+    assert float(d2) == -0.25
 
     d3 = Dyadic(k=5, n=0)
-    assert float(d3) == pytest.approx(5.0)
+    assert float(d3) == 5.0
 
 
 def test_real_interval_basic_and_frozen():
     ri = RealInterval[float](_inf=0.1, _sup=0.2, _interval_type=IntervalType.ClOpen)
-    assert ri.interval_type() is IntervalType.ClOpen
-    assert ri.inf() == pytest.approx(0.1)
-    assert ri.sup() == pytest.approx(0.2)
+    assert ri.interval_type is IntervalType.ClOpen
+    assert ri.inf == pytest.approx(0.1)
+    assert ri.sup == pytest.approx(0.2)
 
     # Frozen dataclass should not allow mutation
     with pytest.raises(Exception):
@@ -35,9 +35,9 @@ def test_real_interval_basic_and_frozen():
 
 def test_partition_endpoints_and_type():
     p = Partition[float](_endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl)
-    assert p.interval_type() is IntervalType.OpenCl
-    assert p.inf() == pytest.approx(0.0)
-    assert p.sup() == pytest.approx(1.0)
+    assert p.interval_type is IntervalType.OpenCl
+    assert p.inf == pytest.approx(0.0)
+    assert p.sup == pytest.approx(1.0)
 
 
 def test_protocol_conformance_runtime_checkable():
@@ -54,5 +54,5 @@ def test_protocol_conformance_runtime_checkable():
 def test_partition_with_dyadic_endpoints_uses_float_conversion():
     endpoints = [Dyadic(k=0, n=0), Dyadic(k=1, n=0)]
     p = Partition[Dyadic](_endpoints=endpoints, _interval_type=IntervalType.ClOpen)
-    assert p.inf() == pytest.approx(0.0)
-    assert p.sup() == pytest.approx(1.0)
+    assert p.inf == pytest.approx(0.0)
+    assert p.sup == pytest.approx(1.0)

@@ -35,12 +35,15 @@ class Interval(Protocol):
         represents the largest value contained within the interval.
     :type sup: float
     """
+    @property
     def interval_type(self) -> IntervalType:
         ...
 
+    @property
     def inf(self) -> float:
         ...
 
+    @property
     def sup(self) -> float:
         ...
 
@@ -70,13 +73,16 @@ class Dyadic:
 class DyadicInterval(Dyadic):
     _interval_type: IntervalType
 
+    @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
 
+    @property
     def inf(self) -> float:
         k = self.k if self._interval_type == IntervalType.ClOpen else self.k - 1
         return math.ldexp(self.k, -self.n)
 
+    @property
     def sup(self) -> float:
         k = (self.k + 1) if self._interval_type == IntervalType.ClOpen else self.k
         return math.ldexp(self.k+1, -self.n)
@@ -100,12 +106,15 @@ class RealInterval(Generic[RealT]):
     _sup : RealT
     _interval_type: IntervalType
 
+    @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
 
+    @property
     def inf(self) -> float:
         return self._inf
 
+    @property
     def sup(self) -> float:
         return self._sup
 
@@ -119,11 +128,14 @@ class Partition(Generic[RealT]):
     _interval_type: IntervalType
 
 
+    @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
 
+    @property
     def inf(self) -> float:
         return float(self._endpoints[0])
 
+    @property
     def sup(self) -> float:
         return float(self._endpoints[-1])
