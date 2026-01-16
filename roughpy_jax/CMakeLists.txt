@@ -29,7 +29,8 @@ execute_process(
 )
 message(STATUS "XLA include directory: ${XLA_DIR}")
 
-add_library(RoughPy_JaxModule SHARED
+python_add_library(RoughPy_JaxModule MODULE
+    WITH_SOABI
     src/cpu/dense_ft_fma.cpp
     src/cpu/dense_ft_exp.cpp
     src/cpu/dense_ft_log.cpp
@@ -37,6 +38,7 @@ add_library(RoughPy_JaxModule SHARED
     src/cpu/dense_ft_antipode.cpp
     src/cpu/dense_st_fma.cpp
     src/cpu/xla_common.cpp
+    src/roughpy_jax_module.c
 )
 
 # Ensure that XLA FFI definitions are visible in genreated .so
@@ -55,6 +57,7 @@ endif ()
 
 target_include_directories(RoughPy_JaxModule PRIVATE
     ${XLA_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/../vendored/pythoncapi_compat
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/..
 )
@@ -65,3 +68,32 @@ set_target_properties(RoughPy_JaxModule PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     LIBRARY_OUTPUT_NAME _rpy_jax_internals
 )
+
+
+if (ROUGHPY_BUILD_PYLIB)
+    # python_add_library(RoughPy_JaxModule MODULE WITH_SOABI)
+
+    install(TARGETS RoughPy_JaxModule
+            RUNTIME DESTINATION roughpy_jax
+            LIBRARY
+            DESTINATION roughpy_jax
+            NAMELINK_SKIP
+            ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
+            INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            FRAMEWORK DESTINATION roughpy_jax
+            EXCLUDE_FROM_ALL
+    )
+
+    install(DIRECTORY .
+            DESTINATION roughpy_jax
+            FILES_MATCHING
+            PATTERN "py.typed"
+            PATTERN "*.py"
+            PATTERN "*.pyi"
+            PATTERN "tests/*"
+            PATTERN "src/*" EXCLUDE)
+
+endif ()

@@ -1,10 +1,13 @@
 *****************
-RoughPy tutorials
+Worked Examples
 *****************
 
-Here are some examples of using RoughPy methods.
+Here are some examples of using rough path-based methods in different contexts.
+
+Some of these examples use the older "esig" package for computing signatures,
+and typically have supporting libraries that replicate the functionality of
+RoughPy on top of this interface.
 
 .. toctree::
    :maxdepth: 1
 
-@NB_TOC_SECTIONS@

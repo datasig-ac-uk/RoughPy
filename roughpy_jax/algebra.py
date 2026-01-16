@@ -8,6 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from roughpy import compute as rpc
+from .csc import csc_matvec
 
 
 from ops import Operation
@@ -406,15 +407,14 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_facto
     :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
     :return: new FreeTensor containing the embedding of "arg"
     """
+
     l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
-
     tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+    result = csc_matvec(l2t.data, l2t.indices, l2t.indptr, tensor_basis.size(), arg.data)
+    if scale_factor:
+        result = result * scale_factor
 
-    # FIXME placeholder code, running with compute code before migration to JAX
-    result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
-    rpc.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
-
-    return FreeTensor(result, tensor_basis)
+    return DenseFreeTensor(result, tensor_basis)
 
 
 def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
@@ -428,8 +428,8 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
     l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
 
-    # FIXME placeholder code, running with compute code before migration to JAX
-    result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
-    rpc.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+    result = csc_matvec(l2t.data, l2t.indices, l2t.indptr, lie_basis.size(), arg.data)
+    if scale_factor:
+        result = result * scale_factor
 
     return Lie(result, lie_basis)
