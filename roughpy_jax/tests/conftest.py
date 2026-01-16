@@ -8,6 +8,8 @@ import roughpy_jax as rpj
 # Running both f32 and f64 tests requires enabling JAX 64 bit mode
 jax.config.update("jax_enable_x64", True)
 
+# Set only CPU supported to prevent warnings in test output
+jax.config.update("jax_platforms", "cpu")
 
 @pytest.fixture
 def rpj_test_fixture_type_mismatch():
@@ -49,8 +51,44 @@ def rpj_test_fixture_type_mismatch():
 
 
 
-@pytest.fixture(params=[(), (2,), (2, 2), (2, 2, 2)])
+# FIXME remove, use rpy_batch instead
+@pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
 def batch_shape(request) -> tuple[int, ...]:
     return request.param
 
 
+# Batching test fixture
+@pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
+def rpy_batch(request):
+    """
+    Parameterised batch class fixture for various sizes with utility methods, example usage:
+
+        def test_xs(rpy_batch):
+            data = jnp.zeros(20)
+            batched_data = rpy_batch.repeat(data)
+            assert batched_data.shape[:-1] == rpy_batch.shape
+    """
+    class Batch:
+        def __init__(self):
+            self.rng = np.random.default_rng(1234)
+
+        @property
+        def shape(self):
+            return request.param
+
+        def zeros(self, num, dtype):
+            return self.repeat(jnp.zeros(num, dtype=dtype))
+
+        def repeat(self, xs):
+            return jnp.tile(xs, (*self.shape, 1))
+
+        def rng_uniform(self, min, max, num, dtype):
+            return self.rng.uniform(min, max, (*self.shape, num)).astype(dtype)
+
+    return Batch()
+
+
+# Data type test fixture
+@pytest.fixture(params=[jnp.float32, jnp.float64])
+def rpy_dtype(request):
+    return request.param

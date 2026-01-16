@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 import numpy as np
 
+# FIXME remove this file, instead use conftest.py
 
 # Array types supported by roughpy_jax methods
 array_dtypes = [jnp.float32, jnp.float64]

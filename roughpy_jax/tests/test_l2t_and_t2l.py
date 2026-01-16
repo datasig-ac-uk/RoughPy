@@ -5,7 +5,8 @@ import roughpy_jax as rpj
 
 from rpy_test_common import array_dtypes
 
-# Extra dimensions appended to lie data dim for testing batched behaviour
+
+# FIXME replace with new batch methods in conftest.py
 batch_dims = [(), (10,), (10, 5)]
 
 @pytest.mark.parametrize("jnp_dtype", array_dtypes)

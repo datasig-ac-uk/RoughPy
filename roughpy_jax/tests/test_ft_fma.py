@@ -5,8 +5,6 @@ import pytest
 import roughpy_jax as rpj
 import time
 
-from rpy_test_common import array_dtypes, jnp_to_np_float
-
 
 def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
@@ -44,55 +42,61 @@ def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
         rpj.ft_mul(f.ft_i32(), f.ft_i32())
 
 
-@pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_dense_ft_fma(jnp_dtype):
+def test_dense_ft_fma(rpy_dtype, rpy_batch):
     basis = rpj.TensorBasis(2, 2)
-    a_data = jnp.zeros(basis.size(), dtype=jnp_dtype)
-    b_data = jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=jnp_dtype)
-    c_data = jnp.array([-1, 4, 0, 1, 1, 0, 2], dtype=jnp_dtype)
+    a_data = rpy_batch.zeros(basis.size(), rpy_dtype)
+    b_data = rpy_batch.repeat(jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=rpy_dtype))
+    c_data = rpy_batch.repeat(jnp.array([-1, 4, 0, 1, 1, 0, 2], dtype=rpy_dtype))
+
     a = rpj.FreeTensor(a_data, basis)
     b = rpj.FreeTensor(b_data, basis)
     c = rpj.FreeTensor(c_data, basis)
 
     d = rpj.ft_fma(a, b, c)
-    expected = jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=jnp_dtype)
-    assert jnp.allclose(d.data, expected)
+
+    expected_data = rpy_batch.repeat(jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=rpy_dtype))
+    assert jnp.allclose(d.data, expected_data)
 
 
-@pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_dense_ft_fma_construction(jnp_dtype):
-    rng = np.random.default_rng(12345)
+def test_dense_ft_fma_construction(rpy_dtype, rpy_batch):
     basis = rpj.TensorBasis(2, 2)
 
     def _create_rng_uniform_ft():
-        data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
-        data = rng.uniform(-1, 1, size=basis.size())
+        data = rpy_batch.rng_uniform(-1, 1, basis.size(), rpy_dtype)
         return rpj.FreeTensor(data, basis)
 
-    a = _create_rng_uniform_ft()
-    b = _create_rng_uniform_ft()
-    c = _create_rng_uniform_ft()
-    expected = np.array(a.data)
+    batched_a = _create_rng_uniform_ft()
+    batched_b = _create_rng_uniform_ft()
+    batched_c = _create_rng_uniform_ft()
 
-    # scalar term
-    expected[0] += b.data[0] * c.data[0]
+    batched_d = rpj.ft_fma(batched_a, batched_b, batched_c)
 
-    # first order term
-    expected[1:3] += b.data[0] * c.data[1:3] + c.data[0] * b.data[1:3]
+    # FIXME for review, iterating over all combinations to preserve old expected computation 
+    for idx in np.ndindex(rpy_batch.shape):
+        a = batched_a.data[idx]
+        b = batched_b.data[idx]
+        c = batched_c.data[idx]
+        d = batched_d.data[idx]
 
-    # second order term
-    expected[3:] += (
-        b.data[0] * c.data[3:]
-        + c.data[0] * b.data[3:]
-        + np.outer(b.data[1:3], c.data[1:3]).flatten()
-    )
+        expected = np.array(a)
 
-    d = rpj.ft_fma(a, b, c)
-    assert jnp.allclose(d.data, expected)
+        # scalar term
+        expected[0] += b[0] * c[0]
+
+        # first order term
+        expected[1:3] += b[0] * c[1:3] + c[0] * b[1:3]
+
+        # second order term
+        expected[3:] += (
+            b[0] * c[3:]
+            + c[0] * b[3:]
+            + np.outer(b[1:3], c[1:3]).flatten()
+        )
+
+        assert jnp.allclose(d, expected)
 
 
-@pytest.mark.parametrize("jnp_dtype", array_dtypes)
-def test_ft_fma_jit(jnp_dtype):
+def test_ft_fma_jit(rpy_dtype, rpy_batch):
     # Arbitrary combination of ft_fma for comparison and timing
     def combined_fma(a, b, c):
         d = rpj.ft_fma(a, b, c)
@@ -103,7 +107,7 @@ def test_ft_fma_jit(jnp_dtype):
         return h
 
     basis = rpj.TensorBasis(3, 3)
-    data = jnp.linspace(0, 1, basis.size(), dtype=jnp_dtype)
+    data = rpy_batch.rng_uniform(-1, 1, basis.size(), rpy_dtype)
     a = rpj.FreeTensor(data, basis)
     b = rpj.FreeTensor(data, basis)
     c = rpj.FreeTensor(data, basis)
