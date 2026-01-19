@@ -51,13 +51,6 @@ def rpj_test_fixture_type_mismatch():
     return BasisFixture()
 
 
-
-# FIXME remove, use rpy_batch instead
-@pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
-def batch_shape(request) -> tuple[int, ...]:
-    return request.param
-
-
 # Batching test fixture
 @pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
 def rpj_batch(request):
