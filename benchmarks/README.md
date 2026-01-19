@@ -20,9 +20,6 @@ This installs:
 
 #### Initial Setup
 ```bash
-# Navigate to benchmarks directory
-cd benchmarks
-
 # Initialize ASV (first time only)
 asv machine --yes
 
