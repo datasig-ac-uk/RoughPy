@@ -94,6 +94,10 @@ def rpj_batch(request):
             data[...,1:basis.width + 1] = self.rng.normal(size=(*self.shape, basis.width))
             return rpj.FreeTensor(data, basis)
 
+        def rng_shuffle_tensor(self, basis, dtype):
+            data = self.rng_uniform(-1.0, 1.0, basis.size(), dtype)
+            return rpj.ShuffleTensor(data, basis)
+
         def identity_zero_data(self, basis, dtype):
             # Built using np not jnp for easy mutability
             data = np.zeros(self.tensor_batch_shape(basis), dtype)
