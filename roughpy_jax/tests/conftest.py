@@ -76,6 +76,9 @@ def rpy_batch(request):
         def shape(self):
             return request.param
 
+        def tensor_batch_shape(self, basis):
+            return (*self.shape, basis.size())
+
         def zeros(self, num, dtype):
             return self.repeat(jnp.zeros(num, dtype=dtype))
 
