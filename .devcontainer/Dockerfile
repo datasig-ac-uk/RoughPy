@@ -1,15 +1,9 @@
 FROM ubuntu:24.04
 
-# Install python
-RUN apt-get update
-RUN apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/GMT apt-get update && apt-get install -y \
     python3 \
     python3-venv \
-    python3-pip
-
-# Dev tools require an additional update
-RUN apt-get update
-RUN apt-get install -y \
+    python3-pip \
     git \
     gdb \
     curl \
@@ -19,7 +13,9 @@ RUN apt-get install -y \
     autoconf \
     libtool \
     libtool-bin \
-    pkg-config
+    pkg-config \
+    nvidia-cuda-toolkit \
+    nvidia-driver-535-server
 
 WORKDIR /tools
 
@@ -30,10 +26,14 @@ RUN pip install --upgrade pip setuptools wheel
 RUN pip install \
     cmake \
     ninja \
-    pybind11 \
-    numpy \
+    "pybind11<3.0.0" \
+    "numpy>=2.0.0" \
+    "jax" \
+    absl-py \
     pytest \
-    pytest-cov
+    pytest-cov \ 
+    pytest-benchmark \
+    asv
 
 # Use system tools for vcpkg when building aarch64 (Linux on MacOS)
 ENV VCPKG_FORCE_SYSTEM_BINARIES=0
@@ -48,4 +48,4 @@ RUN /tools/vcpkg/bootstrap-vcpkg.sh
 ENV VCPKG_ROOT=/tools/vcpkg
 
 # This is required to be able to run pytest in the VSCode terminal
-ENV PYTHONPATH=.
+ENV PYTHONPATH="/workspaces/RoughPy:$PYTHONPATH"
