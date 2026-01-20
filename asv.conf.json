@@ -9,43 +9,50 @@
     "dvcs": "git",
     "environment_type": "virtualenv",
     "show_commit_url": "https://github.com/datasig-ac-uk/RoughPy/commit/",
-    "pythons": ["3.12"],
-    
-    "matrix": {
-        "jax": ["0.8.0"],
-        "jaxlib": ["0.8.0"],
-        "numpy": ["2.3.4"]
-    },
-
-    "exclude": [
-        {"python": "3.12", "jax": null}
+    "pythons": [
+        "3.12"
     ],
-
+    "matrix": {
+        "jax": [
+            "0.8.0"
+        ],
+        "jaxlib": [
+            "0.8.0"
+        ],
+        "numpy": [
+            "2.3.4"
+        ]
+    },
+    "exclude": [
+        {
+            "python": "3.12",
+            "jax": null
+        }
+    ],
     "benchmark_dir": "benchmarks/",
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
-
     "install_command": [
         "python -m pip install {wheel_file}"
     ],
-    
     "uninstall_command": [
         "return-code=any python -m pip uninstall -y {project}"
     ],
-
     "build_command": [
         "python -m pip install scikit-build-core[pyproject] 'pybind11<3.0.0' numpy hatch-fancy-pypi-readme jax",
         "CMAKE_ARGS='-DROUGHPY_JAX=ON' python -m pip wheel --no-build-isolation --no-deps -vvv {build_dir} -w {build_cache_dir}"
     ],
-
     "benchmark_pattern": "^(Bench|Track|Suite)",
     "regressions_first_commits": {},
     "regressions_thresholds": {
-        "factors": {"factor": 2.0},
-        "percentages": {"percentage": 20.0}
+        "factors": {
+            "factor": 2.0
+        },
+        "percentages": {
+            "percentage": 20.0
+        }
     },
-
     "hash_length": 8,
     "cpu_count": null,
     "build_cache_size": 1
