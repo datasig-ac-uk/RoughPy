@@ -3,6 +3,9 @@
     "project": "roughpy",
     "project_url": "https://github.com/datasig-ac-uk/RoughPy",
     "repo": ".",
+    "branches": [
+        "<asv.conf set your branch name>"
+    ],
     "dvcs": "git",
     "environment_type": "virtualenv",
     "show_commit_url": "https://github.com/datasig-ac-uk/RoughPy/commit/",
