@@ -34,8 +34,8 @@
 #include "kernel_arg.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/slice.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/slice.hpp>
+#include <roughpy/core/types.hpp>
 
 namespace rpy {
 namespace devices {

@@ -57,7 +57,7 @@ class XMLOutputArchive;
 
 }// namespace cereal
 
-#include <roughpy/core/slice.h>
+#include <roughpy/core/slice.hpp>
 
 // #include "filesystem.h"
 

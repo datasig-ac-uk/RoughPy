@@ -32,9 +32,9 @@
 #include "roughpy_module.h"
 
 #include "roughpy/core/macros.h"              // for RPY_NO_DISCARD
-#include <roughpy/core/hash.h>
-#include <roughpy/core/slice.h>
-#include "roughpy/core/types.h"               // for deg_t, key_type, let_t
+#include <roughpy/core/hash.hpp>
+#include <roughpy/core/slice.hpp>
+#include "roughpy/core/types.hpp"               // for deg_t, key_type, let_t
 
 #include <roughpy/algebra/tensor_basis.h>
 

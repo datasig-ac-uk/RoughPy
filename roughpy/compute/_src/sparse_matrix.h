@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_COMPUTE__SRC_SPARSE_MATRIX_H
 #define ROUGHPY_COMPUTE__SRC_SPARSE_MATRIX_H
 
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 
 #ifdef __cplusplus
@@ -65,6 +65,14 @@ py_sparse_matrix_from_components(
 
 RPY_NO_EXPORT
 int init_sparse_matrix(PyObject *module);
+
+extern PyTypeObject* PySparseMatrix_Type;
+
+
+static inline int PySparseMatrix_Check(PyObject* obj)
+{
+    return PyObject_TypeCheck(obj, PySparseMatrix_Type);
+}
 
 
 RPY_NO_EXPORT

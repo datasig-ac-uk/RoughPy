@@ -9,8 +9,8 @@
 #include <atomic>
 
 #include "roughpy/core/macros.h"
-#include "roughpy/core/smart_ptr.h"
-#include "roughpy/core/traits.h"
+#include "roughpy/core/smart_ptr.hpp"
+#include "roughpy/core/traits.hpp"
 
 #include "alloc.h"
 #include "roughpy/platform/roughpy_platform_export.h"

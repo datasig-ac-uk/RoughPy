@@ -29,7 +29,7 @@
 #ifndef ROUGHPY_ALGEBRA_BASIS_INFO_H_
 #define ROUGHPY_ALGEBRA_BASIS_INFO_H_
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <string>
 
 namespace rpy {

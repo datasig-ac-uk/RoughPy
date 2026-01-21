@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_PLATFORM_H
 #define ROUGHPY_PLATFORM_H
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 
 
 

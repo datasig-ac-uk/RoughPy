@@ -29,7 +29,7 @@
 // Created by user on 11/10/23.
 //
 #include "devices/queue.h"
-#include "roughpy/core/types.h"  // for dimn_t
+#include "roughpy/core/types.hpp"  // for dimn_t
 
 
 using namespace rpy;

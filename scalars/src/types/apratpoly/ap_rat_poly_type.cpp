@@ -8,7 +8,7 @@
 #include "roughpy/core/check.h"                         // for throw_exception
 #include "roughpy/core/debug_assertion.h"               // for RPY_DBG_ASSERT
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/devices/host_device.h>
 
 #include "scalar_array.h"

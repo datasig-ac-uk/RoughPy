@@ -29,7 +29,7 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/errors.h>
 
 #include <memory>

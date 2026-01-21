@@ -8,7 +8,7 @@
 #include "ocl_headers.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include <ostream>
 

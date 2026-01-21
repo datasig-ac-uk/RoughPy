@@ -31,7 +31,7 @@
 
 #include <roughpy/streams/lie_increment_stream.h>
 #include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
-#include "roughpy/core/ranges.h"
+#include "roughpy/core/ranges.hpp"
 
 #include <cereal/types/concepts/pair_associative_container.hpp>
 

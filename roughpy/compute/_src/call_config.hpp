@@ -1,8 +1,8 @@
 #ifndef ROUGHPY_COMPUTE__SRC_ALGEBRA_CONFIG_HPP
 #define ROUGHPY_COMPUTE__SRC_ALGEBRA_CONFIG_HPP
 
-#include "py_headers.h"
-#include "py_obj_handle.hpp"
+#include <roughpy/pycore/py_headers.h>
+#include <roughpy/pycore/object_handle.hpp>
 
 #include <roughpy_compute/common/basis.hpp>
 

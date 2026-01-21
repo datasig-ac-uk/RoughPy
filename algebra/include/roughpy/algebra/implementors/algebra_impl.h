@@ -29,8 +29,8 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
 
-#include "roughpy/core/helpers.h"
-#include "roughpy/core/traits.h"
+#include "roughpy/core/helpers.hpp"
+#include "roughpy/core/traits.hpp"
 #include "roughpy/platform/serialization.h"
 #include "roughpy/scalars/scalar_traits.h"
 #include "roughpy/scalars/scalar_types.h"

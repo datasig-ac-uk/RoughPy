@@ -28,8 +28,8 @@
 #include "tensor_key.h"
 
 #include "roughpy/core/check.h"                // for throw_exception, RPY_T...
-#include "roughpy/core/hash.h"                 // for hash_t, hash_combine
-#include "roughpy/core/slice.h"                // for Slice
+#include "roughpy/core/hash.hpp"                 // for hash_t, hash_combine
+#include "roughpy/core/slice.hpp"                // for Slice
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/scalars/scalar_types.h>

@@ -216,9 +216,61 @@ elseif (NOT WIN32)
 endif ()
 
 
+###############################################################################
+#                                    python                                   #
+###############################################################################
+# We need to provide some help to make sure we find the correct version of
+# Python. Ideally, if we're using Scikit-Build-Core to build the library (via
+# pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
+# variable. In this case, make sure that this is the version of Python that gets
+# found.
+set(Python_FIND_VIRTUAL_ENVIRONMENT FIRST)
+if (NOT PYTHON_FOUND AND SKBUILD)
+    cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
+    message(STATUS "SKBuild environment: ${_sk_env_dir}")
+
+    # Some variables that are set might cause issues in the FindPython module,
+    # so unset those
+    unset(Python_LIBRARY CACHE)
+    unset(PYTHON_LIBRARY CACHE)
+    unset(Python3_LIBRARY CACHE)
+
+    # clean up temporary
+    unset(_sk_env_dir)
+else ()
+    # If we're not using Scikit-Build-Core (i.e. a pure CMake build) then try
+    # looking for a Python virtual environment first.
+    set(Python_FIND_VIRTUALENV FIRST)
+
+    # In particular, if ENV{VIRTUAL_ENV} is set then add this to the cmake
+    # prefix path so FindPython is more likely to find this environemnt.
+    if (DEFINED ENV{VIRTUAL_ENV})
+        # Put venv/lib on the prefix path so we can find
+        # a pip installed MKL
+        message(STATUS "Adding python virtual environment to path")
+        list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
+    endif ()
+    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
+        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
+    endif()
+endif ()
+
+
+set(_python_components Interpreter Development.Module)
+if (ROUGHPY_LINK_NUMPY)
+    list(APPEND _python_components NumPy)
+endif ()
+
+if (ROUGHPY_BUILD_TEST_PYTHON_EMBED)
+    # Required to link test_python_embed
+    list(APPEND _python_components Development.Embed)
+endif()
+
+
+find_package(Python 3.8 REQUIRED COMPONENTS ${_python_components})
+unset(_python_components)
 
 add_subdirectory(vendored/libalgebra_lite)
-
 
 add_subdirectory(core)
 add_subdirectory(platform)
@@ -268,6 +320,7 @@ if (ROUGHPY_BUILD_PYLIB)
             INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/vendored/pythoncapi_compat/"
     )
 
+    add_subdirectory(pycore)
     add_subdirectory(roughpy)
 
 

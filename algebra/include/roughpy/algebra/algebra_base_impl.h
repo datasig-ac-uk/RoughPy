@@ -33,7 +33,7 @@
 #include <ostream>
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar_types.h>
 
