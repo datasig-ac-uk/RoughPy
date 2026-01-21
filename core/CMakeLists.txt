@@ -36,7 +36,10 @@ target_link_libraries(RoughPy_Core INTERFACE
         range-v3::range-v3
 )
 
-set_target_properties(RoughPy_Core PROPERTIES ROUGHPY_COMPONENT Core)
+set_target_properties(RoughPy_Core PROPERTIES
+        ROUGHPY_COMPONENT Core
+        POSITION_INDEPENDENT_CODE ON
+)
 
 #add_roughpy_component(Core INTERFACE
 #        PUBLIC_HEADERS
