@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_COMPUTE__SRC_SPARSE_MATRIX_H
 #define ROUGHPY_COMPUTE__SRC_SPARSE_MATRIX_H
 
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_COMPUTE__SRC_PY_TERNARY_ARRAY_FN_HPP
 #define ROUGHPY_COMPUTE__SRC_PY_TERNARY_ARRAY_FN_HPP
 
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 #include <roughpy_compute/common/cache_array.hpp>
 

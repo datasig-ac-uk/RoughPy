@@ -2,7 +2,7 @@
 #define ROUGHPY_COMPUTE__SRC_TENSOR_BASIS_H
 
 
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 
 #ifdef __cplusplus

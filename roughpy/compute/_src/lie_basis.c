@@ -7,13 +7,14 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "py_fnv1a_hash.h"
+#define RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#include <roughpy/pycore/compat.h>
+
+#include <roughpy/pycore/fnv1a_hash.h>
+
 #include "lie_multiplication_cache.h"
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
-
-#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
-#include "py_compat.h"
 
 struct _PyLieBasis
 {
@@ -101,7 +102,7 @@ PyMethodDef PyLieBasis_methods[] = {
 PyTypeObject PyLieBasis_Type = {                                              //
                 .ob_base = PyVarObject_HEAD_INIT(NULL, 0)//
                                    .tp_name
-                = RPY_CPT_TYPE_NAME(LieBasis),
+                = "roughpy.LieBasis",
                 .tp_basicsize = sizeof(PyLieBasis),
                 .tp_itemsize = 0,
                 .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,

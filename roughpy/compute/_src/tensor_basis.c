@@ -4,10 +4,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
-#include "py_compat.h"
+#define RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#include <roughpy/pycore/compat.h>
 
-#include "py_fnv1a_hash.h"
+#include <roughpy/pycore/fnv1a_hash.h>
 
 /* clang-format off */
 struct _PyTensorBasis {
@@ -281,7 +281,7 @@ static PyMethodDef PyTensorBasis_methods[] = {
 /* clang-format off */
 PyTypeObject PyTensorBasis_Type = {
         .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(TensorBasis),
+        .tp_name = "roughpy.TensorBasis",
         .tp_basicsize = sizeof(PyTensorBasis),
         .tp_itemsize = 0,
         .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,

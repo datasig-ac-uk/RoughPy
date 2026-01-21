@@ -103,7 +103,7 @@ struct PyLieMultiplicationCache {
 
 static PyTypeObject PyLieMultiplicationCache_Type = {
         PyVarObject_HEAD_INIT(NULL, 0)
-                RPY_CPT_TYPE_NAME(LieMultiplicationCache), /* tp_name */
+                "roughpy.compute.LieMultiplicationCache", /* tp_name */
         sizeof(PyLieMultiplicationCache),                  /* tp_basicsize */
         0,                                                 /* tp_itemsize */
         reinterpret_cast<destructor>(lmc_dealloc),         /* tp_dealloc */

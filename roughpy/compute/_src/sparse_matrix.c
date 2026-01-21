@@ -7,8 +7,8 @@
 
 
 
-#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
-#include "py_compat.h"
+#define RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#include <roughpy/pycore/compat.h>
 
 #define SMH_FLAGS_FORMAT_MASK 0x7;
 
@@ -151,7 +151,7 @@ PyMethodDef PySparseMatrix_methods[] = {
 
 PyTypeObject PySparseMatrix_Type
         = {.ob_base = PyVarObject_HEAD_INIT(NULL, 0).tp_name
-           = RPY_CPT_TYPE_NAME(SparseMatrix),
+           = "roughpy.compute.SparseMatrix",
            .tp_basicsize = sizeof(PySparseMatrix),
            .tp_itemsize = 0,
            .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,

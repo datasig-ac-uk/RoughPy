@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_COMPUTE__SRC_LIE_BASIS_H
 #define ROUGHPY_COMPUTE__SRC_LIE_BASIS_H
 
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 #ifdef __cplusplus
 extern "C" {
