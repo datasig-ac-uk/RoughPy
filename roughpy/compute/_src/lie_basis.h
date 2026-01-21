@@ -75,7 +75,7 @@ typedef union _LieWord
 
 typedef struct _PyLieBasis PyLieBasis;
 
-extern PyTypeObject PyLieBasis_Type;
+extern PyTypeObject* PyLieBasis_Type;
 
 /*
  * At the moment, the Hall set we construct obeys the ordering where both
@@ -103,7 +103,7 @@ PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype_obj);
 
 static inline int PyLieBasis_Check(PyObject* obj)
 {
-    return PyObject_TypeCheck(obj, &PyLieBasis_Type);
+    return PyObject_TypeCheck(obj, PyLieBasis_Type);
 }
 
 RPY_NO_EXPORT

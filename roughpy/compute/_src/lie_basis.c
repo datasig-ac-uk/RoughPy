@@ -99,22 +99,28 @@ PyMethodDef PyLieBasis_methods[] = {
         {NULL}
 };
 
-PyTypeObject PyLieBasis_Type = {                                              //
-                .ob_base = PyVarObject_HEAD_INIT(NULL, 0)//
-                                   .tp_name
-                = "roughpy.LieBasis",
-                .tp_basicsize = sizeof(PyLieBasis),
-                .tp_itemsize = 0,
-                .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-                .tp_doc = "LieBasis",
-                .tp_methods = PyLieBasis_methods,
-                .tp_members = PyLieBasis_members,
-                .tp_init = (initproc) lie_basis_init,
-                .tp_dealloc = (destructor) lie_basis_dealloc,
-                .tp_repr = (reprfunc) lie_basis_repr,
-                .tp_new = (newfunc) lie_basis_new,
-                .tp_hash = (hashfunc) lie_basis_hash,
-                .tp_richcompare = (richcmpfunc) lie_basis_richcompare
+PyTypeObject* PyLieBasis_Type = NULL;
+
+
+static PyType_Slot lie_basis_slots[] = {
+        {Py_tp_new, lie_basis_new},
+        {Py_tp_init, lie_basis_init},
+        {Py_tp_dealloc, lie_basis_dealloc},
+        {Py_tp_repr, lie_basis_repr},
+        {Py_tp_hash, lie_basis_hash},
+        {Py_tp_richcompare, lie_basis_richcompare},
+        {Py_tp_methods, PyLieBasis_methods},
+        {Py_tp_members, PyLieBasis_members},
+        {Py_tp_doc, "LieBasis"},
+        {0, NULL}
+};
+
+static PyType_Spec lie_basis_spec = {
+        .name = "roughpy.LieBasis",
+        .basicsize = sizeof(PyLieBasis),
+        .itemsize = 0,
+        .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+        .slots = lie_basis_slots
 };
 
 /*******************************************************************************
@@ -125,9 +131,12 @@ int init_lie_basis(PyObject* module)
 {
     if (init_lie_multiplication_cache(module) < 0) { return -1; }
 
-    if (PyType_Ready(&PyLieBasis_Type) < 0) { return -1; }
+    PyLieBasis_Type = (PyTypeObject*) PyType_FromSpec(&lie_basis_spec);
+    if (PyLieBasis_Type == NULL) { return -1; }
 
-    if (PyModule_AddObjectRef(module, "LieBasis", (PyObject*) &PyLieBasis_Type) < 0) {
+    Py_INCREF(PyLieBasis_Type);
+    if (PyModule_AddObject(module, "LieBasis", (PyObject*) PyLieBasis_Type) < 0) {
+        Py_DECREF(PyLieBasis_Type);
         return -1;
     }
 
@@ -139,14 +148,18 @@ static PyObject* lie_basis_new(
     PyObject* Py_UNUSED(args),
     PyObject* Py_UNUSED(kwargs))
 {
-    PyLieBasis* self = (PyLieBasis*) type->tp_alloc(type, 0);
+    PyLieBasis* self = (PyLieBasis*) PyType_GenericAlloc(type, 0);
     if (!self) { return NULL; }
 
-    Py_XSETREF(self->degree_begin, Py_NewRef(Py_None));
-    Py_XSETREF(self->data, Py_NewRef(Py_None));
+    Py_INCREF(Py_None);
+    self->degree_begin = Py_None;
 
-    Py_XSETREF(self->l2t, PyDict_New());
-    Py_XSETREF(self->t2l, PyDict_New());
+    Py_INCREF(Py_None);
+    self->data = Py_None;
+
+    self->l2t = PyDict_New();
+    self->t2l = PyDict_New();
+    self->multiplier_cache = NULL;
 
     self->cached_hash = -1;
 
@@ -160,7 +173,12 @@ static void lie_basis_dealloc(PyLieBasis* self)
     Py_XDECREF(self->l2t);
     Py_XDECREF(self->t2l);
     Py_XDECREF(self->multiplier_cache);
-    Py_TYPE(self)->tp_free((PyObject*) self);
+
+    PyTypeObject* type = Py_TYPE(self);
+    freefunc tp_free = (freefunc) PyType_GetSlot(type, Py_tp_free);
+    if (tp_free) {
+        tp_free(self);
+    }
 }
 
 static int construct_lie_basis(PyLieBasis* self)
@@ -266,7 +284,9 @@ static int construct_lie_basis(PyLieBasis* self)
     // Py_XDECREF(self->data);
     // self->data = tmp;
     // tmp = NULL;
-    Py_XSETREF(self->data, data);
+    Py_XDECREF(self->data);
+    self->data = data;
+    Py_INCREF(data);
     /*
      * At this point we have transferred ownership of data to the struct where
      * it rightfully belongs, so the data variable now does not hold a strong
@@ -276,10 +296,9 @@ static int construct_lie_basis(PyLieBasis* self)
     data = NULL;
 
     // Move the degree_begin data into the struct;
-    // Py_XDECREF(self->degree_begin);
-    // self->degree_begin = degree_begin;
-    // degree_begin = NULL;
-    Py_XSETREF(self->degree_begin, degree_begin);
+    Py_XDECREF(self->degree_begin);
+    self->degree_begin = degree_begin;
+    Py_INCREF(degree_begin);
     /*
      * At this point we have transferred ownership of degree_begin to the struct
      * where it rightfully belongs, so the degree_begin variable now does not
@@ -943,7 +962,7 @@ finish:
 
 PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype_obj)
 {
-    if (!PyObject_TypeCheck(basis, &PyLieBasis_Type)) {
+    if (!PyLieBasis_Check(basis)) {
         PyErr_SetString(PyExc_TypeError, "expected LieBasis object");
         return NULL;
     }
@@ -1240,7 +1259,7 @@ finish:
 
 PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype_obj)
 {
-    if (!PyObject_TypeCheck(basis, &PyLieBasis_Type)) {
+    if (!PyLieBasis_Check(basis)) {
         PyErr_SetString(PyExc_TypeError, "expected LieBasis object");
         return NULL;
     }
@@ -1306,7 +1325,7 @@ PyObject* PyLieBasis_get(int32_t width, int32_t depth)
     }
 
     PyLieBasis* self
-            = (PyLieBasis*) PyTensorBasis_Type.tp_alloc(&PyLieBasis_Type, 0);
+            = (PyLieBasis*) PyType_GenericAlloc(PyLieBasis_Type, 0);
     if (self == NULL) { return NULL; }
 
     self->width = width;

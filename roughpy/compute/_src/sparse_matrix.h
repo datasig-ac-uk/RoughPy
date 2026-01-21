@@ -66,6 +66,14 @@ py_sparse_matrix_from_components(
 RPY_NO_EXPORT
 int init_sparse_matrix(PyObject *module);
 
+extern PyTypeObject* PySparseMatrix_Type;
+
+
+static inline int PySparseMatrix_Check(PyObject* obj)
+{
+    return PyObject_TypeCheck(obj, PySparseMatrix_Type);
+}
+
 
 RPY_NO_EXPORT
 int smh_init(SMHelper *helper, PyArray_Descr *dtype,
