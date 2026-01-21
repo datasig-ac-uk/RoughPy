@@ -10,13 +10,12 @@ import jax.numpy as jnp
 
 try:
     import roughpy_jax as rpj
-    from roughpy_jax.tests.rpy_test_common import jnp_to_np_float
 except ImportError:
     raise ImportError(
         "roughpy_jax is required to run these benchmarks. "
         "Please install it via 'pip install roughpy_jax'."
     )
-    
+
 
 # Standard benchmark configurations
 TENSOR_SIZES = [
@@ -34,14 +33,14 @@ def _create_tensor_with_data(rng, basis, jnp_dtype):
     Only the vector part (directly after scalar part) is set to ensure
     the overall value does not collapse to zero.
     """
-    data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
+    data = np.zeros(basis.size(), dtype=jnp_dtype)
     data[1:basis.width + 1] = rng.normal(size=(basis.width,))
     j_data = jnp.array(data, dtype=jnp_dtype)
     return rpj.FreeTensor(j_data, basis)
 
 def _create_zero_tensor(basis, jnp_dtype):
     """Create a FreeTensor initialized to zero."""
-    data = np.zeros(basis.size(), dtype=jnp_to_np_float(jnp_dtype))
+    data = np.zeros(basis.size(), dtype=jnp_dtype)
     j_data = jnp.array(data, dtype=jnp_dtype)
     return rpj.FreeTensor(j_data, basis)
 

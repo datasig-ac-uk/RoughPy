@@ -8,6 +8,9 @@ import roughpy_jax as rpj
 # Running both f32 and f64 tests requires enabling JAX 64 bit mode
 jax.config.update("jax_enable_x64", True)
 
+# Set only CPU supported to prevent warnings in test output
+jax.config.update("jax_platforms", "cpu")
+
 
 @pytest.fixture
 def rpj_test_fixture_type_mismatch():
@@ -48,9 +51,68 @@ def rpj_test_fixture_type_mismatch():
     return BasisFixture()
 
 
+class BatchFixtureHelper:
+    """
+    This is parameterised by rpj_batch to provide helper methods to tests working
+    with batched tensors. batch_shape is the prefix to the actual tensor shape; a
+    null batch_shape () represents a single tensor. For example, given an 
+    rpj.TensorBasis with width 2, depth 2 (resulting in a data size of 7) and a
+    null batch_shape of () then tensor_batch_shape would be (7,), but given a 2D
+    batch_shape of (3,2) then tensor_batch_shape would be (3,2,7).
 
-@pytest.fixture(params=[(), (2,), (2, 2), (2, 2, 2)])
-def batch_shape(request) -> tuple[int, ...]:
+    Example usage:
+
+        def test_xs(rpj_batch):
+            data = jnp.zeros(20)
+            batched_data = rpj_batch.repeat(data)
+            assert batched_data.shape[:-1] == rpj_batch.shape
+    """
+    def __init__(self, batch_shape):
+        self.rng = np.random.default_rng(1234)
+        self.shape = batch_shape
+
+    def tensor_batch_shape(self, basis):
+        return (*self.shape, basis.size())
+
+    def zeros(self, num, dtype):
+        return self.repeat(jnp.zeros(num, dtype=dtype))
+
+    def repeat(self, xs):
+        return jnp.tile(xs, (*self.shape, 1))
+
+    def rng_uniform(self, min, max, num, dtype):
+        return self.rng.uniform(min, max, (*self.shape, num)).astype(dtype)
+
+    def rng_nonzero_free_tensor(self, basis, dtype):
+        """
+        Several tests need to operate on non-zero values otherwise exp/log will
+        end up always being zero and tests are not doing anything useful. Only the
+        vector part (directly after scalar part, hence [1:width+1]) needs to be set
+        to ensure the overall value does not collapse to zero.
+        """
+        # Built using np not jnp for easy mutability
+        data = np.zeros(self.tensor_batch_shape(basis), dtype)
+        data[...,1:basis.width + 1] = self.rng.normal(size=(*self.shape, basis.width))
+        return rpj.FreeTensor(data, basis)
+
+    def rng_shuffle_tensor(self, basis, dtype):
+        data = self.rng_uniform(-1.0, 1.0, basis.size(), dtype)
+        return rpj.ShuffleTensor(data, basis)
+
+    def identity_zero_data(self, basis, dtype):
+        # Built using np not jnp for easy mutability
+        data = np.zeros(self.tensor_batch_shape(basis), dtype)
+        data[...,0] = 1.0
+        return data
+
+
+# Batching test fixture returns helper class for common operations
+@pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
+def rpj_batch(request):
+    return BatchFixtureHelper(request.param)
+
+
+# Data type test fixture
+@pytest.fixture(params=[jnp.float32, jnp.float64])
+def rpj_dtype(request):
     return request.param
-
-
