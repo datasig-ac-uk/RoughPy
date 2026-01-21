@@ -3,7 +3,7 @@
 
 
 #include "py_headers.h"
-#include <roughpy/core/fnv1a.h>
+#include <roughpy/core/fnv1a_hash.h>
 
 #if SIZEOF_PY_HASH_T == 8
 #  define FNV1A_OFFSET_BASIS FNV1A_OFFSET_BASIS_64

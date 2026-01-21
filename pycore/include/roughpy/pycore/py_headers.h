@@ -24,7 +24,7 @@
 ((minor) << 16))
 
 
-#include <rougphpy/core/macros.h>
+#include <roughpy/core/macros.h>
 
 
 
