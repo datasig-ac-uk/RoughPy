@@ -1,5 +1,3 @@
-
-
 import typing
 
 from typing import Protocol, TypeVar, Self, Callable
@@ -11,13 +9,11 @@ import jax.numpy as jnp
 
 from .intervals import Interval
 
-
-
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
 StreamValueT = TypeVar("StreamValueT")
 
-BasisLike = TypeVar("BasisLike") ## TODO: replace with version from ops branch
+BasisLike = TypeVar("BasisLike")  ## TODO: replace with version from ops branch
 
 
 @typing.runtime_checkable
@@ -71,13 +67,13 @@ class Stream(Protocol[LieT, GroupT]):
         """
         Query the stream for the log signature over an interval.
 
-        The log signature describes the evolution of the stream over a the interval.
+        The log signature describes the evolution of the stream over an interval.
         This contains the same information as the signature, but is usually a more
         compressed representation.
 
         When this is the standard Lie algebra development, continuous functions
         on the underlying stream can be approximated uniformly by polynomials
-        on of the log signature.
+        on the log signature.
 
         One should be able to query the stream over arbitrary intervals. This might
         include queries where the stream has no recorded changes, in which case the
@@ -93,11 +89,11 @@ class Stream(Protocol[LieT, GroupT]):
         """
         Query the stream for the signature over an interval.
 
-        The signature describes the evolution of the stream over a the interval.
+        The signature describes the evolution of the stream over an interval.
 
         When this is the standard free tensor algebra development, continuous functions
         on the underlying stream can be approximated uniformly by linear functionals
-        on of the signature; that is, shuffle tensors.
+        on the signature; that is, shuffle tensors.
 
         One should be able to query the stream over arbitrary intervals. This might
         include queries where the stream has no recorded changes, in which case the
@@ -108,8 +104,6 @@ class Stream(Protocol[LieT, GroupT]):
         :return: A Lie element describing the stream over the interval.
         """
         ...
-
-
 
 
 @typing.runtime_checkable
