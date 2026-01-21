@@ -43,11 +43,7 @@
 #include <roughpy/core/types.hpp>
 #include <roughpy/platform/errors.h>
 
-#if defined(RPY_GCC)
-#  define RPY_NO_EXPORT __attribute__((visibility("hidden")))
-#else
-#  define RPY_NO_EXPORT
-#endif
+
 
 #ifndef RPY_CPP_17
 // `boost::optional` as an example -- can be any `std::optional`-like container
