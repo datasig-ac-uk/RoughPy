@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/smart_ptr.h>
+#include <roughpy/core/smart_ptr.hpp>
 
 #include "roughpy/platform/reference_counting.h"
 

@@ -10,7 +10,7 @@
 #include <boost/container/flat_map.hpp>
 
 #include "roughpy/core/macros.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 #include "roughpy/generics/type_ptr.h"
 #include "roughpy/generics/conversion_trait.h"

@@ -11,7 +11,7 @@
  * of functions from the CAPI of convenient functions and macros that have been
  * added in more recent versions of Python that are extremely useful for
  * writing extensions. This header was originally our attempt to recreate this
- * header before it was known to exist.
+ * header before it was known to exise.
  */
 #include <pythoncapi_compat.h>
 

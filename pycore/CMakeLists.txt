@@ -1,7 +1,12 @@
 
 
 
-add_library(RoughPy_PyCore INTERFACE)
+add_library(RoughPy_PyCore INTERFACE
+        include/roughpy/pycore/compat.h
+        include/roughpy/pycore/fnv1a_hash.h
+        include/roughpy/pycore/object_handle.hpp
+        include/roughpy/pycore/py_headers.h
+)
 
 target_include_directories(RoughPy_PyCore INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENTLIST_DIR}/include>

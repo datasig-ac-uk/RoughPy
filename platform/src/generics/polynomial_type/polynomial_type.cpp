@@ -11,7 +11,7 @@
 #include <ctre.hpp>
 
 
-#include <roughpy/core/construct_inplace.h>
+#include <roughpy/core/construct_inplace.hpp>
 #include <roughpy/core/debug_assertion.h>
 
 #include <roughpy/platform/alloc.h>

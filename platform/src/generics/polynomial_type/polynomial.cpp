@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include "roughpy/core/hash.h"
+#include "roughpy/core/hash.hpp"
 
 #include "generics/multiprecision_types/mpq_string_rep.h"
 #include "generics/multiprecision_types/mpz_hash.h"

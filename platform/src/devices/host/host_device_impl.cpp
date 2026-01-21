@@ -32,7 +32,7 @@
 #include "host_device_impl.h"
 
 #include <roughpy/core/check.h>
-#include <roughpy/core/smart_ptr.h>
+#include <roughpy/core/smart_ptr.hpp>
 
 #include "roughpy/platform/alloc.h"
 

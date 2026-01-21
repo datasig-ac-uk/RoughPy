@@ -34,7 +34,7 @@
 
 #include <roughpy/core/debug_assertion.h>
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 
 #include "roughpy_intervals_export.h"

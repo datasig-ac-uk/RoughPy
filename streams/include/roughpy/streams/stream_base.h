@@ -30,7 +30,7 @@
 
 #include <roughpy/core/debug_assertion.h>
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "roughpy/intervals/dyadic_interval.h"
 #include <roughpy/algebra/context.h>

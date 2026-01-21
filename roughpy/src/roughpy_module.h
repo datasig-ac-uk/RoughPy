@@ -39,8 +39,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/traits.hpp>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/errors.h>
 
 #if defined(RPY_GCC)

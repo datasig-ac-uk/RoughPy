@@ -35,9 +35,9 @@
 #include <memory>
 
 #include "roughpy/core/macros.h"
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
-#include <roughpy/core/slice.h>
+#include <roughpy/core/traits.hpp>
+#include <roughpy/core/types.hpp>
+#include <roughpy/core/slice.hpp>
 
 
 #include "roughpy/platform/roughpy_platform_export.h"

@@ -31,8 +31,8 @@
 
 #include "scalars_fwd.h"
 
-#include <roughpy/core/helpers.h>
-#include <roughpy/core/traits.h>
+#include <roughpy/core/helpers.hpp>
+#include <roughpy/core/traits.hpp>
 // #include "scalar_type.h"
 
 #include <limits>

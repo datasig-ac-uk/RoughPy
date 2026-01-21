@@ -6,8 +6,8 @@
 #define ROUGHPY_GENERICS_BUILTIN_TRAIT_H
 
 #include "roughpy/core/check.h"
-#include "roughpy/core/traits.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/traits.hpp"
+#include "roughpy/core/types.hpp"
 
 #include "roughpy/platform/roughpy_platform_export.h"
 

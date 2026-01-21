@@ -8,7 +8,7 @@
 
 #include <gmp.h>
 
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 
 namespace rpy::generics {

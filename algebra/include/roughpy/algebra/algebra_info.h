@@ -30,7 +30,7 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_INFO_H_
 
 #include "algebra_fwd.h"
-#include <roughpy/core/traits.h>
+#include <roughpy/core/traits.hpp>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <boost/container/small_vector.hpp>

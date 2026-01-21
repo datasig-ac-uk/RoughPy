@@ -7,7 +7,7 @@
 
 #include "roughpy_module.h"
 
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 #include "roughpy/streams/stream_base.h"
 #include "roughpy/intervals/interval.h"

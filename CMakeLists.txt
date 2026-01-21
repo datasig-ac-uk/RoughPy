@@ -219,7 +219,6 @@ endif ()
 
 add_subdirectory(vendored/libalgebra_lite)
 
-
 add_subdirectory(core)
 add_subdirectory(platform)
 add_subdirectory(scalars)
@@ -268,6 +267,7 @@ if (ROUGHPY_BUILD_PYLIB)
             INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/vendored/pythoncapi_compat/"
     )
 
+    add_subdirectory(pycore)
     add_subdirectory(roughpy)
 
 

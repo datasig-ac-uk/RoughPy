@@ -35,7 +35,7 @@ RPY_MSVC_DISABLE_WARNING(4661)
 
 #include "roughpy/core/check.h"                  // for throw_exception, RPY...
 #include "roughpy/core/macros.h"                 // for RPY_MSVC_DISABLE_WAR...
-#include "roughpy/core/types.h"                  // for key_type, deg_t
+#include "roughpy/core/types.hpp"                  // for key_type, deg_t
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/lie.h>

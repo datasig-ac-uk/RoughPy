@@ -28,7 +28,7 @@
 #ifndef ROUGHPY_INTERVALS_INTERVAL_H_
 #define ROUGHPY_INTERVALS_INTERVAL_H_
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 
 #include <ostream>

@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include <roughpy/core/debug_assertion.h>
-#include "roughpy/core/hash.h"
+#include "roughpy/core/hash.hpp"
 
 #include "builtin_trait.h"
 #include "type_ptr.h"

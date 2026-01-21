@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_IDS_H
 #define ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_IDS_H
 
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 #include "roughpy/generics/type_ptr.h"
 

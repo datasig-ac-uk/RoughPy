@@ -33,7 +33,7 @@
 
 #include "roughpy/core/check.h"                       // for throw_exception
 #include "roughpy/core/debug_assertion.h"             // for RPY_DBG_ASSERT
-#include "roughpy/core/types.h"                       // for deg_t
+#include "roughpy/core/types.hpp"                       // for deg_t
 
 using namespace rpy;
 using namespace rpy::python;
