@@ -1,116 +1,120 @@
+#include "dense_ft_fmexp.h"
+
 #include "roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp"
 
 #include "xla_common.hpp"
 
-namespace {
+#include "batching_loop.hpp"
+
 
 using namespace rpy::compute;
 
-struct ComputeTypedFtFmExp {
-    const int out_max_degree;
-    const int mul_max_degree;
-    const int exp_max_degree;
-    TensorBasis basis;
+namespace rpy::jax::cpu {
 
-    template <typename T>
-    void compute(
-        T* result_data,
-        const T* multiplier_data,
-        const T* exponent_data
-    ) {
-        DenseTensorView<T*> result_view(result_data, basis, 0, out_max_degree);
-        DenseTensorView<const T*> mul_view(multiplier_data, basis, 0, mul_max_degree);
-        DenseTensorView<const T*> exp_view(exponent_data, basis, 0, exp_max_degree);
-        intermediate::ft_fmexp(result_view, mul_view, exp_view);
+struct DenseFTFMExpStaticArgs {
+    TensorBasis basis;
+    int32_t out_max_degree;
+    int32_t mul_max_degree;
+    int32_t exp_max_degree;
+    int32_t mul_min_degree;
+    int32_t exp_min_degree;
+};
+
+template <ffi::DataType DType>
+struct DenseFTFMExpFunctor : DenseFTFMExpStaticArgs {
+    using Scalar = ffi::NativeType<DType>;
+    static constexpr size_t core_dims = 1;
+
+    using StaticData = DenseFTFMExpStaticArgs;
+
+    explicit DenseFTFMExpFunctor(DenseFTFMExpStaticArgs args)
+        : DenseFTFMExpStaticArgs(std::move(args))
+    {}
+
+    ffi::Error operator()(
+            Scalar* out_data,
+            const Scalar* multiplier_data,
+            const Scalar* exponent_data
+    )
+    {
+        DenseTensorView<Scalar*> result_view(out_data, basis, 0, out_max_degree);
+        DenseTensorView<const Scalar*> multiplier_view(
+                multiplier_data,
+                basis,
+                mul_min_degree,
+                mul_max_degree
+        );
+        DenseTensorView<const Scalar*> exponent_view(
+                exponent_data,
+                basis,
+                exp_min_degree,
+                exp_max_degree
+        );
+
+        std::fill_n(out_data, result_view.size(), Scalar{});
+        intermediate::ft_fmexp(result_view, multiplier_view, exponent_view);
+
+        return ffi::Error::Success();
     }
 };
 
-} // namespace
-
-namespace rpy::jax::cpu {
-
 ffi::Error cpu_dense_ft_fmexp_impl(
-    int width,
-    int depth,
-    int out_depth,
-    int mul_depth,
-    int exp_depth,
-    ffi::Span<const int64_t> degree_begin,
-    ffi::AnyBuffer multiplier,
-    ffi::AnyBuffer exponent,
-    ffi::Result<ffi::AnyBuffer> result
-) {
-    if (!all_buffers_valid_type(multiplier, exponent, *result)) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_exp all buffers types must match and be F32 or F64");
-    }
-
-    if (degree_begin.size() != static_cast<size_t>(depth + 2)) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp degree_begin size must be depth + 2");
-    }
-
-    auto [mul_size, mul_dim] = get_buffer_dims(multiplier);
-    if (mul_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp multiplier must be an array");
-    }
-
-    auto [exp_size, exp_dim] = get_buffer_dims(exponent);
-    if (exp_dim == 0) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp exp must be an array");
-    }
-
-    // FIXME confirm if multiplier is correct size equivalent for result
-    auto [result_size, result_dim] = get_buffer_dims(*result);
-    if (result_dim != mul_dim) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp result dimension must match exponent array");
-    }
-
-    if (result_size != mul_size) {
-        return ffi::Error::InvalidArgument("cpu_dense_ft_fmexp result size must match exponent array");
-    }
-
-    // Dispatch fmexp for appropriate type
-    ComputeTypedFtFmExp ft_fmexp = {
-        default_max_degree(out_depth, depth),
-        default_max_degree(mul_depth, depth),
-        default_max_degree(exp_depth, depth),
-        { degree_begin.begin(), width, depth }
+        ffi::Result<ffi::AnyBuffer> result,
+        ffi::AnyBuffer multiplier,
+        ffi::AnyBuffer exponent,
+        int32_t width,
+        int32_t depth,
+        ffi::Span<const int64_t> degree_begin,
+        int32_t out_max_deg,
+        int32_t mul_max_deg,
+        int32_t exp_max_deg,
+        int32_t mul_min_deg,
+        int32_t exp_min_deg
+)
+{
+    DenseFTFMExpStaticArgs static_args {
+        TensorBasis {degree_begin.begin(), width, depth},
+        out_max_deg,
+        mul_max_deg,
+        exp_max_deg,
+        mul_min_deg,
+        exp_min_deg
     };
 
-    switch (result->element_type()) {
-    case ffi::DataType::F32:
-        ft_fmexp.compute(
-            result->typed_data<float>(),
-            multiplier.typed_data<float>(),
-            exponent.typed_data<float>()
-        );
-        break;
-    case ffi::DataType::F64:
-        ft_fmexp.compute(
-            result->typed_data<double>(),
-            multiplier.typed_data<double>(),
-            exponent.typed_data<double>()
-        );
-        break;
-    default:
-        assert(false); // Unsupported type; reject with all_buffers_valid_type
-    }
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(result, static_args.basis, out_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(multiplier, static_args.basis, mul_max_deg)
+    );
+    RPY_XLA_SUCCESS_OR_RETURN(
+            check_data_degree(exponent, static_args.basis, exp_max_deg)
+    );
 
-    return ffi::Error::Success();
+    return select_implementation_and_go<DenseFTFMExpFunctor>(
+        std::move(static_args),
+        result->element_type(),
+        result,
+        multiplier,
+        exponent
+        );
 }
 
-} // namespace rpy::jax::cpu
+}// namespace rpy::jax::cpu
 
 XLA_FFI_DEFINE_HANDLER_SYMBOL(
-    cpu_dense_ft_fmexp,
-    rpy::jax::cpu::cpu_dense_ft_fmexp_impl,
-    xla::ffi::Ffi::Bind()
-        .Attr<int>("width")
-        .Attr<int>("depth")
-        .Attr<int>("out_depth")
-        .Attr<int>("mul_depth")
-        .Attr<int>("exp_depth")
-        .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-        .Arg<xla::ffi::AnyBuffer>()
-        .Arg<xla::ffi::AnyBuffer>()
-        .Ret<xla::ffi::AnyBuffer>()
+        cpu_dense_ft_fmexp,
+        rpy::jax::cpu::cpu_dense_ft_fmexp_impl,
+        xla::ffi::Ffi::Bind()
+                .Ret<xla::ffi::AnyBuffer>()
+                .Arg<xla::ffi::AnyBuffer>()
+                .Arg<xla::ffi::AnyBuffer>()
+                .Attr<int32_t>("width")
+                .Attr<int32_t>("depth")
+                .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
+                .Attr<int32_t>("out_max_deg")
+                .Attr<int32_t>("mul_max_deg")
+                .Attr<int32_t>("exp_max_deg")
+                .Attr<int32_t>("mul_min_deg")
+                .Attr<int32_t>("exp_min_deg")
 );
