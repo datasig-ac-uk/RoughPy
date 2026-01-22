@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from functools import partial
 
+from typing import Any
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -8,6 +10,8 @@ import numpy as np
 from roughpy import compute as rpc
 from .csc import csc_matvec
 
+
+from ops import Operation
 
 # For exposition only
 # class TensorBasis:
@@ -122,6 +126,37 @@ def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
             raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
 
 
+def _get_and_check_batch_dims(*arrays, core_dims=1):
+    if not arrays:
+        raise ValueError("expected at least one array")
+
+    first, *rem = arrays
+
+    n_dims = len(first.shape)
+    if n_dims < core_dims:
+        raise ValueError(f"array at index 0 has wrong number of dimensions, expected at least {core_dims}")
+
+    batch_dims = first.shape[:-core_dims]
+    n_batch_dims = len(batch_dims)
+
+    for i, arr in enumerate(rem, start=1):
+        if len(arr.shape) != n_dims:
+            raise ValueError(f"mismatched number of dimensions at index {i}: "
+                             f"expected {n_dims} but got {len(arr.shape)}")
+
+        if arr.shape[:n_batch_dims] != batch_dims:
+            raise ValueError(f"incompatible shape in argument at index {i}:"
+                             f"expected batch shape {batch_dims} but got {arr.shape[:n_batch_dims]}")
+
+    return batch_dims
+
+
+
+
+
+
+
+
 def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     """
     Free tensor fused multiply-add
@@ -135,33 +170,22 @@ def ft_fma(a: FreeTensor, b: FreeTensor, c: FreeTensor) -> FreeTensor:
     :param c: right-hand multiple operand
     :return: result
     """
-    _check_tensor_dtype(a, b, c)
-    _check_basis_compat(a.basis, b.basis, c.basis)
+    dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
+    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
 
-    # Use same basis convention as ft_fma in roughpy/compute
-    basis = c.basis
-    out_depth = c.basis.depth
-    lhs_depth = -1
-    rhs_depth = -1
+    a_max_deg = a.basis.depth
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_fma",
-        jax.ShapeDtypeStruct(c.data.shape, c.data.dtype)
-    )
+    op_cls = Operation.get_operation("ft_fma", "dense")
 
-    out_data = call(
-        a.data,
-        b.data,
-        c.data,
-        width=np.int32(basis.width),
-        depth=np.int32(basis.depth),
-        out_depth=np.int32(out_depth),
-        lhs_depth=np.int32(lhs_depth),
-        rhs_depth=np.int32(rhs_depth),
-        degree_begin=basis.degree_begin
-    )
+    op = op_cls((a.basis, b.basis, c.basis), dtype, batch_dims,
+                a_max_deg=a_max_deg,
+                b_max_deg=min(a_max_deg, b.basis.depth),
+                c_max_deg=min(a_max_deg, c.basis.depth),
+                )
 
-    return FreeTensor(out_data, basis)
+    out_data = op(a.data, b.data, c.data)
+
+    return DenseFreeTensor(*out_data, op.basis)
 
 
 def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
@@ -176,36 +200,21 @@ def ft_mul(a: FreeTensor, b: FreeTensor) -> FreeTensor:
     :param b: right-hand multiple operand
     :return: result
     """
-    _check_tensor_dtype(a, b)
-    _check_basis_compat(a.basis, b.basis)
-
-    # Zero data for underlying fma
-    zero_add_data = jnp.zeros_like(a.data)
+    dtype = jnp.result_type(a.data.dtype, b.data.dtype)
+    batch_dims = _get_and_check_batch_dims(a.data, b.data, core_dims=1)
 
     # Use same basis convention as ft_mul in roughpy/compute
-    basis = b.basis
-    out_depth = b.basis.depth
-    lhs_depth = -1
-    rhs_depth = b.basis.depth
+    op_cls = Operation.get_operation("ft_mul", "dense")
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_fma",
-        jax.ShapeDtypeStruct(b.data.shape, b.data.dtype)
-    )
+    op = op_cls((a.basis, b.basis), dtype, batch_dims,
+                out_max_deg=a.basis.depth,
+                lhs_max_deg=min(a.basis.depth, a.basis.depth),
+                rhs_max_deg=min(a.basis.depth, b.basis.depth))
 
-    out_data = call(
-        zero_add_data,
-        a.data,
-        b.data,
-        width=np.int32(basis.width),
-        depth=np.int32(basis.depth),
-        out_depth=np.int32(out_depth),
-        lhs_depth=np.int32(lhs_depth),
-        rhs_depth=np.int32(rhs_depth),
-        degree_begin=basis.degree_begin
-    )
 
-    return FreeTensor(out_data, basis)
+    out_data = op(a.data, b.data)
+
+    return DenseFreeTensor(*out_data, op.basis)
 
 
 def antipode(a: FreeTensor) -> FreeTensor:
@@ -215,24 +224,15 @@ def antipode(a: FreeTensor) -> FreeTensor:
     :param a: argument
     :return: new tensor with antipode of `a`
     """
-    _check_tensor_dtype(a)
+    op_cls = Operation.get_operation("ft_antipode", "dense")
+    batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
-    out_basis = a.basis
+    basis = a.basis
+    op = op_cls((basis,), a.data.dtype, batch_dims)
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_antipode",
-        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
-    )
+    out_data = op(a.data)
 
-    out_data = call(
-        a.data,
-        width=np.int32(out_basis.width),
-        depth=np.int32(out_basis.depth),
-        arg_depth=np.int32(a.basis.depth),
-        degree_begin=out_basis.degree_begin
-    )
-
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(*out_data, basis)
 
 
 def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTensor:
@@ -248,25 +248,19 @@ def st_fma(a: ShuffleTensor, b: ShuffleTensor, c: ShuffleTensor) -> ShuffleTenso
     :param c: right-hand operand
     :return: shuffle fused multiply-add
     """
-    _check_tensor_dtype(a, b)
-    _check_basis_compat(a.basis, b.basis, c.basis)
+    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
+    dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_st_fma",
-        jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
-    )
+    op_cls = Operation.get_operation("st_fma", "dense")
 
-    out_data = call(
-        a.data,
-        b.data,
-        c.data,
-        width=np.int32(a.width),
-        depth=np.int32(a.depth),
-        arg_depth=np.int32(a.basis.depth),
-        degree_begin=a.degree_begin
-    )
+    op = op_cls((a.basis, b.basis, c.basis), dtype, batch_dims,
+                a_max_deg=a.basis.depth,
+                b_max_deg=min(a.basis.depth, b.basis.depth),
+                c_max_deg=min(b.basis.depth, c.basis.depth)
+                )
+    out_data = op(a.data, b.data, c.data)
 
-    return ShuffleTensor(out_data, a.basis)
+    return DenseShuffleTensor(*out_data, op.basis)
 
 
 def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
@@ -281,28 +275,21 @@ def st_mul(lhs: ShuffleTensor, rhs: ShuffleTensor) -> ShuffleTensor:
     :param rhs: right-hand operand
     :return: the shuffle product of lhs and rhs
     """
-    _check_tensor_dtype(lhs, rhs)
-    _check_basis_compat(lhs.basis, rhs.basis)
+    dtype = jnp.result_type(lhs.data.dtype, rhs.data.dtype)
+    batch_dims = _get_and_check_batch_dims(lhs.data, rhs.data, core_dims=1)
 
-    # Zero data for underlying fma
-    zero_add_data = jnp.zeros_like(lhs.data)
+    op_cls = Operation.get_operation("st_mul", "dense")
+    out_max_deg = lhs.basis.depth
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_st_fma",
-        jax.ShapeDtypeStruct(lhs.data.shape, lhs.data.dtype)
-    )
+    op = op_cls((lhs.basis, rhs.basis), dtype, batch_dims,
+                out_max_deg=out_max_deg,
+                lhs_max_deg=min(out_max_deg, lhs.basis.depth),
+                rhs_max_deg=min(out_max_deg, rhs.basis.depth)
+                )
 
-    out_data = call(
-        zero_add_data,
-        lhs.data,
-        rhs.data,
-        width=np.int32(lhs.basis.width),
-        depth=np.int32(lhs.basis.depth),
-        arg_depth=np.int32(lhs.basis.depth),
-        degree_begin=lhs.basis.degree_begin
-    )
+    out_data = op(lhs.data, rhs.data)
 
-    return ShuffleTensor(out_data, lhs.basis)
+    return DenseShuffleTensor(*out_data, op.basis)
 
 
 def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -318,8 +305,14 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     :return: tensor exponential of `x`
     """
     _check_tensor_dtype(x)
+    dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
+    batch_dims = x.data.shape[:-1]
+
+    op_cls = Operation.get_operation("ft_exp", "dense")
+    op = op_cls((out_basis, x.basis), dtype, batch_dims,
+                out_max_deg=out_basis.depth)
 
     call = jax.ffi.ffi_call(
         "cpu_dense_ft_exp",
@@ -334,7 +327,8 @@ def ft_exp(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
+
 
 
 def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -366,7 +360,7 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
         degree_begin=out_basis.degree_begin
     )
 
-    return FreeTensor(out_data, out_basis)
+    return DenseFreeTensor(out_data, out_basis)
 
 
 def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
@@ -444,4 +438,4 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     if scale_factor:
         result = result * scale_factor
 
-    return Lie(result, lie_basis)
+    return DenseLie(result, lie_basis)
