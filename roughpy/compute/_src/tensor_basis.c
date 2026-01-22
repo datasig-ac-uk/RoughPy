@@ -314,7 +314,7 @@ static PyType_Spec tensor_basis_spec
         = {.name = "roughpy.TensorBasis",
            .basicsize = sizeof(PyTensorBasis),
            .itemsize = 0,
-           .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+           .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
            .slots = tensor_basis_slots};
 
 int init_tensor_basis(PyObject* module)
