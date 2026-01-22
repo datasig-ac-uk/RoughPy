@@ -8,12 +8,11 @@
 #include <unordered_set>
 #include <utility>
 
-#ifndef RPY_UNLIKELY
-#  define RPY_UNLIKELY(x) (x)
-#endif
+
 
 extern "C" {
 static void lmc_dealloc(PyObject* obj);
+static int lmc_traverse(PyObject* obj, visitproc visit, void* arg);
 
 static PyObject* lmc_repr(PyObject* obj);
 }
@@ -105,6 +104,7 @@ static PyTypeObject* PyLieMultiplicationCache_Type = nullptr;
 
 static PyType_Slot lmc_slots[] = {
         {Py_tp_dealloc, reinterpret_cast<void*>(lmc_dealloc)},
+        {Py_tp_traverse, reinterpret_cast<void*>(lmc_traverse)},
         {Py_tp_repr, reinterpret_cast<void*>(lmc_repr)},
         {0, nullptr}
 };
@@ -113,14 +113,14 @@ static PyType_Spec lmc_spec = {
         "roughpy.compute.LieMultiplicationCache",
         sizeof(PyLieMultiplicationCache),
         0,
-        Py_TPFLAGS_DEFAULT,
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
         lmc_slots
 };
 
 PyObject* PyLieMultiplicationCache_new(const int32_t width)
 {
     auto* lmc = reinterpret_cast<PyLieMultiplicationCache*>(
-            PyType_GenericAlloc(PyLieMultiplicationCache_Type, 0)
+            PyLieMultiplicationCache_Type->tp_alloc(PyLieMultiplicationCache_Type, 0)
     );
 
     if (lmc == nullptr) { return reinterpret_cast<PyObject*>(lmc); }
@@ -477,6 +477,13 @@ void lmc_dealloc(PyObject* obj)
     if (tp_free != nullptr) {
         tp_free(obj);
     }
+}
+
+int lmc_traverse(PyObject* obj, visitproc visit, void* arg)
+{
+    Py_VISIT(Py_TYPE(obj));
+
+    return 0;
 }
 
 PyObject* lmc_repr(PyObject* obj)

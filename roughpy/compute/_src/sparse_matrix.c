@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
 #define RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
 #include <roughpy/pycore/compat.h>
 
@@ -14,14 +12,13 @@
 
 PyTypeObject* PySparseMatrix_Type = NULL;
 
-
 static PyObject* sparse_matrix_new(
         PyTypeObject* type,
         PyObject* Py_UNUSED(args),
         PyObject* Py_UNUSED(kwargs)
 )
 {
-    PySparseMatrix* self = (PySparseMatrix*) PyType_GenericAlloc(type, 0);
+    PySparseMatrix* self = (PySparseMatrix*) type->tp_alloc(type, 0);
     if (!self) { return NULL; }
 
     Py_INCREF(Py_None);
@@ -38,15 +35,25 @@ static PyObject* sparse_matrix_new(
 
 static void sparse_matrix_dealloc(PySparseMatrix* self)
 {
+    PyObject_GC_UnTrack(self);
     Py_XDECREF(self->data);
     Py_XDECREF(self->indices);
     Py_XDECREF(self->indptr);
 
     PyTypeObject* type = Py_TYPE(self);
     freefunc tp_free = (freefunc) PyType_GetSlot(type, Py_tp_free);
-    if (tp_free) {
-        tp_free(self);
-    }
+    if (tp_free) { tp_free(self); }
+    Py_DECREF(type);
+}
+
+static int
+sparse_matrix_traverse(PySparseMatrix* self, visitproc visit, void* arg)
+{
+    Py_VISIT(Py_TYPE(self));
+    Py_VISIT(self->data);
+    Py_VISIT(self->indices);
+    Py_VISIT(self->indptr);
+    return 0;
 }
 
 static int
@@ -93,14 +100,18 @@ sparse_matrix_init(PySparseMatrix* self, PyObject* args, PyObject* kwargs)
 
 static PyMemberDef PySparseMatrix_members[] = {
         {"data", Py_T_OBJECT_EX, offsetof(PySparseMatrix, data), 0, "data"},
-        {"indices", Py_T_OBJECT_EX, offsetof(PySparseMatrix, indices), 0,
-         "indices"},
-        {"indptr", Py_T_OBJECT_EX, offsetof(PySparseMatrix, indptr), 0,
-         "indptr"},
-        {"rows", Py_T_PYSSIZET, offsetof(PySparseMatrix, rows), Py_READONLY,
-         "rows"},
-        {"cols", Py_T_PYSSIZET, offsetof(PySparseMatrix, cols), Py_READONLY,
-         "cols"},
+        {"indices",
+         Py_T_OBJECT_EX, offsetof(PySparseMatrix, indices),
+         0, "indices"},
+        {"indptr",
+         Py_T_OBJECT_EX, offsetof(PySparseMatrix, indptr),
+         0, "indptr"},
+        {"rows",
+         Py_T_PYSSIZET, offsetof(PySparseMatrix, rows),
+         Py_READONLY, "rows"},
+        {"cols",
+         Py_T_PYSSIZET, offsetof(PySparseMatrix, cols),
+         Py_READONLY, "cols"},
         {NULL}
 };
 
@@ -164,23 +175,23 @@ static PyMethodDef PySparseMatrix_methods[] = {
 };
 
 static PyType_Slot sparse_matrix_slots[] = {
-        {Py_tp_new, sparse_matrix_new},
-        {Py_tp_init, sparse_matrix_init},
-        {Py_tp_dealloc, sparse_matrix_dealloc},
-        {Py_tp_getset, PySparseMatrix_getsets},
-        {Py_tp_members, PySparseMatrix_members},
-        {Py_tp_methods, PySparseMatrix_methods},
-        {Py_tp_doc, "SparseMatrix"},
-        {0, NULL}
+        {     Py_tp_new,      sparse_matrix_new},
+        {    Py_tp_init,     sparse_matrix_init},
+        { Py_tp_dealloc,  sparse_matrix_dealloc},
+        {Py_tp_traverse, sparse_matrix_traverse},
+        {  Py_tp_getset, PySparseMatrix_getsets},
+        { Py_tp_members, PySparseMatrix_members},
+        { Py_tp_methods, PySparseMatrix_methods},
+        {     Py_tp_doc,         "SparseMatrix"},
+        {             0,                   NULL}
 };
 
-static PyType_Spec sparse_matrix_spec = {
-        .name = "roughpy.compute.SparseMatrix",
-        .basicsize = sizeof(PySparseMatrix),
-        .itemsize = 0,
-        .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .slots = sparse_matrix_slots
-};
+static PyType_Spec sparse_matrix_spec
+        = {.name = "roughpy.compute.SparseMatrix",
+           .basicsize = sizeof(PySparseMatrix),
+           .itemsize = 0,
+           .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+           .slots = sparse_matrix_slots};
 
 PyObject* py_sparse_matrix_from_components(
         PyObject* data,
@@ -217,7 +228,12 @@ int init_sparse_matrix(PyObject* module)
     if (PySparseMatrix_Type == NULL) { return -1; }
 
     Py_INCREF(PySparseMatrix_Type);
-    if (PyModule_AddObject(module, "SparseMatrix", (PyObject*) PySparseMatrix_Type) < 0) {
+    if (PyModule_AddObject(
+                module,
+                "SparseMatrix",
+                (PyObject*) PySparseMatrix_Type
+        )
+        < 0) {
         Py_DECREF(PySparseMatrix_Type);
         return -1;
     }
@@ -372,7 +388,7 @@ void remove_zeros_from_frame(SMHFrame* frame, npy_intp itemsize, int typenum)
     }
 
     // if the last entry is zero, just forget it
-    if (is_zero(&frame->data[(frame->size - 1)*itemsize], typenum)) {
+    if (is_zero(&frame->data[(frame->size - 1) * itemsize], typenum)) {
         --frame->size;
     }
 }
