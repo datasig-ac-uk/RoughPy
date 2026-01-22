@@ -26,7 +26,7 @@ static PyObject* tensor_basis_new(
         PyObject* Py_UNUSED(kwargs)
 )
 {
-    PyTensorBasis* self = (PyTensorBasis*) PyType_GenericAlloc(type, 0);
+    PyTensorBasis* self = (PyTensorBasis*) type->tp_alloc(type, 0);
     if (!self) { return NULL; }
 
     self->width = 0;
