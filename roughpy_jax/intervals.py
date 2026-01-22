@@ -46,6 +46,42 @@ class Interval(Protocol):
     @property
     def sup(self) -> float:
         ...
+    
+    @classmethod
+    def intersection(cls, left_interval: Interval, right_interval: Interval) -> typing.Optional[Self]:
+        """
+        Calculate the intersection of this interval with another interval.
+        :param other: The other interval to intersect with.
+        :type other: Interval
+        :return: A new Interval representing the intersection, or None if there is no intersection.
+        :rtype: typing.Optional[Interval]
+        """
+        new_inf = max(left_interval.inf, right_interval.inf)
+        new_sup = min(left_interval.sup, right_interval.sup)
+
+        if new_inf > new_sup:
+            return None  # No intersection
+
+        # Determine the interval type for the intersection
+        if left_interval.inf == new_inf:
+            left_type = left_interval.interval_type
+        else:
+            left_type = right_interval.interval_type
+
+        if left_interval.sup == new_sup:
+            right_type = left_interval.interval_type
+        else:
+            right_type = right_interval.interval_type
+
+        if left_type == IntervalType.ClOpen and right_type == IntervalType.ClOpen:
+            interval_type = IntervalType.ClOpen
+        elif left_type == IntervalType.OpenCl and right_type == IntervalType.OpenCl:
+            interval_type = IntervalType.OpenCl
+        else:
+            # TODO: should mixed types result in an open interval?
+            interval_type = IntervalType.OpenCl
+
+        return cls(new_inf, new_sup, interval_type)
 
 
 
