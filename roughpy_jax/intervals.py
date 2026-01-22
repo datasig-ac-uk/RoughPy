@@ -127,13 +127,13 @@ class RealInterval(Generic[RealT]):
 
 
 
-
-
 @dataclass(frozen=True)
 class Partition(Generic[RealT]):
     _endpoints: list[RealT]
     _interval_type: IntervalType
 
+    def __len__(self) -> int:
+        return len(self._endpoints) - 1
 
     @property
     def interval_type(self) -> IntervalType:
