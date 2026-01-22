@@ -152,7 +152,7 @@ static PyObject* lie_basis_new(
         PyObject* Py_UNUSED(kwargs)
 )
 {
-    PyLieBasis* self = (PyLieBasis*) PyType_GenericAlloc(type, 0);
+    PyLieBasis* self = (PyLieBasis*) type->tp_alloc(type, 0);
     if (!self) { return NULL; }
 
     Py_INCREF(Py_None);
