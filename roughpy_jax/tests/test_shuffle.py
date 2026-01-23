@@ -1,31 +1,8 @@
 from typing import Callable
-
 import pytest
 import numpy as np
 import jax.numpy as jnp
-from numpy.testing import assert_array_almost_equal, assert_array_equal
-
 import roughpy_jax as rpj
-
-
-@pytest.fixture
-def random_shuffle() -> Callable[[int, int], rpj.ShuffleTensor]:
-    rng = np.random.default_rng(12345)
-    basis_cache = {}
-
-    def make_shuffle(width: int, depth: int) -> rpj.ShuffleTensor:
-        nonlocal basis_cache
-        basis = None
-        if (width, depth) not in basis_cache:
-            basis = basis_cache[(width, depth)] = rpj.TensorBasis(width, depth)
-        else:
-            basis = basis_cache[(width, depth)]
-
-        data = rng.uniform(-1.0, 1.0, size=(basis.size(),))
-
-        return rpj.ShuffleTensor(data, basis)
-
-    return make_shuffle
 
 
 def _word_to_idx_fn(width: int) -> Callable[[...], int]:
@@ -38,7 +15,7 @@ def _word_to_idx_fn(width: int) -> Callable[[...], int]:
     return inner
 
 
-def test_dense_st_fma_array_mismatch(rpj_test_fixture_type_mismatch):
+def test_shuffle_dense_st_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
 
     # Mismatch first and second widths
@@ -58,7 +35,7 @@ def test_dense_st_fma_array_mismatch(rpj_test_fixture_type_mismatch):
         rpj.st_fma(f.st_i32(), f.st_i32(), f.st_i32())
 
 
-def test_dense_st_mul_array_mismatch(rpj_test_fixture_type_mismatch):
+def test_shuffle_dense_st_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
 
     # Mismatch first and second widths
@@ -74,21 +51,24 @@ def test_dense_st_mul_array_mismatch(rpj_test_fixture_type_mismatch):
         rpj.st_mul(f.st_i32(), f.st_i32())
 
 
-def test_product_commutative(random_shuffle):
-    lhs = random_shuffle(4, 3)
-    rhs = random_shuffle(4, 3)
+def test_shuffle_product_commutative(rpj_dtype, rpj_batch):
+    basis = rpj.TensorBasis(4, 3)
+    lhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    rhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
 
     result1 = rpj.st_mul(lhs, rhs)
     result2 = rpj.st_mul(rhs, lhs)
 
-    assert jnp.allclose(result1.data, result2.data)
+    atol = 1e-7 if rpj_dtype == jnp.float32 else 1e-16
+    assert jnp.allclose(result1.data, result2.data, atol=atol)
 
 
-def test_product_unit(random_shuffle):
-    lhs = random_shuffle(4, 3)
+def test_shuffle_product_unit(rpj_dtype, rpj_batch):
+    basis = rpj.TensorBasis(4, 3)
+    lhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
 
     unit_data = np.zeros_like(lhs.data)
-    unit_data[0] = 1.
+    unit_data[...,0] = 1.
     unit = rpj.ShuffleTensor(unit_data, lhs.basis)
 
     result1 = rpj.st_mul(lhs, unit)
@@ -98,15 +78,15 @@ def test_product_unit(random_shuffle):
     assert jnp.allclose(result2.data, lhs.data)
 
 
-def test_product_two_letters():
+def test_shuffle_product_two_letters(rpj_dtype, rpj_batch):
     basis = rpj.TensorBasis(4, 3)
     to_idx = _word_to_idx_fn(4)
 
-    lhs_data = np.zeros((basis.size(),), dtype=np.float64)
-    rhs_data = np.zeros((basis.size(),), dtype=np.float64)
+    lhs_data = np.zeros(rpj_batch.tensor_batch_shape(basis), dtype=rpj_dtype)
+    rhs_data = np.zeros(rpj_batch.tensor_batch_shape(basis), dtype=rpj_dtype)
 
-    lhs_data[1] = 1.0
-    rhs_data[2] = 1.0
+    lhs_data[..., 1] = 1.0
+    rhs_data[..., 2] = 1.0
 
     lhs = rpj.ShuffleTensor(lhs_data, basis)
     rhs = rpj.ShuffleTensor(rhs_data, basis)
@@ -114,21 +94,21 @@ def test_product_two_letters():
     result = rpj.st_mul(lhs, rhs)
 
     expected = np.zeros_like(lhs.data)
-    expected[to_idx(1, 2)] = 1.0
-    expected[to_idx(2, 1)] = 1.0
+    expected[..., to_idx(1, 2)] = 1.0
+    expected[..., to_idx(2, 1)] = 1.0
 
     assert jnp.allclose(result.data, expected)
 
 
-def test_product_letter_and_deg2():
+def test_shuffle_product_letter_and_deg2(rpj_dtype, rpj_batch):
     basis = rpj.TensorBasis(4, 3)
     to_idx = _word_to_idx_fn(4)
 
-    lhs_data = np.zeros((basis.size(),), dtype=np.float64)
-    rhs_data = np.zeros((basis.size(),), dtype=np.float64)
+    lhs_data = np.zeros(rpj_batch.tensor_batch_shape(basis), dtype=rpj_dtype)
+    rhs_data = np.zeros(rpj_batch.tensor_batch_shape(basis), dtype=rpj_dtype)
 
-    lhs_data[to_idx(1, 2)] = 1.0
-    rhs_data[3] = 1.0
+    lhs_data[..., to_idx(1, 2)] = 1.0
+    rhs_data[..., 3] = 1.0
 
     lhs = rpj.ShuffleTensor(lhs_data, basis)
     rhs = rpj.ShuffleTensor(rhs_data, basis)
@@ -136,8 +116,8 @@ def test_product_letter_and_deg2():
     result = rpj.st_mul(lhs, rhs)
 
     expected = np.zeros_like(lhs.data)
-    expected[to_idx(1, 2, 3)] = 1.0
-    expected[to_idx(1, 3, 2)] = 1.0
-    expected[to_idx(3, 1, 2)] = 1.0
+    expected[..., to_idx(1, 2, 3)] = 1.0
+    expected[..., to_idx(1, 3, 2)] = 1.0
+    expected[..., to_idx(3, 1, 2)] = 1.0
 
     assert jnp.allclose(result.data, expected)

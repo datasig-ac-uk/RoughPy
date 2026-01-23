@@ -80,6 +80,23 @@ struct LieBasis : BasisBase {
     }
 };
 
+constexpr typename BasisBase::Index data_size_to_degree(TensorBasis const& basis, typename BasisBase::Degree degree) noexcept
+{
+    if (degree > basis.depth) {
+        degree = basis.depth;
+    }
+    return basis.degree_begin[degree + 1];
+}
+
+constexpr typename BasisBase::Index data_size_to_degree(LieBasis const& basis, typename BasisBase::Degree degree) noexcept
+{
+    if (degree > basis.depth) {
+        degree = basis.depth;
+    }
+    return basis.degree_begin[degree + 1] - 1;
+}
+
+
 }// namespace rpy::compute
 
 #endif// ROUGHPY_COMPUTE_COMMON_BASIS_HPP
