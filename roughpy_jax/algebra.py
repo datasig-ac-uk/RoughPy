@@ -22,7 +22,7 @@ LieT = TypeVar('LieT')
 # class TensorBasis:
 #     width: np.int32
 #     depth: np.int32
-#     degree_begin: np.ndarray[tuple[typing.Any], np.intp]
+#     degree_begin: np.ndarray[np.int64.dtype]
 @partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
 class TensorBasis(rpc.TensorBasis):
     pass
@@ -32,8 +32,7 @@ class TensorBasis(rpc.TensorBasis):
 # class LieBasis:
 #     width: np.int32
 #     depth: np.int32
-#     degree_begin: np.ndarray[tuple[typing.Any], np.intp]
-#     data: np.ndarray[tuple[typing.Any, typing.Any], np.intp]
+#     degree_begin: np.ndarray[np.int64.dtype]
 @partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
 class LieBasis(rpc.LieBasis):
     """
@@ -175,43 +174,21 @@ def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
 
     op_cls = Operation.get_operation("ft_fma", "dense")
 
-    op = op_cls((a.basis, b.basis, c.basis), dtype, batch_dims,
-                a_max_deg=a_max_deg,
-                b_max_deg=min(a_max_deg, b.basis.depth),
-                c_max_deg=min(a_max_deg, c.basis.depth),
-                )
+    op = op_cls(
+        (a.basis, b.basis, c.basis),
+        dtype,
+        batch_dims,
+        a_max_deg=np.int32(a_max_deg),
+        b_max_deg=np.int32(min(a_max_deg, b.basis.depth)),
+        c_max_deg=np.int32(min(a_max_deg, c.basis.depth)),
+        b_min_deg=np.int32(0),
+        c_min_deg=np.int32(0)
+    )
 
     out_data = op(a.data, b.data, c.data)
 
     return DenseFreeTensor(*out_data, op.basis)
 
-    # FIXME commit conflict code incoming
-    # # Use same basis convention as ft_fma in roughpy/compute
-    # basis = a.basis
-    # out_depth = a.basis.depth
-    # lhs_depth = b.basis.depth
-    # rhs_depth = c.basis.depth
-
-    # call = jax.ffi.ffi_call(
-    #     "cpu_dense_ft_fma",
-    #     jax.ShapeDtypeStruct(a.data.shape, a.data.dtype)
-    # )
-
-    # out_data = call(
-    #     a.data,
-    #     b.data,
-    #     c.data,
-    #     width=np.int32(basis.width),
-    #     depth=np.int32(basis.depth),
-    #     degree_begin=basis.degree_begin,
-    #     a_max_deg=np.int32(out_depth),
-    #     b_max_deg=np.int32(lhs_depth),
-    #     c_max_deg=np.int32(rhs_depth),
-    #     b_min_deg=np.int32(0),
-    #     c_min_deg=np.int32(0),
-    # )
-
-    # return DenseFreeTensor(out_data, basis)
 
 
 def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
@@ -232,45 +209,20 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     # Use same basis convention as ft_mul in roughpy/compute
     op_cls = Operation.get_operation("ft_mul", "dense")
 
-    op = op_cls((a.basis, b.basis), dtype, batch_dims,
-                out_max_deg=a.basis.depth,
-                lhs_max_deg=min(a.basis.depth, a.basis.depth),
-                rhs_max_deg=min(a.basis.depth, b.basis.depth))
-
+    op = op_cls(
+        (a.basis, b.basis),
+        dtype,
+        batch_dims,
+        out_max_deg=np.int32(a.basis.depth),
+        lhs_max_deg=np.int32(min(a.basis.depth, a.basis.depth)),
+        rhs_max_deg=np.int32(min(a.basis.depth, b.basis.depth)),
+        lhs_min_deg=np.int32(0),
+        rhs_min_deg=np.int32(0)
+    )
 
     out_data = op(a.data, b.data)
 
     return DenseFreeTensor(*out_data, op.basis)
-
-    # FIXME commit conflict code incoming
-    # _check_tensor_dtype(a, b)
-    # _check_basis_compat(a.basis, b.basis)
-
-    # # Use same basis convention as ft_mul in roughpy/compute
-    # basis = b.basis
-    # out_depth = b.basis.depth
-    # lhs_depth = a.basis.depth
-    # rhs_depth = b.basis.depth
-
-    # call = jax.ffi.ffi_call(
-    #     "cpu_dense_ft_mul",
-    #     jax.ShapeDtypeStruct(b.data.shape, b.data.dtype)
-    # )
-
-    # out_data = call(
-    #     a.data,
-    #     b.data,
-    #     width=np.int32(basis.width),
-    #     depth=np.int32(basis.depth),
-    #     degree_begin=basis.degree_begin,
-    #     out_max_deg=np.int32(out_depth),
-    #     lhs_max_deg=np.int32(lhs_depth),
-    #     rhs_max_deg=np.int32(rhs_depth),
-    #     lhs_min_deg=np.int32(0),
-    #     rhs_min_deg=np.int32(0),
-    # )
-
-    # return DenseFreeTensor(out_data, basis)
 
 
 def antipode(a: FreeTensorT) -> FreeTensorT:
@@ -283,24 +235,18 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
     op_cls = Operation.get_operation("ft_antipode", "dense")
     batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
-    basis = a.basis
-    op = op_cls((basis,), a.data.dtype, batch_dims)
+    out_basis = a.basis
+    op = op_cls(
+        (out_basis,),
+        a.data.dtype,
+        batch_dims,
+        arg_max_deg=np.int32(out_basis.depth),
+        no_sign=False
+    )
 
     out_data = op(a.data)
 
-    return DenseFreeTensor(*out_data, basis)
-
-    # FIXME commit conflict code incoming
-    # out_data = call(
-    #     a.data,
-    #     width=np.int32(out_basis.width),
-    #     depth=np.int32(out_basis.depth),
-    #     degree_begin=out_basis.degree_begin,
-    #     arg_max_deg=np.int32(a.basis.depth),
-    #     no_sign=False
-    # )
-
-    # return DenseFreeTensor(out_data, out_basis)
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
@@ -321,31 +267,19 @@ def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTe
 
     op_cls = Operation.get_operation("st_fma", "dense")
 
-    op = op_cls((a.basis, b.basis, c.basis), dtype, batch_dims,
-                a_max_deg=a.basis.depth,
-                b_max_deg=min(a.basis.depth, b.basis.depth),
-                c_max_deg=min(b.basis.depth, c.basis.depth)
-                )
+    op = op_cls(
+        (a.basis, b.basis, c.basis),
+        dtype,
+        batch_dims,
+        a_max_deg=np.int32(a.basis.depth),
+        b_max_deg=np.int32(min(a.basis.depth, b.basis.depth)),
+        c_max_deg=np.int32(min(b.basis.depth, c.basis.depth)),
+        b_min_deg=np.int32(0),
+        c_min_deg=np.int32(0)
+    )
     out_data = op(a.data, b.data, c.data)
 
     return DenseShuffleTensor(*out_data, op.basis)
-
-    # FIXME commit conflict code incoming
-    # out_data = call(
-    #     a.data,
-    #     b.data,
-    #     c.data,
-    #     width=np.int32(a.basis.width),
-    #     depth=np.int32(a.basis.depth),
-    #     degree_begin=a.basis.degree_begin,
-    #     a_max_deg=np.int32(a.basis.depth),
-    #     b_max_deg=np.int32(b.basis.depth),
-    #     c_max_deg=np.int32(c.basis.depth),
-    #     b_min_deg=np.int32(0),
-    #     c_min_deg=np.int32(0),
-    # )
-
-    # return DenseShuffleTensor(out_data, a.basis)
 
 
 def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
@@ -366,34 +300,21 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     op_cls = Operation.get_operation("st_mul", "dense")
     out_max_deg = lhs.basis.depth
 
-    op = op_cls((lhs.basis, rhs.basis), dtype, batch_dims,
-                out_max_deg=out_max_deg,
-                lhs_max_deg=min(out_max_deg, lhs.basis.depth),
-                rhs_max_deg=min(out_max_deg, rhs.basis.depth)
-                )
+    op = op_cls(
+        (lhs.basis, rhs.basis), 
+        dtype,
+        batch_dims,
+        out_max_deg=np.int32(out_max_deg),
+        lhs_max_deg=np.int32(min(out_max_deg, lhs.basis.depth)),
+        rhs_max_deg=np.int32(min(out_max_deg, rhs.basis.depth)),
+        lhs_min_deg=np.int32(0),
+        rhs_min_deg=np.int32(0)
+    )
 
     out_data = op(lhs.data, rhs.data)
 
     return DenseShuffleTensor(*out_data, op.basis)
-    # call = jax.ffi.ffi_call(
-    #     "cpu_dense_st_mul",
-    #     jax.ShapeDtypeStruct(lhs.data.shape, lhs.data.dtype)
-    # )
 
-    # out_data = call(
-    #     lhs.data,
-    #     rhs.data,
-    #     width=np.int32(lhs.basis.width),
-    #     depth=np.int32(lhs.basis.depth),
-    #     degree_begin=lhs.basis.degree_begin,
-    #     out_max_deg=np.int32(lhs.basis.depth),
-    #     lhs_max_deg=np.int32(lhs.basis.depth),
-    #     rhs_max_deg=np.int32(rhs.basis.depth),
-    #     lhs_min_deg=np.int32(0),
-    #     rhs_min_deg=np.int32(0),
-    # )
-
-    # return DenseShuffleTensor(out_data, lhs.basis)
 
 
 def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:

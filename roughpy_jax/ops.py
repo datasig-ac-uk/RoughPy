@@ -20,19 +20,10 @@ except ImportError as e:
     ) from e
 
 
-for func_name, capsule in cpu_functions.items():
-    jax.ffi.register_ffi_target(
-        func_name,
-        capsule,
-        platform="cpu",
-    )
-
-
-
 class BasisLike(typing.Protocol, cabc.Hashable):
     width: np.int32
     depth: np.int32
-    depth: np.ndarray[np.int32.dtype]
+    degree_begin: np.ndarray[np.int64.dtype]
 
     def size(self) -> int:
         ...
@@ -131,12 +122,12 @@ class Operation:
 
     # Set of all platforms that have accelerator support for at least one
     # data type
-    supported_platforms: ClassVar[set[str]]
+    supported_platforms: ClassVar[set[str]] # = set() FIXME
 
     # The set of implementations operations for each operation. This is a mapping
     # from platform, dtype tuple to function name. The function name should
     # follow the format described above.
-    implementations: ClassVar[dict[tuple[str, str], str]]
+    implementations: ClassVar[dict[tuple[str, str], str]] # = {} FIXME
 
     # default arguments to be passed to jax.ffi.ffi_call when generating the
     # platform-specific lowering of the operation.
@@ -179,12 +170,15 @@ class Operation:
     @classmethod
     def register(cls, platform: str, name: str, fn_ptr: Any, supported_dtypes: set[jnp.dtype],
                  ffi_register_kwargs: dict[str, Any]):
-        jax.ffi.register_ffi_target(name, fn_ptr, platform=platform, **ffi_register_kwargs)
-
         cls.supported_platforms.add(platform)
 
         for dtype in supported_dtypes:
-            cls.implementations[(platform, str(dtype))] = name
+            key = (platform, str(dtype))
+            if key in cls.implementations:
+                raise ValueError(f"Implementation {key} already registered for operation {cls.__name__}")
+            cls.implementations[key] = name
+
+        jax.ffi.register_ffi_target(name, fn_ptr, platform=platform, **ffi_register_kwargs)
 
     @classmethod
     def register_all(cls, platform: str, ops: dict[str, Any], supported_dtypes: set[str],
@@ -315,7 +309,7 @@ class Operation:
         :rtype: Callable[..., Any]
         """
         if (fb := getattr(self, "fallback", None)) is not None:
-            return partial(fb, **self.static_args)
+            return partial(fb, **self.make_ffi_static_args())
 
         raise AttributeError("{type(self)} does not name a fallback operation")
 
@@ -331,8 +325,8 @@ class Operation:
         :rtype: dict
         """
         return {
-            "width": self.basis.width,
-            "depth": self.basis.depth,
+            "width": np.int32(self.basis.width),
+            "depth": np.int32(self.basis.depth),
             "degree_begin": self.basis.degree_begin,
             **self.static_args
         }
@@ -464,7 +458,9 @@ class DenseFTFma(Operation, DenseOperation):
     def fallback(a_data: Array,
                  b_data: Array,
                  c_data: Array,
-                 basis: Any,
+                 width: np.int32, # FIXME found during merge, fallback code was still using basis and not taking ffi args
+                 depth: np.int32,
+                 degree_begin: np.ndarray[np.int64.dtype],
                  a_max_deg: np.int32,
                  b_max_deg: np.int32,
                  c_max_deg: np.int32,
@@ -553,9 +549,6 @@ class DenseAntipode(Operation, DenseOperation):
 
         return (data, )
 
-
-
-
 class DenseSTFma(Operation, DenseOperation):
     fn_name = "st_fma"
 
@@ -581,7 +574,7 @@ class DenseSTFma(Operation, DenseOperation):
         raise NotImplementedError
 
 class DenseSTMul(Operation, DenseOperation):
-    ft_name = "st_mul"
+    fn_name = "st_mul"
 
     class StaticArgs(TypedDict):
         lhs_max_deg: np.int32
@@ -681,3 +674,45 @@ class DenseFTFMExp(Operation, DenseOperation):
 
 class DenseFTLog(Operation, DenseOperation):
     fn_name = "ft_log"
+
+
+# FIXME work in progress code to run fallback code if no cpu code registered
+ADD_STANDARD_IMPLS = True
+
+if ADD_STANDARD_IMPLS:
+    standard_cpu_ops = [
+        DenseFTFma,
+        DenseFTMul,
+        DenseAntipode,
+        DenseSTFma,
+        DenseSTMul,
+        DenseFTAdjLeftMul,
+        DenseFTExp,
+        DenseFTFMExp,
+        DenseFTLog
+        # FIXME incomplete:
+        # DenseLieToTensor
+        # DenseTensorToLie
+    ]
+
+    for op in standard_cpu_ops:
+        cpu_function_name = f"cpu_dense_{op.fn_name}"
+        op.register(
+            "cpu",
+            op.fn_name,
+            cpu_functions[cpu_function_name],
+            {"float32", "float64"},
+            {}
+        )
+
+    # FIXME methods that have yet to be converted to new ops framework
+    legacy_cpu_functions = [
+        "cpu_dense_ft_exp",
+        "cpu_dense_ft_log",
+        "cpu_dense_ft_fmexp",
+        "cpu_dense_ft_adj_lmul",
+        "cpu_dense_ft_adj_rmul"
+    ]
+
+    for fn in legacy_cpu_functions:
+        jax.ffi.register_ffi_target(fn, cpu_functions[fn], platform="cpu")
