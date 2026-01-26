@@ -1,10 +1,8 @@
-import ctypes
-import re
 import typing
 import collections.abc as cabc
 
 from functools import partial
-from typing import ClassVar, Callable, Any, Optional, TypedDict, NamedTuple
+from typing import ClassVar, Callable, Any, Optional, TypedDict, TypeVar
 
 import jax
 import jax.numpy as jnp
@@ -43,6 +41,9 @@ class BasisLike(typing.Protocol, cabc.Hashable):
 
 class EmptyStaticArgs(TypedDict):
     ...
+
+
+OperationT = TypeVar("OperationT")
 
 
 class Operation:
@@ -117,7 +118,7 @@ class Operation:
     # when deriving from this class.
     #
     # Users should not interact with this directly
-    __all_operations: ClassVar[dict[tuple[str, str], type[Operation]]] = {}
+    __all_operations: ClassVar[dict[tuple[str, str], type[OperationT]]] = {}
 
     # The supported layout for data for algebra objects. At the moment all
     # operations only support densely represented objects. In the future,
@@ -195,7 +196,7 @@ class Operation:
                 op_cls.register(platform, name, fn_ptr, dtypes, ffi_register_kwargs)
 
     @classmethod
-    def get_operation(cls, fn_name: str, layout: str = "dense") -> Optional[type[Operation]]:
+    def get_operation(cls, fn_name: str, layout: str = "dense") -> Optional[type[OperationT]]:
         """
         Retrieves a registered operation class based on the function name and layout.
 
