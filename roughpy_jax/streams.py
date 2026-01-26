@@ -1,13 +1,15 @@
 import typing
 
 from typing import Protocol, TypeVar, Self, Callable
+from dataclasses import dataclass
+from typing import Tuple
 
 import numpy as np
 import jax
 import jax.numpy as jnp
 
-
-from .intervals import Interval
+from .intervals import Interval, Partition, RealT
+from .ops import logarithm, exponentiation
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
@@ -115,8 +117,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
     at any given parameter t is obtained by propagating the base value using the
     signature over from t_0 up to t.
 
-    A very basic version of a ValueStream is a tensor-valued stream, where the
-    value type is a free tensor and the propagation operation is left multiplication
+    A very basic version of a ValueStream is a tensor-valued stream, where the value type is a free tensor and the propagation operation is left multiplication
     by the signature. More generally, this might involve the action of a linear
     projection of the signature.
 
@@ -177,3 +178,56 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
                  stream.
         """
         ...
+
+
+@dataclass(frozen=True)
+class PiecewiseAbelianStream(Stream[LieT, GroupT]):
+    """A stream representing a piecewise abelian path."""
+    
+    _data: Tuple[LieT, ...]
+    _partition: Partition
+    _lie_basis: BasisLike
+    _group_basis: BasisLike
+
+    def __post_init__(self):
+        """Validate the piecewise abelian stream."""
+        if len(self._data) != len(self._partition):
+            raise ValueError(f"Data length {len(self._data)} must match number "
+                             f"of intervals in partition {len(self._partition)}."
+                             )
+
+    @property
+    def lie_basis(self) -> BasisLike:
+        """Return the Lie basis."""
+        return self._lie_basis
+    
+    @property
+    def group_basis(self) -> BasisLike:
+        """Return the group basis."""
+        return self._group_basis
+    
+    @property
+    def support(self) -> Interval:
+        """Return the support interval."""
+        return Interval(
+            inf=self._partition.inf,
+            sup=self._partition.sup,
+            interval_type=self._partition.interval_type,
+        )
+    
+    def log_signature(self, interval: Interval) -> LieT:
+        """Compute the log signature over an interval."""
+        
+    
+    # NOTE: Should this take a partition instead?
+    def signature(self, interval: Interval) -> GroupT:
+        """Compute the signature over an interval."""
+        
+        ...
+
+    
+def to_piecewise_abelian(
+        stream: Stream[LieT, GroupT], partition: Partition                 
+    ) -> PiecewiseAbelianStream[LieT, GroupT]:
+    """Convert a stream to a piecewise abelian stream."""
+    ...

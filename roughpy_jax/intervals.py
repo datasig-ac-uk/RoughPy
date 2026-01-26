@@ -46,9 +46,8 @@ class Interval(Protocol):
     @property
     def sup(self) -> float:
         ...
-    
-    @classmethod
-    def intersection(cls, left_interval: Interval, right_interval: Interval) -> typing.Optional[Self]:
+        
+    def intersection(self, other: Self) -> typing.Optional[Self]:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
@@ -56,34 +55,40 @@ class Interval(Protocol):
         :return: A new Interval representing the intersection, or None if there is no intersection.
         :rtype: typing.Optional[Interval]
         """
+        ...
+
+
+class BaseInterval(Interval):
+    
+    @staticmethod
+    def intersection(
+            left_interval: Interval, 
+            right_interval: Interval,
+        ) -> typing.Optional[Interval]:
+        """
+        Calculate the intersection of this interval with another interval.
+        :param other: The other interval to intersect with.
+        :type other: Interval
+        :return: A new Interval representing the intersection, or None if there is no intersection.
+        :rtype: typing.Optional[Interval]
+        """
+        if not isinstance(left_interval, Interval) or not isinstance(right_interval, Interval):
+            raise TypeError("Both arguments must be of type Interval")
+        
+        if left_interval.interval_type != right_interval.interval_type:
+            raise TypeError("Both intervals must be of the same IntervalType")
+        
         new_inf = max(left_interval.inf, right_interval.inf)
         new_sup = min(left_interval.sup, right_interval.sup)
 
         if new_inf > new_sup:
             return None  # No intersection
+        
+        IntervalT = left_interval.__class__
+        interval_type: left_interval.interval_type
 
-        # Determine the interval type for the intersection
-        if left_interval.inf == new_inf:
-            left_type = left_interval.interval_type
-        else:
-            left_type = right_interval.interval_type
-
-        if left_interval.sup == new_sup:
-            right_type = left_interval.interval_type
-        else:
-            right_type = right_interval.interval_type
-
-        if left_type == IntervalType.ClOpen and right_type == IntervalType.ClOpen:
-            interval_type = IntervalType.ClOpen
-        elif left_type == IntervalType.OpenCl and right_type == IntervalType.OpenCl:
-            interval_type = IntervalType.OpenCl
-        else:
-            # TODO: should mixed types result in an open interval?
-            interval_type = IntervalType.OpenCl
-
-        return cls(new_inf, new_sup, interval_type)
-
-
+        #TODO: how to return correct type here?
+        return IntervalT(new_inf, new_sup, interval_type)
 
 
 @dataclass(frozen=True)
@@ -102,7 +107,6 @@ class Dyadic:
 
     def __float__(self) -> float:
         return math.ldexp(self.k, -self.n)
-
 
 
 @dataclass(frozen=True)
@@ -129,6 +133,16 @@ class DyadicInterval(Dyadic):
     def sup(self) -> float:
         k = (self.k + 1) if self._interval_type == IntervalType.ClOpen else self.k
         return math.ldexp(self.k+1, -self.n)
+    
+    def intersection(self, other: Self) -> typing.Optional[Self]:
+        """
+        Calculate the intersection of this dyadic interval with another dyadic interval.
+        :param other: The other dyadic interval to intersect with.
+        :type other: DyadicInterval
+        :return: A new DyadicInterval representing the intersection, or None if there is no intersection.
+        :rtype: typing.Optional[DyadicInterval]
+        """
+        return BaseInterval.intersection(self, other)
 
 
 @dataclass(frozen=True)
@@ -160,7 +174,16 @@ class RealInterval(Generic[RealT]):
     @property
     def sup(self) -> float:
         return self._sup
-
+    
+    def intersection(self, other: Self) -> typing.Optional[Self]:
+        """
+        Calculate the intersection of this real interval with another real interval.
+        :param other: The other real interval to intersect with.
+        :type other: RealInterval
+        :return: A new RealInterval representing the intersection, or None if there is no intersection.
+        :rtype: typing.Optional[RealInterval]
+        """
+        return BaseInterval.intersection(self, other)
 
 
 @dataclass(frozen=True)
@@ -182,3 +205,13 @@ class Partition(Generic[RealT]):
     @property
     def sup(self) -> float:
         return float(self._endpoints[-1])
+    
+    def intersection(self, other: Interval) -> typing.Optional[Self]:
+        """
+        Calculate the intersection of this partition with another Interval.
+        :param other: The other interval to intersect with.
+        :type other: Partition
+        :return: A new Partition representing the intersection, or None if there is no intersection.
+        :rtype: typing.Optional[Partition]
+        """
+        intersection = BaseInterval.intersection(self, other)
