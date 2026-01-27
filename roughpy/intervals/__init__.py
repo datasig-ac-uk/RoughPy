@@ -8,8 +8,7 @@ from typing import TypeVar, Protocol, Generic, Any
 
 import numpy as np
 
-ParamT = TypeVar("ParamT")
-
+from roughpy.typing import ParamT
 
 class IntervalType(enum.IntEnum):
     ClOpen = 1
