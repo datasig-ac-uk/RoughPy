@@ -12,6 +12,7 @@ Functions that operate on free tensor data specifically are prefixed with "ft" (
 Functions that operate on shuffle tensors are prefixed with "st" (e.g. `st_shuffle`).
 
 """
+
 import typing
 import numpy as np
 import numpy.typing as npt
@@ -21,6 +22,9 @@ from dataclasses import dataclass
 from . import _rpy_compute_internals as _internals
 
 __all__ = []
+
+
+DEFAULT_DTYPE: np.dtype = np.dtype("float64")
 
 
 def _api(version: str, *args, **kwargs):
@@ -81,6 +85,7 @@ class LieBasis(_internals.LieBasis):
     sequentially and between elements of degree k - 1 and degree k + 1 (if such
     elements exist).
     """
+
     pass
 
 
@@ -88,24 +93,380 @@ SparseMatrix = _api("1.0.0")(_internals.SparseMatrix)
 
 
 @_api("1.0.0")
-@dataclass()
 class DenseFreeTensor:
-    data: np.ndarray[tuple[typing.Any], typing.Any]
-    basis: TensorBasis
+    def __init__(self, data, basis):
+        if not isinstance(data, np.ndarray):
+            data = np.array(data)
+        if not isinstance(basis, TensorBasis):
+            raise TypeError("basis must be a TensorBasis")
+
+        self.data = data
+        self.basis = basis
+
+    def __repr__(self):
+        return f"FreeTensor(width={self.basis.width}, depth={self.basis.depth}, dtype={self.data.dtype})"
+
+    def __dtype__(self) -> np.dtype:
+        return self.data.dtype
+
+    def __array__(self, dtype=None) -> np.ndarray:
+        return self.data.astype(dtype or self.data.dtype)
+
+    def __eq__(self, other):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        return self.basis == other.basis and np.array_equal(self.data, other.data)
+
+    def __ne__(self, other):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        return self.basis != other.basis or not np.array_equal(self.data, other.data)
+
+    def __neg__(self):
+        return DenseFreeTensor(-self.data, self.basis)
+
+    def __add__(self, other):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        if self.basis.width != other.basis.width:
+            raise ValueError("Incompatible basis widths")
+
+        if self.basis == other.basis:
+            return DenseFreeTensor(self.data + other.data, self.basis)
+
+        raise NotImplementedError(
+            "Addition of tensors with different bases not yet fully supported"
+        )
+
+    def __sub__(self, other):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        if self.basis != other.basis:
+            raise NotImplementedError(
+                "Subtraction of tensors with different bases not yet supported"
+            )
+        return DenseFreeTensor(self.data - other.data, self.basis)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseFreeTensor(self.data * other, self.basis)
+        if isinstance(other, DenseFreeTensor):
+            return ft_mul(self, other)
+        return NotImplemented
+
+    def __rmul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseFreeTensor(self.data * other, self.basis)
+        return NotImplemented
+
+    def __imul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            self.data *= other
+            return self
+        if isinstance(other, DenseFreeTensor):
+            ft_inplace_mul(self, other)
+            return self
+        return NotImplemented
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseFreeTensor(self.data / other, self.basis)
+        return NotImplemented
+
+    def __itruediv__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            self.data /= other
+            return self
+        return NotImplemented
+
+    def add_scal_mul(self, other, scalar):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        self.data += other.data * scalar
+
+    def sub_scal_mul(self, other, scalar):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        self.data -= other.data * scalar
+
+    def add_scal_div(self, other, scalar):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        self.data += other.data / scalar
+
+    def sub_scal_div(self, other, scalar):
+        if not isinstance(other, DenseFreeTensor):
+            return NotImplemented
+        self.data -= other.data / scalar
+
+    def add_mul(self, lhs, rhs):
+        ft_fma(self, lhs, rhs)
+
+    def sub_mul(self, lhs, rhs):
+        # We need an ft_fnma or similar, or just do it with temporary
+        # For now, let's use a temporary or implement it simply
+        tmp = ft_mul(lhs, rhs)
+        self.data -= tmp.data
+
+    def mul_smul(self, other, scalar):
+        tmp = ft_mul(self, other)
+        self.data = tmp.data * scalar
+
+    def mul_sdiv(self, other, scalar):
+        tmp = ft_mul(self, other)
+        self.data = tmp.data / scalar
+
+    def exp(self):
+        return ft_exp(self)
+
+    def log(self):
+        return ft_log(self)
+
+    def antipode(self):
+        return antipode(self)
+
+    @staticmethod
+    def identity(basis: TensorBasis, dtype=DEFAULT_DTYPE) -> DenseFreeTensor:
+        data = np.zeros((basis.size(),))
+        data[0] = 1
+        return DenseFreeTensor(data, basis)
+
+    @staticmethod
+    def zero(basis: TensorBasis, dtype=DEFAULT_DTYPE) -> DenseFreeTensor:
+        return DenseFreeTensor(np.zeros((basis.size(),), dtype=dtype), basis)
 
 
 @_api("1.0.0")
-@dataclass()
 class DenseShuffleTensor:
-    data: np.ndarray[tuple[typing.Any], typing.Any]
-    basis: TensorBasis
+    def __init__(self, data, basis):
+        if not isinstance(data, np.ndarray):
+            data = np.array(data)
+        if not isinstance(basis, TensorBasis):
+            raise TypeError("basis must be a TensorBasis")
+
+        self.data = data
+        self.basis = basis
+
+    def __repr__(self):
+        return f"ShuffleTensor(width={self.basis.width}, depth={self.basis.depth}, dtype={self.data.dtype})"
+
+    def __dtype__(self) -> np.dtype:
+        return self.data.dtype
+
+    def __array__(self, dtype=None) -> np.ndarray:
+        return self.data.astype(dtype or self.data.dtype)
+
+    def __eq__(self, other):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        return self.basis == other.basis and np.array_equal(self.data, other.data)
+
+    def __ne__(self, other):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        return self.basis != other.basis or not np.array_equal(self.data, other.data)
+
+    def __neg__(self):
+        return DenseShuffleTensor(-self.data, self.basis)
+
+    def __add__(self, other):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        if self.basis != other.basis:
+            raise NotImplementedError(
+                "Addition of shuffle tensors with different bases not yet supported"
+            )
+        return DenseShuffleTensor(self.data + other.data, self.basis)
+
+    def __sub__(self, other):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        if self.basis != other.basis:
+            raise NotImplementedError(
+                "Subtraction of shuffle tensors with different bases not yet supported"
+            )
+        return DenseShuffleTensor(self.data - other.data, self.basis)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseShuffleTensor(self.data * other, self.basis)
+        if isinstance(other, DenseShuffleTensor):
+            return st_mul(self, other)
+        return NotImplemented
+
+    def __rmul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseShuffleTensor(self.data * other, self.basis)
+        return NotImplemented
+
+    def __imul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            self.data *= other
+            return self
+        if isinstance(other, DenseShuffleTensor):
+            res = st_mul(self, other)
+            self.data = res.data
+            return self
+        return NotImplemented
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseShuffleTensor(self.data / other, self.basis)
+        return NotImplemented
+
+    def __itruediv__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            self.data /= other
+            return self
+        return NotImplemented
+
+    def add_scal_mul(self, other, scalar):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        self.data += other.data * scalar
+
+    def sub_scal_mul(self, other, scalar):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        self.data -= other.data * scalar
+
+    def add_scal_div(self, other, scalar):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        self.data += other.data / scalar
+
+    def sub_scal_div(self, other, scalar):
+        if not isinstance(other, DenseShuffleTensor):
+            return NotImplemented
+        self.data -= other.data / scalar
+
+    def add_mul(self, lhs, rhs):
+        st_fma(self, lhs, rhs)
+
+    def sub_mul(self, lhs, rhs):
+        tmp = st_mul(lhs, rhs)
+        self.data -= tmp.data
+
+    def mul_smul(self, other, scalar):
+        tmp = st_mul(self, other)
+        self.data = tmp.data * scalar
+
+    def mul_sdiv(self, other, scalar):
+        tmp = st_mul(self, other)
+        self.data = tmp.data / scalar
+
+    @staticmethod
+    def identity(basis: TensorBasis, dtype=DEFAULT_DTYPE) -> DenseShuffleTensor:
+        data = np.zeros((basis.size(),))
+        data[0] = 1
+        return DenseShuffleTensor(data, basis)
+
+    @staticmethod
+    def zero(basis: TensorBasis, dtype=DEFAULT_DTYPE) -> DenseShuffleTensor:
+        return DenseShuffleTensor(np.zeros((basis.size(),), dtype=dtype), basis)
 
 
 @_api("1.0.0")
-@dataclass()
 class DenseLie:
-    data: np.ndarray[tuple[typing.Any], typing.Any]
-    basis: LieBasis
+    def __init__(self, data, basis):
+        if not isinstance(data, np.ndarray):
+            data = np.array(data)
+        if not isinstance(basis, LieBasis):
+            raise TypeError("basis must be a LieBasis")
+
+        self.data = data
+        self.basis = basis
+
+    def __repr__(self):
+        return f"Lie(width={self.basis.width}, depth={self.basis.depth}, dtype={self.data.dtype})"
+
+    def __dtype__(self) -> np.dtype:
+        return self.data.dtype
+
+    def __array__(self, dtype=None) -> np.ndarray:
+        return self.data.astype(dtype or self.data.dtype)
+
+    def __eq__(self, other):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        return self.basis == other.basis and np.array_equal(self.data, other.data)
+
+    def __ne__(self, other):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        return self.basis != other.basis or not np.array_equal(self.data, other.data)
+
+    def __neg__(self):
+        return DenseLie(-self.data, self.basis)
+
+    def __add__(self, other):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        if self.basis != other.basis:
+            raise NotImplementedError(
+                "Addition of Lie elements with different bases not yet supported"
+            )
+        return DenseLie(self.data + other.data, self.basis)
+
+    def __sub__(self, other):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        if self.basis != other.basis:
+            raise NotImplementedError(
+                "Subtraction of Lie elements with different bases not yet supported"
+            )
+        return DenseLie(self.data - other.data, self.basis)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseLie(self.data * other, self.basis)
+        return NotImplemented
+
+    def __rmul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseLie(self.data * other, self.basis)
+        return NotImplemented
+
+    def __imul__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            self.data *= other
+            return self
+        return NotImplemented
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            return DenseLie(self.data / other, self.basis)
+        return NotImplemented
+
+    def __itruediv__(self, other):
+        if isinstance(other, (int, float, np.number)):
+            self.data /= other
+            return self
+        return NotImplemented
+
+    def add_scal_mul(self, other, scalar):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        self.data += other.data * scalar
+
+    def sub_scal_mul(self, other, scalar):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        self.data -= other.data * scalar
+
+    def add_scal_div(self, other, scalar):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        self.data += other.data / scalar
+
+    def sub_scal_div(self, other, scalar):
+        if not isinstance(other, DenseLie):
+            return NotImplemented
+        self.data -= other.data / scalar
+
+    @staticmethod
+    def zero(basis: LieBasis, dtype=DEFAULT_DTYPE) -> DenseLie:
+        return DenseLie(np.zeros((basis.size(),), dtype=dtype), basis)
 
 
 check_lie_basis_data = _api("1.0.0")(_internals.check_lie_basis_data)
@@ -284,7 +645,9 @@ def ft_log(x: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
     return FreeTensor(result, out_basis)
 
 
-def ft_fmexp(multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None) -> FreeTensor:
+def ft_fmexp(
+    multiplier: FreeTensor, exponent: FreeTensor, out_basis: TensorBasis | None = None
+) -> FreeTensor:
     """
     Fused multiply-exponential of two free tensors.
 
@@ -333,13 +696,22 @@ def ft_adjoint_left_mul(op: FreeTensor, arg: ShuffleTensor) -> ShuffleTensor:
     result = np.zeros_like(arg.data)
 
     _internals.dense_ft_adjoint_left_mul(
-        result, op.data, arg.data, op.basis, arg.basis.depth, op.basis.depth, arg.basis.depth)
+        result,
+        op.data,
+        arg.data,
+        op.basis,
+        arg.basis.depth,
+        op.basis.depth,
+        arg.basis.depth,
+    )
 
     return ShuffleTensor(result, arg.basis)
 
 
 @_api("1.0.0")
-def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensor:
+def lie_to_tensor(
+    arg: Lie, tensor_basis: TensorBasis | None = None, scale_factor=None
+) -> FreeTensor:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
 
@@ -352,13 +724,24 @@ def lie_to_tensor(arg: Lie, tensor_basis: TensorBasis | None = None, scale_facto
     tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     result = np.zeros((*arg.data.shape[:-1], tensor_basis.size()), dtype=arg.data.dtype)
-    _internals.dense_lie_to_tensor(result, arg.data, l2t, arg.basis, tensor_basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+    _internals.dense_lie_to_tensor(
+        result,
+        arg.data,
+        l2t,
+        arg.basis,
+        tensor_basis,
+        scale_factor=(
+            arg.data.dtype.type(scale_factor) if scale_factor is not None else None
+        ),
+    )
 
     return FreeTensor(result, tensor_basis)
 
 
 @_api("1.0.0")
-def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None) -> Lie:
+def tensor_to_lie(
+    arg: FreeTensor, lie_basis: LieBasis | None = None, scale_factor=None
+) -> Lie:
     """
     Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
 
@@ -370,6 +753,15 @@ def tensor_to_lie(arg: FreeTensor, lie_basis: LieBasis | None = None, scale_fact
     l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
 
     result = np.zeros((*arg.data.shape[:-1], lie_basis.size()), dtype=arg.data.dtype)
-    _internals.dense_tensor_to_lie(result, arg.data, l2t, lie_basis, arg.basis, scale_factor=arg.data.dtype.type(scale_factor) if scale_factor is not None else None)
+    _internals.dense_tensor_to_lie(
+        result,
+        arg.data,
+        l2t,
+        lie_basis,
+        arg.basis,
+        scale_factor=(
+            arg.data.dtype.type(scale_factor) if scale_factor is not None else None
+        ),
+    )
 
     return Lie(result, lie_basis)
