@@ -12,6 +12,35 @@ jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_platforms", "cpu")
 
 
+def make_no_acceleration_fixture(ops_class):
+    """
+    Helper method for creating fixtures per operation that automatically switches between CPU and fallback JAX code
+
+    Declare as a variable per operation at top of file and bring in per test as a regular fixture, e.g.
+
+        # Declare at top of file
+        rpj_no_acceleration = conftest.make_no_acceleration_fixture(rpj.ops.DenseAntipode)
+
+        # Use per test, note variable is not used but will parameterise test automatically
+        def test_a(rpj_dtype, rpj_batch, rpj_no_acceleration):
+            ...
+
+        def test_b(rpj_dtype, rpj_batch, rpj_no_acceleration):
+            ...
+    """
+    @pytest.fixture(params=[False, True])
+    def no_acceleration_fixture(request, monkeypatch):
+        monkeypatch.setattr(
+            ops_class,
+            "no_acceleration",
+            request.param,
+            raising=True
+        )
+        return request.param
+
+    return no_acceleration_fixture
+
+
 @pytest.fixture
 def rpj_test_fixture_type_mismatch():
     """
