@@ -1,5 +1,7 @@
 import functools
 
+from typing import Optional
+
 import roughpy.compute as rpc
 
 from roughpy.compute import (
@@ -9,6 +11,7 @@ from roughpy.compute import (
     TensorBasis,
     LieBasis,
 )
+from roughpy.typing import GroupT, LieT
 
 from .context import AlgebraContext
 
@@ -105,3 +108,26 @@ def cbh(*args: Lie, basis: LieBasis = None) -> Lie:
         lambda acc, x: rpc.ft_fmexp(acc, rpc.lie_to_tensor(x, tbasis)), args, identity
     )
     return rpc.tensor_to_lie(rpc.ft_log(tresult), lbasis)
+
+
+
+def to_signature(arg: LieT, tensor_basis: Optional[TensorBasis] = None) -> GroupT:
+    """
+    Transforms a Lie algebra element into its corresponding group element signature.
+
+    This function computes the exponential map from a Lie algebra element to the
+    associated Lie group element using a specific tensor basis. If no tensor basis
+    is provided, a default tensor basis is created based on the dimensions of the
+    basis within the Lie algebra element.
+
+    :param arg: The Lie algebra element to be transformed.
+    :type arg: LieT
+    :param tensor_basis: An optional tensor basis used to perform the transformation.
+        If not provided, a default tensor basis is created.
+    :type tensor_basis: Optional[TensorBasis]
+    :return: The resulting group element signature after the transformation.
+    :rtype: GroupT
+    """
+    basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+    return rpc.ft_exp(rpc.lie_to_tensor(arg, tensor_basis=basis))
+
