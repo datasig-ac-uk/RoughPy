@@ -25,51 +25,10 @@
 #  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import typing
-
-from typing import Protocol, Self, Callable
 
 import numpy as np
 
-from roughpy.typing import LieT, GroupT, ParamT, BasisT, StreamValueT, PartitionT
-from roughpy.typing import Interval
-
-
-@typing.runtime_checkable
-class Stream(Protocol[LieT, GroupT, ParamT]):
-
-    @property
-    def lie_basis(self) -> BasisT: ...
-
-    @property
-    def group_basis(self) -> BasisT: ...
-
-    @property
-    def support(self) -> Interval[ParamT]: ...
-
-    def signature(self, interval: Interval[ParamT]) -> GroupT: ...
-
-    def log_signature(self, interval: Interval[ParamT]) -> LieT: ...
-
-    def restrict(self, interval: Interval[ParamT]) -> Stream[LieT, GroupT, ParamT]: ...
-
-
-@typing.runtime_checkable
-class ValueStream(Protocol[StreamValueT, LieT, GroupT, ParamT]):
-
-    @property
-    def stream(self) -> Stream[LieT, GroupT, ParamT]: ...
-
-    @property
-    def value_propagate_function(
-        self,
-    ) -> Callable[[Interval[ParamT], StreamValueT], StreamValueT]: ...
-
-    @property
-    def base_value(self) -> StreamValueT: ...
-
-    def query(self, interval: Interval[ParamT]) -> Self: ...
-
+from roughpy.streams.concepts import Stream, ValueStream
 
 ## Raw data streams
 # These streams are think masks around raw data. These provide stream-like
