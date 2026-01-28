@@ -97,18 +97,19 @@ def cbh(*args: Lie, basis: LieBasis = None) -> Lie:
     if not args:
         return Lie.zero(basis)
 
-    lbasis = basis or args[0].basis
-    tbasis = TensorBasis(lbasis.width, lbasis.depth)
+    lie_basis = basis or args[0].basis
+    tensor_basis = TensorBasis(lie_basis.width, lie_basis.depth)
 
     if len(args) == 1:
         return args[0]
 
-    identity = FreeTensor.identity(tbasis)
-    tresult = functools.reduce(
-        lambda acc, x: rpc.ft_fmexp(acc, rpc.lie_to_tensor(x, tbasis)), args, identity
+    identity = FreeTensor.identity(tensor_basis)
+    tensor_result = functools.reduce(
+        lambda acc, x: rpc.ft_fmexp(acc, rpc.lie_to_tensor(x, tensor_basis)),
+        args,
+        identity,
     )
-    return rpc.tensor_to_lie(rpc.ft_log(tresult), lbasis)
-
+    return rpc.tensor_to_lie(rpc.ft_log(tensor_result), lie_basis)
 
 
 def to_signature(arg: LieT, tensor_basis: Optional[TensorBasis] = None) -> GroupT:
@@ -130,4 +131,3 @@ def to_signature(arg: LieT, tensor_basis: Optional[TensorBasis] = None) -> Group
     """
     basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
     return rpc.ft_exp(rpc.lie_to_tensor(arg, tensor_basis=basis))
-
