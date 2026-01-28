@@ -418,7 +418,7 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
     db = degree_begin
 
     out_b = db[a_deg]
-    out_e = db[a_deg]
+    out_e = db[a_deg + 1]
     out_size = out_e - out_b
 
     acc = jnp.zeros(b_data.shape[:-1] + (out_size,), dtype=b_data.dtype)
@@ -438,28 +438,6 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
         acc = acc + jnp.tensordot(b_level, c_level, axes=0).reshape(-1)
 
     return acc
-
-
-def _dense_antipode_single_tensor(
-    tensor_data: jnp.ndarray,
-    width: int,
-    depth: int,
-    degree_begin: jnp.ndarray,
-    no_sign: bool = False
-) -> jnp.ndarray:
-    db = degree_begin
-
-    def transpose_level(i):
-        sign = 1 if (no_sign or i % 2 == 0) else -1
-        level_data = tensor_data[db[i]:db[i + 1]].reshape((width,) * i)
-        return sign * jnp.transpose(level_data).reshape(-1)
-
-    data = jnp.concatenate(
-        [transpose_level(i) for i in range(depth + 1)],
-        axis=-1
-    )
-
-    return data
 
 
 class DenseFTFma(Operation, DenseOperation):
@@ -488,8 +466,6 @@ class DenseFTFma(Operation, DenseOperation):
     ) -> tuple[Array, ...]:
         level_gen = partial(
             _dense_ft_mul_level_accumulator,
-            b_data=b_data,
-            c_data=c_data,
             degree_begin=degree_begin,
             b_min_deg=b_min_deg,
             b_max_deg=b_max_deg,
@@ -497,9 +473,24 @@ class DenseFTFma(Operation, DenseOperation):
             c_max_deg=c_max_deg,
         )
 
-        mul = jnp.concatenate([level_gen(i) for i in range(0, a_max_deg)], axis=-1)
+        def single_tensor_fma(
+            a_data_view: jnp.ndarray,
+            b_data_view: jnp.ndarray,
+            c_data_view: jnp.ndarray
+        ) -> jnp.ndarray:
+            mul = jnp.concatenate([level_gen(a_deg=i, b_data=b_data_view, c_data=c_data_view) for i in range(0, a_max_deg + 1)], axis=-1)
+            return a_data_view + mul
 
-        return (a_data + mul,)
+        # Flatten batches for vmap, e.g. 2D batch (3,2) data size (7) -> 1D batch (6), so shape (3,2,7) -> (6,7)
+        batch_shape = a_data.shape[:-1]
+        flat_a_data = a_data.reshape((-1, a_data.shape[-1]))
+        flat_b_data = b_data.reshape((-1, b_data.shape[-1]))
+        flat_c_data = c_data.reshape((-1, c_data.shape[-1]))
+
+        # Compute fmap per tensor then restore original batch shape
+        flat_fma = jax.vmap(single_tensor_fma)(flat_a_data, flat_b_data, flat_c_data)
+        result = flat_fma.reshape((*batch_shape, flat_fma.shape[-1]))
+        return (result,)
 
 
 class DenseFTMul(Operation, DenseOperation):
@@ -557,19 +548,26 @@ class DenseAntipode(Operation, DenseOperation):
         arg_max_deg: np.int32,
         no_sign: bool = False,
     ) -> tuple[Array]:
+        # Per-tensor antipode computation
+        def single_tensor_antipode(arg_data_view: jnp.ndarray) -> jnp.ndarray:
+            def transpose_level(i):
+                sign = 1 if (no_sign or i % 2 == 0) else -1
+                level_data = arg_data_view[degree_begin[i]:degree_begin[i + 1]].reshape((width,) * i)
+                return sign * jnp.transpose(level_data).reshape(-1)
+
+            return jnp.concatenate(
+                [transpose_level(i) for i in range(depth + 1)],
+                axis=-1
+            )
+
+        # Flatten batches for vmap, e.g. 2D batch (3,2) data size (7) -> 1D batch (6), so shape (3,2,7) -> (6,7)
         batch_shape = arg_data.shape[:-1]
         flat_data = arg_data.reshape((-1, arg_data.shape[-1]))
 
-        # Each 1D tensor in axis 0, broadcast degree_begin, width, depth, no_sign - hence (0, None, None, None, None)
-        batch_fn = jax.vmap(
-            _dense_antipode_single_tensor,
-            in_axes=(0, None, None, None, None)
-        )
-        batch_antipode = batch_fn(flat_data, width, depth, degree_begin, no_sign)
-
-        # Restore original batch shape
-        batch_data = batch_antipode.reshape((*batch_shape, batch_antipode.shape[-1]))
-        return (batch_data,)
+        # Compute antipode per tensor, vmapping over flattened batches, then restore original batch shape
+        flat_antipode = jax.vmap(single_tensor_antipode)(flat_data)
+        result = flat_antipode.reshape((*batch_shape, flat_antipode.shape[-1]))
+        return (result,)
 
 
 class DenseSTFma(Operation, DenseOperation):

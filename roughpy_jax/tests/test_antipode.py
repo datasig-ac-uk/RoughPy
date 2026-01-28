@@ -1,5 +1,5 @@
-import jax.numpy as jnp
 import conftest
+import jax.numpy as jnp
 import roughpy_jax as rpj
 
 rpj_no_acceleration = conftest.make_no_acceleration_fixture(rpj.ops.DenseAntipode)
