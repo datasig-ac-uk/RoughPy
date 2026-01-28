@@ -1,10 +1,14 @@
 import typing
 
-from typing import TypeVar
+from typing import TypeVar, Union
+
+import numpy as np
+
+from numpy.typing import ArrayLike, NDArray, DTypeLike
 
 
 # Type alias for stream and interval parameterisation
-ParamT = TypeVar("ParamT")
+ParamT = TypeVar("ParamT", bound=Union[float, np.floating])
 
 PartitionT = TypeVar("PartitionT")
 
