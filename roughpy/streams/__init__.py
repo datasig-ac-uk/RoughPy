@@ -29,6 +29,7 @@
 import numpy as np
 
 from roughpy.streams.concepts import Stream, ValueStream
+from roughpy.typing import PartitionT
 
 ## Raw data streams
 # These streams are think masks around raw data. These provide stream-like
