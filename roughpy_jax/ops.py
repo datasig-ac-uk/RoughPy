@@ -37,6 +37,35 @@ class EmptyStaticArgs(TypedDict):
 OperationT = TypeVar("OperationT")
 
 
+def _batched_fallback_wrapper(single_tensor_fn):
+    """
+    Generate a batched tensor function from a function that operates on a single tensor.
+
+    Batches can be multidimensional so this reshapes data into 1D so a single vmap can be used
+    before restoring to the original batch shape.
+
+    For example, a tensor with width 2, depth 2 will have data size 7. Then given a batch shape
+    of (5,3) each of the original arg shapes will be (5,3,7). Those are then reshaped into
+    flat_args, with each element being shape (15,7) so they can be vmapped into flat_result.
+    After computing flat_result, it is then shaped back into (5,3,7).
+
+    :param single_tensor_fn: fallback function that takes multiple array args with same dims.
+    """
+    def wrapped(*args, **kwargs):
+        # Reshape args to flat shape ready for vmap
+        batch_shape = args[0].shape[:-1]
+        flat_args = [arg.reshape((-1, arg.shape[-1])) for arg in args]
+
+        # Compute per tensor then restore original batch shape
+        vmapped_fn = jax.vmap(partial(single_tensor_fn, **kwargs))
+        flat_result = vmapped_fn(*flat_args)
+        result = flat_result.reshape((*batch_shape, flat_result.shape[-1]))
+        return (result,)
+
+    return wrapped
+
+
+
 class Operation:
     """
     Represents a base class for defining JAX-based operations with support for
@@ -309,7 +338,8 @@ class Operation:
         :rtype: Callable[..., Any]
         """
         if (fb := getattr(self, "fallback", None)) is not None:
-            return partial(fb, **self.make_ffi_static_args())
+            fallback = _batched_fallback_wrapper(fb)
+            return partial(fallback, **self.make_ffi_static_args())
 
         raise AttributeError("{type(self)} does not name a fallback operation")
 
@@ -466,31 +496,17 @@ class DenseFTFma(Operation, DenseOperation):
     ) -> tuple[Array, ...]:
         level_gen = partial(
             _dense_ft_mul_level_accumulator,
+            b_data=b_data,
+            c_data=c_data,
             degree_begin=degree_begin,
             b_min_deg=b_min_deg,
             b_max_deg=b_max_deg,
             c_min_deg=c_min_deg,
-            c_max_deg=c_max_deg,
+            c_max_deg=c_max_deg
         )
 
-        def single_tensor_fma(
-            a_data_view: jnp.ndarray,
-            b_data_view: jnp.ndarray,
-            c_data_view: jnp.ndarray
-        ) -> jnp.ndarray:
-            mul = jnp.concatenate([level_gen(a_deg=i, b_data=b_data_view, c_data=c_data_view) for i in range(0, a_max_deg + 1)], axis=-1)
-            return a_data_view + mul
-
-        # Flatten batches for vmap, e.g. 2D batch (3,2) data size (7) -> 1D batch (6), so shape (3,2,7) -> (6,7)
-        batch_shape = a_data.shape[:-1]
-        flat_a_data = a_data.reshape((-1, a_data.shape[-1]))
-        flat_b_data = b_data.reshape((-1, b_data.shape[-1]))
-        flat_c_data = c_data.reshape((-1, c_data.shape[-1]))
-
-        # Compute fmap per tensor then restore original batch shape
-        flat_fma = jax.vmap(single_tensor_fma)(flat_a_data, flat_b_data, flat_c_data)
-        result = flat_fma.reshape((*batch_shape, flat_fma.shape[-1]))
-        return (result,)
+        mul = jnp.concatenate([level_gen(a_deg=i) for i in range(0, a_max_deg + 1)], axis=-1)
+        return a_data + mul
 
 
 class DenseFTMul(Operation, DenseOperation):
