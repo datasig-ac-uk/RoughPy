@@ -1,14 +1,14 @@
-
 import enum
 import math
 import typing
 
 from dataclasses import dataclass
-from typing import TypeVar, Protocol, Generic, Any
+from typing import Self, Protocol, Generic, Any
 
 import numpy as np
 
 from roughpy.typing import ParamT
+
 
 class IntervalType(enum.IntEnum):
     ClOpen = 1
@@ -45,16 +45,13 @@ class Interval(Protocol[ParamT]):
     """
 
     @property
-    def interval_type(self) -> IntervalType:
-        ...
+    def interval_type(self) -> IntervalType: ...
 
     @property
-    def inf(self) -> ParamT:
-        ...
+    def inf(self) -> ParamT: ...
 
     @property
-    def sup(self) -> ParamT:
-        ...
+    def sup(self) -> ParamT: ...
 
 
 def _interval_contains_interval(parent: Interval, child: Interval) -> bool:
@@ -70,6 +67,7 @@ def _interval_contains_interval(parent: Interval, child: Interval) -> bool:
     else:
         return parent.inf < oi <= os <= parent.sup
 
+
 def _interval_contains_param(parent: Interval[ParamT], child: Any) -> bool:
     tp = type(parent.inf)
 
@@ -81,15 +79,16 @@ def _interval_contains_param(parent: Interval[ParamT], child: Any) -> bool:
     return parent.inf < param <= parent.sup
 
 
-
 def _interval_contains(parent: Interval[ParamT], child: Any) -> bool:
     if isinstance(child, Interval):
         return _interval_contains_interval(parent, child)
 
     return _interval_contains_param(parent, child)
 
+
 def _interval_repr(interval: Interval[ParamT]) -> str:
     return f"Interval(inf={interval.inf}, sup={interval.sup}, type={interval.interval_type.name})"
+
 
 def _interval_str(interval: Interval[ParamT]) -> str:
     if interval.interval_type == IntervalType.ClOpen:
@@ -117,13 +116,16 @@ def _interval_intersects_with(i1: Interval[ParamT], i2: Interval[ParamT]) -> boo
         return True
 
     if m_inf == m_sup:
-        return _interval_contains_param(i2, m_inf) and _interval_contains_param(i2, m_inf)
-
+        return _interval_contains_param(i2, m_inf) and _interval_contains_param(
+            i2, m_inf
+        )
 
     return False
 
 
-def _real_interval_intersection(i1: Interval[ParamT], i2: Interval[ParamT]) -> RealInterval[ParamT]:
+def _real_interval_intersection(
+    i1: Interval[ParamT], i2: Interval[ParamT]
+) -> RealInterval[ParamT]:
     inf = max(i1.inf, i2.inf)
     sup = min(i1.sup, i2.sup)
 
@@ -134,13 +136,17 @@ def _real_interval_intersection(i1: Interval[ParamT], i2: Interval[ParamT]) -> R
     return RealInterval(inf, sup, i1.interval_type)
 
 
-
-
 def _interval_included_end(interval: Interval[ParamT]) -> ParamT:
-    return interval.inf if interval.interval_type == IntervalType.ClOpen else interval.sup
+    return (
+        interval.inf if interval.interval_type == IntervalType.ClOpen else interval.sup
+    )
+
 
 def _interval_excluded_end(interval: Interval[ParamT]) -> ParamT:
-    return interval.sup if interval.interval_type == IntervalType.ClOpen else interval.inf
+    return (
+        interval.sup if interval.interval_type == IntervalType.ClOpen else interval.inf
+    )
+
 
 def _interval_class(cls):
 
@@ -159,10 +165,7 @@ def _interval_class(cls):
     if not hasattr(cls, "excluded_end"):
         cls.excluded_end = _interval_included_end
 
-
-
     return cls
-
 
 
 @dataclass(frozen=True)
@@ -176,6 +179,7 @@ class Dyadic:
     :ivar n: Exponent of 2 in the dyadic number.
     :type n: int
     """
+
     k: int
     n: int
 
@@ -210,8 +214,33 @@ class Dyadic:
         else:
             return k1 == (k2 << n)
 
+    def rebase(self, resolution: int) -> Self:
+        """
+        Rebases the Dyadic instance to a new resolution while keeping its value.
 
+        If the provided resolution is less than the current resolution ``n``, this
+        method raises a :class:`ValueError`. If the provided resolution is equal
+        to the current resolution, the instance itself is returned without changes.
+        Otherwise, the internal representation is updated to the new resolution by
+        adjusting the scaling factor appropriately.
 
+        :param resolution: The new resolution that the instance should rebase to.
+                           Must be an integer greater than or equal to the current resolution.
+        :type resolution: int
+        :return: A new Dyadic instance rebased to the given resolution.
+        :rtype: Self
+        :raises ValueError: If the given resolution is less than the current resolution.
+        """
+        if resolution < self.n:
+            raise ValueError("Resolution must be greater than or equal to n")
+
+        if resolution == self.n:
+            return self
+
+        k = self.k << (resolution - self.n)
+        n = resolution
+
+        return Dyadic(k, n)
 
 
 @_interval_class
@@ -232,11 +261,15 @@ class DyadicInterval(Dyadic):
 
     @property
     def dyadic_inf(self) -> Dyadic:
-        return Dyadic(self.k if self._interval_type == IntervalType.ClOpen else self.k - 1, self.n)
+        return Dyadic(
+            self.k if self._interval_type == IntervalType.ClOpen else self.k - 1, self.n
+        )
 
     @property
     def dyadic_sup(self) -> Dyadic:
-        return Dyadic(self.k + 1 if self._interval_type == IntervalType.ClOpen else self.k, self.n)
+        return Dyadic(
+            self.k + 1 if self._interval_type == IntervalType.ClOpen else self.k, self.n
+        )
 
     @property
     def inf(self) -> float:
@@ -276,16 +309,13 @@ class DyadicInterval(Dyadic):
         inf_k <<= shift
         sup_k <<= shift
 
-        if ((is_clopen and inf_k <= smaller_k < sup_k)
-                or (not is_clopen and inf_k < smaller_k <= sup_k)):
+        if (is_clopen and inf_k <= smaller_k < sup_k) or (
+            not is_clopen and inf_k < smaller_k <= sup_k
+        ):
             return DyadicInterval(smaller_k, smaller_n, itype)
 
         x = float(self)
         return RealInterval(x, x, itype)
-
-
-
-
 
     def divide(self) -> tuple[DyadicInterval, DyadicInterval]:
         """Divides the current dyadic interval into two equal parts.
@@ -297,12 +327,9 @@ class DyadicInterval(Dyadic):
         n = self.n + 1
 
         if itype == IntervalType.ClOpen:
-            return (DyadicInterval(k, n, itype),
-                    DyadicInterval(k+1, n, itype))
+            return (DyadicInterval(k, n, itype), DyadicInterval(k + 1, n, itype))
 
-        return (DyadicInterval(k-1, n, itype),
-                DyadicInterval(k, n, itype))
-
+        return (DyadicInterval(k - 1, n, itype), DyadicInterval(k, n, itype))
 
     def shrink_to_contained_end(self, factor: int = 1) -> DyadicInterval:
         """
@@ -318,7 +345,7 @@ class DyadicInterval(Dyadic):
         :return: A new DyadicInterval instance with the adjusted endpoint.
         :rtype: DyadicInterval
         """
-        return DyadicInterval(self.k, self.n + factor  , self.interval_type)
+        return DyadicInterval(self.k, self.n + factor, self.interval_type)
 
     def shrink_to_omitted_end(self) -> DyadicInterval:
         """
@@ -332,8 +359,14 @@ class DyadicInterval(Dyadic):
         :rtype: DyadicInterval
         """
         return DyadicInterval(
-            (self.k + 1) if self._interval_type == IntervalType.ClOpen else (self.k - 1),
-            self.n + 1, self.interval_type)
+            (
+                (self.k + 1)
+                if self._interval_type == IntervalType.ClOpen
+                else (self.k - 1)
+            ),
+            self.n + 1,
+            self.interval_type,
+        )
 
     def flip_interval(self) -> DyadicInterval:
         """
@@ -349,6 +382,19 @@ class DyadicInterval(Dyadic):
             return DyadicInterval(self.k + unit, self.n, self.interval_type)
         else:
             return DyadicInterval(self.k - unit, self.n, self.interval_type)
+
+    def rebase(self, resolution: int) -> Self:
+        rebased_dyadic = super().rebase(resolution)
+        return DyadicInterval(rebased_dyadic.k, rebased_dyadic.n, self.interval_type)
+
+    def expand(self) -> Self:
+        k = self.k >> 1
+        n = self.n - 1
+
+        if self.interval_type == IntervalType.OpenCl:
+            k += 1
+
+        return DyadicInterval(k, n, self.interval_type)
 
 
 @_interval_class
@@ -367,6 +413,7 @@ class RealInterval(Generic[ParamT]):
     :ivar sup: The upper bound of the interval.
     :type sup: RealT
     """
+
     inf: ParamT
     sup: ParamT
     interval_type: IntervalType
@@ -391,10 +438,6 @@ class Partition(Generic[ParamT]):
         return self._endpoints[-1]
 
 
-
-
-
-
 def intersection(i1: Interval[ParamT], i2: Interval[ParamT]) -> Interval[ParamT]:
     """
     Determines the intersection of two intervals. The intervals are intersected
@@ -413,7 +456,9 @@ def intersection(i1: Interval[ParamT], i2: Interval[ParamT]) -> Interval[ParamT]
         be intersected.
     """
     if i2.interval_type != i1.interval_type:
-        raise ValueError(f"Cannot intersect intervals with different types: {i1.interval_type} and {i2.interval_type}")
+        raise ValueError(
+            f"Cannot intersect intervals with different types: {i1.interval_type} and {i2.interval_type}"
+        )
 
     if hasattr(i1, "__interval_intersection__"):
         return i1.__interval_intersection__(i2)
