@@ -10,10 +10,11 @@ from roughpy.compute import (
     DenseLie as Lie,
     TensorBasis,
     LieBasis,
+    DEFAULT_DTYPE,
 )
 from roughpy.typing import GroupT, LieT
 
-from .context import AlgebraContext
+from .context import AlgebraContext, get_context
 
 
 def free_multiply(lhs, rhs) -> FreeTensor:
