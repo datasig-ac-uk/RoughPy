@@ -1,13 +1,9 @@
 import typing
 
-from typing import Protocol, TypeVar, Self, Callable
-
-import numpy as np
-import jax
-import jax.numpy as jnp
+from typing import Protocol, TypeVar, Callable
 
 
-from .intervals import Interval
+from roughpy_jax.intervals import Interval
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
@@ -161,7 +157,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
         """
         ...
 
-    def query(self, interval: Interval) -> Self:
+    def query(self, interval: Interval) -> ValueStream:
         """
         Query the value stream over an interval.
 
