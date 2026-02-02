@@ -462,8 +462,8 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
         b_e = db[b_deg + 1]
         c_b = db[c_deg]
         c_e = db[c_deg + 1]
-        b_level = b_data[..., b_b:b_e]
-        c_level = c_data[..., c_b:c_e]
+        b_level = b_data[b_b:b_e]
+        c_level = c_data[c_b:c_e]
 
         acc = acc + jnp.tensordot(b_level, c_level, axes=0).reshape(-1)
 
