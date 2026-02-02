@@ -700,43 +700,41 @@ class DenseFTLog(Operation, DenseOperation):
     fn_name = "ft_log"
 
 
-# FIXME work in progress code to run fallback code if no cpu code registered
-ADD_STANDARD_IMPLS = True
+# FIXME this is work in progress whilst implementing ops and fallback code.
+# Ensure that all legacy_cpu_functions is removed before final merge and
+# that we import these in the right location.
+standard_cpu_ops = [
+    DenseFTFma,
+    DenseFTMul,
+    DenseAntipode,
+    DenseSTFma,
+    DenseSTMul,
+    DenseFTAdjLeftMul,
+    DenseFTExp,
+    DenseFTFMExp,
+    DenseFTLog
+    # FIXME incomplete:
+    # DenseLieToTensor
+    # DenseTensorToLie
+]
 
-if ADD_STANDARD_IMPLS:
-    standard_cpu_ops = [
-        DenseFTFma,
-        DenseFTMul,
-        DenseAntipode,
-        DenseSTFma,
-        DenseSTMul,
-        DenseFTAdjLeftMul,
-        DenseFTExp,
-        DenseFTFMExp,
-        DenseFTLog
-        # FIXME incomplete:
-        # DenseLieToTensor
-        # DenseTensorToLie
-    ]
+for op in standard_cpu_ops:
+    cpu_function_name = f"cpu_dense_{op.fn_name}"
+    op.register(
+        "cpu",
+        op.fn_name,
+        cpu_functions[cpu_function_name],
+        {"float32", "float64"},
+        {}
+    )
 
-    for op in standard_cpu_ops:
-        cpu_function_name = f"cpu_dense_{op.fn_name}"
-        op.register(
-            "cpu",
-            op.fn_name,
-            cpu_functions[cpu_function_name],
-            {"float32", "float64"},
-            {}
-        )
+legacy_cpu_functions = [
+    "cpu_dense_ft_exp",
+    "cpu_dense_ft_log",
+    "cpu_dense_ft_fmexp",
+    "cpu_dense_ft_adj_lmul",
+    "cpu_dense_ft_adj_rmul"
+]
 
-    # FIXME methods that have yet to be converted to new ops framework
-    legacy_cpu_functions = [
-        "cpu_dense_ft_exp",
-        "cpu_dense_ft_log",
-        "cpu_dense_ft_fmexp",
-        "cpu_dense_ft_adj_lmul",
-        "cpu_dense_ft_adj_rmul"
-    ]
-
-    for fn in legacy_cpu_functions:
-        jax.ffi.register_ffi_target(fn, cpu_functions[fn], platform="cpu")
+for fn in legacy_cpu_functions:
+    jax.ffi.register_ffi_target(fn, cpu_functions[fn], platform="cpu")
