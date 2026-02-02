@@ -1,12 +1,7 @@
-import conftest
-import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
 import roughpy_jax as rpj
-import time
-
-rpj_no_acceleration = conftest.make_no_acceleration_fixture(rpj.ops.DenseFTFma)
 
 
 def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):

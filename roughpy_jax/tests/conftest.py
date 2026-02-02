@@ -4,41 +4,13 @@ import numpy as np
 import pytest
 import roughpy_jax as rpj
 
+from roughpy_jax.ops import Operation
 
 # Running both f32 and f64 tests requires enabling JAX 64 bit mode
 jax.config.update("jax_enable_x64", True)
 
 # Set only CPU supported to prevent warnings in test output
 jax.config.update("jax_platforms", "cpu")
-
-
-def make_no_acceleration_fixture(ops_class):
-    """
-    Helper method for creating fixtures per operation that automatically switches between CPU and fallback JAX code
-
-    Declare as a variable per operation at top of file and bring in per test as a regular fixture, e.g.
-
-        # Declare at top of file
-        rpj_no_acceleration = conftest.make_no_acceleration_fixture(rpj.ops.DenseAntipode)
-
-        # Use per test, note variable is not used but will parameterise test automatically
-        def test_a(rpj_dtype, rpj_batch, rpj_no_acceleration):
-            ...
-
-        def test_b(rpj_dtype, rpj_batch, rpj_no_acceleration):
-            ...
-    """
-    @pytest.fixture(params=[False, True])
-    def no_acceleration_fixture(request, monkeypatch):
-        monkeypatch.setattr(
-            ops_class,
-            "no_acceleration",
-            request.param,
-            raising=True
-        )
-        return request.param
-
-    return no_acceleration_fixture
 
 
 @pytest.fixture
@@ -145,3 +117,12 @@ def rpj_batch(request):
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def rpj_dtype(request):
     return request.param
+
+
+# Toggle operation between running with and without acceleration for testing CPU vs fallback code
+@pytest.fixture(params=[False, True])
+def rpj_no_acceleration(request):
+    old_setting = Operation.no_acceleration
+    Operation.no_acceleration = request.param
+    yield request.param
+    Operation.no_acceleration = old_setting

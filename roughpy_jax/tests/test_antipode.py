@@ -2,8 +2,6 @@ import conftest
 import jax.numpy as jnp
 import roughpy_jax as rpj
 
-rpj_no_acceleration = conftest.make_no_acceleration_fixture(rpj.ops.DenseAntipode)
-
 
 def test_antipode_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
