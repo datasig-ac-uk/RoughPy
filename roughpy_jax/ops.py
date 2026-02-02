@@ -445,10 +445,8 @@ class DenseOperation:
 ## Basic operations
 def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
                                     b_min_deg, b_max_deg, c_min_deg, c_max_deg):
-    db = degree_begin
-
-    out_b = db[a_deg]
-    out_e = db[a_deg + 1]
+    out_b = degree_begin[a_deg]
+    out_e = degree_begin[a_deg + 1]
     out_size = out_e - out_b
 
     acc = jnp.zeros(b_data.shape[:-1] + (out_size,), dtype=b_data.dtype)
@@ -458,10 +456,10 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
 
     for b_deg in range(b_deg_b, b_deg_e):
         c_deg = a_deg - b_deg
-        b_b = db[b_deg]
-        b_e = db[b_deg + 1]
-        c_b = db[c_deg]
-        c_e = db[c_deg + 1]
+        b_b = degree_begin[b_deg]
+        b_e = degree_begin[b_deg + 1]
+        c_b = degree_begin[c_deg]
+        c_e = degree_begin[c_deg + 1]
         b_level = b_data[b_b:b_e]
         c_level = c_data[c_b:c_e]
 
@@ -530,9 +528,6 @@ class DenseFTMul(Operation, DenseOperation):
         lhs_min_deg: np.int32 = 0,
         rhs_min_deg: np.int32 = 0,
     ) -> tuple[Array]:
-        batch_dims = b_data.shape[:-1]
-        assert batch_dims == c_data.shape[:-1]
-
         level_gen = partial(
             _dense_ft_mul_level_accumulator,
             b_data=b_data,
@@ -544,9 +539,8 @@ class DenseFTMul(Operation, DenseOperation):
             c_max_deg=rhs_max_deg,
         )
 
-        return (jnp.concatenate([
-            level_gen(i) for i in range(0, out_max_deg)
-        ], axis=-1),)
+        mul = jnp.concatenate([level_gen(a_deg=i) for i in range(0, out_max_deg + 1)], axis=-1)
+        return mul
 
 
 class DenseAntipode(Operation, DenseOperation):
