@@ -26,15 +26,6 @@ def test_shuffle_dense_st_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     with pytest.raises(ValueError):
         rpj.st_fma(f.st_f32(2, 2), f.st_f32(2, 2), f.st_f32(3, 2))
 
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Mismatched array float types
-    # with pytest.raises(ValueError):
-    #     rpj.st_fma(f.st_f32(), f.st_f64(), f.st_f32())
-
-    # Unsupported array types
-    with pytest.raises(ValueError):
-        rpj.st_fma(f.st_i32(), f.st_i32(), f.st_i32())
-
 
 def test_shuffle_dense_st_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
@@ -42,15 +33,6 @@ def test_shuffle_dense_st_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     # Mismatch first and second widths
     with pytest.raises(ValueError):
         rpj.st_mul(f.st_f32(2, 2), f.st_f32(3, 2))
-
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Mismatched array float types
-    # with pytest.raises(ValueError):
-    #     rpj.st_mul(f.st_f32(), f.st_f64())
-
-    # Unsupported array types
-    with pytest.raises(ValueError):
-        rpj.st_mul(f.st_i32(), f.st_i32())
 
 
 def test_shuffle_product_commutative(rpj_dtype, rpj_batch):

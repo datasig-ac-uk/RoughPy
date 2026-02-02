@@ -15,16 +15,6 @@ def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     with pytest.raises(ValueError):
         rpj.ft_fma(f.ft_f32(2, 2), f.ft_f32(2, 2), f.ft_f32(3, 2))
 
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Mismatched array float types
-    # with pytest.raises(ValueError):
-    #     rpj.ft_fma(f.ft_f32(), f.ft_f64(), f.ft_f32())
-
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Unsupported array types
-    # with pytest.raises(ValueError):
-    #     rpj.ft_fma(f.ft_i32(), f.ft_i32(), f.ft_i32())
-
 
 def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
@@ -32,16 +22,6 @@ def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     # Mismatch first and second widths
     with pytest.raises(ValueError):
         rpj.ft_mul(f.ft_f32(2, 2), f.ft_f32(3, 2))
-
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Mismatched array float types
-    # with pytest.raises(ValueError):
-    #     rpj.ft_mul(f.ft_f32(), f.ft_f64())
-
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Unsupported array types
-    # with pytest.raises(ValueError):
-    #     rpj.ft_mul(f.ft_i32(), f.ft_i32())
 
 
 def test_dense_ft_fma(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -73,7 +53,7 @@ def test_dense_ft_fma_construction(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     batched_d = rpj.ft_fma(batched_a, batched_b, batched_c)
 
-    # FIXME for review, iterating over all combinations to preserve old expected computation 
+    # Result d is checked iterating over batch to simplify construction of expected value
     for idx in np.ndindex(rpj_batch.shape):
         a = batched_a.data[idx]
         b = batched_b.data[idx]

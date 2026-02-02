@@ -151,12 +151,12 @@ class Operation:
 
     # Set of all platforms that have accelerator support for at least one
     # data type
-    supported_platforms: ClassVar[set[str]] # = set() FIXME
+    supported_platforms: ClassVar[set[str]]
 
     # The set of implementations operations for each operation. This is a mapping
     # from platform, dtype tuple to function name. The function name should
     # follow the format described above.
-    implementations: ClassVar[dict[tuple[str, str], str]] # = {} FIXME
+    implementations: ClassVar[dict[tuple[str, str], str]]
 
     # default arguments to be passed to jax.ffi.ffi_call when generating the
     # platform-specific lowering of the operation.

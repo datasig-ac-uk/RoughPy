@@ -3,15 +3,6 @@ import jax.numpy as jnp
 import roughpy_jax as rpj
 
 
-def test_antipode_array_mismatch(rpj_test_fixture_type_mismatch):
-    f = rpj_test_fixture_type_mismatch
-
-    # FIXME for review: new ops code auto-converts. If correct then remove this test.
-    # Unsupported array types
-    # with pytest.raises(ValueError):
-    #     rpj.antipode(f.ft_i32())
-
-
 def test_antipode_on_signature(rpj_dtype, rpj_batch, rpj_no_acceleration):
     """
     The antipode of a group-like free tensor (like a signature) is the
