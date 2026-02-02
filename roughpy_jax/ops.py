@@ -1,10 +1,8 @@
-import ctypes
-import re
 import typing
 import collections.abc as cabc
 
 from functools import partial
-from typing import ClassVar, Callable, Any, Optional, TypedDict, NamedTuple
+from typing import ClassVar, Callable, Any, Optional, TypedDict, TypeVar
 
 import jax
 import jax.numpy as jnp
@@ -22,19 +20,10 @@ except ImportError as e:
     ) from e
 
 
-for func_name, capsule in cpu_functions.items():
-    jax.ffi.register_ffi_target(
-        func_name,
-        capsule,
-        platform="cpu",
-    )
-
-
-
 class BasisLike(typing.Protocol, cabc.Hashable):
     width: np.int32
     depth: np.int32
-    depth: np.ndarray[np.int32.dtype]
+    degree_begin: np.ndarray[np.int64.dtype]
 
     def size(self) -> int:
         ...
@@ -43,6 +32,38 @@ class BasisLike(typing.Protocol, cabc.Hashable):
 
 class EmptyStaticArgs(TypedDict):
     ...
+
+
+OperationT = TypeVar("OperationT")
+
+
+def _batched_fallback_wrapper(single_tensor_fn):
+    """
+    Generate a batched tensor function from a function that operates on a single tensor.
+
+    Batches can be multidimensional so this reshapes data into 1D so a single vmap can be used
+    before restoring to the original batch shape.
+
+    For example, a tensor with width 2, depth 2 will have data size 7. Then given a batch shape
+    of (5,3) each of the original arg shapes will be (5,3,7). Those are then reshaped into
+    flat_args, with each element being shape (15,7) so they can be vmapped into flat_result.
+    After computing flat_result, it is then shaped back into (5,3,7).
+
+    :param single_tensor_fn: fallback function that takes multiple array args with same dims.
+    """
+    def wrapped(*args, **kwargs):
+        # Reshape args to flat shape ready for vmap
+        batch_shape = args[0].shape[:-1]
+        flat_args = [arg.reshape((-1, arg.shape[-1])) for arg in args]
+
+        # Compute per tensor then restore original batch shape
+        vmapped_fn = jax.vmap(partial(single_tensor_fn, **kwargs))
+        flat_result = vmapped_fn(*flat_args)
+        result = flat_result.reshape((*batch_shape, flat_result.shape[-1]))
+        return (result,)
+
+    return wrapped
+
 
 
 class Operation:
@@ -117,7 +138,7 @@ class Operation:
     # when deriving from this class.
     #
     # Users should not interact with this directly
-    __all_operations: ClassVar[dict[tuple[str, str], type[Operation]]] = {}
+    __all_operations: ClassVar[dict[tuple[str, str], type[OperationT]]] = {}
 
     # The supported layout for data for algebra objects. At the moment all
     # operations only support densely represented objects. In the future,
@@ -178,12 +199,15 @@ class Operation:
     @classmethod
     def register(cls, platform: str, name: str, fn_ptr: Any, supported_dtypes: set[jnp.dtype],
                  ffi_register_kwargs: dict[str, Any]):
-        jax.ffi.register_ffi_target(name, fn_ptr, platform=platform, **ffi_register_kwargs)
-
         cls.supported_platforms.add(platform)
 
         for dtype in supported_dtypes:
-            cls.implementations[(platform, str(dtype))] = name
+            key = (platform, str(dtype))
+            if key in cls.implementations:
+                raise ValueError(f"Implementation {key} already registered for operation {cls.__name__}")
+            cls.implementations[key] = name
+
+        jax.ffi.register_ffi_target(name, fn_ptr, platform=platform, **ffi_register_kwargs)
 
     @classmethod
     def register_all(cls, platform: str, ops: dict[str, Any], supported_dtypes: set[str],
@@ -195,7 +219,7 @@ class Operation:
                 op_cls.register(platform, name, fn_ptr, dtypes, ffi_register_kwargs)
 
     @classmethod
-    def get_operation(cls, fn_name: str, layout: str = "dense") -> Optional[type[Operation]]:
+    def get_operation(cls, fn_name: str, layout: str = "dense") -> Optional[type[OperationT]]:
         """
         Retrieves a registered operation class based on the function name and layout.
 
@@ -314,7 +338,8 @@ class Operation:
         :rtype: Callable[..., Any]
         """
         if (fb := getattr(self, "fallback", None)) is not None:
-            return partial(fb, **self.static_args)
+            fallback = _batched_fallback_wrapper(fb)
+            return partial(fallback, **self.make_ffi_static_args())
 
         raise AttributeError("{type(self)} does not name a fallback operation")
 
@@ -330,8 +355,8 @@ class Operation:
         :rtype: dict
         """
         return {
-            "width": self.basis.width,
-            "depth": self.basis.depth,
+            "width": np.int32(self.basis.width),
+            "depth": np.int32(self.basis.depth),
             "degree_begin": self.basis.degree_begin,
             **self.static_args
         }
@@ -418,12 +443,10 @@ class DenseOperation:
 
 
 ## Basic operations
-def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, basis,
+def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
                                     b_min_deg, b_max_deg, c_min_deg, c_max_deg):
-    db = basis.degree_begin
-
-    out_b = db[a_deg]
-    out_e = db[a_deg]
+    out_b = degree_begin[a_deg]
+    out_e = degree_begin[a_deg + 1]
     out_size = out_e - out_b
 
     acc = jnp.zeros(b_data.shape[:-1] + (out_size,), dtype=b_data.dtype)
@@ -433,13 +456,12 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, basis,
 
     for b_deg in range(b_deg_b, b_deg_e):
         c_deg = a_deg - b_deg
-        b_b = db[b_deg]
-        b_e = db[b_deg+1]
-        c_b = db[c_deg]
-        c_e = db[c_deg+1]
-
-        b_level = b_data[..., b_b:b_e]
-        c_level = c_data[..., c_b:c_e]
+        b_b = degree_begin[b_deg]
+        b_e = degree_begin[b_deg + 1]
+        c_b = degree_begin[c_deg]
+        c_e = degree_begin[c_deg + 1]
+        b_level = b_data[b_b:b_e]
+        c_level = c_data[c_b:c_e]
 
         acc = acc + jnp.tensordot(b_level, c_level, axes=0).reshape(-1)
 
@@ -449,7 +471,6 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, basis,
 class DenseFTFma(Operation, DenseOperation):
     fn_name = "ft_fma"
 
-
     class StaticArgs(TypedDict):
         a_max_deg: np.int32
         b_max_deg: np.int32
@@ -457,33 +478,33 @@ class DenseFTFma(Operation, DenseOperation):
         b_min_deg: np.int32 # not required
         c_min_deg: np.int32 # not required
 
-
-
     @staticmethod
-    def fallback(a_data: Array,
-                 b_data: Array,
-                 c_data: Array,
-                 basis: Any,
-                 a_max_deg: np.int32,
-                 b_max_deg: np.int32,
-                 c_max_deg: np.int32,
-                 b_min_deg: np.int32 = 0,
-                 c_min_deg: np.int32 = 0,
-                 ) -> tuple[Array, ...]:
+    def fallback(
+        a_data: Array,
+        b_data: Array,
+        c_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        a_max_deg: np.int32,
+        b_max_deg: np.int32,
+        c_max_deg: np.int32,
+        b_min_deg: np.int32 = 0,
+        c_min_deg: np.int32 = 0,
+    ) -> tuple[Array, ...]:
         level_gen = partial(
             _dense_ft_mul_level_accumulator,
             b_data=b_data,
             c_data=c_data,
-            basis=basis,
+            degree_begin=degree_begin,
             b_min_deg=b_min_deg,
             b_max_deg=b_max_deg,
             c_min_deg=c_min_deg,
-            c_max_deg=c_max_deg,
+            c_max_deg=c_max_deg
         )
 
-        mul = jnp.concatenate([level_gen(i) for i in range(0, a_max_deg)], axis=-1)
-
-        return (a_data + mul,)
+        mul = jnp.concatenate([level_gen(a_deg=i) for i in range(0, a_max_deg + 1)], axis=-1)
+        return a_data + mul
 
 
 class DenseFTMul(Operation, DenseOperation):
@@ -495,35 +516,31 @@ class DenseFTMul(Operation, DenseOperation):
         rhs_max_deg: np.int32
 
     @staticmethod
-    def fallback(b_data: Array,
-                 c_data: Array,
-                 basis: Any,
-                 out_max_deg: np.int32,
-                 lhs_max_deg: np.int32,
-                 rhs_max_deg: np.int32,
-                 lhs_min_deg: np.int32 = 0,
-                 rhs_min_deg: np.int32 = 0,
-                 ) -> tuple[Array]:
-
-        batch_dims = b_data.shape[:-1]
-        assert batch_dims == c_data.shape[:-1]
-
+    def fallback(
+        b_data: Array,
+        c_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        out_max_deg: np.int32,
+        lhs_max_deg: np.int32,
+        rhs_max_deg: np.int32,
+        lhs_min_deg: np.int32 = 0,
+        rhs_min_deg: np.int32 = 0,
+    ) -> tuple[Array]:
         level_gen = partial(
             _dense_ft_mul_level_accumulator,
             b_data=b_data,
             c_data=c_data,
-            basis=basis,
+            degree_begin=degree_begin,
             b_min_deg=lhs_min_deg,
             b_max_deg=lhs_max_deg,
             c_min_deg=rhs_min_deg,
             c_max_deg=rhs_max_deg,
         )
 
-        return (jnp.concatenate([
-            level_gen(i) for i in range(0, out_max_deg)
-        ], axis=-1),)
-
-
+        mul = jnp.concatenate([level_gen(a_deg=i) for i in range(0, out_max_deg + 1)], axis=-1)
+        return mul
 
 
 class DenseAntipode(Operation, DenseOperation):
@@ -534,25 +551,22 @@ class DenseAntipode(Operation, DenseOperation):
 
     @staticmethod
     def fallback(
-            arg_data: Array,
-            basis: Any,
-            no_sign: bool = False,
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        arg_max_deg: np.int32,
+        no_sign: bool = False,
     ) -> tuple[Array]:
-        db = basis.degree_begin
-
         def transpose_level(i):
             sign = 1 if (no_sign or i % 2 == 0) else -1
-            level_data = arg_data[db[i]:db[i + 1]].reshape((basis.width,) * i)
+            level_data = arg_data[degree_begin[i]:degree_begin[i + 1]].reshape((width,) * i)
             return sign * jnp.transpose(level_data).reshape(-1)
 
-        data = jnp.concatenate(
-            [transpose_level(i) for i in range(basis.depth + 1)],
+        return jnp.concatenate(
+            [transpose_level(i) for i in range(depth + 1)],
             axis=-1
         )
-
-        return (data, )
-
-
 
 
 class DenseSTFma(Operation, DenseOperation):
@@ -567,20 +581,23 @@ class DenseSTFma(Operation, DenseOperation):
 
     @staticmethod
     def fallback(
-            a_data: Array,
-            b_data: Array,
-            c_data: Array,
-            basis: BasisLike,
-            a_max_deg: np.int32,
-            b_max_deg: np.int32,
-            c_max_deg: np.int32,
-            b_min_deg: np.int32 = 0,
-            c_min_deg: np.int32 = 0,
+        a_data: Array,
+        b_data: Array,
+        c_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        a_max_deg: np.int32,
+        b_max_deg: np.int32,
+        c_max_deg: np.int32,
+        b_min_deg: np.int32 = 0,
+        c_min_deg: np.int32 = 0,
     ) -> tuple[Array]:
-        raise NotImplementedError
+        raise NotImplementedError("st_fma is not implemented for native JAX, use CPU backend")
+
 
 class DenseSTMul(Operation, DenseOperation):
-    ft_name = "st_mul"
+    fn_name = "st_mul"
 
     class StaticArgs(TypedDict):
         lhs_max_deg: np.int32
@@ -590,18 +607,18 @@ class DenseSTMul(Operation, DenseOperation):
 
     @staticmethod
     def fallback(
-            b_data: Array,
-            c_data: Array,
-            basis: BasisLike,
-            out_max_deg: np.int32,
-            lhs_max_deg: np.int32,
-            rhs_max_deg: np.int32,
-            lhs_min_deg: np.int32 = 0,
-            rhs_min_deg: np.int32 = 0,
+        b_data: Array,
+        c_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        out_max_deg: np.int32,
+        lhs_max_deg: np.int32,
+        rhs_max_deg: np.int32,
+        lhs_min_deg: np.int32 = 0,
+        rhs_min_deg: np.int32 = 0,
     ) -> tuple[Array]:
-        raise NotImplementedError
-
-
+        raise NotImplementedError("st_mul is not implemented for native JAX, use CPU backend")
 
 
 class DenseFTAdjLeftMul(Operation, DenseOperation):
@@ -613,25 +630,25 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         op_min_deg: np.int32  # not required
         arg_min_deg: np.int32 # not required
 
-
     @staticmethod
     def fallback(
-            op_data: Array,
-            arg_data: Array,
-            basis: BasisLike,
-            op_max_deg: np.int32,
-            arg_max_deg: np.int32,
-            op_min_deg: np.int32 = 0,
-            arg_min_deg: np.int32 = 0,
+        op_data: Array,
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        op_max_deg: np.int32,
+        arg_max_deg: np.int32,
+        op_min_deg: np.int32=0,
+        arg_min_deg: np.int32=0,
     ):
-        db = basis.degree_begin
-        out_max_deg = basis.depth
+        db = degree_begin
+        out_max_deg = depth
         out_min_deg = 0
 
         batch_dims = arg_data.shape[:-1]
 
-        out_data = jnp.zeros(batch_dims + (db[basis.depth],), dtype=arg_data.dtype)
-
+        out_data = jnp.zeros(batch_dims + (db[depth],), dtype=arg_data.dtype)
 
         def dsize(degree):
             return db[degree+1] - db[degree]
@@ -661,6 +678,7 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
 
         return jax.lax.fori_loop(arg_min_deg, arg_max_deg, arg_deg_loop, out_data)
 
+
 class DenseLieToTensor(Operation, DenseOperation):
     fn_name = "lie_to_tensor"
 
@@ -680,3 +698,43 @@ class DenseFTFMExp(Operation, DenseOperation):
 
 class DenseFTLog(Operation, DenseOperation):
     fn_name = "ft_log"
+
+
+# FIXME this is work in progress whilst implementing ops and fallback code.
+# Ensure that all legacy_cpu_functions is removed before final merge and
+# that we import these in the right location.
+standard_cpu_ops = [
+    DenseFTFma,
+    DenseFTMul,
+    DenseAntipode,
+    DenseSTFma,
+    DenseSTMul,
+    DenseFTAdjLeftMul,
+    DenseFTExp,
+    DenseFTFMExp,
+    DenseFTLog
+    # FIXME incomplete:
+    # DenseLieToTensor
+    # DenseTensorToLie
+]
+
+for op in standard_cpu_ops:
+    cpu_function_name = f"cpu_dense_{op.fn_name}"
+    op.register(
+        "cpu",
+        op.fn_name,
+        cpu_functions[cpu_function_name],
+        {"float32", "float64"},
+        {}
+    )
+
+legacy_cpu_functions = [
+    "cpu_dense_ft_exp",
+    "cpu_dense_ft_log",
+    "cpu_dense_ft_fmexp",
+    "cpu_dense_ft_adj_lmul",
+    "cpu_dense_ft_adj_rmul"
+]
+
+for fn in legacy_cpu_functions:
+    jax.ffi.register_ffi_target(fn, cpu_functions[fn], platform="cpu")

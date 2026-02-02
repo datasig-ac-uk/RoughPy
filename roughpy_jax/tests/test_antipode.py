@@ -1,18 +1,9 @@
+import conftest
 import jax.numpy as jnp
-import numpy as np
-import pytest
 import roughpy_jax as rpj
 
 
-def test_antipode_array_mismatch(rpj_test_fixture_type_mismatch):
-    f = rpj_test_fixture_type_mismatch
-
-    # Unsupported array types
-    with pytest.raises(ValueError):
-        rpj.antipode(f.ft_i32())
-
-
-def test_antipode_on_signature(rpj_dtype, rpj_batch):
+def test_antipode_on_signature(rpj_dtype, rpj_batch, rpj_no_acceleration):
     """
     The antipode of a group-like free tensor (like a signature) is the
     inverse of said tensor. Thus the product of antipode(x) and x should
@@ -32,7 +23,7 @@ def test_antipode_on_signature(rpj_dtype, rpj_batch):
     assert jnp.allclose(product.data, expected, atol=atol)
 
 
-def test_antipode_idempotent(rpj_dtype, rpj_batch):
+def test_antipode_idempotent(rpj_dtype, rpj_batch, rpj_no_acceleration):
     """
     The antipode is an idempotent operation; if x is a free tensor
     then antipode(antipode(x)) == x

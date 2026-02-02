@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import roughpy_jax as rpj
 
+from roughpy_jax.ops import Operation
 
 # Running both f32 and f64 tests requires enabling JAX 64 bit mode
 jax.config.update("jax_enable_x64", True)
@@ -116,3 +117,12 @@ def rpj_batch(request):
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def rpj_dtype(request):
     return request.param
+
+
+# Toggle operation between running with and without acceleration for testing CPU vs fallback code
+@pytest.fixture(params=[False, True])
+def rpj_no_acceleration(request):
+    old_setting = Operation.no_acceleration
+    Operation.no_acceleration = request.param
+    yield request.param
+    Operation.no_acceleration = old_setting
