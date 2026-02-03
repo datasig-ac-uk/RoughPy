@@ -642,25 +642,22 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
     ):
-        db = degree_begin
         out_max_deg = depth
         out_min_deg = 0
 
-        batch_dims = arg_data.shape[:-1]
-
-        out_data = jnp.zeros(batch_dims + (db[depth],), dtype=arg_data.dtype)
+        out_data = jnp.zeros(degree_begin[depth], dtype=arg_data.dtype)
 
         def dsize(degree):
-            return db[degree+1] - db[degree]
+            return degree_begin[degree+1] - degree_begin[degree]
 
         def inner_fn(op_idx, val, *, op_deg, out_deg):
             arg_deg = op_deg + out_deg
             out_size = dsize(out_deg)
-            offset = db[arg_deg] + op_idx * out_size
-            op_val = op_data[db[op_deg] + op_idx]
+            offset = degree_begin[arg_deg] + op_idx * out_size
+            op_val = op_data[degree_begin[op_deg] + op_idx]
 
             arg_level = arg_data[offset: offset + out_size]
-            return val.at[db[out_deg]:db[out_deg+1]].add(op_val * arg_level)
+            return val.at[degree_begin[out_deg]:degree_begin[out_deg+1]].add(op_val * arg_level)
 
         def out_deg_loop(out_deg, val, *, arg_deg):
             op_deg = arg_deg - out_deg
