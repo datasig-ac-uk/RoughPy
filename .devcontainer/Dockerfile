@@ -29,6 +29,7 @@ RUN pip install \
     "pybind11<3.0.0" \
     "numpy>=2.0.0" \
     "jax" \
+    hypothesis \
     absl-py \
     pytest \
     pytest-cov \ 
