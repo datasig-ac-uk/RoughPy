@@ -178,21 +178,21 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
                     const auto& prev_lead = previous_values[idx];
                     const auto& prev_lag = previous_values[idx + 1];
 
-                    auto lead = pmd.ctx->zero_lie(meta.cached_vector_type);
-                    auto lag = pmd.ctx->zero_lie(meta.cached_vector_type);
+                    auto next_lead = pmd.ctx->zero_lie(meta.cached_vector_type);
+                    auto next_lag = pmd.ctx->zero_lie(meta.cached_vector_type);
 
-                    lead[key]
-                            += python::py_to_scalar(pmd.scalar_type, tick.data);
-                    lead[lag_key]
-                            += python::py_to_scalar(pmd.scalar_type, tick.data);
+                    auto val = python::py_to_scalar(pmd.scalar_type, tick.data);
+
+                    next_lead[key] += val;
+                    next_lag[lag_key] += val;
 
                     lie_elt = pmd.ctx->cbh(
-                            lead.sub(prev_lead), lag.sub(prev_lag),
+                            next_lead.sub(prev_lead), next_lag.sub(prev_lag),
                             meta.cached_vector_type
                     );
 
-                    previous_values[idx] = std::move(lead);
-                    previous_values[idx + 1] = std::move(lag);
+                    previous_values[idx] = std::move(next_lead);
+                    previous_values[idx + 1] = std::move(next_lag);
 
                     break;
                 } else {
