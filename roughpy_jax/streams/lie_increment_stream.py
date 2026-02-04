@@ -1,6 +1,10 @@
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Optional
 
+import numpy as np
+import jax
 import jax.numpy as jnp
+
+from jax.typing import ArrayLike
 
 from roughpy_jax.algebra import (
     Lie,
@@ -32,6 +36,38 @@ def intersection(ivl1: Interval, ivl2: Interval) -> RealInterval:
         min(ivl1.sup, ivl2.sup),
         ivl1.interval_type,
     )
+
+
+def _unpack_lie_to_array_tuple(lies: list[Lie]) -> tuple[jax.Array, ...]:
+    arrays = [[]]
+
+    for lie in lies:
+        arrays[0].append(lie.data)
+
+    return tuple(jnp.vstack(arr) for arr in arrays)
+
+def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> tuple[jax.Array, ...]:
+    tensor_basis = TensorBasis(cache_basis.width, cache_basis.depth)
+    def g(r, previous):
+        for k in range(1 << r):
+            k1 = 2 * k
+            k2 = k1 + 1
+            tensor = ft_exp(lie_to_tensor(previous[k1]), out_basis=tensor_basis)
+            tensor = ft_fmexp(tensor, lie_to_tensor(previous[k2]), out_basis=tensor_basis)
+            lie = tensor_to_lie(ft_log(tensor), lie_basis=cache_basis)
+            yield lie
+
+    prev_size = 0
+    for res in range(resolution - 1, -1, -1):
+        next_size = len(base)
+        base.extend(g(res, base[prev_size:]))
+        prev_size = next_size
+
+    return _unpack_lie_to_array_tuple(base)
+
+
+def _data_to_dyadic_cache(timestamps, data, resolution, input_basis, cache_basis):
+
 
 
 class LieIncrementStream(Stream[Lie, FreeTensor]):
@@ -102,22 +138,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         lies = [f(k, resolution) for k in range(1 << resolution)]
 
-        def g(r, previous):
-            for k in range(1 << r):
-                k1 = 2 * k
-                k2 = k1 + 1
-                tensor = ft_exp(lie_to_tensor(previous[k1]))
-                tensor = ft_fmexp(tensor, lie_to_tensor(previous[k2]))
-                lie = tensor_to_lie(ft_log(tensor))
-                yield lie.data
-
-        prev_size = 0
-        for res in range(resolution - 1, -1, -1):
-            next_size = len(lies)
-            lies.extend(g(res, lies[prev_size:]))
-            prev_size = next_size
-
-        return jnp.vstack(lies)
+        return _extend_cache_from_base(lies, resolution, stream.lie_basis, stream.lie_basis)
 
     @classmethod
     def from_stream(cls: Type[T], stream: Stream, resolution: int) -> T:
@@ -138,6 +159,75 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         new_stream.__base_stream__ = stream
 
         return new_stream
+
+    @classmethod
+    def from_increments(
+        cls: Type[T],
+        timestamps: ArrayLike,
+        data: ArrayLike,
+        *,
+        resolution: Optional[int],
+        input_data_basis: Optional[LieBasis],
+        lie_basis: Optional[LieBasis],
+        interval_type=IntervalType.ClOpen,
+        **kwargs,
+    ) -> T:
+        data_array = jnp.asarray(data)
+        ts_array = jnp.asarray(timestamps)
+
+        if data_array.ndim < 2:
+            raise ValueError("data must be at least 2D")
+
+        if data_array.shape[-2] != ts_array.shape[-1]:
+            raise ValueError(
+                "data and timestamps must have the same number of time points"
+            )
+
+        # First sort out the algebra details
+        *batch_dims, data_dim = data_array.shape
+        if ts_array.ndim == data_array.ndim - 1:
+            batched_time = False
+        else:
+            batched_time = True
+            if ts_array.shape != batch_dims:
+                raise ValueError(
+                    "batch-wise timestamps must have same batch dimensions as data"
+                )
+
+        if input_data_basis is None:
+            input_data_basis = LieBasis(width=data_dim, depth=1)
+        elif data_dim != input_data_basis.size():
+            raise ValueError("data dimension should match input_data_basis size")
+
+        if lie_basis is None:
+            width = kwargs.pop("width", data_dim)
+            depth = kwargs.pop("depth", data_dim)
+            lie_basis = LieBasis(width=width, depth=depth)
+
+        # Now sort out the support and scale the data
+        inf = jnp.min(ts_array)
+        sup = jnp.max(ts_array)
+
+        if interval_type == IntervalType.ClOpen:
+            sup = jnp.nextafter(sup, jnp.inf)
+        elif interval_type == IntervalType.OpenCl:
+            inf = jnp.nextafter(inf, -jnp.inf)
+
+        support = RealInterval(inf, sup, interval_type)
+
+        # Adjust the timestamps so they lie in the unit interval
+        sf = ts_array.dtype.type(sup - inf)
+        shift = ts_array.dtype.type(inf)
+        ts_array = sf * ts_array - shift
+
+        if resolution is None:
+            time_increments = jnp.diff(ts_array, axis=-1)
+            min_diff = jnp.min(time_increments)
+
+            _, exp = jnp.frexp(min_diff)
+            resolution = int(1 - exp)
+
+
 
     @property
     def lie_basis(self) -> LieBasis:
