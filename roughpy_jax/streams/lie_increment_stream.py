@@ -1,3 +1,5 @@
+import itertools
+
 from typing import Type, TypeVar, Optional
 
 import numpy as np
@@ -38,6 +40,15 @@ def intersection(ivl1: Interval, ivl2: Interval) -> RealInterval:
     )
 
 
+def _batching_loop(shape):
+    if not shape:
+        yield ()
+        return
+
+    ranges = tuple(map(range, shape))
+    yield from itertools.product(*ranges)
+
+
 def _unpack_lie_to_array_tuple(lies: list[Lie]) -> tuple[jax.Array, ...]:
     arrays = [[]]
 
@@ -46,14 +57,20 @@ def _unpack_lie_to_array_tuple(lies: list[Lie]) -> tuple[jax.Array, ...]:
 
     return tuple(jnp.vstack(arr) for arr in arrays)
 
-def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> tuple[jax.Array, ...]:
+
+def _extend_cache_from_base(
+    base: list[Lie], resolution, cache_basis
+) -> tuple[jax.Array, ...]:
     tensor_basis = TensorBasis(cache_basis.width, cache_basis.depth)
+
     def g(r, previous):
         for k in range(1 << r):
             k1 = 2 * k
             k2 = k1 + 1
             tensor = ft_exp(lie_to_tensor(previous[k1]), out_basis=tensor_basis)
-            tensor = ft_fmexp(tensor, lie_to_tensor(previous[k2]), out_basis=tensor_basis)
+            tensor = ft_fmexp(
+                tensor, lie_to_tensor(previous[k2]), out_basis=tensor_basis
+            )
             lie = tensor_to_lie(ft_log(tensor), lie_basis=cache_basis)
             yield lie
 
@@ -66,8 +83,52 @@ def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> tuple[j
     return _unpack_lie_to_array_tuple(base)
 
 
-def _data_to_dyadic_cache(timestamps, data, resolution, input_basis, cache_basis):
+def _ft_identity(
+    basis: TensorBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype
+) -> FreeTensor:
+    data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    data[..., 0] = 1
 
+    return FreeTensor(data, basis)
+
+
+def _data_to_dyadic_cache(
+    timestamps: ArrayLike,
+    data: ArrayLike,
+    resolution: int,
+    input_basis: LieBasis,
+    cache_basis: LieBasis,
+    interval_type=IntervalType.ClOpen,
+    integer_type=jnp.int32,
+) -> tuple[jax.Array, ...]:
+    tensor_basis = TensorBasis(width=cache_basis.width, depth=cache_basis.depth)
+    base_components = [[] for _ in range(1 << resolution)]
+
+    *shape, data_dim = data.shape
+    pad_size = input_basis.size() - data_dim
+    padded_data = jnp.pad(data, [(0, 0)] * (len(shape)) + [(0, pad_size)])
+
+    rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
+    k_array = rounder(jnp.ldexp(timestamps, resolution)).astype(integer_type)
+
+    change_points = jnp.nonzero(k_array[1:] != k_array[:-1])
+
+    last_change_idx = 0
+    for idx in change_points:
+        tensor_inc = jax.lax.reduce(
+            [
+                Lie(padded_data[..., i, :], input_basis)
+                for i in range(last_change_idx, idx)
+            ],
+            _ft_identity(tensor_basis, shape, data.dtype),
+            lambda acc, x: ft_fmexp(acc, lie_to_tensor(x), out_basis=tensor_basis),
+            dimensions=[0],
+        )
+
+        k = k_array[last_change_idx]
+        base_components[k].append(tensor_to_lie(ft_log(tensor_inc)))
+
+    return _extend_cache_from_base(base, resolution, cache_basis)
 
 
 class LieIncrementStream(Stream[Lie, FreeTensor]):
@@ -138,7 +199,9 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         lies = [f(k, resolution) for k in range(1 << resolution)]
 
-        return _extend_cache_from_base(lies, resolution, stream.lie_basis, stream.lie_basis)
+        return _extend_cache_from_base(
+            lies, resolution, stream.lie_basis, stream.lie_basis
+        )
 
     @classmethod
     def from_stream(cls: Type[T], stream: Stream, resolution: int) -> T:
@@ -178,22 +241,16 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         if data_array.ndim < 2:
             raise ValueError("data must be at least 2D")
 
-        if data_array.shape[-2] != ts_array.shape[-1]:
+        if ts_array.ndim != 1:
+            raise ValueError("timestamps must be 1D")
+
+        *batch_dims, time_dim, data_dim = data_array.shape
+        if time_dim != ts_array.shape[-1]:
             raise ValueError(
                 "data and timestamps must have the same number of time points"
             )
 
         # First sort out the algebra details
-        *batch_dims, data_dim = data_array.shape
-        if ts_array.ndim == data_array.ndim - 1:
-            batched_time = False
-        else:
-            batched_time = True
-            if ts_array.shape != batch_dims:
-                raise ValueError(
-                    "batch-wise timestamps must have same batch dimensions as data"
-                )
-
         if input_data_basis is None:
             input_data_basis = LieBasis(width=data_dim, depth=1)
         elif data_dim != input_data_basis.size():
@@ -227,7 +284,11 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             _, exp = jnp.frexp(min_diff)
             resolution = int(1 - exp)
 
+        cache = _data_to_dyadic_cache(
+            ts_array, data_array, resolution, input_data_basis, lie_basis
+        )
 
+        return cls(cache, lie_basis, support, **kwargs)
 
     @property
     def lie_basis(self) -> LieBasis:
