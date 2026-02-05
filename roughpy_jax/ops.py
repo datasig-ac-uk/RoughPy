@@ -445,6 +445,10 @@ class DenseOperation:
 ## Basic operations
 def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
                                     b_min_deg, b_max_deg, c_min_deg, c_max_deg):
+    # FIXME work in progress, this code temporarily swapped out whilst getting exp
+    # and log working, but will likely revert back to this code as working in
+    # individual levels is probably better than the multiple .at[] writes in
+    # the mul below. Probably better create mul fn from this rather than rewrite.
     out_b = degree_begin[a_deg]
     out_e = degree_begin[a_deg + 1]
     out_size = out_e - out_b
@@ -466,6 +470,58 @@ def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
         acc = acc + jnp.tensordot(b_level, c_level, axes=0).reshape(-1)
 
     return acc
+
+
+def _fallback_dense_ft_mul(
+    lhs: Array,
+    rhs: Array,
+    degree_begin: np.ndarray[np.int64.dtype],
+    lhs_max_degree: np.int32,
+    rhs_max_degree: np.int32,
+    out_max_degree: np.int32,
+    lhs_min_degree: np.int32=0,
+    rhs_min_degree: np.int32=0
+):
+    # FIXME review against old code, should be depth + 1 not -1?
+    out = jnp.zeros(degree_begin[-1], dtype=lhs.dtype)
+
+    for l_i in range(lhs_min_degree, lhs_max_degree + 1):
+        for r_i in range(rhs_min_degree, rhs_max_degree + 1):
+            out_i = l_i + r_i
+            if out_i <= out_max_degree:
+                # Get fragments positions for each level i and j
+                l_b, l_e = degree_begin[l_i], degree_begin[l_i + 1]
+                r_b, r_e = degree_begin[r_i], degree_begin[r_i + 1]
+
+                # Flattened outer product of into higher level
+                out_frag = jnp.kron(lhs[l_b:l_e], rhs[r_b:r_e])
+
+                # Accumulate fragment into result
+                out_b, out_e = degree_begin[out_i], degree_begin[out_i + 1]
+                out = out.at[out_b:out_e].add(out_frag)
+
+    return out
+
+
+def _fallback_dense_ft_exp(
+    arg_data: Array,
+    depth: np.int32,
+    degree_begin: np.ndarray[np.int64.dtype],
+    arg_max_deg: np.int32
+):
+    # exp(x) = Σ((x^n) / n!)
+    # First two steps are are x^0 + x^1, i.e. add identity to original
+    exp_acc = arg_data.at[0].add(1)
+
+    # Accumulate arg_pow_n (= arg_data^n) and factorial each iteration and add to sum
+    arg_pow_n = arg_data
+    factorial = 1
+    for n in range(2, depth + 1):
+        factorial *= n
+        arg_pow_n = _fallback_dense_ft_mul(arg_pow_n, arg_data, degree_begin, arg_max_deg, arg_max_deg, arg_max_deg)
+        exp_acc += arg_pow_n / factorial
+
+    return exp_acc
 
 
 class DenseFTFma(Operation, DenseOperation):
@@ -492,18 +548,17 @@ class DenseFTFma(Operation, DenseOperation):
         b_min_deg: np.int32 = 0,
         c_min_deg: np.int32 = 0,
     ) -> tuple[Array, ...]:
-        level_gen = partial(
-            _dense_ft_mul_level_accumulator,
-            b_data=b_data,
-            c_data=c_data,
-            degree_begin=degree_begin,
-            b_min_deg=b_min_deg,
-            b_max_deg=b_max_deg,
-            c_min_deg=c_min_deg,
-            c_max_deg=c_max_deg
+        # result = b * c + a
+        mul = _fallback_dense_ft_mul(
+            b_data,
+            c_data,
+            degree_begin,
+            lhs_max_degree=b_max_deg,
+            rhs_max_degree=c_max_deg,
+            out_max_degree=a_max_deg,
+            lhs_min_degree=b_min_deg,
+            rhs_min_degree=c_min_deg
         )
-
-        mul = jnp.concatenate([level_gen(a_deg=i) for i in range(0, a_max_deg + 1)], axis=-1)
         return a_data + mul
 
 
@@ -517,8 +572,8 @@ class DenseFTMul(Operation, DenseOperation):
 
     @staticmethod
     def fallback(
-        b_data: Array,
-        c_data: Array,
+        lhs_data: Array,
+        rhs_data: Array,
         width: np.int32,
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
@@ -528,18 +583,16 @@ class DenseFTMul(Operation, DenseOperation):
         lhs_min_deg: np.int32 = 0,
         rhs_min_deg: np.int32 = 0,
     ) -> tuple[Array]:
-        level_gen = partial(
-            _dense_ft_mul_level_accumulator,
-            b_data=b_data,
-            c_data=c_data,
-            degree_begin=degree_begin,
-            b_min_deg=lhs_min_deg,
-            b_max_deg=lhs_max_deg,
-            c_min_deg=rhs_min_deg,
-            c_max_deg=rhs_max_deg,
+        mul = _fallback_dense_ft_mul(
+            lhs_data,
+            rhs_data,
+            degree_begin,
+            lhs_max_degree=lhs_max_deg,
+            rhs_max_degree=rhs_max_deg,
+            out_max_degree=out_max_deg,
+            lhs_min_degree=lhs_min_deg,
+            rhs_min_degree=rhs_min_deg
         )
-
-        mul = jnp.concatenate([level_gen(a_deg=i) for i in range(0, out_max_deg + 1)], axis=-1)
         return mul
 
 
@@ -645,7 +698,7 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         out_max_deg = depth
         out_min_deg = 0
 
-        out_data = jnp.zeros(degree_begin[depth], dtype=arg_data.dtype)
+        out_data = jnp.zeros(degree_begin[depth + 1], dtype=arg_data.dtype)
 
         def dsize(degree):
             return degree_begin[degree+1] - degree_begin[degree]
@@ -688,14 +741,88 @@ class DenseTensorToLie(Operation, DenseOperation):
 class DenseFTExp(Operation, DenseOperation):
     fn_name = "ft_exp"
 
+    class StaticArgs(TypedDict):
+        arg_max_deg: np.int32
+
+    @staticmethod
+    def fallback(
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        arg_max_deg: np.int32,
+    ):
+        exp = _fallback_dense_ft_exp(arg_data, depth, degree_begin, arg_max_deg)
+        return exp
+
 
 class DenseFTFMExp(Operation, DenseOperation):
     fn_name = "ft_fmexp"
+
+    class StaticArgs(TypedDict):
+        out_max_deg: np.int32
+        mul_max_deg: np.int32
+        exp_max_deg: np.int32
+        mul_min_deg: np.int32
+        exp_min_deg: np.int32
+
+    @staticmethod
+    def fallback(
+        multiplier: Array,
+        exponent: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        out_max_deg: np.int32,
+        mul_max_deg: np.int32,
+        exp_max_deg: np.int32,
+        mul_min_deg: np.int32,
+        exp_min_deg: np.int32
+    ):
+        # multiplier * exp(exponent)
+        exp = _fallback_dense_ft_exp(exponent, depth, degree_begin, exp_max_deg)
+        mul = _fallback_dense_ft_mul(
+            multiplier,
+            exp,
+            degree_begin,
+            lhs_max_degree=mul_max_deg,
+            rhs_max_degree=exp_max_deg,
+            out_max_degree=out_max_deg,
+            lhs_min_degree=mul_min_deg,
+            rhs_min_degree=exp_min_deg
+        )
+        return mul
 
 
 class DenseFTLog(Operation, DenseOperation):
     fn_name = "ft_log"
 
+    class StaticArgs(TypedDict):
+        arg_max_deg: np.int32
+
+    @staticmethod
+    def fallback(
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        arg_max_deg: np.int32,
+    ):
+        # log(1 + x) = Σ(((-1)^n) * (x^n) / n)
+        # or log(y) = Σ(((-1)^n) * ((y - 1))^n) / n)
+        # Start from n=1 so before n=2 first value is (y-1)^1, i.e. subtract identity
+        x = arg_data.at[0].subtract(1)
+        log_acc = x
+
+        # Accumulate arg_pow_n (= arg_data^n) and factorial each iteration and add to sum
+        x_pow_n = x
+        sign = 1
+        for n in range(2, depth + 2):
+            sign *= -1
+            x_pow_n = _fallback_dense_ft_mul(x_pow_n, x, degree_begin, arg_max_deg, arg_max_deg, arg_max_deg)
+            log_acc += (sign * x_pow_n) / n
+
+        return log_acc
 
 # FIXME this is work in progress whilst implementing ops and fallback code.
 # Ensure that all legacy_cpu_functions is removed before final merge and
@@ -711,6 +838,7 @@ standard_cpu_ops = [
     DenseFTFMExp,
     DenseFTLog
     # FIXME incomplete:
+    # DenseFTAdjRightMul,
     # DenseLieToTensor
     # DenseTensorToLie
 ]
@@ -726,10 +854,6 @@ for op in standard_cpu_ops:
     )
 
 legacy_cpu_functions = [
-    "cpu_dense_ft_exp",
-    "cpu_dense_ft_log",
-    "cpu_dense_ft_fmexp",
-    "cpu_dense_ft_adj_lmul",
     "cpu_dense_ft_adj_rmul"
 ]
 

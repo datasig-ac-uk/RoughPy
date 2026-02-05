@@ -336,25 +336,16 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     batch_dims = x.data.shape[:-1]
 
     op_cls = Operation.get_operation("ft_exp", "dense")
-    op = op_cls((out_basis, x.basis), dtype, batch_dims,
-                out_max_deg=out_basis.depth)
-
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_exp",
-        jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
+    op = op_cls(
+        (out_basis, x.basis),
+        dtype,
+        batch_dims,
+        arg_max_deg=np.int32(out_basis.depth)
     )
 
-    # FIXME convert to op
+    out_data = op(x.data)
 
-    out_data = call(
-        x.data,
-        width=np.int32(out_basis.width),
-        depth=np.int32(out_basis.depth),
-        degree_begin=out_basis.degree_begin,
-        arg_max_deg=np.int32(x.basis.depth),
-    )
-
-    return DenseFreeTensor(out_data, out_basis)
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 
@@ -371,25 +362,22 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     :return: tensor logarithm of `x`
     """
     _check_tensor_dtype(x)
+    dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
+    batch_dims = x.data.shape[:-1]
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_log",
-        jax.ShapeDtypeStruct(x.data.shape, x.data.dtype)
+    op_cls = Operation.get_operation("ft_log", "dense")
+    op = op_cls(
+        (out_basis, x.basis),
+        dtype,
+        batch_dims,
+        arg_max_deg=np.int32(out_basis.depth)
     )
 
-    # FIXME convert to op
+    out_data = op(x.data)
 
-    out_data = call(
-        x.data,
-        width=np.int32(out_basis.width),
-        depth=np.int32(out_basis.depth),
-        degree_begin=out_basis.degree_begin,
-        arg_max_deg=np.int32(x.basis.depth)
-    )
-
-    return DenseFreeTensor(out_data, out_basis)
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
@@ -406,28 +394,23 @@ def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBa
     :return: Resulting fused multiply-exponential of `multiplier` and `exponent`
     """
     _check_tensor_dtype(multiplier, exponent)
+    dtype = multiplier.data.dtype
 
     out_basis = out_basis or multiplier.basis
     _check_basis_compat(out_basis, multiplier.basis, exponent.basis)
+
+    batch_dims = _get_and_check_batch_dims(multiplier.data, exponent.data, core_dims=1)
 
     basis = multiplier.basis
     out_depth = multiplier.basis.depth
     mul_depth = multiplier.basis.depth
     exp_depth = exponent.basis.depth
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_fmexp",
-        jax.ShapeDtypeStruct(multiplier.data.shape, multiplier.data.dtype)
-    )
-
-    # FIXME convert to op
-
-    out_data = call(
-        multiplier.data,
-        exponent.data,
-        width=np.int32(basis.width),
-        depth=np.int32(basis.depth),
-        degree_begin=out_basis.degree_begin,
+    op_cls = Operation.get_operation("ft_fmexp", "dense")
+    op = op_cls(
+        (out_basis, multiplier.basis, exponent.basis),
+        dtype,
+        batch_dims,
         out_max_deg=np.int32(out_depth),
         mul_max_deg=np.int32(mul_depth),
         exp_max_deg=np.int32(exp_depth),
@@ -435,7 +418,9 @@ def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBa
         exp_min_deg=np.int32(0)
     )
 
-    return DenseFreeTensor(out_data, basis)
+    out_data = op(multiplier.data, exponent.data)
+
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensorT:
