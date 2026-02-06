@@ -1,4 +1,5 @@
 import itertools
+import functools
 
 from typing import Type, TypeVar, Optional
 
@@ -49,18 +50,7 @@ def _batching_loop(shape):
     yield from itertools.product(*ranges)
 
 
-def _unpack_lie_to_array_tuple(lies: list[Lie]) -> tuple[jax.Array, ...]:
-    arrays = [[]]
-
-    for lie in lies:
-        arrays[0].append(lie.data)
-
-    return tuple(jnp.vstack(arr) for arr in arrays)
-
-
-def _extend_cache_from_base(
-    base: list[Lie], resolution, cache_basis
-) -> tuple[jax.Array, ...]:
+def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Array:
     tensor_basis = TensorBasis(cache_basis.width, cache_basis.depth)
 
     def g(r, previous):
@@ -80,7 +70,10 @@ def _extend_cache_from_base(
         base.extend(g(res, base[prev_size:]))
         prev_size = next_size
 
-    return _unpack_lie_to_array_tuple(base)
+    cache = jnp.stack([lie.data for lie in base], axis=0)
+    lie_dim = int(cache_basis.size())
+    zero = jnp.zeros((1, *cache.shape[1:-1], lie_dim), dtype=cache.dtype)
+    return jnp.concatenate([cache, zero], axis=0)
 
 
 def _ft_identity(
@@ -92,42 +85,85 @@ def _ft_identity(
     return FreeTensor(data, basis)
 
 
+def _zero_lie(basis: LieBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype) -> Lie:
+    data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    return Lie(data, basis)
+
+
+def _flatten(lies: list[Lie]) -> Lie:
+    data = jnp.array([l.data for l in lies])
+    return Lie(data, lies[0].basis)
+
+
+def _cbh(
+    data: jax.Array,
+    data_basis: LieBasis,
+    cache_basis: LieBasis,
+    tensor_basis: TensorBasis | None = None,
+    axis: int = 0,
+) -> Lie:
+    tensor_basis = tensor_basis or TensorBasis(
+        width=cache_basis.width, depth=cache_basis.depth
+    )
+
+    batch_shape = data.shape[:axis] + data.shape[axis + 1 :]
+    acc = _ft_identity(tensor_basis, batch_shape, data.dtype)
+
+    for i in range(data.shape[axis]):
+        lie = Lie(jnp.take(data, k, axis=axis), data_basis)
+        ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
+
+    result = tensor_to_lie(ft_log(acc), lie_basis=cache_basis)
+    return result
+
+
+def _build_base_entry(
+    k: int,
+    k_arrays: list[jax.Array],
+    data: list[jax.Array],
+    data_basis: LieBasis,
+    cache_basis: LieBasis,
+    tensor_basis: TensorBasis,
+) -> Lie:
+
+    def inner(ks, ds):
+        mask = ks == k
+        if not jnp.any(mask):
+            return _zero_lie(cache_basis, ds.shape[:-1], ds.dtype)
+
+        return _cbh(ds[mask, ...], data_basis, cache_basis, tensor_basis)
+
+    components = list(map(inner, k_arrays, data))
+    return _flatten(components)
+
+
 def _data_to_dyadic_cache(
-    timestamps: ArrayLike,
-    data: ArrayLike,
+    timestamps: list[jax.Array],
+    data: list[jax.Array],
     resolution: int,
-    input_basis: LieBasis,
+    data_basis: LieBasis,
     cache_basis: LieBasis,
     interval_type=IntervalType.ClOpen,
     integer_type=jnp.int32,
-) -> tuple[jax.Array, ...]:
-    tensor_basis = TensorBasis(width=cache_basis.width, depth=cache_basis.depth)
-    base_components = [[] for _ in range(1 << resolution)]
+) -> jax.Array:
 
-    *shape, data_dim = data.shape
-    pad_size = input_basis.size() - data_dim
-    padded_data = jnp.pad(data, [(0, 0)] * (len(shape)) + [(0, pad_size)])
+    tensor_basis = TensorBasis(width=cache_basis.width, depth=cache_basis.depth)
 
     rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
-    k_array = rounder(jnp.ldexp(timestamps, resolution)).astype(integer_type)
+    k_arrays = [
+        rounder(jnp.ldexp(ts, resolution)).astype(integer_type) for ts in timestamps
+    ]
 
-    change_points = jnp.nonzero(k_array[1:] != k_array[:-1])
+    f = functools.partial(
+        _build_base_entry,
+        k_arrays=k_arrays,
+        data=data,
+        data_basis=data_basis,
+        cache_basis=cache_basis,
+        tensor_basis=tensor_basis,
+    )
 
-    last_change_idx = 0
-    for idx in change_points:
-        tensor_inc = jax.lax.reduce(
-            [
-                Lie(padded_data[..., i, :], input_basis)
-                for i in range(last_change_idx, idx)
-            ],
-            _ft_identity(tensor_basis, shape, data.dtype),
-            lambda acc, x: ft_fmexp(acc, lie_to_tensor(x), out_basis=tensor_basis),
-            dimensions=[0],
-        )
-
-        k = k_array[last_change_idx]
-        base_components[k].append(tensor_to_lie(ft_log(tensor_inc)))
-
+    base = [f(k) for k in range(1 << resolution)]
     return _extend_cache_from_base(base, resolution, cache_basis)
 
 
@@ -135,7 +171,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
     """
     Stream backed by a contiguous cache of dyadic log-signatures.
 
-    The cache is a JAX array with shape (..., 2^(R+1), LieDim), where the
+    The cache is a JAX array with shape (2^(R+1), ..., LieDim), where the
     cache axis packs log-signatures over dyadic intervals of lengths between
     2^-R and 1 in steps of 2. The final element of the cache axis is unused
     by the geometric series of dyadic intervals and should be zero.
@@ -154,7 +190,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         resolution: int | None = None,
     ) -> None:
         if cache.ndim < 2:
-            raise ValueError("cache must have shape (..., cache_length, lie_dim)")
+            raise ValueError("cache must have shape (cache_length, ..., lie_dim)")
 
         lie_dim = int(lie_basis.size())
         if cache.shape[-1] != lie_dim:
@@ -162,7 +198,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
                 f"cache lie dimension mismatch: expected {lie_dim}, got {cache.shape[-1]}"
             )
 
-        cache_length = int(cache.shape[-2])
+        cache_length = int(cache.shape[0])
         expected_length = self._cache_length_from_resolution(resolution)
         if cache_length != expected_length:
             raise ValueError(
@@ -194,14 +230,11 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         def f(k, r):
             di = DyadicInterval(k, r, interval_type)
             query = reparam(di)
-            log_sig = stream.log_signature(query)
-            return log_sig.data
+            return stream.log_signature(query)
 
         lies = [f(k, resolution) for k in range(1 << resolution)]
 
-        return _extend_cache_from_base(
-            lies, resolution, stream.lie_basis, stream.lie_basis
-        )
+        return _extend_cache_from_base(lies, resolution, stream.lie_basis)
 
     @classmethod
     def from_stream(cls: Type[T], stream: Stream, resolution: int) -> T:
@@ -226,69 +259,130 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
     @classmethod
     def from_increments(
         cls: Type[T],
-        timestamps: ArrayLike,
-        data: ArrayLike,
+        timestamps: ArrayLike | list[ArrayLike],
+        data: ArrayLike | list[ArrayLike],
         *,
         resolution: Optional[int],
         input_data_basis: Optional[LieBasis],
         lie_basis: Optional[LieBasis],
         interval_type=IntervalType.ClOpen,
+        data_dtype: Optional[jnp.dtype] = None,
+        time_dtype: jnp.dtype = jnp.dtype("float32"),
+        dyadic_integer_type: jnp.dtype = jnp.dtype("int32"),
         **kwargs,
     ) -> T:
-        data_array = jnp.asarray(data)
-        ts_array = jnp.asarray(timestamps)
 
-        if data_array.ndim < 2:
-            raise ValueError("data must be at least 2D")
+        if isinstance(timestamps, list):
+            time_arrays = [jnp.asarray(ts) for ts in timestamps]
+        else:
+            time_arrays = [jnp.asarray(timestamps)]
 
-        if ts_array.ndim != 1:
-            raise ValueError("timestamps must be 1D")
+        if isinstance(data, list):
+            data_arrays = [jnp.asarray(ds) for ds in data]
+        else:
+            data_arrays = [jnp.asarray(data)]
 
-        *batch_dims, time_dim, data_dim = data_array.shape
-        if time_dim != ts_array.shape[-1]:
+        if not time_arrays or not data_arrays:
+            raise ValueError("timestamps and data cannot be empty")
+
+        if not len(time_arrays) == len(data_arrays):
+            raise ValueError("timestamps and data must be the same length")
+
+        time_lens = []
+        mins = []
+        maxs = []
+        for ts in time_arrays:
+            if ts.ndim != 1:
+                raise ValueError("timestamps must be held in 1D arrays")
+
+            time_lens.append(ts.shape[0])
+            mins.append(jnp.min(ts))
+            maxs.append(jnp.max(ts))
+
+        ds = data_arrays[0]
+        if ds.ndim != 2:
+            raise ValueError("data arrays must be at least 2D")
+
+        dt_dim, *batch_dims, lie_dim = ds.shape
+        if dt_dim != time_lens[0]:
             raise ValueError(
-                "data and timestamps must have the same number of time points"
+                f"Time dimension mismatch at index 0: expected {time_lens[0]}, got {dt_dim}"
             )
 
-        # First sort out the algebra details
-        if input_data_basis is None:
-            input_data_basis = LieBasis(width=data_dim, depth=1)
-        elif data_dim != input_data_basis.size():
-            raise ValueError("data dimension should match input_data_basis size")
+        dtypes = [ds.dtype]
+        for i, (ds, expected_dt) in enumerate(
+            zip(data_arrays[1:], time_lens[1:]), start=1
+        ):
+            if ds.ndim < 2:
+                raise ValueError("data arrays must be at least 2D")
+
+            dt_dim, b_dims, *l_dim = ds.shape
+            if dt_dim != expected_dt:
+                raise ValueError(
+                    f"Time dimension mismatch at index {i}: expected {expected_dt}, got {dt_dim}"
+                )
+
+            if b_dims != batch_dims:
+                raise ValueError(
+                    f"Batch dimension mismatch at index {i}: expected {batch_dims}, got {b_dims}"
+                )
+
+            dtypes.append(ds.dtype)
+
+            if input_data_basis is not None:
+                basis_size = input_data_basis.size()
+                if l_dim > basis_size:
+                    raise ValueError(
+                        f"data dimension {l_dim} is incompatible with the specified data basis with size {basis_size}"
+                    )
+            elif l_dim != lie_dim:
+                raise ValueError(
+                    f"unable to determine appropriate data basis: inconsistent data dimensions at index {i}"
+                )
+
+        dtype = data_dtype or jnp.result_type(*dtypes)
+        input_data_basis = input_data_basis or LieBasis(width=lie_dim, depth=1)
+        basis_size = input_data_basis.size()
+
+        for i in range(len(data_arrays)):
+            *shape, l_dim = data_arrays[i].shape
+            padding = [(0, 0)] * len(shape) + [(0, basis_size - l_dim)]
+            data_arrays[i] = jnp.pad(data_arrays[i].astype(dtype), padding)
 
         if lie_basis is None:
-            width = kwargs.pop("width", data_dim)
-            depth = kwargs.pop("depth", data_dim)
-            lie_basis = LieBasis(width=width, depth=depth)
+            lie_basis = LieBasis(width=input_data_basis, depth=2)
 
         # Now sort out the support and scale the data
-        inf = jnp.min(ts_array)
-        sup = jnp.max(ts_array)
-
         if interval_type == IntervalType.ClOpen:
-            sup = jnp.nextafter(sup, jnp.inf)
-        elif interval_type == IntervalType.OpenCl:
-            inf = jnp.nextafter(inf, -jnp.inf)
+            sup = jnp.nextafter(max(*maxs), jnp.inf)
+            inf = min(*mins)
+        else:  # interval_type == IntervalType.OpenCl:
+            sup = max(*maxs)
+            inf = jnp.nextafter(min(*mins), -jnp.inf)
 
         support = RealInterval(inf, sup, interval_type)
 
         # Adjust the timestamps so they lie in the unit interval
-        sf = ts_array.dtype.type(sup - inf)
-        shift = ts_array.dtype.type(inf)
-        ts_array = sf * ts_array - shift
+        sf = time_dtype.type(sup - inf)
+        shift = time_dtype.type(inf)
+        time_arrays = [sf * ts.astype(time_dtype) - shift for ts in time_arrays]
 
         if resolution is None:
-            time_increments = jnp.diff(ts_array, axis=-1)
-            min_diff = jnp.min(time_increments)
-
+            min_diff = min(*(jnp.min(jnp.diff(ts, axis=-1)) for ts in time_arrays))
             _, exp = jnp.frexp(min_diff)
             resolution = int(1 - exp)
 
         cache = _data_to_dyadic_cache(
-            ts_array, data_array, resolution, input_data_basis, lie_basis
+            time_arrays,
+            data_arrays,
+            resolution=resolution,
+            data_basis=input_data_basis,
+            cache_basis=lie_basis,
+            interval_type=interval_type,
+            integer_type=dyadic_integer_type,
         )
 
-        return cls(cache, lie_basis, support, **kwargs)
+        return cls(cache, lie_basis, support, resolution=resolution, **kwargs)
 
     @property
     def lie_basis(self) -> LieBasis:
@@ -316,7 +410,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         raise NotImplementedError("dyadic cache querying is not implemented yet")
 
     def _zero_log_signature(self) -> Lie:
-        batch_shape = self._cache.shape[:-2]
+        batch_shape = self._cache.shape[1:-1]
         lie_dim = int(self._lie_basis.size())
         zeros = jnp.zeros((*batch_shape, lie_dim), dtype=self._cache.dtype)
         return Lie(zeros, self._lie_basis)
