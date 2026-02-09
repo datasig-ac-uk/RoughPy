@@ -1,5 +1,6 @@
 import itertools
 import functools
+import math
 
 from typing import Type, TypeVar, Optional
 
@@ -50,6 +51,11 @@ def _batching_loop(shape):
     yield from itertools.product(*ranges)
 
 
+def _zero_lie(basis: LieBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype) -> Lie:
+    data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    return Lie(data, basis)
+
+
 def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Array:
     tensor_basis = TensorBasis(cache_basis.width, cache_basis.depth)
 
@@ -70,10 +76,13 @@ def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Arr
         base.extend(g(res, base[prev_size:]))
         prev_size = next_size
 
+    batch_dims = base[0].data.shape[:-1]
+    dtype = base[0].data.dtype
+    zero = _zero_lie(cache_basis, batch_dims, dtype)
+    base.append(zero)
+
     cache = jnp.stack([lie.data for lie in base], axis=0)
-    lie_dim = int(cache_basis.size())
-    zero = jnp.zeros((1, *cache.shape[1:-1], lie_dim), dtype=cache.dtype)
-    return jnp.concatenate([cache, zero], axis=0)
+    return cache
 
 
 def _ft_identity(
@@ -83,11 +92,6 @@ def _ft_identity(
     data[..., 0] = 1
 
     return FreeTensor(data, basis)
-
-
-def _zero_lie(basis: LieBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype) -> Lie:
-    data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
-    return Lie(data, basis)
 
 
 def _flatten(lies: list[Lie]) -> Lie:
@@ -109,7 +113,7 @@ def _cbh(
     batch_shape = data.shape[:axis] + data.shape[axis + 1 :]
     acc = _ft_identity(tensor_basis, batch_shape, data.dtype)
 
-    for i in range(data.shape[axis]):
+    for k in range(data.shape[axis]):
         lie = Lie(jnp.take(data, k, axis=axis), data_basis)
         ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
 
@@ -137,36 +141,6 @@ def _build_base_entry(
     return _flatten(components)
 
 
-def _data_to_dyadic_cache(
-    timestamps: list[jax.Array],
-    data: list[jax.Array],
-    resolution: int,
-    data_basis: LieBasis,
-    cache_basis: LieBasis,
-    interval_type=IntervalType.ClOpen,
-    integer_type=jnp.int32,
-) -> jax.Array:
-
-    tensor_basis = TensorBasis(width=cache_basis.width, depth=cache_basis.depth)
-
-    rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
-    k_arrays = [
-        rounder(jnp.ldexp(ts, resolution)).astype(integer_type) for ts in timestamps
-    ]
-
-    f = functools.partial(
-        _build_base_entry,
-        k_arrays=k_arrays,
-        data=data,
-        data_basis=data_basis,
-        cache_basis=cache_basis,
-        tensor_basis=tensor_basis,
-    )
-
-    base = [f(k) for k in range(1 << resolution)]
-    return _extend_cache_from_base(base, resolution, cache_basis)
-
-
 class LieIncrementStream(Stream[Lie, FreeTensor]):
     """
     Stream backed by a contiguous cache of dyadic log-signatures.
@@ -188,7 +162,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         support: Interval | None = None,
         group_basis: TensorBasis | None = None,
         resolution: int | None = None,
-    ) -> None:
+        interval_type: IntervalType = IntervalType.ClOpen,
+    ):
         if cache.ndim < 2:
             raise ValueError("cache must have shape (cache_length, ..., lie_dim)")
 
@@ -211,6 +186,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         self._group_basis = group_basis or TensorBasis(lie_basis.width, lie_basis.depth)
         self._support = support or RealInterval(0.0, 1.0, IntervalType.ClOpen)
         self._resolution = int(resolution)
+        self._interval_type = interval_type
+        self._zero_index = cache_length - 1
 
     @staticmethod
     def _stream_to_cache(
@@ -372,17 +349,34 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             _, exp = jnp.frexp(min_diff)
             resolution = int(1 - exp)
 
-        cache = _data_to_dyadic_cache(
-            time_arrays,
-            data_arrays,
-            resolution=resolution,
+        tensor_basis = TensorBasis(width=lie_basis.width, depth=lie_basis.depth)
+
+        rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
+        k_arrays = [
+            rounder(jnp.ldexp(ts, resolution)).astype(dyadic_integer_type)
+            for ts in timestamps
+        ]
+
+        f = functools.partial(
+            _build_base_entry,
+            k_arrays=k_arrays,
+            data=data,
             data_basis=input_data_basis,
             cache_basis=lie_basis,
-            interval_type=interval_type,
-            integer_type=dyadic_integer_type,
+            tensor_basis=tensor_basis,
         )
 
-        return cls(cache, lie_basis, support, resolution=resolution, **kwargs)
+        base = [f(k) for k in range(1 << resolution)]
+        cache = _extend_cache_from_base(base, resolution, lie_basis)
+
+        return cls(
+            cache,
+            lie_basis,
+            support,
+            resolution=resolution,
+            group_basis=tensor_basis,
+            **kwargs,
+        )
 
     @property
     def lie_basis(self) -> LieBasis:
@@ -400,20 +394,50 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
     def resolution(self) -> int:
         return self._resolution
 
-    def _query_cache(self, inf: float, sup: float) -> jnp.ndarray:
+    def _zero_log_signature(self) -> Lie:
+        return Lie(self._cache[-1, ...], self._lie_basis)
+
+    def _query_dyadic(self, k: int, n: int) -> Lie: ...
+
+    def _query_cache(self, inf: float, sup: float) -> Lie:
         """
         Stub for dyadic cache lookup.
 
         This should return a JAX array shaped like (..., LieDim) containing
         the log-signature over [inf, sup] at the given resolution.
         """
-        raise NotImplementedError("dyadic cache querying is not implemented yet")
+        rounder = (
+            math.floor if self._interval_type == IntervalType.ClOpen else math.ceil
+        )
 
-    def _zero_log_signature(self) -> Lie:
-        batch_shape = self._cache.shape[1:-1]
-        lie_dim = int(self._lie_basis.size())
-        zeros = jnp.zeros((*batch_shape, lie_dim), dtype=self._cache.dtype)
-        return Lie(zeros, self._lie_basis)
+        diff = sup - inf
+        _, exp = math.frexp(diff)
+        exp = -exp
+        begin = int(rounder(math.ldexp(inf, self._resolution)))
+        end = int(rounder(math.ldexp(sup, self._resolution)))
+
+        # When the query interval is smaller than the shortest dyadics provided here then special care is needed
+        # We have to determine if the included end of any max-resolution interval is contained in the query interval.
+        # This should be the case if the rounded inf and sup are different, in which case it is just a matter of
+        # selecting the one that lies inside the interval. Which endpoint this is depends on the direction of rounding.
+        if exp > self._resolution:
+            if begin == end:
+                return self._zero_log_signature()
+
+            k = end if self._interval_type == IntervalType.ClOpen else begin
+            return self._query_dyadic(k, self._resolution)
+
+        shift = self._resolution - exp - 1
+        pad = (1 << shift) - 1
+        inf_trim = ((begin + pad) >> shift) << shift
+        sup_trim = (end >> shift) << shift
+
+        inf_work = inf_trim
+        sup_work = sup_trim
+        inf_indicator = inf_trim - inf
+        sup_indicator = sup - sup_trim
+
+        mid = math.ldexp(0.5, exp)
 
     def _reparamterise(self, interval: Interval) -> tuple[float, float]:
         inf = self.support.inf
@@ -431,8 +455,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         inf, sup = self._reparamterise(query_interval)
 
-        data = self._query_cache(inf, sup)
-        return Lie(data, self._lie_basis)
+        result = self._query_cache(inf, sup)
+        return result
 
     def signature(
         self, interval: Interval | None = None, resolution: int | None = None
