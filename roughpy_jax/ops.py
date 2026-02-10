@@ -445,38 +445,55 @@ class DenseOperation:
 
 
 ## Basic operations
-def _dense_ft_mul_level_accumulator(b_data, c_data, a_deg, degree_begin,
-                                    b_min_deg, b_max_deg, c_min_deg, c_max_deg):
-    # FIXME work in progress, this code temporarily swapped out whilst getting exp
-    # and log working, but will likely revert back to this code as working in
-    # individual levels is probably better than the multiple .at[] writes in
-    # the mul below. Probably better create mul fn from this rather than rewrite.
-    out_b = degree_begin[a_deg]
-    out_e = degree_begin[a_deg + 1]
+def _dense_ft_mul_level_accumulator(
+    lhs_data: Array,
+    rhs_data: Array,
+    out_degree: np.int32,
+    degree_begin: np.ndarray[np.int64.dtype],
+    lhs_max_degree: np.int32,
+    rhs_max_degree: np.int32,
+    lhs_min_degree: np.int32=0,
+    rhs_min_degree: np.int32=0
+):
+    """
+    Compute the accumulated multiplication for a level of the free tensor at out_degree
+
+    For a free tensor of say width 2 and depth 2, degree_begin will be [0,1,3,7]. The first
+    level would be 0-1, second 1-3, third 3-7. Each of these is computed independently by
+    this method and concatenated together into a new free tensor. For example, given
+    out_degree = 2, this method will iterates lhs_deg over 0,1,2 using the corresponding
+    rhs_deg that contributes to degree 2, i.e rhs_deg over 2,1,0. The flattened outer
+    product of each level accumulates into the slice level, for out degree 2, [3,7].
+    """
+    out_b = degree_begin[out_degree]
+    out_e = degree_begin[out_degree + 1]
     out_size = out_e - out_b
 
-    acc = jnp.zeros(b_data.shape[:-1] + (out_size,), dtype=b_data.dtype)
+    acc = jnp.zeros((out_size,), dtype=lhs_data.dtype)
 
-    b_deg_b = max(b_min_deg, a_deg - c_max_deg)
-    b_deg_e = min(b_max_deg, a_deg - c_min_deg) + 1
+    lhs_deg_b = max(lhs_min_degree, out_degree - rhs_max_degree)
+    lhs_deg_e = min(lhs_max_degree, out_degree - rhs_min_degree) + 1
 
-    for b_deg in range(b_deg_b, b_deg_e):
-        c_deg = a_deg - b_deg
-        b_b = degree_begin[b_deg]
-        b_e = degree_begin[b_deg + 1]
-        c_b = degree_begin[c_deg]
-        c_e = degree_begin[c_deg + 1]
-        b_level = b_data[b_b:b_e]
-        c_level = c_data[c_b:c_e]
+    for lhs_deg in range(lhs_deg_b, lhs_deg_e):
+        # Slice for each lhs level
+        lhs_b, lhs_e = degree_begin[lhs_deg], degree_begin[lhs_deg + 1]
+        lhs_level = lhs_data[lhs_b:lhs_e]
 
-        acc = acc + jnp.tensordot(b_level, c_level, axes=0).reshape(-1)
+        # Corresponding rhs slice to fit into out_degree
+        rhs_deg = out_degree - lhs_deg
+        rhs_b, rhs_e = degree_begin[rhs_deg], degree_begin[rhs_deg + 1]
+        rhs_level = rhs_data[rhs_b:rhs_e]
+
+        # Accumulate flattened outer product of two 1D arrays
+        frag = jnp.kron(lhs_level, rhs_level)
+        acc = acc + frag
 
     return acc
 
 
 def _fallback_dense_ft_mul(
-    lhs: Array,
-    rhs: Array,
+    lhs_data: Array,
+    rhs_data: Array,
     degree_begin: np.ndarray[np.int64.dtype],
     lhs_max_degree: np.int32,
     rhs_max_degree: np.int32,
@@ -484,24 +501,29 @@ def _fallback_dense_ft_mul(
     lhs_min_degree: np.int32=0,
     rhs_min_degree: np.int32=0
 ):
-    out = jnp.zeros(degree_begin[out_max_degree + 1], dtype=lhs.dtype)
+    """
+    Multiply two dense free tensors with given data and degree
 
-    for l_i in range(lhs_min_degree, lhs_max_degree + 1):
-        for r_i in range(rhs_min_degree, rhs_max_degree + 1):
-            out_i = l_i + r_i
-            if out_i <= out_max_degree:
-                # Get fragments positions for each level i and j
-                l_b, l_e = degree_begin[l_i], degree_begin[l_i + 1]
-                r_b, r_e = degree_begin[r_i], degree_begin[r_i + 1]
+    Convenience wrapper that concatenates individual outer products of data
+    at each level into one tensor.
+    """
+    level_gen = partial(
+        _dense_ft_mul_level_accumulator,
+        lhs_data=lhs_data,
+        rhs_data=rhs_data,
+        degree_begin=degree_begin,
+        lhs_min_degree=lhs_min_degree,
+        lhs_max_degree=lhs_max_degree,
+        rhs_min_degree=rhs_min_degree,
+        rhs_max_degree=rhs_max_degree
+    )
 
-                # Flattened outer product of into higher level
-                out_frag = jnp.kron(lhs[l_b:l_e], rhs[r_b:r_e])
+    mul = jnp.concatenate(
+        [level_gen(out_degree = i) for i in range(0, out_max_degree + 1)],
+        axis=-1
+    )
 
-                # Accumulate fragment into result
-                out_b, out_e = degree_begin[out_i], degree_begin[out_i + 1]
-                out = out.at[out_b:out_e].add(out_frag)
-
-    return out
+    return mul
 
 
 def _fallback_dense_ft_exp(
@@ -734,6 +756,10 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         return jax.lax.fori_loop(arg_min_deg, arg_max_deg, arg_deg_loop, out_data)
 
 
+class DenseFTAdjRightMul(Operation, DenseOperation):
+    fn_name = "ft_adj_rmul"
+
+
 class DenseLieToTensor(Operation, DenseOperation):
     fn_name = "lie_to_tensor"
 
@@ -888,7 +914,7 @@ standard_cpu_ops = [
     DenseSTFma,
     DenseSTMul,
     DenseFTAdjLeftMul,
-    # DenseFTAdjRightMul, # FIXME implementation required
+    DenseFTAdjRightMul,
     DenseFTExp,
     DenseFTFMExp,
     DenseFTLog,
@@ -903,10 +929,3 @@ for op in standard_cpu_ops:
         {"float32", "float64"},
         {}
     )
-
-legacy_cpu_functions = [
-    "cpu_dense_ft_adj_rmul"
-]
-
-for fn in legacy_cpu_functions:
-    jax.ffi.register_ffi_target(fn, cpu_functions[fn], platform="cpu")
