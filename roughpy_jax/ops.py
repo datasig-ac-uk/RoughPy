@@ -465,8 +465,7 @@ def _dense_ft_mul_level_accumulator(
     rhs_deg that contributes to degree 2, i.e rhs_deg over 2,1,0. The flattened outer
     product of each level accumulates into the slice level, for out degree 2, [3,7].
     """
-    out_b = degree_begin[out_degree]
-    out_e = degree_begin[out_degree + 1]
+    out_b, out_e = degree_begin[out_degree], degree_begin[out_degree + 1]
     out_size = out_e - out_b
 
     acc = jnp.zeros((out_size,), dtype=lhs_data.dtype)
@@ -532,19 +531,27 @@ def _fallback_dense_ft_exp(
     degree_begin: np.ndarray[np.int64.dtype],
     arg_max_deg: np.int32
 ):
-    # exp(x) = Σ((x^n) / n!)
-    # First two steps are are x^0 + x^1, i.e. add identity to original
-    exp_acc = arg_data.at[0].add(1)
+    # Use Horner's method to compute exp(x) = Σ((x^n) / n!)
+    out = jnp.zeros_like(arg_data).at[0].add(1)
 
-    # Accumulate arg_pow_n (= arg_data^n) and factorial each iteration and add to sum
-    arg_pow_n = arg_data
-    factorial = 1
-    for n in range(2, depth + 1):
-        factorial *= n
-        arg_pow_n = _fallback_dense_ft_mul(arg_pow_n, arg_data, degree_begin, arg_max_deg, arg_max_deg, arg_max_deg)
-        exp_acc += arg_pow_n / factorial
+    for deg in range(arg_max_deg, 0, -1):
+        max_level = arg_max_deg - deg + 1
 
-    return exp_acc
+        mul = _fallback_dense_ft_mul(
+            lhs_data=out,
+            rhs_data=arg_data,
+            degree_begin=degree_begin,
+            out_max_degree=arg_max_deg,
+            lhs_min_degree=0,
+            lhs_max_degree=max_level,
+            rhs_min_degree=1,
+            rhs_max_degree=max_level,
+        )
+
+        out = mul / deg
+        out = out.at[0].add(1)
+
+    return out
 
 
 class DenseFTFma(Operation, DenseOperation):
