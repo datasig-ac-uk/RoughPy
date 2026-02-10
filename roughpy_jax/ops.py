@@ -482,8 +482,7 @@ def _fallback_dense_ft_mul(
     lhs_min_degree: np.int32=0,
     rhs_min_degree: np.int32=0
 ):
-    # FIXME review against old code, should be depth + 1 not -1?
-    out = jnp.zeros(degree_begin[-1], dtype=lhs.dtype)
+    out = jnp.zeros(degree_begin[out_max_degree + 1], dtype=lhs.dtype)
 
     for l_i in range(lhs_min_degree, lhs_max_degree + 1):
         for r_i in range(rhs_min_degree, rhs_max_degree + 1):
