@@ -19,9 +19,9 @@ def test_jit_compilation(rpj_dtype, rpj_batch, rpj_no_acceleration):
     _combined_fma_jit = jax.jit(_combined_fma)
 
 
-def test_jit_equivalence(rpj_dtype, rpj_batch):
+def test_jit_equivalence(rpj_dtype, rpj_small_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(3, 3)
-    data = rpj_batch.rng_uniform(-1, 1, basis.size(), rpj_dtype)
+    data = rpj_small_batch.rng_uniform(-1, 1, basis.size(), rpj_dtype)
     a = rpj.FreeTensor(data, basis)
     b = rpj.FreeTensor(data, basis)
     c = rpj.FreeTensor(data, basis)
@@ -34,12 +34,12 @@ def test_jit_equivalence(rpj_dtype, rpj_batch):
 
     # Confirm that JIT is running faster
     time_non_jit_start = time.time()
-    for _ in range(100):
+    for _ in range(10):
         _combined_fma(a, b, c)
     time_non_jit = time.time() - time_non_jit_start
 
     time_jit_start = time.time()
-    for _ in range(100):
+    for _ in range(10):
         combined_fma_jit(a, b, c)
     time_jit = time.time() - time_jit_start
 

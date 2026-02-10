@@ -113,6 +113,12 @@ def rpj_batch(request):
     return BatchFixtureHelper(request.param)
 
 
+# Minimised batch sizes for slower tests; test non-batched and small 2D batch
+@pytest.fixture(params=[(), (2,2)])
+def rpj_small_batch(request):
+    return BatchFixtureHelper(request.param)
+
+
 # Data type test fixture
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def rpj_dtype(request):
