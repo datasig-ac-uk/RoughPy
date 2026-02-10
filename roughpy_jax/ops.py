@@ -700,15 +700,19 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         out_data = jnp.zeros(degree_begin[depth + 1], dtype=arg_data.dtype)
 
         def dsize(degree):
-            return degree_begin[degree+1] - degree_begin[degree]
+            e = jnp.take(degree_begin, degree + 1)
+            b = jnp.take(degree_begin, degree)
+            return e - b
 
         def inner_fn(op_idx, val, *, op_deg, out_deg):
             arg_deg = op_deg + out_deg
             out_size = dsize(out_deg)
-            offset = degree_begin[arg_deg] + op_idx * out_size
-            op_val = op_data[degree_begin[op_deg] + op_idx]
+            offset = jnp.take(degree_begin, arg_deg) + op_idx * out_size
+            op_db = jnp.take(degree_begin, op_deg) + op_idx
+            op_val = jnp.take(op_data, op_db)
 
-            arg_level = arg_data[offset: offset + out_size]
+            arg_level = jax.lax.dynamic_slice_in_dim(arg_data, offset, out_size, axis=0)
+
             return val.at[degree_begin[out_deg]:degree_begin[out_deg+1]].add(op_val * arg_level)
 
         def out_deg_loop(out_deg, val, *, arg_deg):
@@ -720,8 +724,8 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         def arg_deg_loop(d, val):
             arg_deg = arg_max_deg - d
 
-            odeg_start = max(arg_deg - op_max_deg, out_min_deg)
-            odeg_end = min(arg_deg - op_min_deg, out_max_deg)
+            odeg_start = jnp.maximum(arg_deg - op_max_deg, out_min_deg)
+            odeg_end = jnp.minimum(arg_deg - op_min_deg, out_max_deg)
 
             return jax.lax.fori_loop(odeg_start, odeg_end, partial(out_deg_loop, arg_deg=arg_deg), val)
 
