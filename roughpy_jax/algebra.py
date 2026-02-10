@@ -9,7 +9,6 @@ import jax.numpy as jnp
 import numpy as np
 
 from roughpy import compute as rpc
-from .csc import csc_matvec
 
 
 from roughpy_jax.ops import Operation
@@ -430,14 +429,29 @@ def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_fact
     :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
     :return: new FreeTensor containing the embedding of "arg"
     """
+    _check_tensor_dtype(arg)
+    dtype = arg.data.dtype
+    out_basis = arg.basis
+    batch_dims = arg.data.shape[:-1]
+
+    tensor_basis = tensor_basis or out_basis
 
     l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
-    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
-    result = csc_matvec(l2t.data, l2t.indices, l2t.indptr, tensor_basis.size(), arg.data)
-    if scale_factor:
-        result = result * scale_factor
 
-    return DenseFreeTensor(result, tensor_basis)
+    op_cls = Operation.get_operation("lie_to_tensor", "dense")
+    op = op_cls(
+        (out_basis, tensor_basis),
+        dtype,
+        batch_dims,
+        l2t_data=l2t.data,
+        l2t_indices=l2t.indices,
+        l2t_indptr=l2t.indptr,
+        l2t_size=np.int32(tensor_basis.size()),
+        scale_factor=scale_factor,
+    )
+
+    out_data = op(arg.data)
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None) -> LieT:
@@ -448,14 +462,29 @@ def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_fac
     :param lie_basis:
     :return:
     """
-    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
-    l2t = lie_basis.get_t2l_matrix(arg.data.dtype)
+    _check_tensor_dtype(arg)
+    dtype = arg.data.dtype
+    out_basis = arg.basis
+    batch_dims = arg.data.shape[:-1]
 
-    result = csc_matvec(l2t.data, l2t.indices, l2t.indptr, lie_basis.size(), arg.data)
-    if scale_factor:
-        result = result * scale_factor
+    lie_basis = lie_basis or out_basis
 
-    return DenseLie(result, lie_basis)
+    t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
+
+    op_cls = Operation.get_operation("tensor_to_lie", "dense")
+    op = op_cls(
+        (out_basis, lie_basis),
+        dtype,
+        batch_dims,
+        t2l_data=t2l.data,
+        t2l_indices=t2l.indices,
+        t2l_indptr=t2l.indptr,
+        t2l_size=np.int32(lie_basis.size()),
+        scale_factor=scale_factor,
+    )
+
+    out_data = op(arg.data)
+    return DenseLie(*out_data, out_basis)
 
 
 def ft_adjoint_left_mul(a: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:

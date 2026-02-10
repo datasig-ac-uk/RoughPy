@@ -2,13 +2,15 @@ import typing
 import collections.abc as cabc
 
 from functools import partial
-from typing import ClassVar, Callable, Any, Optional, TypedDict, TypeVar
+from typing import ClassVar, Callable, Any, Optional, TypedDict, TypeVar, Union
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
 from jax import Array
+
+from .csc import csc_matvec
 
 try:
     # Import using python module syntax to ensure proper loading of shared library
@@ -735,9 +737,60 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
 class DenseLieToTensor(Operation, DenseOperation):
     fn_name = "lie_to_tensor"
 
+    class StaticArgs(TypedDict):
+        l2t_data: np.ndarray[np.float32]
+        l2t_indices: np.ndarray[np.int64]
+        l2t_indptr: np.ndarray[np.int64]
+        l2t_size: np.int64
+        scale_factor: Union[None, np.float64]
+
+    @staticmethod
+    def fallback(
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        l2t_data: np.ndarray[np.float32],
+        l2t_indices: np.ndarray[np.int64],
+        l2t_indptr: np.ndarray[np.int64],
+        l2t_size: np.int32,
+        scale_factor: Union[None, np.float64],
+    ):
+        result = csc_matvec(l2t_data, l2t_indices, l2t_indptr, l2t_size, arg_data)
+        if scale_factor:
+            result = result * scale_factor
+
+        return result
+
 
 class DenseTensorToLie(Operation, DenseOperation):
     fn_name = "tensor_to_lie"
+
+    class StaticArgs(TypedDict):
+        t2l_data: np.ndarray[Union[np.float32, np.float64]]
+        t2l_indices: np.ndarray[np.int64]
+        t2l_indptr: np.ndarray[np.int64]
+        t2l_size: np.int64
+        scale_factor: Union[None, np.float64]
+
+
+    @staticmethod
+    def fallback(
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        t2l_data: np.ndarray[Union[np.float32, np.float64]],
+        t2l_indices: np.ndarray[np.int64],
+        t2l_indptr: np.ndarray[np.int64],
+        t2l_size: np.int32,
+        scale_factor: Union[None, np.float64],
+    ):
+        result = csc_matvec(t2l_data, t2l_indices, t2l_indptr, t2l_size, arg_data)
+        if scale_factor:
+            result = result * scale_factor
+
+        return result
 
 
 ## Intermediate operations
@@ -827,9 +880,7 @@ class DenseFTLog(Operation, DenseOperation):
 
         return log_acc
 
-# FIXME this is work in progress whilst implementing ops and fallback code.
-# Ensure that all legacy_cpu_functions is removed before final merge and
-# that we import these in the right location.
+# FIXME review move into cpu.py or similar?
 standard_cpu_ops = [
     DenseFTFma,
     DenseFTMul,
@@ -837,13 +888,10 @@ standard_cpu_ops = [
     DenseSTFma,
     DenseSTMul,
     DenseFTAdjLeftMul,
+    # DenseFTAdjRightMul, # FIXME implementation required
     DenseFTExp,
     DenseFTFMExp,
-    DenseFTLog
-    # FIXME incomplete:
-    # DenseFTAdjRightMul,
-    # DenseLieToTensor
-    # DenseTensorToLie
+    DenseFTLog,
 ]
 
 for op in standard_cpu_ops:
