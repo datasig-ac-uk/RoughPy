@@ -724,7 +724,42 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
     ):
-        raise NotImplementedError("FIXME ft_adj_lmul work in progress")
+        out_min_deg = 0
+        out_max_deg = depth + 1
+
+        out_size = degree_begin[out_max_deg] - degree_begin[out_min_deg]
+        out = jnp.zeros((out_size,), dtype=op_data.dtype)
+
+        arg_max_degree = min(arg_max_deg - op_min_deg, out_max_deg)
+        arg_min_degree = max(arg_min_deg - op_max_deg, out_min_deg)
+
+        for arg_degree in range(arg_max_degree, arg_min_degree - 1, -1):
+            out_min_degree = max(arg_degree - op_max_deg, out_min_deg)
+            out_max_degree = min(arg_degree - op_min_deg, out_max_deg)
+
+            arg_frag_lhs = degree_begin[arg_degree]
+            arg_frag_rhs = degree_begin[arg_degree + 1]
+            arg_frag = arg_data[arg_frag_lhs:arg_frag_rhs]
+
+            for out_degree in range(out_max_degree, out_min_degree - 1, -1):
+                op_degree = arg_degree - out_degree
+
+                op_frag_lhs = degree_begin[op_degree]
+                op_frag_rhs = degree_begin[op_degree + 1]
+                op_frag_size = op_frag_rhs - op_frag_lhs
+                op_frag = op_data[op_frag_lhs:op_frag_rhs]
+
+                out_frag_lhs = degree_begin[out_degree]
+                out_frag_rhs = degree_begin[out_degree + 1]
+                out_frag_size = out_frag_rhs - out_frag_lhs
+
+                for op_idx in range (op_frag_size):
+                    op_offset = op_idx * out_frag_size
+                    op_val = op_frag[op_idx]
+                    for i in range (out_frag_size):
+                        out = out.at[out_frag_lhs + i].add(op_val * arg_frag[i + op_offset])
+
+        return out
 
 
 class DenseFTAdjRightMul(Operation, DenseOperation):

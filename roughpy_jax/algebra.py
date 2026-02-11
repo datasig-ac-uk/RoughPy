@@ -510,7 +510,7 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     arg_max_deg = arg.basis.depth
 
     op_cls = Operation.get_operation("ft_adj_lmul", "dense")
-    op = op_cls(
+    op_call = op_cls(
         (out_basis, op.basis),
         dtype,
         batch_dims,
@@ -519,7 +519,7 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
         arg_max_deg=np.int32(arg_max_deg)
     )
 
-    out_data = op(op.data, arg.data)
+    out_data = op_call(op.data, arg.data)
 
     return DenseShuffleTensor(*out_data, out_basis)
 
@@ -547,7 +547,7 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     arg_max_deg = arg.basis.depth
 
     op_cls = Operation.get_operation("ft_adj_rmul", "dense")
-    op = op_cls(
+    op_call = op_cls(
         (out_basis, op.basis),
         dtype,
         batch_dims,
@@ -556,6 +556,6 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
         arg_max_deg=np.int32(arg_max_deg)
     )
 
-    out_data = op(op.data, arg.data)
+    out_data = op_call(op.data, arg.data)
 
     return DenseShuffleTensor(*out_data, out_basis)
