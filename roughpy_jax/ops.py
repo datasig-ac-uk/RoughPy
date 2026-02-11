@@ -553,6 +553,74 @@ def _fallback_dense_ft_exp(
     return out
 
 
+def _fallback_dense_antipode(
+    arg_data: Array,
+    width: np.int32,
+    depth: np.int32,
+    degree_begin: np.ndarray[np.int64.dtype],
+    no_sign: bool = False,
+):
+    def transpose_level(i):
+        sign = 1 if (no_sign or i % 2 == 0) else -1
+        level_data = arg_data[degree_begin[i]:degree_begin[i + 1]].reshape((width,) * i)
+        return sign * jnp.transpose(level_data).reshape(-1)
+
+    antipode = jnp.concatenate(
+        [transpose_level(i) for i in range(depth + 1)],
+        axis=-1
+    )
+
+    return antipode
+
+
+def _fallback_ft_adj_lmul(
+    op_data: Array,
+    arg_data: Array,
+    depth: np.int32,
+    degree_begin: np.ndarray[np.int64.dtype],
+    op_max_deg: np.int32,
+    arg_max_deg: np.int32,
+    op_min_deg: np.int32=0,
+    arg_min_deg: np.int32=0,
+):
+    out_min_deg = 0
+    out_max_deg = depth + 1
+
+    out_size = degree_begin[out_max_deg] - degree_begin[out_min_deg]
+    out = jnp.zeros((out_size,), dtype=op_data.dtype)
+
+    arg_max_degree = min(arg_max_deg - op_min_deg, out_max_deg)
+    arg_min_degree = max(arg_min_deg - op_max_deg, out_min_deg)
+
+    for arg_degree in range(arg_max_degree, arg_min_degree - 1, -1):
+        out_min_degree = max(arg_degree - op_max_deg, out_min_deg)
+        out_max_degree = min(arg_degree - op_min_deg, out_max_deg)
+
+        arg_frag_lhs = degree_begin[arg_degree]
+        arg_frag_rhs = degree_begin[arg_degree + 1]
+        arg_frag = arg_data[arg_frag_lhs:arg_frag_rhs]
+
+        for out_degree in range(out_max_degree, out_min_degree - 1, -1):
+            op_degree = arg_degree - out_degree
+
+            op_frag_lhs = degree_begin[op_degree]
+            op_frag_rhs = degree_begin[op_degree + 1]
+            op_frag_size = op_frag_rhs - op_frag_lhs
+            op_frag = op_data[op_frag_lhs:op_frag_rhs]
+
+            out_frag_lhs = degree_begin[out_degree]
+            out_frag_rhs = degree_begin[out_degree + 1]
+            out_frag_size = out_frag_rhs - out_frag_lhs
+
+            for op_idx in range (op_frag_size):
+                op_offset = op_idx * out_frag_size
+                op_val = op_frag[op_idx]
+                for i in range (out_frag_size):
+                    out = out.at[out_frag_lhs + i].add(op_val * arg_frag[i + op_offset])
+
+    return out
+
+
 class DenseFTFma(Operation, DenseOperation):
     fn_name = "ft_fma"
 
@@ -640,15 +708,15 @@ class DenseAntipode(Operation, DenseOperation):
         arg_max_deg: np.int32,
         no_sign: bool = False,
     ) -> tuple[Array]:
-        def transpose_level(i):
-            sign = 1 if (no_sign or i % 2 == 0) else -1
-            level_data = arg_data[degree_begin[i]:degree_begin[i + 1]].reshape((width,) * i)
-            return sign * jnp.transpose(level_data).reshape(-1)
-
-        return jnp.concatenate(
-            [transpose_level(i) for i in range(depth + 1)],
-            axis=-1
+        antipode = _fallback_dense_antipode(
+            arg_data,
+            width,
+            depth,
+            degree_begin,
+            no_sign
         )
+
+        return antipode
 
 
 class DenseSTFma(Operation, DenseOperation):
@@ -724,42 +792,17 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
     ):
-        out_min_deg = 0
-        out_max_deg = depth + 1
-
-        out_size = degree_begin[out_max_deg] - degree_begin[out_min_deg]
-        out = jnp.zeros((out_size,), dtype=op_data.dtype)
-
-        arg_max_degree = min(arg_max_deg - op_min_deg, out_max_deg)
-        arg_min_degree = max(arg_min_deg - op_max_deg, out_min_deg)
-
-        for arg_degree in range(arg_max_degree, arg_min_degree - 1, -1):
-            out_min_degree = max(arg_degree - op_max_deg, out_min_deg)
-            out_max_degree = min(arg_degree - op_min_deg, out_max_deg)
-
-            arg_frag_lhs = degree_begin[arg_degree]
-            arg_frag_rhs = degree_begin[arg_degree + 1]
-            arg_frag = arg_data[arg_frag_lhs:arg_frag_rhs]
-
-            for out_degree in range(out_max_degree, out_min_degree - 1, -1):
-                op_degree = arg_degree - out_degree
-
-                op_frag_lhs = degree_begin[op_degree]
-                op_frag_rhs = degree_begin[op_degree + 1]
-                op_frag_size = op_frag_rhs - op_frag_lhs
-                op_frag = op_data[op_frag_lhs:op_frag_rhs]
-
-                out_frag_lhs = degree_begin[out_degree]
-                out_frag_rhs = degree_begin[out_degree + 1]
-                out_frag_size = out_frag_rhs - out_frag_lhs
-
-                for op_idx in range (op_frag_size):
-                    op_offset = op_idx * out_frag_size
-                    op_val = op_frag[op_idx]
-                    for i in range (out_frag_size):
-                        out = out.at[out_frag_lhs + i].add(op_val * arg_frag[i + op_offset])
-
-        return out
+        lmul = _fallback_ft_adj_lmul(
+            op_data,
+            arg_data,
+            depth,
+            degree_begin,
+            op_max_deg,
+            arg_max_deg,
+            op_min_deg,
+            arg_min_deg,
+        )
+        return lmul
 
 
 class DenseFTAdjRightMul(Operation, DenseOperation):
@@ -783,7 +826,20 @@ class DenseFTAdjRightMul(Operation, DenseOperation):
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
     ):
-        raise NotImplementedError("FIXME ft_adj_rmul work in progress")
+        op_antipode = _fallback_dense_antipode(op_data, width, depth, degree_begin)
+        rmul_antipode = _fallback_ft_adj_lmul(
+            op_antipode,
+            arg_data,
+            depth,
+            degree_begin,
+            op_max_deg,
+            arg_max_deg,
+            op_min_deg,
+            arg_min_deg,
+        )
+        rmul = _fallback_dense_antipode(rmul_antipode, width, depth, degree_begin)
+
+        return rmul
 
 
 class DenseLieToTensor(Operation, DenseOperation):

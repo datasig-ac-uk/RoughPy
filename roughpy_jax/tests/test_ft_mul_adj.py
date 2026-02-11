@@ -4,7 +4,7 @@ import numpy as np
 import roughpy_jax as rpj
 
 
-def test_adjoint_left_ft_mul_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
+def test_adjoint_ft_mul_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(2, 2)
     a_data = rpj_batch.repeat(np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], rpj_dtype))
     a = rpj.DenseFreeTensor(a_data, basis)
@@ -18,9 +18,12 @@ def test_adjoint_left_ft_mul_identity(rpj_dtype, rpj_batch, rpj_no_acceleration)
         shape=rpj_batch.tensor_batch_shape(basis)
     )
     s = rpj.DenseShuffleTensor(s_data, basis)
-    r = rpj.ft_adjoint_left_mul(a, s)
 
-    assert jnp.allclose(r.data, s.data)
+    lmul = rpj.ft_adjoint_left_mul(a, s)
+    assert jnp.allclose(lmul.data, s.data)
+
+    rmul = rpj.ft_adjoint_right_mul(a, s)
+    assert jnp.allclose(rmul.data, s.data)
 
 
 def test_adjoint_left_ft_mul_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
