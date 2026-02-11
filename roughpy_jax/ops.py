@@ -60,9 +60,14 @@ def _batched_fallback_wrapper(single_tensor_fn):
 
         # Compute per tensor then restore original batch shape
         vmapped_fn = jax.vmap(partial(single_tensor_fn, **kwargs))
-        flat_result = vmapped_fn(*flat_args)
-        result = flat_result.reshape((*batch_shape, flat_result.shape[-1]))
-        return (result,)
+        flat_result_tuple = vmapped_fn(*flat_args)
+
+        # Unpack the resulting tuple args into original batch shapes
+        result = tuple(
+            flat_result_arg.reshape((*batch_shape, flat_result_arg.shape[-1]))
+            for flat_result_arg in flat_result_tuple
+        )
+        return result
 
     return wrapped
 
@@ -656,7 +661,7 @@ class DenseFTFma(Operation, DenseOperation):
             lhs_min_degree=b_min_deg,
             rhs_min_degree=c_min_deg
         )
-        return a_data + mul
+        return (a_data + mul,)
 
 
 class DenseFTMul(Operation, DenseOperation):
@@ -690,7 +695,7 @@ class DenseFTMul(Operation, DenseOperation):
             lhs_min_degree=lhs_min_deg,
             rhs_min_degree=rhs_min_deg
         )
-        return mul
+        return (mul,)
 
 
 class DenseAntipode(Operation, DenseOperation):
@@ -716,7 +721,7 @@ class DenseAntipode(Operation, DenseOperation):
             no_sign
         )
 
-        return antipode
+        return (antipode,)
 
 
 class DenseSTFma(Operation, DenseOperation):
@@ -791,7 +796,7 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         arg_max_deg: np.int32,
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
-    ):
+    ) -> tuple[Array]:
         lmul = _fallback_ft_adj_lmul(
             op_data,
             arg_data,
@@ -802,7 +807,7 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
             op_min_deg,
             arg_min_deg,
         )
-        return lmul
+        return (lmul,)
 
 
 class DenseFTAdjRightMul(Operation, DenseOperation):
@@ -825,7 +830,7 @@ class DenseFTAdjRightMul(Operation, DenseOperation):
         arg_max_deg: np.int32,
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
-    ):
+    ) -> tuple[Array]:
         op_antipode = _fallback_dense_antipode(op_data, width, depth, degree_begin)
         rmul_antipode = _fallback_ft_adj_lmul(
             op_antipode,
@@ -839,7 +844,7 @@ class DenseFTAdjRightMul(Operation, DenseOperation):
         )
         rmul = _fallback_dense_antipode(rmul_antipode, width, depth, degree_begin)
 
-        return rmul
+        return (rmul,)
 
 
 class DenseLieToTensor(Operation, DenseOperation):
@@ -863,12 +868,12 @@ class DenseLieToTensor(Operation, DenseOperation):
         l2t_indptr: np.ndarray[np.int64],
         l2t_size: np.int32,
         scale_factor: Union[None, np.float64],
-    ):
+    ) -> tuple[Array]:
         result = csc_matvec(l2t_data, l2t_indices, l2t_indptr, l2t_size, arg_data)
         if scale_factor:
             result = result * scale_factor
 
-        return result
+        return (result,)
 
 
 class DenseTensorToLie(Operation, DenseOperation):
@@ -893,12 +898,12 @@ class DenseTensorToLie(Operation, DenseOperation):
         t2l_indptr: np.ndarray[np.int64],
         t2l_size: np.int32,
         scale_factor: Union[None, np.float64],
-    ):
+    ) -> tuple[Array]:
         result = csc_matvec(t2l_data, t2l_indices, t2l_indptr, t2l_size, arg_data)
         if scale_factor:
             result = result * scale_factor
 
-        return result
+        return (result,)
 
 
 ## Intermediate operations
@@ -915,9 +920,9 @@ class DenseFTExp(Operation, DenseOperation):
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
         arg_max_deg: np.int32,
-    ):
+    ) -> tuple[Array]:
         exp = _fallback_dense_ft_exp(arg_data, degree_begin, arg_max_deg)
-        return exp
+        return (exp,)
 
 
 class DenseFTFMExp(Operation, DenseOperation):
@@ -942,7 +947,7 @@ class DenseFTFMExp(Operation, DenseOperation):
         exp_max_deg: np.int32,
         mul_min_deg: np.int32,
         exp_min_deg: np.int32
-    ):
+    ) -> tuple[Array]:
         # multiplier * exp(exponent)
         exp = _fallback_dense_ft_exp(exponent, degree_begin, exp_max_deg)
         mul = _fallback_dense_ft_mul(
@@ -955,7 +960,8 @@ class DenseFTFMExp(Operation, DenseOperation):
             lhs_min_degree=mul_min_deg,
             rhs_min_degree=exp_min_deg
         )
-        return mul
+
+        return (mul,)
 
 
 class DenseFTLog(Operation, DenseOperation):
@@ -971,7 +977,7 @@ class DenseFTLog(Operation, DenseOperation):
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
         arg_max_deg: np.int32,
-    ):
+    ) -> tuple[Array]:
         # log(1 + x) = Σ(((-1)^n) * (x^n) / n)
         log = jnp.zeros_like(arg_data)
 
@@ -994,7 +1000,8 @@ class DenseFTLog(Operation, DenseOperation):
                 rhs_max_degree=max_level,
             )
 
-        return log
+        return (log,)
+
 
 # FIXME review move into cpu.py or similar?
 standard_cpu_ops = [
