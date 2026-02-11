@@ -724,46 +724,31 @@ class DenseFTAdjLeftMul(Operation, DenseOperation):
         op_min_deg: np.int32=0,
         arg_min_deg: np.int32=0,
     ):
-        out_max_deg = depth
-        out_min_deg = 0
-
-        out_data = jnp.zeros(degree_begin[depth + 1], dtype=arg_data.dtype)
-
-        def dsize(degree):
-            e = jnp.take(degree_begin, degree + 1)
-            b = jnp.take(degree_begin, degree)
-            return e - b
-
-        def inner_fn(op_idx, val, *, op_deg, out_deg):
-            arg_deg = op_deg + out_deg
-            out_size = dsize(out_deg)
-            offset = jnp.take(degree_begin, arg_deg) + op_idx * out_size
-            op_db = jnp.take(degree_begin, op_deg) + op_idx
-            op_val = jnp.take(op_data, op_db)
-
-            arg_level = jax.lax.dynamic_slice_in_dim(arg_data, offset, out_size, axis=0)
-
-            return val.at[degree_begin[out_deg]:degree_begin[out_deg+1]].add(op_val * arg_level)
-
-        def out_deg_loop(out_deg, val, *, arg_deg):
-            op_deg = arg_deg - out_deg
-
-            fn = partial(inner_fn, op_deg = op_deg, out_deg = out_deg)
-            return jax.lax.fori_loop(0, dsize(op_deg), fn, val)
-
-        def arg_deg_loop(d, val):
-            arg_deg = arg_max_deg - d
-
-            odeg_start = jnp.maximum(arg_deg - op_max_deg, out_min_deg)
-            odeg_end = jnp.minimum(arg_deg - op_min_deg, out_max_deg)
-
-            return jax.lax.fori_loop(odeg_start, odeg_end, partial(out_deg_loop, arg_deg=arg_deg), val)
-
-        return jax.lax.fori_loop(arg_min_deg, arg_max_deg, arg_deg_loop, out_data)
+        raise NotImplementedError("FIXME ft_adj_lmul work in progress")
 
 
 class DenseFTAdjRightMul(Operation, DenseOperation):
     fn_name = "ft_adj_rmul"
+
+    class StaticArgs(TypedDict):
+        op_max_deg: np.int32
+        arg_max_deg: np.int32
+        op_min_deg: np.int32  # not required
+        arg_min_deg: np.int32 # not required
+
+    @staticmethod
+    def fallback(
+        op_data: Array,
+        arg_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        op_max_deg: np.int32,
+        arg_max_deg: np.int32,
+        op_min_deg: np.int32=0,
+        arg_min_deg: np.int32=0,
+    ):
+        raise NotImplementedError("FIXME ft_adj_rmul work in progress")
 
 
 class DenseLieToTensor(Operation, DenseOperation):
