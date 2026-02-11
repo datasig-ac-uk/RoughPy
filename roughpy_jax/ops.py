@@ -527,7 +527,6 @@ def _fallback_dense_ft_mul(
 
 def _fallback_dense_ft_exp(
     arg_data: Array,
-    depth: np.int32,
     degree_begin: np.ndarray[np.int64.dtype],
     arg_max_deg: np.int32
 ):
@@ -841,7 +840,7 @@ class DenseFTExp(Operation, DenseOperation):
         degree_begin: np.ndarray[np.int64.dtype],
         arg_max_deg: np.int32,
     ):
-        exp = _fallback_dense_ft_exp(arg_data, depth, degree_begin, arg_max_deg)
+        exp = _fallback_dense_ft_exp(arg_data, degree_begin, arg_max_deg)
         return exp
 
 
@@ -869,7 +868,7 @@ class DenseFTFMExp(Operation, DenseOperation):
         exp_min_deg: np.int32
     ):
         # multiplier * exp(exponent)
-        exp = _fallback_dense_ft_exp(exponent, depth, degree_begin, exp_max_deg)
+        exp = _fallback_dense_ft_exp(exponent, degree_begin, exp_max_deg)
         mul = _fallback_dense_ft_mul(
             multiplier,
             exp,
@@ -898,20 +897,28 @@ class DenseFTLog(Operation, DenseOperation):
         arg_max_deg: np.int32,
     ):
         # log(1 + x) = Σ(((-1)^n) * (x^n) / n)
-        # or log(y) = Σ(((-1)^n) * ((y - 1))^n) / n)
-        # Start from n=1 so before n=2 first value is (y-1)^1, i.e. subtract identity
-        x = arg_data.at[0].subtract(1)
-        log_acc = x
+        log = jnp.zeros_like(arg_data)
 
-        # Accumulate arg_pow_n (= arg_data^n) and factorial each iteration and add to sum
-        x_pow_n = x
-        sign = 1
-        for n in range(2, depth + 2):
-            sign *= -1
-            x_pow_n = _fallback_dense_ft_mul(x_pow_n, x, degree_begin, arg_max_deg, arg_max_deg, arg_max_deg)
-            log_acc += (sign * x_pow_n) / n
+        for deg in range(arg_max_deg, 0, -1):
+            max_level = arg_max_deg - deg + 1
 
-        return log_acc
+            if deg % 2 == 0:
+                log = log.at[0].add(-1 / deg)
+            else:
+                log = log.at[0].add(1 / deg)
+
+            log = _fallback_dense_ft_mul(
+                lhs_data=log,
+                rhs_data=arg_data,
+                degree_begin=degree_begin,
+                out_max_degree=arg_max_deg,
+                lhs_min_degree=0,
+                lhs_max_degree=max_level,
+                rhs_min_degree=1,
+                rhs_max_degree=max_level,
+            )
+
+        return log
 
 # FIXME review move into cpu.py or similar?
 standard_cpu_ops = [
