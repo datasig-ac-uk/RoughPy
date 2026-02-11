@@ -1,8 +1,9 @@
 import itertools
 import functools
+import typing
 import math
 
-from typing import Type, TypeVar, Optional
+from typing import Type, TypeVar, Optional, Callable, TypeAlias, Any, Union
 
 import numpy as np
 import jax
@@ -139,6 +140,108 @@ def _build_base_entry(
 
     components = list(map(inner, k_arrays, data))
     return _flatten(components)
+
+
+DQInt = TypeVar("DQInt", bound=Union[int, np.signedinteger])
+DQParam = TypeVar("DQParam", bound=Union[float, np.floating])
+LeftT = TypeVar("LeftT")
+RightT = TypeVar("RightT")
+AccT = TypeVar("AccT")
+
+DQInitT: TypeAlias = Callable[
+    [np.signedinteger, np.signedinteger, np.signedinteger],
+    AccT,
+]
+DQLeftGetterT: TypeAlias = Callable[
+    [np.signedinteger, np.signedinteger, np.signedinteger], LeftT
+]
+DQRightGetterT: TypeAlias = Callable[
+    [np.signedinteger, np.signedinteger, np.signedinteger], RightT
+]
+DQCombineT: TypeAlias = Callable[[LeftT, AccT, RightT], AccT]
+
+
+def _resolve_short_case(
+    inf_trim: DQInt,
+    sup_trim: DQInt,
+    inf_scaled: DQParam,
+    sup_scaled: DQParam,
+    is_clopen: bool,
+) -> tuple[DQInt, DQInt]:
+    if sup_trim < inf_trim:
+        return inf_trim, inf_trim
+
+    if is_clopen:
+        k1 = inf_trim
+        k2 = k1 + (0 if sup_trim == sup_scaled else 1)
+        return k1, k2
+
+    k2 = sup_trim
+    k1 = k2 - (0 if inf_trim == inf_scaled else 1)
+
+    return k1, k2
+
+
+def dyadic_query(
+    query: Interval,
+    resolution: np.signedinteger,
+    init: DQInitT,
+    get_left: DQLeftGetterT,
+    get_right: DQRightGetterT,
+    combine: DQCombineT,
+    dyadic_int_dtype: np.dtype = np.dtype("int32"),
+    cache_interval_type: IntervalType = IntervalType.ClOpen,
+) -> AccT:
+    _, exponent = np.frexp(query.sup - query.inf)
+    coarse_resolution = 1 - exponent.astype(dyadic_int_dtype)
+    is_clopen = cache_interval_type == IntervalType.ClOpen
+
+    inf_scaled = np.ldexp(query.inf, resolution)
+    sup_scaled = np.ldexp(query.sup, resolution)
+    inf = np.ceil(inf_scaled).astype(dyadic_int_dtype)
+    sup = np.floor(sup_scaled).astype(dyadic_int_dtype)
+
+    if coarse_resolution > resolution:
+        k1, k2 = _resolve_short_case(inf, sup, inf_scaled, sup_scaled, is_clopen)
+        return init(k1, k2, resolution)
+
+    steps = resolution - coarse_resolution
+    inf_working = (inf + ((dyadic_int_dtype.type(1) << steps) - 1)) >> steps
+    sup_working = sup >> steps
+
+    result = init(inf_working, sup_working, coarse_resolution)
+
+    for i in range(1, steps + 1):
+        j = steps - i
+        r = coarse_resolution + i
+
+        inf_bit = (inf >> j) & 1
+        sup_bit = (sup >> j) & 1
+
+        # The update of working values needs to be handled with care. This depends on whether
+        # the dyadic intervals are open on the right or left. In the first case (clopen) the
+        # value passed as the first argument to get_right should be 2*sup_working and the
+        # new bit should be added after this call. For get_left, the first argument should
+        # be the fully updated 2*inf_working - inf_bit. In the second case, the reverse
+        # holds: inf_working has a two-stage update and sup_working has a one-stage update.
+        if is_clopen:
+            left_k = (inf_working << 1) - inf_bit
+            right_k = sup_working << 1
+            left = get_left(left_k, r, inf_bit)
+            right = get_right(right_k, r, sup_bit)
+            inf_working = left_k
+            sup_working = right_k + sup_bit
+        else:
+            left_k = inf_working << 1
+            right_k = (sup_working << 1) + sup_bit
+            left = get_left(left_k, r, inf_bit)
+            right = get_right(right_k, r, sup_bit)
+            inf_working = left_k - inf_bit
+            sup_working = right_k
+
+        result = combine(left, result, right)
+
+    return result
 
 
 class LieIncrementStream(Stream[Lie, FreeTensor]):
