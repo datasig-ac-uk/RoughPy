@@ -487,7 +487,7 @@ def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_fac
     return DenseLie(*out_data, out_basis)
 
 
-def ft_adjoint_left_mul(a: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
+def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of left free-tensor multiplication on shuffles.
 
@@ -499,19 +499,19 @@ def ft_adjoint_left_mul(a: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     :param arg: The ShuffleTensor to be acted upon.
     :return: The result of the adjoint action as a ShuffleTensor.
     """
-    dtype = jnp.result_type(a.data.dtype, arg.data.dtype)
+    dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
 
     out_basis = arg.basis
-    _check_basis_compat(out_basis, a.basis)
+    _check_basis_compat(out_basis, op.basis)
 
-    batch_dims = _get_and_check_batch_dims(a.data, arg.data, core_dims=1)
+    batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
-    op_max_deg = a.basis.depth
+    op_max_deg = op.basis.depth
     arg_max_deg = arg.basis.depth
 
     op_cls = Operation.get_operation("ft_adj_lmul", "dense")
     op = op_cls(
-        (out_basis, a.basis),
+        (out_basis, op.basis),
         dtype,
         batch_dims,
         degree_begin=out_basis.degree_begin,
@@ -519,7 +519,7 @@ def ft_adjoint_left_mul(a: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
         arg_max_deg=np.int32(arg_max_deg)
     )
 
-    out_data = op(a.data, arg.data)
+    out_data = op(op.data, arg.data)
 
     return DenseShuffleTensor(*out_data, out_basis)
 
@@ -536,26 +536,26 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     :param arg: The ShuffleTensor to be acted upon.
     :return: The result of the adjoint action as a ShuffleTensor.
     """
+    dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
 
     out_basis = arg.basis
+    _check_basis_compat(out_basis, op.basis)
+
+    batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+
     op_max_deg = op.basis.depth
     arg_max_deg = arg.basis.depth
 
-    call = jax.ffi.ffi_call(
-        "cpu_dense_ft_adj_rmul",
-        jax.ShapeDtypeStruct(arg.data.shape, arg.data.dtype)
-    )
-
-    # FIXME convert to op
-
-    out_data = call(
-        op.data,
-        arg.data,
-        width=np.int32(out_basis.width),
-        depth=np.int32(out_basis.depth),
+    op_cls = Operation.get_operation("ft_adj_rmul", "dense")
+    op = op_cls(
+        (out_basis, op.basis),
+        dtype,
+        batch_dims,
         degree_begin=out_basis.degree_begin,
         op_max_deg=np.int32(op_max_deg),
         arg_max_deg=np.int32(arg_max_deg)
     )
 
-    return DenseShuffleTensor(out_data, out_basis)
+    out_data = op(op.data, arg.data)
+
+    return DenseShuffleTensor(*out_data, out_basis)
