@@ -321,7 +321,9 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         def reparam(di):
             return RealInterval(
-                interval_type, di.inf * scale_factor + inf, di.sup * scale_factor + inf
+                di.inf * scale_factor + inf,
+                di.sup * scale_factor + inf,
+                interval_type,
             )
 
         def f(k, r):
@@ -342,12 +344,18 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         if resolution <= 0:
             raise ValueError(f"resolution must be positive, got {resolution}")
 
-        if (fun := getattr(stream, "__dyadic_cache__")) is not None:
+        if (fun := getattr(stream, "__dyadic_cache__", None)) is not None:
             cache = jnp.asarray(fun(resolution))
         else:
-            cache = cls._stream_to_cache()
+            cache = cls._stream_to_cache(stream, resolution)
 
-        new_stream = cls(cache, lie_basis, group_basis, support, resolution)
+        new_stream = cls(
+            cache=cache,
+            lie_basis=lie_basis,
+            support=support,
+            group_basis=group_basis,
+            resolution=resolution,
+        )
 
         new_stream.__base_stream__ = stream
 
@@ -447,15 +455,15 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             data_arrays[i] = jnp.pad(data_arrays[i].astype(dtype), padding)
 
         if lie_basis is None:
-            lie_basis = LieBasis(width=input_data_basis, depth=2)
+            lie_basis = LieBasis(width=input_data_basis.width, depth=2)
 
         # Now sort out the support and scale the data
         if interval_type == IntervalType.ClOpen:
-            sup = jnp.nextafter(max(*maxs), jnp.inf)
-            inf = min(*mins)
+            sup = jnp.nextafter(max(maxs), jnp.inf)
+            inf = min(mins)
         else:  # interval_type == IntervalType.OpenCl:
-            sup = max(*maxs)
-            inf = jnp.nextafter(min(*mins), -jnp.inf)
+            sup = max(maxs)
+            inf = jnp.nextafter(min(mins), -jnp.inf)
 
         support = RealInterval(inf, sup, interval_type)
 
@@ -474,13 +482,13 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
         k_arrays = [
             rounder(jnp.ldexp(ts, resolution)).astype(dyadic_integer_type)
-            for ts in timestamps
+            for ts in time_arrays
         ]
 
         f = functools.partial(
             _build_base_entry,
             k_arrays=k_arrays,
-            data=data,
+            data=data_arrays,
             data_basis=input_data_basis,
             cache_basis=lie_basis,
             tensor_basis=tensor_basis,
@@ -554,7 +562,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
     def _query_combine(self, left: Lie, acc: Lie, right: Lie) -> Lie:
         ft_result = _ft_identity(
-            self._group_basis, self.cache.shape[1:-1], acc.data.dtype
+            self._group_basis, self._cache.shape[1:-1], acc.data.dtype
         )
 
         ft_result = ft_fmexp(ft_result, lie_to_tensor(left))
@@ -580,7 +588,6 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             self._query_get,
             self._query_get,
             self._query_combine,
-            jnp.dtype("int32"),
             self._interval_type,
         )
 
