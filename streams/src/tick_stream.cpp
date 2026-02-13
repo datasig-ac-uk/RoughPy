@@ -129,6 +129,8 @@ streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
         auto& it = m_data[*pdi1];
         if (!it.is_zero()) { return it; }
 
+        if (pdi1->power() == m_resolution) { return it; }
+
         std::vector<algebra::Lie> v;
         v.reserve(2);
         DyadicInterval left(*pdi1);
