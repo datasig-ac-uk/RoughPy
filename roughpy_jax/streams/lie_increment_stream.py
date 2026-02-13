@@ -43,15 +43,6 @@ def intersection(ivl1: Interval, ivl2: Interval) -> RealInterval:
     )
 
 
-def _batching_loop(shape):
-    if not shape:
-        yield ()
-        return
-
-    ranges = tuple(map(range, shape))
-    yield from itertools.product(*ranges)
-
-
 def _zero_lie(basis: LieBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype) -> Lie:
     data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
     return Lie(data, basis)
