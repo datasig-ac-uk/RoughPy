@@ -13,6 +13,12 @@ def test_from_stream_rejects_nonpositive_resolution():
         group_basis = TensorBasis(width=1, depth=1)
         support = RealInterval(0.0, 1.0, IntervalType.ClOpen)
 
+        def log_signature(self, interval):
+            pass
+
+        def signature(self, interval):
+            pass
+
     with pytest.raises(ValueError, match="resolution must be positive"):
         LieIncrementStream.from_stream(DummyStream(), resolution=0)
 
@@ -24,8 +30,16 @@ def test_from_stream_uses_stream_dyadic_cache_provider():
             self.group_basis = TensorBasis(width=1, depth=1)
             self.support = RealInterval(0.0, 1.0, IntervalType.ClOpen)
 
+        def log_signature(self, interval):
+            pass
+
+        def signature(self, interval):
+            pass
+
         def __dyadic_cache__(self, resolution: int):
-            return jnp.zeros((1 << (resolution + 1), self.lie_basis.size()), dtype=jnp.float32)
+            return jnp.zeros(
+                (1 << (resolution + 1), self.lie_basis.size()), dtype=jnp.float32
+            )
 
     src = DummyStream()
     result = LieIncrementStream.from_stream(src, resolution=4)
@@ -45,6 +59,12 @@ def test_from_stream_falls_back_to_stream_to_cache(monkeypatch):
             self.group_basis = TensorBasis(width=1, depth=1)
             self.support = RealInterval(0.0, 1.0, IntervalType.ClOpen)
 
+        def log_signature(self, interval):
+            pass
+
+        def signature(self, interval):
+            pass
+
     src = DummyStream()
     captured = {}
 
@@ -52,9 +72,13 @@ def test_from_stream_falls_back_to_stream_to_cache(monkeypatch):
         captured["stream"] = stream
         captured["resolution"] = resolution
         captured["interval_type"] = interval_type
-        return jnp.zeros((1 << (resolution + 1), src.lie_basis.size()), dtype=jnp.float32)
+        return jnp.zeros(
+            (1 << (resolution + 1), src.lie_basis.size()), dtype=jnp.float32
+        )
 
-    monkeypatch.setattr(LieIncrementStream, "_stream_to_cache", staticmethod(fake_stream_to_cache))
+    monkeypatch.setattr(
+        LieIncrementStream, "_stream_to_cache", staticmethod(fake_stream_to_cache)
+    )
 
     result = LieIncrementStream.from_stream(src, resolution=3)
     assert isinstance(result, LieIncrementStream)
