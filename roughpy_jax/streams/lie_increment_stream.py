@@ -201,6 +201,10 @@ def dyadic_query(
     inf = np.ceil(inf_scaled).astype(dyadic_int_dtype)
     sup = np.floor(sup_scaled).astype(dyadic_int_dtype)
 
+    # When the query interval is smaller than the shortest dyadics provided here then special care is needed
+    # We have to determine if the included end of any max-resolution interval is contained in the query interval.
+    # This should be the case if the rounded inf and sup are different, in which case it is just a matter of
+    # selecting the one that lies inside the interval. Which endpoint this is depends on the direction of rounding.
     if coarse_resolution > resolution:
         k1, k2 = _resolve_short_case(inf, sup, inf_scaled, sup_scaled, is_clopen)
         return init(k1, k2, resolution)
@@ -502,51 +506,49 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
     def _query_dyadic(self, k: int, n: int) -> Lie: ...
 
-    def _query_cache(self, inf: float, sup: float) -> Lie:
+    def _query_cache(self, query: RealInterval) -> Lie:
         """
         Stub for dyadic cache lookup.
 
         This should return a JAX array shaped like (..., LieDim) containing
         the log-signature over [inf, sup] at the given resolution.
         """
-        rounder = (
-            math.floor if self._interval_type == IntervalType.ClOpen else math.ceil
-        )
 
-        diff = sup - inf
-        _, exp = math.frexp(diff)
-        exp = -exp
-        begin = int(rounder(math.ldexp(inf, self._resolution)))
-        end = int(rounder(math.ldexp(sup, self._resolution)))
-
-        # When the query interval is smaller than the shortest dyadics provided here then special care is needed
-        # We have to determine if the included end of any max-resolution interval is contained in the query interval.
-        # This should be the case if the rounded inf and sup are different, in which case it is just a matter of
-        # selecting the one that lies inside the interval. Which endpoint this is depends on the direction of rounding.
-        if exp > self._resolution:
-            if begin == end:
-                return self._zero_log_signature()
-
-            k = end if self._interval_type == IntervalType.ClOpen else begin
-            return self._query_dyadic(k, self._resolution)
-
-        shift = self._resolution - exp - 1
-        pad = (1 << shift) - 1
-        inf_trim = ((begin + pad) >> shift) << shift
-        sup_trim = (end >> shift) << shift
-
-        inf_work = inf_trim
-        sup_work = sup_trim
-        inf_indicator = inf_trim - inf
-        sup_indicator = sup - sup_trim
-
-        mid = math.ldexp(0.5, exp)
-
-    def _reparamterise(self, interval: Interval) -> tuple[float, float]:
+    def _reparamterise(self, interval: Interval) -> RealInterval:
         inf = self.support.inf
         length = self.support.sup - self.support.inf
 
-        return (interval.inf - inf) / length, (interval.sup - inf) / length
+        return RealInterval(
+            (interval.inf - inf) / length,
+            (interval.sup - inf) / length,
+            interval.interval_type,
+        )
+
+    def _query_init(self, k1: int, k2: int, n: int) -> Lie:
+        if k1 == k2:
+            return self._zero_log_signature()
+
+        if self._interval_type == IntervalType.ClOpen:
+            return self._query_dyadic(k1, n)
+
+        return self._query_dyadic(k2, n)
+
+    def _query_get(self, k: int, n: int, digit: int) -> Lie:
+        if not digit:
+            return self._zero_log_signature()
+
+        return self._query_dyadic(k, n)
+
+    def _query_combine(self, left: Lie, acc: Lie, right: Lie) -> Lie:
+        ft_result = _ft_identity(
+            self._group_basis, self.cache.shape[1:-1], acc.data.dtype
+        )
+
+        ft_result = ft_fmexp(ft_result, lie_to_tensor(left))
+        ft_result = ft_fmexp(ft_result, lie_to_tensor(acc))
+        ft_result = ft_fmexp(ft_result, lie_to_tensor(right))
+
+        return tensor_to_lie(ft_log(ft_result))
 
     def log_signature(self, interval: Interval | None = None) -> Lie:
         if interval is None:
@@ -556,9 +558,19 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         if query_interval.sup <= query_interval.inf:
             return self._zero_log_signature()
 
-        inf, sup = self._reparamterise(query_interval)
+        reparam_query = self._reparamterise(query_interval)
 
-        result = self._query_cache(inf, sup)
+        result = dyadic_query(
+            reparam_query,
+            self._resolution,
+            self._query_init,
+            self._query_get,
+            self._query_get,
+            self._query_combine,
+            jnp.dtype("int32"),
+            self._interval_type,
+        )
+
         return result
 
     def signature(
