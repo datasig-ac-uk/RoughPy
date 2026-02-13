@@ -142,32 +142,26 @@ def _build_base_entry(
     return _flatten(components)
 
 
-DQInt = TypeVar("DQInt", bound=Union[int, np.signedinteger])
-DQParam = TypeVar("DQParam", bound=Union[float, np.floating])
 LeftT = TypeVar("LeftT")
 RightT = TypeVar("RightT")
 AccT = TypeVar("AccT")
 
 DQInitT: TypeAlias = Callable[
-    [np.signedinteger, np.signedinteger, np.signedinteger],
+    [int, int, int],
     AccT,
 ]
-DQLeftGetterT: TypeAlias = Callable[
-    [np.signedinteger, np.signedinteger, np.signedinteger], LeftT
-]
-DQRightGetterT: TypeAlias = Callable[
-    [np.signedinteger, np.signedinteger, np.signedinteger], RightT
-]
+DQLeftGetterT: TypeAlias = Callable[[int, int, int], LeftT]
+DQRightGetterT: TypeAlias = Callable[[int, int, int], RightT]
 DQCombineT: TypeAlias = Callable[[LeftT, AccT, RightT], AccT]
 
 
 def _resolve_short_case(
-    inf_trim: DQInt,
-    sup_trim: DQInt,
-    inf_scaled: DQParam,
-    sup_scaled: DQParam,
+    inf_trim: int,
+    sup_trim: int,
+    inf_scaled: float,
+    sup_scaled: float,
     is_clopen: bool,
-) -> tuple[DQInt, DQInt]:
+) -> tuple[int, int]:
     if sup_trim < inf_trim:
         return inf_trim, inf_trim
 
@@ -184,22 +178,38 @@ def _resolve_short_case(
 
 def dyadic_query(
     query: Interval,
-    resolution: np.signedinteger,
+    resolution: int,
     init: DQInitT,
     get_left: DQLeftGetterT,
     get_right: DQRightGetterT,
     combine: DQCombineT,
-    dyadic_int_dtype: np.dtype = np.dtype("int32"),
     cache_interval_type: IntervalType = IntervalType.ClOpen,
 ) -> AccT:
-    _, exponent = np.frexp(query.sup - query.inf)
-    coarse_resolution = 1 - exponent.astype(dyadic_int_dtype)
     is_clopen = cache_interval_type == IntervalType.ClOpen
 
-    inf_scaled = np.ldexp(query.inf, resolution)
-    sup_scaled = np.ldexp(query.sup, resolution)
-    inf = np.ceil(inf_scaled).astype(dyadic_int_dtype)
-    sup = np.floor(sup_scaled).astype(dyadic_int_dtype)
+    inf_scaled = math.ldexp(query.inf, resolution)
+    sup_scaled = math.ldexp(query.sup, resolution)
+    inf = math.ceil(inf_scaled)
+    sup = math.floor(sup_scaled)
+
+    # If query and cache interval types differ, nudge the endpoint that is
+    # excluded by the query but included by the cache inward at dyadic points.
+    if query.interval_type != cache_interval_type:
+        if query.interval_type == IntervalType.OpenCl and is_clopen:
+            if inf_scaled == inf:
+                inf += 1
+                inf_scaled = inf
+        elif query.interval_type == IntervalType.ClOpen and not is_clopen:
+            if sup_scaled == sup:
+                sup -= 1
+                sup_scaled = sup
+
+    if sup < inf:
+        return init(inf, inf, resolution)
+
+    effective_width = math.ldexp(sup_scaled - inf_scaled, -resolution)
+    _, exponent = math.frexp(effective_width)
+    coarse_resolution = 1 - exponent
 
     # When the query interval is smaller than the shortest dyadics provided here then special care is needed
     # We have to determine if the included end of any max-resolution interval is contained in the query interval.
@@ -210,8 +220,11 @@ def dyadic_query(
         return init(k1, k2, resolution)
 
     steps = resolution - coarse_resolution
-    inf_working = (inf + ((dyadic_int_dtype.type(1) << steps) - 1)) >> steps
+    inf_working = (inf + ((1 << steps) - 1)) >> steps
     sup_working = sup >> steps
+
+    if sup_working < inf_working:
+        return init(inf_working, inf_working, coarse_resolution)
 
     result = init(inf_working, sup_working, coarse_resolution)
 
