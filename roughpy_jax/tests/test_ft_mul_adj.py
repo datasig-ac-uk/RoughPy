@@ -81,3 +81,9 @@ def test_adjoint_ft_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_accelerat
     sign = jnp.array([-1, 1, 1, 1, 1, 1, 1], dtype=rpj_dtype)
     rmul_expected = lmul.data * sign
     assert jnp.allclose(rmul.data, rmul_expected)
+
+    # Double-check rmul is antipode(ft_adjoint_left_mul(antipode(a), s))
+    a_antipode = rpj.antipode(a)
+    rmul_antipode = rpj.ft_adjoint_left_mul(a_antipode, s)
+    rmul_manual = rpj.antipode(rmul_antipode)
+    assert jnp.allclose(rmul_manual.data, rmul_expected)
