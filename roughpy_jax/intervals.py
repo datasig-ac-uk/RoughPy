@@ -293,3 +293,17 @@ class Partition(Generic[RealT]):
             _interval_type=self.interval_type,
         )
         
+    def to_intervals(self) -> list[RealInterval[float]]:
+        """
+        Convert the partition into a list of RealIntervals corresponding to 
+        the subintervals defined by the partition.
+        :param partition: The Partition to convert.
+        :type partition: Partition
+        :return: A list of RealIntervals representing the subintervals of the partition.
+        :rtype: list[RealInterval]
+        """
+        return [RealInterval[float](
+            _inf=float(self._endpoints[i]),
+            _sup=float(self._endpoints[i+1]),
+            _interval_type=self.interval_type,
+        ) for i in range(len(self))]
