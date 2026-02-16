@@ -47,6 +47,10 @@ class Interval(Protocol):
     @property
     def sup(self) -> float:
         ...
+    
+    @property
+    def length(self) -> float:
+        ...
         
     def intersection(self, other: Self) -> typing.Optional[Self]:
         """
@@ -62,16 +66,25 @@ class Interval(Protocol):
 class BaseInterval(Interval):
     
     @staticmethod
+    def length(interval: Interval) -> float:
+        """
+        Calculate the length of the interval.
+        :return: The length of the interval, calculated as sup - inf.
+        :rtype: float
+        """
+        return interval.sup - interval.inf
+    
+    @staticmethod
     def intersection(
             left_interval: Interval, 
             right_interval: Interval,
-        ) -> typing.Optional[Interval]:
+        ) -> typing.Optional[RealInterval]:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
         :type other: Interval
         :return: A new Interval representing the intersection, or None if there is no intersection.
-        :rtype: typing.Optional[Interval]
+        :rtype: typing.Optional[RealInterval]
         """
         if not isinstance(left_interval, Interval) or not isinstance(right_interval, Interval):
             raise TypeError("Both arguments must be of type Interval")
@@ -166,6 +179,10 @@ class DyadicInterval(Dyadic):
         k = (self.k + 1) if self._interval_type == IntervalType.ClOpen else self.k
         return math.ldexp(self.k+1, -self.n)
     
+    @property
+    def length(self) -> float:
+        return BaseInterval.length(self)
+    
     def intersection(self, other: Self) -> typing.Optional[Interval]:
         """
         Calculate the intersection of this dyadic interval with another dyadic interval.
@@ -212,6 +229,10 @@ class RealInterval(Generic[RealT]):
     def sup(self) -> float:
         return self._sup
     
+    @property
+    def length(self) -> float:
+        return BaseInterval.length(self)
+    
     def intersection(self, other: Self) -> typing.Optional[Self]:
         """
         Calculate the intersection of this real interval with another real interval.
@@ -242,6 +263,10 @@ class Partition(Generic[RealT]):
     @property
     def sup(self) -> float:
         return float(self._endpoints[-1])
+    
+    @property
+    def length(self) -> float:
+        return BaseInterval.length(self)
     
     def to_real_interval(self) -> RealInterval[float]:
         """
@@ -275,16 +300,16 @@ class Partition(Generic[RealT]):
         intersect_itvl = intermediate_itvl.intersection(other)
         if intersect_itvl is None:
             return None
-        # Make new list of endpoints
+
         new_endpoints = []
-        # Add new inf if it is within bounds of old interval
+        # 1) Add new inf if it is within bounds of old interval
         if self.inf < intersect_itvl.inf:
             new_endpoints.append(intersect_itvl.inf)
-        # Include all inner points
+        # 2) Include all inner points
         for ep in self._endpoints:
             if intersect_itvl.inf <= ep <= intersect_itvl.sup:
                 new_endpoints.append(ep)
-        # Add new sup if within bounds of old interval
+        # 3) Add new sup if within bounds of old interval
         if intersect_itvl.sup < self.sup:
             new_endpoints.append(intersect_itvl.sup)
             
