@@ -10,7 +10,6 @@ import numpy as np
 
 from roughpy import compute as rpc
 
-
 from roughpy_jax.ops import Operation
 
 FreeTensorT = TypeVar('FreeTensorT')
@@ -83,6 +82,10 @@ class DenseFreeTensor:
     data: jnp.ndarray
     basis: TensorBasis
 
+    @property
+    def batch_shape(self):
+        return self.data.shape[:-1]
+
 
 @_tensor_dataclass
 class DenseShuffleTensor:
@@ -92,11 +95,19 @@ class DenseShuffleTensor:
     data: jnp.ndarray
     basis: TensorBasis
 
+    @property
+    def batch_shape(self):
+        return self.data.shape[:-1]
+
 
 @_tensor_dataclass
 class DenseLie:
     data: jnp.ndarray
     basis: LieBasis
+
+    @property
+    def batch_shape(self):
+        return self.data.shape[:-1]
 
 
 """
@@ -332,13 +343,12 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
-    batch_dims = x.data.shape[:-1]
 
     op_cls = Operation.get_operation("ft_exp", "dense")
     op = op_cls(
         (out_basis, x.basis),
         dtype,
-        batch_dims,
+        x.batch_shape,
         arg_max_deg=np.int32(out_basis.depth)
     )
 
@@ -364,13 +374,12 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
-    batch_dims = x.data.shape[:-1]
 
     op_cls = Operation.get_operation("ft_log", "dense")
     op = op_cls(
         (out_basis, x.basis),
         dtype,
-        batch_dims,
+        x.batch_shape,
         arg_max_deg=np.int32(out_basis.depth)
     )
 
@@ -432,7 +441,6 @@ def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_fact
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
     out_basis = arg.basis
-    batch_dims = arg.data.shape[:-1]
 
     tensor_basis = tensor_basis or out_basis
 
@@ -442,7 +450,7 @@ def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_fact
     op = op_cls(
         (out_basis, tensor_basis),
         dtype,
-        batch_dims,
+        arg.batch_shape,
         l2t_data=l2t.data,
         l2t_indices=l2t.indices,
         l2t_indptr=l2t.indptr,
@@ -465,7 +473,6 @@ def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_fac
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
     out_basis = arg.basis
-    batch_dims = arg.data.shape[:-1]
 
     lie_basis = lie_basis or out_basis
 
@@ -475,7 +482,7 @@ def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_fac
     op = op_cls(
         (out_basis, lie_basis),
         dtype,
-        batch_dims,
+        arg.batch_shape,
         t2l_data=t2l.data,
         t2l_indices=t2l.indices,
         t2l_indptr=t2l.indptr,
