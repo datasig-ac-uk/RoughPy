@@ -12,15 +12,6 @@ from jax import Array
 
 from .csc import csc_matvec
 
-try:
-    # Import using python module syntax to ensure proper loading of shared library
-    from ._rpy_jax_internals import cpu_functions
-except ImportError as e:
-    _rpy_jax_internals = None
-    raise ImportError(
-        "RoughPy JAX CPU backend is not installed correctly"
-    ) from e
-
 
 class BasisLike(typing.Protocol, cabc.Hashable):
     width: np.int32
@@ -1038,26 +1029,17 @@ class DenseFTLog(Operation, DenseOperation):
         return (log,)
 
 
-# FIXME review move into cpu.py or similar?
-standard_cpu_ops = [
-    DenseFTFma,
-    DenseFTMul,
-    DenseAntipode,
-    DenseSTFma,
-    DenseSTMul,
-    DenseFTAdjLeftMul,
-    DenseFTAdjRightMul,
-    DenseFTExp,
-    DenseFTFMExp,
-    DenseFTLog,
-]
+# Register all CPU implementations for dense operations
+try:
+    from ._rpy_jax_internals import cpu_functions
+except ImportError as e:
+    raise ImportError(
+        "RoughPy JAX CPU backend is not installed correctly"
+    ) from e
 
-for op in standard_cpu_ops:
-    cpu_function_name = f"cpu_dense_{op.fn_name}"
-    op.register(
-        "cpu",
-        op.fn_name,
-        cpu_functions[cpu_function_name],
-        {"float32", "float64"},
-        {}
-    )
+Operation.register_all(
+    platform="cpu",
+    ops=cpu_functions,
+    supported_dtypes={"float32", "float64"},
+    ffi_register_kwargs={}
+)
