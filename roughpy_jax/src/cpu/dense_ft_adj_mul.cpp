@@ -216,7 +216,7 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(cpu_dense_ft_adj_lmul,
 
 
 XLA_FFI_DEFINE_HANDLER_SYMBOL(cpu_dense_ft_adj_rmul,
-    rpy::jax::cpu::cpu_dense_ft_adj_lmul_impl,
+    rpy::jax::cpu::cpu_dense_ft_adj_rmul_impl,
     xla::ffi::Ffi::Bind()
         .Ret<xla::ffi::AnyBuffer>()
         .Arg<xla::ffi::AnyBuffer>()
