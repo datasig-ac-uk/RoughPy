@@ -444,17 +444,11 @@ def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_fact
 
     tensor_basis = tensor_basis or out_basis
 
-    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
-
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
         (out_basis, tensor_basis),
         dtype,
         arg.batch_shape,
-        l2t_data=l2t.data,
-        l2t_indices=l2t.indices,
-        l2t_indptr=l2t.indptr,
-        l2t_size=np.int32(tensor_basis.size()),
         scale_factor=scale_factor,
     )
 
@@ -476,17 +470,11 @@ def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_fac
 
     lie_basis = lie_basis or out_basis
 
-    t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
-
     op_cls = Operation.get_operation("tensor_to_lie", "dense")
     op = op_cls(
         (out_basis, lie_basis),
         dtype,
         arg.batch_shape,
-        t2l_data=t2l.data,
-        t2l_indices=t2l.indices,
-        t2l_indptr=t2l.indptr,
-        t2l_size=np.int32(lie_basis.size()),
         scale_factor=scale_factor,
     )
 

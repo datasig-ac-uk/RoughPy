@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import roughpy_jax as rpj
 
 
-def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch):
+def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
@@ -16,7 +16,7 @@ def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch):
     assert jnp.allclose(x.data, y.data, atol=1e-7)
 
 
-def test_l2t_scaled_t2l_roundtrip(rpj_dtype, rpj_batch):
+def test_l2t_scaled_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
@@ -30,7 +30,7 @@ def test_l2t_scaled_t2l_roundtrip(rpj_dtype, rpj_batch):
     assert jnp.allclose(0.5 * x.data, y.data, atol=1e-7)
 
 
-def test_l2t_t2l_scaled_roundtrip(rpj_dtype, rpj_batch):
+def test_l2t_t2l_scaled_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 

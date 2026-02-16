@@ -328,10 +328,19 @@ class Operation:
         self.bases = bases
         self.data_dtype = dtype
         self.batch_dims = batch_dims
-        self.static_args = self.StaticArgs(**kwargs)
 
         self.result_shape_dtypes = self.make_result_dtypes(basis, dtype, batch_dims)
         self.ffi_call_args = self.default_ffi_call_args | (ffi_call_args or {})
+        self.static_args = self.make_static_args(kwargs)
+
+    def make_static_args(self, kwargs) -> type[TypedDict]:
+        """
+        Construct static args from class kwargs.
+
+        Defaults to struct of args. Can be overridden by operations where static
+        data needs pre-processing before work is handed over to FFI or fallback.
+        """
+        return self.StaticArgs(**kwargs)
 
     def get_fallback(self) -> Callable[..., Any]:
         """
@@ -857,6 +866,20 @@ class DenseLieToTensor(Operation, DenseOperation):
         l2t_size: np.int64
         scale_factor: Union[None, np.float64]
 
+    def make_static_args(self, kwargs) -> type[TypedDict]:
+        arg_basis = self.bases[0]
+        tensor_basis = self.bases[1]
+
+        l2t = arg_basis.get_l2t_matrix(self.data_dtype)
+
+        return self.StaticArgs(
+            l2t_data=l2t.data,
+            l2t_indices=l2t.indices,
+            l2t_indptr=l2t.indptr,
+            l2t_size=np.int32(tensor_basis.size()),
+            **kwargs
+        )
+
     @staticmethod
     def fallback(
         arg_data: Array,
@@ -886,6 +909,18 @@ class DenseTensorToLie(Operation, DenseOperation):
         t2l_size: np.int64
         scale_factor: Union[None, np.float64]
 
+    def make_static_args(self, kwargs) -> type[TypedDict]:
+        lie_basis = self.bases[1]
+
+        t2l = lie_basis.get_t2l_matrix(self.data_dtype)
+
+        return self.StaticArgs(
+            t2l_data=t2l.data,
+            t2l_indices=t2l.indices,
+            t2l_indptr=t2l.indptr,
+            t2l_size=np.int32(lie_basis.size()),
+            **kwargs
+        )
 
     @staticmethod
     def fallback(
