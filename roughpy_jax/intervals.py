@@ -1,5 +1,6 @@
 import enum
 import math
+import numbers
 import typing
 
 from dataclasses import dataclass
@@ -84,11 +85,12 @@ class BaseInterval(Interval):
         if new_inf > new_sup:
             return None  # No intersection
         
-        IntervalT = left_interval.__class__
-        interval_type: left_interval.interval_type
+        interval_type = left_interval.interval_type
 
-        #TODO: how to return correct type here?
-        return IntervalT(new_inf, new_sup, interval_type)
+        # Intersections are defined by bounds, but not every Interval implementation
+        # can be constructed from (inf, sup, interval_type) (e.g. DyadicInterval).
+        # Use a canonical RealInterval result to avoid incorrect reconstruction.
+        return RealInterval[float](_inf=float(new_inf), _sup=float(new_sup), _interval_type=interval_type)
 
 
 @dataclass(frozen=True)
@@ -105,6 +107,30 @@ class Dyadic:
     k: int
     n: int
 
+    def __post_init__(self) -> None:
+        k = self.k
+        n = self.n
+
+        if isinstance(k, numbers.Integral):
+            k_int = int(k)
+        elif isinstance(k, float) and k.is_integer():
+            k_int = int(k)
+        else:
+            raise TypeError(f"Dyadic.k must be an integer-like value, got {type(k).__name__}: {k!r}")
+
+        if isinstance(n, numbers.Integral):
+            n_int = int(n)
+        elif isinstance(n, float) and n.is_integer():
+            n_int = int(n)
+        else:
+            raise TypeError(f"Dyadic.n must be an integer-like value, got {type(n).__name__}: {n!r}")
+
+        if n_int < 0:
+            raise ValueError(f"Dyadic.n must be non-negative, got {n_int}")
+
+        object.__setattr__(self, "k", k_int)
+        object.__setattr__(self, "n", n_int)
+
     def __float__(self) -> float:
         return math.ldexp(self.k, -self.n)
 
@@ -120,6 +146,12 @@ class DyadicInterval(Dyadic):
     
     _interval_type: IntervalType
 
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        it = self._interval_type
+        if not isinstance(it, IntervalType):
+            object.__setattr__(self, "_interval_type", IntervalType(it))
+
     @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
@@ -134,7 +166,7 @@ class DyadicInterval(Dyadic):
         k = (self.k + 1) if self._interval_type == IntervalType.ClOpen else self.k
         return math.ldexp(self.k+1, -self.n)
     
-    def intersection(self, other: Self) -> typing.Optional[Self]:
+    def intersection(self, other: Self) -> typing.Optional[Interval]:
         """
         Calculate the intersection of this dyadic interval with another dyadic interval.
         :param other: The other dyadic interval to intersect with.
@@ -142,6 +174,11 @@ class DyadicInterval(Dyadic):
         :return: A new DyadicInterval representing the intersection, or None if there is no intersection.
         :rtype: typing.Optional[DyadicInterval]
         """
+        # TODO: How to handle intersection of DyadicInterval with non-DyadicInterval? 
+        # Should we return a RealInterval instead? For now we just require both 
+        # to be DyadicInterval for intersection.
+        if not isinstance(other, DyadicInterval):
+            raise TypeError("A DyadicInterval can only be intersected with another DyadicInterval")
         return BaseInterval.intersection(self, other)
 
 
@@ -206,6 +243,19 @@ class Partition(Generic[RealT]):
     def sup(self) -> float:
         return float(self._endpoints[-1])
     
+    def to_real_interval(self) -> RealInterval[float]:
+        """
+        Convert the partition to a RealInterval.
+        :return: A RealInterval representing the partition.
+        :rtype: RealInterval
+        """ 
+        return RealInterval[float](
+            _inf=self.inf,
+            _sup=self.sup,
+            _interval_type=self._interval_type,
+        )
+        
+    
     def intersection(self, other: Interval) -> typing.Optional[Self]:
         """
         Calculate the intersection of this partition with another Interval.
@@ -214,4 +264,32 @@ class Partition(Generic[RealT]):
         :return: A new Partition representing the intersection, or None if there is no intersection.
         :rtype: typing.Optional[Partition]
         """
-        intersection = BaseInterval.intersection(self, other)
+        # (2026-02-16) JL: I think this is the correct implementation of an 
+        # intersection between a Partition and an Interval, but it may be 
+        # redundant as we need both the original partition and the query 
+        # interval to compute the scaling values for the log signature over the 
+        # query interval.
+                
+        # Here we convert to RealInterval to perform the intersection logic
+        intermediate_itvl = self.to_real_interval()
+        intersect_itvl = intermediate_itvl.intersection(other)
+        if intersect_itvl is None:
+            return None
+        # Make new list of endpoints
+        new_endpoints = []
+        # Add new inf if it is within bounds of old interval
+        if self.inf < intersect_itvl.inf:
+            new_endpoints.append(intersect_itvl.inf)
+        # Include all inner points
+        for ep in self._endpoints:
+            if intersect_itvl.inf <= ep <= intersect_itvl.sup:
+                new_endpoints.append(ep)
+        # Add new sup if within bounds of old interval
+        if intersect_itvl.sup < self.sup:
+            new_endpoints.append(intersect_itvl.sup)
+            
+        return Partition[RealT](
+            _endpoints=new_endpoints,
+            _interval_type=self.interval_type,
+        )
+        
