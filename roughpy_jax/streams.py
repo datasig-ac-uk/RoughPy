@@ -7,9 +7,11 @@ from typing import Tuple
 import numpy as np
 import jax
 import jax.numpy as jnp
+import jax.lax as lax
 
 from .intervals import Interval, Partition, RealT
 from .ops import logarithm, exponentiation
+from .algebra import FreeTensor, TensorBasis, ft_exp, lie_to_tensor
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
@@ -217,13 +219,40 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     
     def log_signature(self, interval: Interval) -> LieT:
         """Compute the log signature over an interval."""
+        # This is a piecewise abelian stream, so the log signature over an 
+        # interval is just the sum of the log signatures over the subintervals 
+        # that intersect with the query interval.
+        # 
+        # This is a very simple implementation, and can be optimized by precomputing the
+        # cumulative sums of the log signatures over the partition intervals.
+        # 
+        # associate scan of exps of the l2t of each piecewise segment, 
+        # then take the log of the product of the exps over the query interval?
+        initial = FreeTensor.identity(tensor_basis=self.tensor_basis)
+        def compute_piece(acc, x_and_interval):
+            x, p  = x_and_interval
+            # NOTE: Might be a clearer way of writing this?
+            # NOTE: the intersection length can be None?
+            intersection = p.intersection(interval)
+            if intersection is None:
+                scale_factor = 1.0
+                t = FreeTensor.identity(tensor_basis=self.tensor_basis)
+            else:
+                scale_factor = intersection.length / self._partition.length
+                t = lie_to_tensor(x, tensor_basis=self.tensor_basis, scale_factor=scale_factor)
+ 
+            return ft_fmexp(acc, t, tensor_basis=self.tensor_basis)
         
+        intervals = self._partition.to_intervals()
+        result = lax.associative_scan(compute_piece, initial, zip(self._data, intervals))
+        return tensor_to_lie(result, lie_basis=self.lie_basis)
+
     
-    # NOTE: Should this take a partition instead?
+    # NOTE JL: Should this take a partition instead?
     def signature(self, interval: Interval) -> GroupT:
         """Compute the signature over an interval."""
-        
-        ...
+        # exponentiate the log signature
+        return ft_exp(self.log_signature(interval), self.group_basis)
 
     
 def to_piecewise_abelian(
