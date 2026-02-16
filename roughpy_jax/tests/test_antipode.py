@@ -1,6 +1,21 @@
-import conftest
+import jax
 import jax.numpy as jnp
 import roughpy_jax as rpj
+
+
+@jax.jit
+def _antipode_on_signature(x):
+    sig = rpj.ft_exp(x)
+    asig =  rpj.antipode(sig)
+    product = rpj.ft_mul(asig, sig)
+    return product
+
+
+@jax.jit
+def _antipode_idempotent(x):
+    ax = rpj.antipode(x)
+    aax = rpj.antipode(ax)
+    return aax
 
 
 def test_antipode_on_signature(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -11,10 +26,7 @@ def test_antipode_on_signature(rpj_dtype, rpj_batch, rpj_no_acceleration):
     """
     basis = rpj.TensorBasis(4, 3)
     x = rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype)
-
-    sig = rpj.ft_exp(x)
-    asig =  rpj.antipode(sig)
-    product = rpj.ft_mul(asig, sig)
+    product = _antipode_on_signature(x)
 
     # exp * antipode results in identity
     expected = rpj_batch.identity_zero_data(basis, rpj_dtype)
@@ -33,7 +45,6 @@ def test_antipode_idempotent(rpj_dtype, rpj_batch, rpj_no_acceleration):
     x_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
 
     x = rpj.FreeTensor(x_data, basis)
-    ax = rpj.antipode(x)
-    aax = rpj.antipode(ax)
+    aax = _antipode_idempotent(x)
 
     assert jnp.allclose(x.data, aax.data)
