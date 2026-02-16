@@ -62,3 +62,22 @@ def test_adjoint_ft_mul_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
     sign = jnp.array([-1, 1, 1, 1, 1, 1, 1], dtype=rpj_dtype)
     expected_rmul = expected_lmul * sign
     assert jnp.allclose(rmul.data, expected_rmul)
+
+
+def test_adjoint_ft_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    rng = jax.random.key(12345)
+    basis = rpj.TensorBasis(2, 2)
+
+    a_data = jnp.zeros((basis.size(),), dtype=jnp.float32)
+    a_data = a_data.at[1:basis.width + 1].set(jax.random.normal(rng, shape=(basis.width,), dtype=jnp.float32))
+    a = rpj.DenseFreeTensor(a_data, basis)
+
+    s = _random_shuffle_tensor(rng, basis, jnp.float32, (basis.size(),))
+
+    lmul = rpj.ft_adjoint_left_mul(a, s)
+    rmul = rpj.ft_adjoint_right_mul(a, s)
+
+    # Right multiply flips sign of element 0
+    sign = jnp.array([-1, 1, 1, 1, 1, 1, 1], dtype=rpj_dtype)
+    rmul_expected = lmul.data * sign
+    assert jnp.allclose(rmul.data, rmul_expected)
