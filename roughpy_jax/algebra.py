@@ -570,7 +570,22 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
 
 
 def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Array:
-    """ """
+    """
+    Computes the tensor pairing between a functional tensor and a free tensor.
+
+    The pairing is the evaluation of a functional (shuffle tensor) on a free tensor
+    argument. The result of such a pairing is a scalar. However, to accommodate for
+    internal batching, the result is returned as a JAX Array.
+
+    Both input tensors must be compatible in terms of their basis and batch dimensions.
+    The function returns a JAX Array whose shape is the same as the batch dimensions.
+
+    :param functional: A `ShuffleTensorT` object representing the functional tensor.
+        Its data will be used in the tensor pairing operation.
+    :param argument: A `FreeTensorT` object representing the free tensor to be
+        paired with the functional tensor.
+    :return: A `jax.Array` containing the result of the tensor pairing operation.
+    """
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
 
     _check_basis_compat(functional.basis, functional.basis)
