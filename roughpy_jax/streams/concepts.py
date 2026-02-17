@@ -2,7 +2,7 @@ import typing
 from typing import Protocol, TypeVar, Self, Callable
 from dataclasses import dataclass
 
-from .intervals import Interval
+from ..intervals import Interval
 
 
 LieT = TypeVar("LieT")
@@ -156,7 +156,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
         """
         ...
 
-    def query(self, interval: Interval) -> ValueStream:
+    def query(self, interval: Interval) -> StreamValueT:
         """
         Query the value stream over an interval.
 
