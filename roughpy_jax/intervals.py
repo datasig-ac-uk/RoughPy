@@ -327,6 +327,7 @@ class Partition(Generic[RealT]):
         :return: A list of RealIntervals representing the subintervals of the partition.
         :rtype: list[RealInterval]
         """
+        # NOTE: typing here should be more generic than RealInterval[float], but this is the only type of interval we
         return [RealInterval[float](
             _inf=float(self._endpoints[i]),
             _sup=float(self._endpoints[i+1]),
