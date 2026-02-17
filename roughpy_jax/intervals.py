@@ -78,7 +78,7 @@ class BaseInterval(Interval):
     def intersection(
             left_interval: Interval, 
             right_interval: Interval,
-        ) -> typing.Optional[RealInterval]:
+        ) -> typing.Optional[Interval]:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
@@ -98,12 +98,13 @@ class BaseInterval(Interval):
         if new_inf > new_sup:
             return None  # No intersection
         
+        IntervalType = left_interval.__class__
         interval_type = left_interval.interval_type
 
         # Intersections are defined by bounds, but not every Interval implementation
         # can be constructed from (inf, sup, interval_type) (e.g. DyadicInterval).
         # Use a canonical RealInterval result to avoid incorrect reconstruction.
-        return RealInterval[float](_inf=float(new_inf), _sup=float(new_sup), _interval_type=interval_type)
+        return IntervalType(_inf=float(new_inf), _sup=float(new_sup), _interval_type=interval_type)
 
 
 @dataclass(frozen=True)
@@ -196,7 +197,7 @@ class DyadicInterval(Dyadic):
         # to be DyadicInterval for intersection.
         if not isinstance(other, DyadicInterval):
             raise TypeError("A DyadicInterval can only be intersected with another DyadicInterval")
-        return BaseInterval.intersection(self, other)
+        raise NotImplementedError("Intersection of DyadicIntervals is not yet implemented")
 
 
 @dataclass(frozen=True)
@@ -318,7 +319,7 @@ class Partition(Generic[RealT]):
             _interval_type=self.interval_type,
         )
         
-    def to_intervals(self) -> list[RealInterval[float]]:
+    def to_intervals(self) -> list[Self]:
         """
         Convert the partition into a list of RealIntervals corresponding to 
         the subintervals defined by the partition.
@@ -328,8 +329,8 @@ class Partition(Generic[RealT]):
         :rtype: list[RealInterval]
         """
         # NOTE: typing here should be more generic than RealInterval[float], but this is the only type of interval we
-        return [RealInterval[float](
+        return [Self(
             _inf=float(self._endpoints[i]),
             _sup=float(self._endpoints[i+1]),
             _interval_type=self.interval_type,
-        ) for i in range(len(self))]
+        ) for i in range(len(self._endpoints)-1)]
