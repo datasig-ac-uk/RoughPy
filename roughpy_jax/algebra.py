@@ -12,9 +12,10 @@ from roughpy import compute as rpc
 
 from roughpy_jax.ops import Operation
 
-FreeTensorT = TypeVar('FreeTensorT')
-ShuffleTensorT = TypeVar('ShuffleTensorT')
-LieT = TypeVar('LieT')
+FreeTensorT = TypeVar("FreeTensorT")
+ShuffleTensorT = TypeVar("ShuffleTensorT")
+LieT = TypeVar("LieT")
+
 
 # For exposition only
 # class TensorBasis:
@@ -57,6 +58,7 @@ class LieBasis(rpc.LieBasis):
     sequentially and between elements of degree k - 1 and degree k + 1 (if such
     elements exist).
     """
+
     pass
 
 
@@ -68,9 +70,7 @@ def _tensor_dataclass(cls):
     """
     cls = dataclass(cls)
     return jax.tree_util.register_dataclass(
-        cls,
-        data_fields=["data"],
-        meta_fields=["basis"]
+        cls, data_fields=["data"], meta_fields=["basis"]
     )
 
 
@@ -79,6 +79,7 @@ class DenseFreeTensor:
     """
     Dense free tensor class built from basis and associated ndarray of data.
     """
+
     data: jnp.ndarray
     basis: TensorBasis
 
@@ -92,6 +93,7 @@ class DenseShuffleTensor:
     """
     Dense shuffle tensor class built from basis and associated ndarray of data.
     """
+
     data: jnp.ndarray
     basis: TensorBasis
 
@@ -133,7 +135,9 @@ def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
     for i, ft in enumerate([first_tensor] + list(other_tensors)):
         if ft.data.dtype != jnp.float32:
             if ft.data.dtype != jnp.float64:
-                raise ValueError(f"Expecting jnp.float32 or jnp.float64 array for tensor {i}")
+                raise ValueError(
+                    f"Expecting jnp.float32 or jnp.float64 array for tensor {i}"
+                )
 
     for i, tensor in enumerate(other_tensors):
         if tensor.data.dtype != first_tensor.data.dtype:
@@ -148,19 +152,25 @@ def _get_and_check_batch_dims(*arrays, core_dims=1):
 
     n_dims = len(first.shape)
     if n_dims < core_dims:
-        raise ValueError(f"array at index 0 has wrong number of dimensions, expected at least {core_dims}")
+        raise ValueError(
+            f"array at index 0 has wrong number of dimensions, expected at least {core_dims}"
+        )
 
     batch_dims = first.shape[:-core_dims]
     n_batch_dims = len(batch_dims)
 
     for i, arr in enumerate(rem, start=1):
         if len(arr.shape) != n_dims:
-            raise ValueError(f"mismatched number of dimensions at index {i}: "
-                             f"expected {n_dims} but got {len(arr.shape)}")
+            raise ValueError(
+                f"mismatched number of dimensions at index {i}: "
+                f"expected {n_dims} but got {len(arr.shape)}"
+            )
 
         if arr.shape[:n_batch_dims] != batch_dims:
-            raise ValueError(f"incompatible shape in argument at index {i}:"
-                             f"expected batch shape {batch_dims} but got {arr.shape[:n_batch_dims]}")
+            raise ValueError(
+                f"incompatible shape in argument at index {i}:"
+                f"expected batch shape {batch_dims} but got {arr.shape[:n_batch_dims]}"
+            )
 
     return batch_dims
 
@@ -192,13 +202,12 @@ def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
         b_max_deg=np.int32(min(a_max_deg, b.basis.depth)),
         c_max_deg=np.int32(min(a_max_deg, c.basis.depth)),
         b_min_deg=np.int32(0),
-        c_min_deg=np.int32(0)
+        c_min_deg=np.int32(0),
     )
 
     out_data = op(a.data, b.data, c.data)
 
     return DenseFreeTensor(*out_data, op.basis)
-
 
 
 def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
@@ -227,7 +236,7 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
         lhs_max_deg=np.int32(min(a.basis.depth, a.basis.depth)),
         rhs_max_deg=np.int32(min(a.basis.depth, b.basis.depth)),
         lhs_min_deg=np.int32(0),
-        rhs_min_deg=np.int32(0)
+        rhs_min_deg=np.int32(0),
     )
 
     out_data = op(a.data, b.data)
@@ -251,7 +260,7 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
         a.data.dtype,
         batch_dims,
         arg_max_deg=np.int32(out_basis.depth),
-        no_sign=False
+        no_sign=False,
     )
 
     out_data = op(a.data)
@@ -285,7 +294,7 @@ def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTe
         b_max_deg=np.int32(min(a.basis.depth, b.basis.depth)),
         c_max_deg=np.int32(min(b.basis.depth, c.basis.depth)),
         b_min_deg=np.int32(0),
-        c_min_deg=np.int32(0)
+        c_min_deg=np.int32(0),
     )
     out_data = op(a.data, b.data, c.data)
 
@@ -311,20 +320,19 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     out_max_deg = lhs.basis.depth
 
     op = op_cls(
-        (lhs.basis, rhs.basis), 
+        (lhs.basis, rhs.basis),
         dtype,
         batch_dims,
         out_max_deg=np.int32(out_max_deg),
         lhs_max_deg=np.int32(min(out_max_deg, lhs.basis.depth)),
         rhs_max_deg=np.int32(min(out_max_deg, rhs.basis.depth)),
         lhs_min_deg=np.int32(0),
-        rhs_min_deg=np.int32(0)
+        rhs_min_deg=np.int32(0),
     )
 
     out_data = op(lhs.data, rhs.data)
 
     return DenseShuffleTensor(*out_data, op.basis)
-
 
 
 def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
@@ -349,13 +357,12 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
         (out_basis, x.basis),
         dtype,
         x.batch_shape,
-        arg_max_deg=np.int32(out_basis.depth)
+        arg_max_deg=np.int32(out_basis.depth),
     )
 
     out_data = op(x.data)
 
     return DenseFreeTensor(*out_data, out_basis)
-
 
 
 def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
@@ -380,7 +387,7 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
         (out_basis, x.basis),
         dtype,
         x.batch_shape,
-        arg_max_deg=np.int32(out_basis.depth)
+        arg_max_deg=np.int32(out_basis.depth),
     )
 
     out_data = op(x.data)
@@ -388,7 +395,9 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     return DenseFreeTensor(*out_data, out_basis)
 
 
-def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
+def ft_fmexp(
+    multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None
+) -> FreeTensorT:
     """
     Free tensor fused multiply-exponential
 
@@ -422,7 +431,7 @@ def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBa
         mul_max_deg=np.int32(mul_depth),
         exp_max_deg=np.int32(exp_depth),
         mul_min_deg=np.int32(0),
-        exp_min_deg=np.int32(0)
+        exp_min_deg=np.int32(0),
     )
 
     out_data = op(multiplier.data, exponent.data)
@@ -430,7 +439,9 @@ def ft_fmexp(multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBa
     return DenseFreeTensor(*out_data, out_basis)
 
 
-def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None) -> FreeTensorT:
+def lie_to_tensor(
+    arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
+) -> FreeTensorT:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
 
@@ -456,7 +467,9 @@ def lie_to_tensor(arg: LieT, tensor_basis: TensorBasis | None = None, scale_fact
     return DenseFreeTensor(*out_data, out_basis)
 
 
-def tensor_to_lie(arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None) -> LieT:
+def tensor_to_lie(
+    arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None
+) -> LieT:
     """
     Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
 
@@ -511,7 +524,7 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
         batch_dims,
         degree_begin=out_basis.degree_begin,
         op_max_deg=np.int32(op_max_deg),
-        arg_max_deg=np.int32(arg_max_deg)
+        arg_max_deg=np.int32(arg_max_deg),
     )
 
     out_data = op_call(op.data, arg.data)
@@ -548,9 +561,31 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
         batch_dims,
         degree_begin=out_basis.degree_begin,
         op_max_deg=np.int32(op_max_deg),
-        arg_max_deg=np.int32(arg_max_deg)
+        arg_max_deg=np.int32(arg_max_deg),
     )
 
     out_data = op_call(op.data, arg.data)
 
     return DenseShuffleTensor(*out_data, out_basis)
+
+
+def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Array:
+    """ """
+    dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
+
+    _check_basis_compat(functional.basis, functional.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    op_cls = Operation.get_operation("tensor_pairing", "dense")
+
+    op = op_cls(
+        (functional.basis, argument.basis),
+        dtype,
+        batch_dims,
+        functional_max_degree=functional.basis.depth,
+        argument_max_degree=argument.basis.depth,
+    )
+
+    (result,) = op(functional.data, argument.data)
+
+    return result

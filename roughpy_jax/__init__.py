@@ -21,4 +21,5 @@ from roughpy_jax.algebra import (
     antipode,
     lie_to_tensor,
     tensor_to_lie,
+    tensor_pairing,
 )
