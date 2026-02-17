@@ -63,7 +63,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # 
         # associate scan of exps of the l2t of each piecewise segment, 
         # then take the log of the product of the exps over the query interval?
-        initial = FreeTensor.identity(tensor_basis=self.tensor_basis)
+        initial = FreeTensor.identity(tensor_basis=self.group_basis)
         def compute_piece(acc, x_and_interval):
             x, p  = x_and_interval
             # NOTE: Might be a clearer way of writing this?
@@ -71,12 +71,12 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             intersection = p.intersection(interval)
             if intersection is None:
                 scale_factor = 1.0
-                t = FreeTensor.identity(tensor_basis=self.tensor_basis)
+                t = FreeTensor.identity(tensor_basis=self.group_basis)
             else:
                 scale_factor = intersection.length / self._partition.length
-                t = lie_to_tensor(x, tensor_basis=self.tensor_basis, scale_factor=scale_factor)
+                t = lie_to_tensor(x, tensor_basis=self.group_basis, scale_factor=scale_factor)
  
-            return ft_fmexp(acc, t, tensor_basis=self.tensor_basis)
+            return ft_fmexp(acc, t, tensor_basis=self.group_basis)
         
         intervals = self._partition.to_intervals()
         result = lax.associative_scan(compute_piece, initial, zip(self._data, intervals))
