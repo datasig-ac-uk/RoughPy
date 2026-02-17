@@ -329,7 +329,7 @@ class Partition(Generic[RealT]):
         :rtype: list[RealInterval]
         """
         # NOTE: typing here should be more generic than RealInterval[float], but this is the only type of interval we
-        return [Self(
+        return [RealInterval[float](
             _inf=float(self._endpoints[i]),
             _sup=float(self._endpoints[i+1]),
             _interval_type=self.interval_type,
