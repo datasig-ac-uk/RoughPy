@@ -1046,7 +1046,7 @@ class DenseFTLog(Operation, DenseOperation):
         return (log,)
 
 
-class TensorPairing(Operation, DenseOperation):
+class DenseTensorPairing(Operation, DenseOperation):
     fn_name = "tensor_pairing"
 
     class StaticArgs(TypedDict):
