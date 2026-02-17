@@ -9,7 +9,6 @@ import pytest
 import numpy as np
 import roughpy_jax as rpj
 
-
 sample_width_depth_degree_begin = [
     (1, 1, [0, 1, 2]),
     (2, 1, [0, 1, 3]),

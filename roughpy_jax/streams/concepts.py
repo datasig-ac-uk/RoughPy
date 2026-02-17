@@ -12,6 +12,10 @@ import jax.lax as lax
 from .intervals import Interval, Partition, RealT
 from .ops import logarithm, exponentiation
 from .algebra import FreeTensor, TensorBasis, ft_exp, lie_to_tensor, tensor_to_lie, ft_fmexp
+from typing import Protocol, TypeVar, Callable
+
+
+from roughpy_jax.intervals import Interval
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
@@ -164,7 +168,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
         """
         ...
 
-    def query(self, interval: Interval) -> Self:
+    def query(self, interval: Interval) -> ValueStream:
         """
         Query the value stream over an interval.
 

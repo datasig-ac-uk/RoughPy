@@ -8,6 +8,12 @@
 
 #include "xla_includes.hpp"
 
+#define RPY_XLA_SUCCESS_OR_RETURN(stat)                                        \
+    do {                                                                       \
+        const auto status = (stat);                                            \
+        if (!status.success()) { return status; }                              \
+    } while (0)
+
 namespace rpy::jax::cpu {
 
 namespace ffi = xla::ffi;
@@ -26,6 +32,47 @@ bool all_buffers_valid_type(const BufferType&... buffer) {
     }
     return true;
 }
+
+namespace detail {
+
+inline ffi::Span<const int64_t> shape(ffi::AnyBuffer const& arg) noexcept
+{
+    return arg.dimensions();
+}
+inline ffi::Span<const int64_t> shape(ffi::Result<ffi::AnyBuffer>& arg) noexcept
+{
+    return arg->dimensions();
+}
+}
+
+
+template <typename Buffer, typename Basis>
+ffi::Error check_data_degree(Buffer& buf, const Basis& basis, int32_t degree, int dim=-1)
+{
+    if (degree > basis.depth) {
+        return ffi::Error::InvalidArgument("degree exceeds basis depth");
+    }
+
+    const auto buf_shape = detail::shape(buf);
+    if (dim < 0) {
+        dim = buf_shape.size() + dim;
+    }
+    if (dim < 0 || static_cast<size_t>(dim) >= buf_shape.size()) {
+        return ffi::Error::InvalidArgument("invalid dimension for buffer");
+    }
+
+    const auto val = buf_shape[dim];
+    const auto data_size = data_size_to_degree(basis, degree);
+
+    if (val < data_size) {
+        return ffi::Error::InvalidArgument(
+                "data dimension is too small for specified degree"
+        );
+    }
+
+    return ffi::Error::Success();
+}
+
 
 // Convenience function getting XLA dims when validating python buffer size
 std::pair<int64_t, int64_t> get_buffer_dims(const ffi::AnyBuffer& buffer);
