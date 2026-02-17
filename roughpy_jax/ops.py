@@ -832,9 +832,10 @@ class DenseFTAdjRightMul(Operation, DenseOperation):
         arg_min_deg: np.int32=0,
     ) -> tuple[Array]:
         op_antipode = _fallback_dense_antipode(op_data, width, depth, degree_begin)
+        arg_antipode = _fallback_dense_antipode(arg_data, width, depth, degree_begin)
         rmul_antipode = _fallback_ft_adj_lmul(
             op_antipode,
-            arg_data,
+            arg_antipode,
             depth,
             degree_begin,
             op_max_deg,

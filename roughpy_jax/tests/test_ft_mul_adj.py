@@ -29,13 +29,7 @@ def test_adjoint_ft_mul_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
     assert jnp.allclose(lmul.data, s.data)
 
     rmul = rpj.ft_adjoint_right_mul(a, s)
-
-    # Right multiply switches elements 4 and 5 and flips sign of elements 1 and 2
-    perm = jnp.array([0, 1, 2, 3, 5, 4, 6])
-    sign = jnp.array([1, -1, -1, 1, 1, 1, 1], dtype=rpj_dtype)
-    expected_rmul = s.data[..., perm] * sign
-
-    assert jnp.allclose(rmul.data, expected_rmul)
+    assert jnp.allclose(rmul.data, s.data)
 
 
 def test_adjoint_ft_mul_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -47,20 +41,19 @@ def test_adjoint_ft_mul_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     s = _random_shuffle_tensor(rng, basis, rpj_dtype, rpj_batch.tensor_batch_shape(basis))
 
-    lmul = rpj.ft_adjoint_left_mul(a, s)
-
     # Expected values are values from index 1, 3 and 4 going into 0, 1, 2, i.e. for non-batched
     # data, expected_data = jnp.array([s.data[1], s.data[3], s.data[4], 0.0, 0.0, 0.0, 0.0])
-    s_indexes = jnp.array([1, 3, 4])
-    expected_lmul = jnp.zeros_like(s.data).at[..., :3].set(s.data[..., s_indexes])
+    lmul_indexes = jnp.array([1, 3, 4])
+    expected_lmul = jnp.zeros_like(s.data).at[..., :3].set(s.data[..., lmul_indexes])
 
+    lmul = rpj.ft_adjoint_left_mul(a, s)
     assert jnp.allclose(lmul.data, expected_lmul)
 
-    rmul = rpj.ft_adjoint_right_mul(a, s)
+    # Right multiply is similar but with indexes 1, 3, 5
+    rmul_indexes = jnp.array([1, 3, 5])
+    expected_rmul = jnp.zeros_like(s.data).at[..., :3].set(s.data[..., rmul_indexes])
 
-    # Right multiply flips sign of element 0
-    sign = jnp.array([-1, 1, 1, 1, 1, 1, 1], dtype=rpj_dtype)
-    expected_rmul = expected_lmul * sign
+    rmul = rpj.ft_adjoint_right_mul(a, s)
     assert jnp.allclose(rmul.data, expected_rmul)
 
 
@@ -68,22 +61,22 @@ def test_adjoint_ft_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_accelerat
     rng = jax.random.key(12345)
     basis = rpj.TensorBasis(2, 2)
 
-    a_data = jnp.zeros((basis.size(),), dtype=jnp.float32)
-    a_data = a_data.at[1:basis.width + 1].set(jax.random.normal(rng, shape=(basis.width,), dtype=jnp.float32))
-    a = rpj.DenseFreeTensor(a_data, basis)
+    x_data = jax.random.normal(rng, shape=(basis.size(),), dtype=jnp.float32)
+    x = rpj.DenseFreeTensor(x_data, basis)
 
-    s = _random_shuffle_tensor(rng, basis, jnp.float32, (basis.size(),))
+    y_data = jax.random.normal(rng, shape=(basis.size(),), dtype=jnp.float32)
+    y = rpj.DenseFreeTensor(y_data, basis)
 
-    lmul = rpj.ft_adjoint_left_mul(a, s)
-    rmul = rpj.ft_adjoint_right_mul(a, s)
+    shuffle = _random_shuffle_tensor(rng, basis, jnp.float32, (basis.size(),))
 
-    # Right multiply flips sign of element 0
-    sign = jnp.array([-1, 1, 1, 1, 1, 1, 1], dtype=rpj_dtype)
-    rmul_expected = lmul.data * sign
-    assert jnp.allclose(rmul.data, rmul_expected)
+    # Pair from dot products for checking adjoint equivalence <T*(x*), y> = <x*, T(y)>
+    def pair_dot_data(lhs, rhs):
+        return lhs.data.dot(rhs.data)
 
-    # Double-check rmul is antipode(ft_adjoint_left_mul(antipode(a), s))
-    a_antipode = rpj.antipode(a)
-    rmul_antipode = rpj.ft_adjoint_left_mul(a_antipode, s)
-    rmul_manual = rpj.antipode(rmul_antipode)
-    assert jnp.allclose(rmul_manual.data, rmul_expected)
+    lmul = pair_dot_data(rpj.ft_adjoint_left_mul(x, shuffle), y)
+    expected_lmul = pair_dot_data(shuffle, rpj.ft_mul(x, y))
+    assert jnp.allclose(lmul, expected_lmul)
+
+    rmul = pair_dot_data(rpj.ft_adjoint_right_mul(x, shuffle), y)
+    expected_rmul = pair_dot_data(shuffle, rpj.ft_mul(x, y))
+    assert jnp.allclose(rmul, expected_rmul)
