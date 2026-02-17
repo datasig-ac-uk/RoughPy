@@ -11,7 +11,7 @@ import jax.lax as lax
 
 from .intervals import Interval, Partition, RealT
 from .ops import logarithm, exponentiation
-from .algebra import FreeTensor, TensorBasis, ft_exp, lie_to_tensor
+from .algebra import FreeTensor, TensorBasis, ft_exp, lie_to_tensor, tensor_to_lie, ft_fmexp
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
