@@ -61,13 +61,13 @@ def test_adjoint_ft_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_accelerat
     rng = jax.random.key(12345)
     basis = rpj.TensorBasis(2, 2)
 
-    x_data = jax.random.normal(rng, shape=(basis.size(),), dtype=jnp.float32)
+    x_data = jax.random.normal(rng, shape=(basis.size(),), dtype=rpj_dtype)
     x = rpj.DenseFreeTensor(x_data, basis)
 
-    y_data = jax.random.normal(rng, shape=(basis.size(),), dtype=jnp.float32)
+    y_data = jax.random.normal(rng, shape=(basis.size(),), dtype=rpj_dtype)
     y = rpj.DenseFreeTensor(y_data, basis)
 
-    shuffle = _random_shuffle_tensor(rng, basis, jnp.float32, (basis.size(),))
+    shuffle = _random_shuffle_tensor(rng, basis, rpj_dtype, (basis.size(),))
 
     # Pair from dot products for checking adjoint equivalence <T*(x*), y> = <x*, T(y)>
     def pair_dot_data(lhs, rhs):
