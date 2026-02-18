@@ -30,15 +30,15 @@
 
 
 
-#include "roughpy/core/construct_inplace.h"
+#include "roughpy/core/construct_inplace.hpp"
 #include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
 #include "roughpy/core/debug_assertion.h"   // for RPY_DBG_ASSERT
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 #include <roughpy/core/macros.h>
-#include <roughpy/core/slice.h>
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/slice.hpp>
+#include <roughpy/core/traits.hpp>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/archives.h>
 

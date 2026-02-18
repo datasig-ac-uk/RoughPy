@@ -31,8 +31,8 @@
 #include "algebra_fwd.h"
 
 
-#include <roughpy/core/slice.h>
-#include <roughpy/core/smart_ptr.h>
+#include <roughpy/core/slice.hpp>
+#include <roughpy/core/smart_ptr.hpp>
 
 #include <roughpy/platform/serialization.h>
 

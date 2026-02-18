@@ -33,7 +33,7 @@
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_HANDLE_ERRORS_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "ocl_headers.h"
 

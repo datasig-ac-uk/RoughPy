@@ -36,7 +36,7 @@
 #include "vector_type_helper.h"
 #include <roughpy/algebra/algebra_info.h>
 
-#include <roughpy/core/traits.h>
+#include <roughpy/core/traits.hpp>
 
 #include <libalgebra_lite/shuffle_tensor.h>
 

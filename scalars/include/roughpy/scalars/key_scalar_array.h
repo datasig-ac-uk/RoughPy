@@ -33,7 +33,7 @@
 #include "scalar_array.h"
 #include "scalars_fwd.h"
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 
 #include <cereal/types/vector.hpp>

@@ -10,7 +10,7 @@
 #include "numpy.h"
 #include "strided_copy.h"
 
-#include "roughpy/core/ranges.h"
+#include "roughpy/core/ranges.hpp"
 
 #include "scalars/pytype_conversion.h"
 #include "scalars/r_py_polynomial.h"

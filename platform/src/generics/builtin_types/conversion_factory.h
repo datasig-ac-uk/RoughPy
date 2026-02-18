@@ -8,7 +8,7 @@
 
 #include <boost/container/flat_map.hpp>
 
-#include "roughpy/core/hash.h"
+#include "roughpy/core/hash.hpp"
 
 #include "roughpy/generics/conversion_trait.h"
 #include "roughpy/generics/type.h"

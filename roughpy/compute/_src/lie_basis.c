@@ -7,18 +7,17 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "py_fnv1a_hash.h"
+#define RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#include <roughpy/pycore/compat.h>
+
+#include <roughpy/pycore/fnv1a_hash.h>
+
 #include "lie_multiplication_cache.h"
 #include "sparse_matrix.h"
 #include "tensor_basis.h"
 
-#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
-#include "py_compat.h"
-
-struct _PyLieBasis
-{
-    PyObject_HEAD
-    int32_t width;
+struct _PyLieBasis {
+    PyObject_HEAD int32_t width;
     int32_t depth;
     PyObject* degree_begin;
     PyObject* data;
@@ -26,18 +25,18 @@ struct _PyLieBasis
     PyObject* t2l;
     PyObject* multiplier_cache;
 
-
-
     Py_hash_t cached_hash;
 };
 
-
 // PyLieBasis type functions
-static PyObject* lie_basis_new(PyTypeObject* type,
-                               PyObject* _unused_args,
-                               PyObject* _unused_kwargs);
+static PyObject* lie_basis_new(
+        PyTypeObject* type,
+        PyObject* _unused_args,
+        PyObject* _unused_kwargs
+);
 
 static void lie_basis_dealloc(PyLieBasis* self);
+static int lie_basis_traverse(PyObject* self, visitproc visit, void* arg);
 
 static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs);
 
@@ -79,11 +78,14 @@ static int PyLIeBasis_Major_converter(PyObject* obj, void* result)
 
 static PyMemberDef PyLieBasis_members[] = {
 
-        {"width", Py_T_INT, offsetof(PyLieBasis, width), Py_READONLY,
-         "width of the basis"},
-        {"depth", Py_T_INT, offsetof(PyLieBasis, depth), Py_READONLY,
-         "depth of the basis"},
-        {"degree_begin", Py_T_OBJECT_EX,offsetof(PyLieBasis, degree_begin),
+        {"width",
+         Py_T_INT, offsetof(PyLieBasis, width),
+         Py_READONLY, "width of the basis"},
+        {"depth",
+         Py_T_INT, offsetof(PyLieBasis, depth),
+         Py_READONLY, "depth of the basis"},
+        {"degree_begin",
+         Py_T_OBJECT_EX, offsetof(PyLieBasis, degree_begin),
          Py_READONLY, "array of offsets for each degree"},
         {"data", Py_T_OBJECT_EX, offsetof(PyLieBasis, data), 0, "basis data"},
         {NULL}
@@ -91,30 +93,37 @@ static PyMemberDef PyLieBasis_members[] = {
 
 PyMethodDef PyLieBasis_methods[] = {
         {"size", lie_basis_size, METH_NOARGS, "get the size of the Lie basis"},
-        {"get_l2t_matrix", get_l2t_matrix, METH_O,
+        {"get_l2t_matrix",
+         get_l2t_matrix, METH_O,
          "get a sparse matrix representation of the Lie-to-tensor map"},
-        {"get_t2l_matrix", (PyCFunction) get_t2l_matrix, METH_O,
-         "get the matrix representation of the tensor to Lie map"},
+        {"get_t2l_matrix",
+         (PyCFunction) get_t2l_matrix,
+         METH_O, "get the matrix representation of the tensor to Lie map"},
         {NULL}
 };
 
-PyTypeObject PyLieBasis_Type = {                                              //
-                .ob_base = PyVarObject_HEAD_INIT(NULL, 0)//
-                                   .tp_name
-                = RPY_CPT_TYPE_NAME(LieBasis),
-                .tp_basicsize = sizeof(PyLieBasis),
-                .tp_itemsize = 0,
-                .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-                .tp_doc = "LieBasis",
-                .tp_methods = PyLieBasis_methods,
-                .tp_members = PyLieBasis_members,
-                .tp_init = (initproc) lie_basis_init,
-                .tp_dealloc = (destructor) lie_basis_dealloc,
-                .tp_repr = (reprfunc) lie_basis_repr,
-                .tp_new = (newfunc) lie_basis_new,
-                .tp_hash = (hashfunc) lie_basis_hash,
-                .tp_richcompare = (richcmpfunc) lie_basis_richcompare
+PyTypeObject* PyLieBasis_Type = NULL;
+
+static PyType_Slot lie_basis_slots[] = {
+        {        Py_tp_new,         lie_basis_new},
+        {       Py_tp_init,        lie_basis_init},
+        {    Py_tp_dealloc,     lie_basis_dealloc},
+        {   Py_tp_traverse,    lie_basis_traverse},
+        {       Py_tp_repr,        lie_basis_repr},
+        {       Py_tp_hash,        lie_basis_hash},
+        {Py_tp_richcompare, lie_basis_richcompare},
+        {    Py_tp_methods,    PyLieBasis_methods},
+        {    Py_tp_members,    PyLieBasis_members},
+        {        Py_tp_doc,            "LieBasis"},
+        {                0,                  NULL}
 };
+
+static PyType_Spec lie_basis_spec
+        = {.name = "roughpy.LieBasis",
+           .basicsize = sizeof(PyLieBasis),
+           .itemsize = 0,
+           .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+           .slots = lie_basis_slots};
 
 /*******************************************************************************
  * Implementations
@@ -124,9 +133,13 @@ int init_lie_basis(PyObject* module)
 {
     if (init_lie_multiplication_cache(module) < 0) { return -1; }
 
-    if (PyType_Ready(&PyLieBasis_Type) < 0) { return -1; }
+    PyLieBasis_Type = (PyTypeObject*) PyType_FromSpec(&lie_basis_spec);
+    if (PyLieBasis_Type == NULL) { return -1; }
 
-    if (PyModule_AddObjectRef(module, "LieBasis", (PyObject*) &PyLieBasis_Type) < 0) {
+    Py_INCREF(PyLieBasis_Type);
+    if (PyModule_AddObject(module, "LieBasis", (PyObject*) PyLieBasis_Type)
+        < 0) {
+        Py_DECREF(PyLieBasis_Type);
         return -1;
     }
 
@@ -134,18 +147,23 @@ int init_lie_basis(PyObject* module)
 }
 
 static PyObject* lie_basis_new(
-    PyTypeObject* type,
-    PyObject* Py_UNUSED(args),
-    PyObject* Py_UNUSED(kwargs))
+        PyTypeObject* type,
+        PyObject* Py_UNUSED(args),
+        PyObject* Py_UNUSED(kwargs)
+)
 {
     PyLieBasis* self = (PyLieBasis*) type->tp_alloc(type, 0);
     if (!self) { return NULL; }
 
-    Py_XSETREF(self->degree_begin, Py_NewRef(Py_None));
-    Py_XSETREF(self->data, Py_NewRef(Py_None));
+    Py_INCREF(Py_None);
+    self->degree_begin = Py_None;
 
-    Py_XSETREF(self->l2t, PyDict_New());
-    Py_XSETREF(self->t2l, PyDict_New());
+    Py_INCREF(Py_None);
+    self->data = Py_None;
+
+    self->l2t = PyDict_New();
+    self->t2l = PyDict_New();
+    self->multiplier_cache = NULL;
 
     self->cached_hash = -1;
 
@@ -154,12 +172,30 @@ static PyObject* lie_basis_new(
 
 static void lie_basis_dealloc(PyLieBasis* self)
 {
+    PyObject_GC_UnTrack(self);
     Py_XDECREF(self->degree_begin);
     Py_XDECREF(self->data);
     Py_XDECREF(self->l2t);
     Py_XDECREF(self->t2l);
     Py_XDECREF(self->multiplier_cache);
-    Py_TYPE(self)->tp_free((PyObject*) self);
+
+    PyTypeObject* type = Py_TYPE(self);
+    freefunc tp_free = (freefunc) PyType_GetSlot(type, Py_tp_free);
+    if (tp_free) { tp_free(self); }
+    Py_DECREF(type);
+}
+
+int lie_basis_traverse(PyObject* self, visitproc visit, void* arg)
+{
+    Py_VISIT(Py_TYPE(self));
+    PyLieBasis* lb = (PyLieBasis*) self;
+
+    Py_VISIT(lb->degree_begin);
+    Py_VISIT(lb->data);
+    Py_VISIT(lb->l2t);
+    Py_VISIT(lb->t2l);
+    Py_VISIT(lb->multiplier_cache);
+    return 0;
 }
 
 static int construct_lie_basis(PyLieBasis* self)
@@ -256,8 +292,8 @@ static int construct_lie_basis(PyLieBasis* self)
     // // NPY_CORDER);
     // if (resized_data == NULL) { goto cleanup; }
     //
-    // npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
-    // memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
+    // npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*)
+    // resized_data); memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
 
     // Py_XSETREF(self->data, resized_data);
     // resized_data is now a borrowed reference, clear it to avoid misuse
@@ -265,7 +301,9 @@ static int construct_lie_basis(PyLieBasis* self)
     // Py_XDECREF(self->data);
     // self->data = tmp;
     // tmp = NULL;
-    Py_XSETREF(self->data, data);
+    Py_XDECREF(self->data);
+    self->data = data;
+    Py_INCREF(data);
     /*
      * At this point we have transferred ownership of data to the struct where
      * it rightfully belongs, so the data variable now does not hold a strong
@@ -275,10 +313,9 @@ static int construct_lie_basis(PyLieBasis* self)
     data = NULL;
 
     // Move the degree_begin data into the struct;
-    // Py_XDECREF(self->degree_begin);
-    // self->degree_begin = degree_begin;
-    // degree_begin = NULL;
-    Py_XSETREF(self->degree_begin, degree_begin);
+    Py_XDECREF(self->degree_begin);
+    self->degree_begin = degree_begin;
+    Py_INCREF(degree_begin);
     /*
      * At this point we have transferred ownership of degree_begin to the struct
      * where it rightfully belongs, so the degree_begin variable now does not
@@ -464,9 +501,7 @@ static int lie_basis_init(PyLieBasis* self, PyObject* args, PyObject* kwargs)
 }
 
 static PyObject* lie_basis_repr(PyLieBasis* self)
-{
-    return PyUnicode_FromFormat("LieBasis(%i, %i)", self->width, self->depth);
-}
+{ return PyUnicode_FromFormat("LieBasis(%i, %i)", self->width, self->depth); }
 
 static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
 {
@@ -475,10 +510,9 @@ static PyObject* lie_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
         PyErr_SetString(PyExc_RuntimeError, "degree_begin is None");
         return NULL;
     }
-    const npy_intp size = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) self_->degree_begin,
-            self_->depth + 1
-    );
+    const npy_intp size = *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) self_->degree_begin, self_->depth + 1);
 
     return PyLong_FromLong(size - 1);
 }
@@ -489,9 +523,7 @@ Py_hash_t lie_basis_hash(PyObject* obj)
 
     // This might need to be made atomic in the future
     Py_hash_t hash = self->cached_hash;
-    if (hash != -1) {
-        return hash;
-    }
+    if (hash != -1) { return hash; }
 
     Py_uhash_t state = FNV1A_OFFSET_BASIS;
     state = fnv1a_hash_bytes(state, "LieBasis", 8);
@@ -504,7 +536,7 @@ Py_hash_t lie_basis_hash(PyObject* obj)
      * thus derived from the PyLieBasis_true_size function, and we read the
      * number of bytes to process from this.
      */
-    const size_t data_bytes = 2*PyLieBasis_true_size(self) * sizeof(npy_intp);
+    const size_t data_bytes = 2 * PyLieBasis_true_size(self) * sizeof(npy_intp);
     const void* data = PyArray_DATA((PyArrayObject*) self->data);
     state = fnv1a_hash_bytes(state, data, data_bytes);
 
@@ -527,23 +559,20 @@ Py_hash_t lie_basis_hash(PyObject* obj)
     return hash;
 }
 
-static inline PyObject* lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right, long success)
+static inline PyObject*
+lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right, long success)
 {
-    if (left->width != right->width) {
-        return PyBool_FromLong(!success);
-    }
+    if (left->width != right->width) { return PyBool_FromLong(!success); }
 
-    if (left->depth != right->depth) {
-        return PyBool_FromLong(!success);
-    }
+    if (left->depth != right->depth) { return PyBool_FromLong(!success); }
 
-    const npy_intp* l_db_data = PyArray_DATA((PyArrayObject*) left->degree_begin);
-    const npy_intp* r_db_data = PyArray_DATA((PyArrayObject*) right->degree_begin);
+    const npy_intp* l_db_data
+            = PyArray_DATA((PyArrayObject*) left->degree_begin);
+    const npy_intp* r_db_data
+            = PyArray_DATA((PyArrayObject*) right->degree_begin);
 
-    for (int32_t d=0; d<left->depth + 2; ++d) {
-        if (l_db_data[d] != r_db_data[d]) {
-            return PyBool_FromLong(!success);
-        }
+    for (int32_t d = 0; d < left->depth + 2; ++d) {
+        if (l_db_data[d] != r_db_data[d]) { return PyBool_FromLong(!success); }
     }
 
     // for now rely on the hash value too. Maybe later we can do something more
@@ -552,9 +581,7 @@ static inline PyObject* lie_basis_test_equal(PyLieBasis* left, PyLieBasis* right
     Py_hash_t lhash = PyObject_Hash((PyObject*) left);
     Py_hash_t rhash = PyObject_Hash((PyObject*) right);
 
-    if (lhash != rhash) {
-        return PyBool_FromLong(!success);
-    }
+    if (lhash != rhash) { return PyBool_FromLong(!success); }
 
     return PyBool_FromLong(success);
 }
@@ -569,21 +596,17 @@ PyObject* lie_basis_richcompare(PyObject* self, PyObject* other, int op)
     PyLieBasis* right = (PyLieBasis*) other;
 
     switch (op) {
-        case Py_EQ:
-            return lie_basis_test_equal(left, right, 1);
-        case Py_NE:
-            return lie_basis_test_equal(left, right, 0);
+        case Py_EQ: return lie_basis_test_equal(left, right, 1);
+        case Py_NE: return lie_basis_test_equal(left, right, 0);
         case Py_LE:
         case Py_GE:
         case Py_LT:
         case Py_GT:
-        default:
-            break;
+        default: break;
     }
 
     Py_RETURN_NOTIMPLEMENTED;
 }
-
 
 /*
  * External methods
@@ -594,36 +617,29 @@ int32_t PyLieBasis_depth(PyLieBasis* basis) { return basis->depth; }
 
 npy_intp PyLieBasis_true_size(PyLieBasis* basis)
 {
-    return *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) basis->degree_begin,
-            basis->depth + 1
-    );
+    return *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, basis->depth + 1);
 }
 
 npy_intp PyLieBasis_size(PyLieBasis* basis)
-{
-    return PyLieBasis_true_size(basis) - 1;
-}
+{ return PyLieBasis_true_size(basis) - 1; }
 
 PyArrayObject* PyLieBasis_degree_begin(PyLieBasis* basis)
-{
-    return (PyArrayObject*) basis->degree_begin;
-}
+{ return (PyArrayObject*) basis->degree_begin; }
 
 PyArrayObject* PyLieBasis_data(PyLieBasis* basis)
-{
-    return (PyArrayObject*) basis->data;
-}
+{ return (PyArrayObject*) basis->data; }
 
 static inline void
 get_basis_word(PyLieBasis* basis, const npy_intp idx, LieWord* out)
 {
-    out->letters[0]
-            = *(npy_intp*)
-                      PyArray_GETPTR2((PyArrayObject*) basis->data, idx, 0);
-    out->letters[1]
-            = *(npy_intp*)
-                      PyArray_GETPTR2((PyArrayObject*) basis->data, idx, 1);
+    out->letters[0] = *(
+            npy_intp*
+    ) PyArray_GETPTR2((PyArrayObject*) basis->data, idx, 0);
+    out->letters[1] = *(
+            npy_intp*
+    ) PyArray_GETPTR2((PyArrayObject*) basis->data, idx, 1);
 }
 
 int PyLieBasis_get_parents(PyLieBasis* basis, npy_intp index, LieWord* out)
@@ -659,14 +675,12 @@ npy_intp PyLieBasis_find_word(
 
     if (degree > basis->depth) { return -1; }
 
-    npy_intp pos = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) basis->degree_begin,
-            degree
-    );
-    const npy_intp degree_end = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) basis->degree_begin,
-            degree + 1
-    );
+    npy_intp pos = *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, degree);
+    const npy_intp degree_end = *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, degree + 1);
 
     npy_intp diff = degree_end - pos;
 
@@ -727,10 +741,9 @@ npy_intp lie_basis_size_to_degree(const PyLieBasis* lie_basis, int32_t degree)
     if (degree <= 0) { return 0; }
     if (degree >= lie_basis->depth + 1) { degree = lie_basis->depth + 1; }
 
-    const npy_intp end = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) lie_basis->degree_begin,
-            degree + 1
-    );
+    const npy_intp end = *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) lie_basis->degree_begin, degree + 1);
 
     return end - 1;
 }
@@ -740,14 +753,12 @@ static npy_intp size_of_degree(const PyLieBasis* basis, int32_t degree)
     if (degree < 1) { return 0; }
     if (degree > basis->depth) { degree = basis->depth; }
 
-    const npy_intp being = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) basis->degree_begin,
-            degree
-    );
-    const npy_intp end = *(npy_intp*) PyArray_GETPTR1(
-            (PyArrayObject*) basis->degree_begin,
-            degree + 1
-    );
+    const npy_intp being = *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, degree);
+    const npy_intp end = *(
+            npy_intp*
+    ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, degree + 1);
 
     return end - being;
 }
@@ -829,12 +840,12 @@ static int insert_l2t_commutator(
     const npy_intp itemsize = PyArray_ITEMSIZE(helper->data);
     const int typenum = PyArray_TYPE(helper->data);
 
-    const npy_intp left_key
-            = *(npy_intp*)
-                      PyArray_GETPTR2((PyArrayObject*) basis->data, key, 0);
-    const npy_intp right_key
-            = *(npy_intp*)
-                      PyArray_GETPTR2((PyArrayObject*) basis->data, key, 1);
+    const npy_intp left_key = *(
+            npy_intp*
+    ) PyArray_GETPTR2((PyArrayObject*) basis->data, key, 0);
+    const npy_intp right_key = *(
+            npy_intp*
+    ) PyArray_GETPTR2((PyArrayObject*) basis->data, key, 1);
 
     const SMHFrame* left_frame = &helper->frames[left_key - 1];
     const SMHFrame* right_frame = &helper->frames[right_key - 1];
@@ -916,14 +927,12 @@ static PyObject* construct_new_l2t(PyLieBasis* basis, PyArray_Descr* dtype)
     }
 
     for (int32_t degree = 2; degree <= basis->depth; ++degree) {
-        npy_intp key = *(npy_intp*) PyArray_GETPTR1(
-                (PyArrayObject*) basis->degree_begin,
-                degree
-        );
-        const npy_intp deg_end = *(npy_intp*) PyArray_GETPTR1(
-                (PyArrayObject*) basis->degree_begin,
-                degree + 1
-        );
+        npy_intp key = *(
+                npy_intp*
+        ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, degree);
+        const npy_intp deg_end = *(
+                npy_intp*
+        ) PyArray_GETPTR1((PyArrayObject*) basis->degree_begin, degree + 1);
 
         for (; key < deg_end; ++key) {
             if (insert_l2t_commutator(&helper, basis, key, degree) < 0) {
@@ -942,7 +951,7 @@ finish:
 
 PyObject* get_l2t_matrix(PyObject* basis, PyObject* dtype_obj)
 {
-    if (!PyObject_TypeCheck(basis, &PyLieBasis_Type)) {
+    if (!PyLieBasis_Check(basis)) {
         PyErr_SetString(PyExc_TypeError, "expected LieBasis object");
         return NULL;
     }
@@ -1014,9 +1023,7 @@ static inline void assign(void* dst, const void* src, const int typenum)
 }
 
 static npy_intp get_t2l_nnz_max(PyLieBasis* basis)
-{
-    return get_tensor_size(basis);
-}
+{ return get_tensor_size(basis); }
 
 static void one_over_degree(void* scratch, int32_t degree, int typenum)
 {
@@ -1123,8 +1130,14 @@ static int t2l_rbracket(
 
             insert_zero(scratch, typenum);
 
-            add_product(scratch, lframe->data, &rframe->data[i*itemsize], typenum, pval);
-            if (smh_insert_value_at_index(helper, pkey-1, scratch) < 0) {
+            add_product(
+                    scratch,
+                    lframe->data,
+                    &rframe->data[i * itemsize],
+                    typenum,
+                    pval
+            );
+            if (smh_insert_value_at_index(helper, pkey - 1, scratch) < 0) {
                 // py exc already set
                 return -1;
             }
@@ -1199,7 +1212,6 @@ static PyObject* construct_new_t2l(PyLieBasis* basis, PyArray_Descr* dtype)
             }
 #endif
 
-
             if (lparent == rparent) { continue; }
 
             // lframe corresponds to a letter, but the 1 is useful to us.
@@ -1239,7 +1251,7 @@ finish:
 
 PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype_obj)
 {
-    if (!PyObject_TypeCheck(basis, &PyLieBasis_Type)) {
+    if (!PyLieBasis_Check(basis)) {
         PyErr_SetString(PyExc_TypeError, "expected LieBasis object");
         return NULL;
     }
@@ -1304,8 +1316,7 @@ PyObject* PyLieBasis_get(int32_t width, int32_t depth)
         return NULL;
     }
 
-    PyLieBasis* self
-            = (PyLieBasis*) PyTensorBasis_Type.tp_alloc(&PyLieBasis_Type, 0);
+    PyLieBasis* self = (PyLieBasis*) PyType_GenericAlloc(PyLieBasis_Type, 0);
     if (self == NULL) { return NULL; }
 
     self->width = width;
@@ -1407,7 +1418,13 @@ static int check_lie_data_standard_ordering(
     return 1;
 }
 
-typedef int (*order_evaluator)(void*, npy_intp, npy_intp, PyArrayObject*, PyArrayObject*);
+typedef int (*order_evaluator)(
+        void*,
+        npy_intp,
+        npy_intp,
+        PyArrayObject*,
+        PyArrayObject*
+);
 
 /**
  * @brief Evaluate the total ordering on two Lie keys
@@ -1788,7 +1805,7 @@ npy_intp compute_lie_dim(const int32_t width, const int32_t depth)
 {
     npy_intp result = 0;
 
-    for (int32_t d=1; d<=depth; ++d) {
+    for (int32_t d = 1; d <= depth; ++d) {
         result += compute_lie_degree_dim(width, d);
     }
 

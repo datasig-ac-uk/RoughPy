@@ -5,9 +5,9 @@
 #ifndef ROUGHPY_GENERICS_TYPE_PTR_H
 #define ROUGHPY_GENERICS_TYPE_PTR_H
 
-#include <roughpy/core/smart_ptr.h>
-#include "roughpy/core/meta.h"
-#include "roughpy/core/types.h"
+#include <roughpy/core/smart_ptr.hpp>
+#include "roughpy/core/meta.hpp"
+#include "roughpy/core/types.hpp"
 
 #include <roughpy/platform/reference_counting.h>
 

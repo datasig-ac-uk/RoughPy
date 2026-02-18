@@ -33,7 +33,7 @@
 #define ROUGHPY_DEVICE_SRC_CPU_KERNELS_MASKED_UNARY_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "devices/types.h"
 #include "operators.h"

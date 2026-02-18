@@ -8,7 +8,7 @@
 
 #include <cstddef>
 
-#include "roughpy/core/smart_ptr.h"
+#include "roughpy/core/smart_ptr.hpp"
 
 #include "roughpy/platform/alloc.h"
 #include "roughpy/platform/reference_counting.h"

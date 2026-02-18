@@ -8,10 +8,10 @@
 #include <limits>
 #include <utility>
 
-#include "roughpy/core/check_helpers.h"
+#include "roughpy/core/check_helpers.hpp"
 #include "roughpy/core/macros.h"
-#include "roughpy/core/types.h"
-#include "roughpy/core/traits.h"
+#include "roughpy/core/types.hpp"
+#include "roughpy/core/traits.hpp"
 
 #include "roughpy/generics/conversion_trait.h"
 

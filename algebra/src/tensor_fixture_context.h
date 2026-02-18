@@ -29,8 +29,8 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_CONTEXT_H
 #define ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_CONTEXT_H
 
-#include "roughpy/core/ranges.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/ranges.hpp"
+#include "roughpy/core/types.hpp"
 #include "roughpy/algebra/context.h"
 #include "roughpy/scalars/scalar_types.h"
 

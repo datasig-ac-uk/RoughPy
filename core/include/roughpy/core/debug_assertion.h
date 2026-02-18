@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_CORE_DEBUG_ASSERTION_H
 #define ROUGHPY_CORE_DEBUG_ASSERTION_H
 
-#include <cassert>
+#include <assert.h>
 
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__))            \
         && !defined(RPY_DEBUG)
@@ -14,8 +14,8 @@
 #  undef RPY_DEBUG
 #endif
 
-#ifdef RPY_DEBUG
-#  include "check_helpers.h"
+#if defined(RPY_DEBUG) && defined(__cplusplus)
+#  include "check_helpers.hpp"
 #endif
 
 #ifdef RPY_DEBUG
@@ -28,6 +28,7 @@
 #  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
 
+#ifdef __cplusplus
 #define RPY_DBG_ASSERT_EQ(a, b) RPY_DBG_ASSERT((::rpy::compare_equal((a), (b))))
 #define RPY_DBG_ASSERT_NE(a, b)                                                \
     RPY_DBG_ASSERT((::rpy::compare_not_equal((a), (b))))
@@ -38,5 +39,13 @@
     RPY_DBG_ASSERT((::rpy::compare_less_equal((a), (b))))
 #define RPY_DBG_ASSERT_GE(a, b)                                                \
     RPY_DBG_ASSERT((::rpy::compare_greater_equal((a), (b))))
+#else
+#define RPY_DBG_ASSERT_EQ(a, b) RPY_DBG_ASSERT((a) == (b))
+#define RPY_DBG_ASSERT_NE(a, b) RPY_DBG_ASSERT((a) != (b))
+#define RPY_DBG_ASSERT_LT(a, b) RPY_DBG_ASSERT((a) < (b))
+#define RPY_DBG_ASSERT_GT(a, b) RPY_DBG_ASSERT((a) > (b))
+#define RPY_DBG_ASSERT_LE(a, b) RPY_DBG_ASSERT((a) <= (b))
+#define RPY_DBG_ASSERT_GE(a, b) RPY_DBG_ASSERT((a) >= (b))
+#endif
 
 #endif// ROUGHPY_CORE_DEBUG_ASSERTION_H

@@ -30,8 +30,8 @@
 #define ROUGHPY_CORE_SLICE_H_
 
 #include "debug_assertion.h"
-#include "traits.h"
-#include "types.h"
+#include "traits.hpp"
+#include "types.hpp"
 
 #include <iterator>
 #include <vector>

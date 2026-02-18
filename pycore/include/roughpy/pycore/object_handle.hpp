@@ -1,9 +1,9 @@
-#ifndef ROUGHPY_COMPUTE__SRC_PY_OBJ_HANDLE_HPP
-#define ROUGHPY_COMPUTE__SRC_PY_OBJ_HANDLE_HPP
+#ifndef ROUGHPY_PYCORE_OBJECT_HANDLE_HPP
+#define ROUGHPY_PYCORE_OBJECT_HANDLE_HPP
 
 #include "py_headers.h"
 
-namespace rpy::compute {
+namespace rpy {
 
 class PyObjHandle
 {
@@ -77,6 +77,9 @@ public:
 };
 
 
-} // namespace rpy::compute
 
-#endif //ROUGHPY_COMPUTE__SRC_PY_OBJ_HANDLE_HPP
+
+} // namespace rpy
+
+
+#endif//ROUGHPY_PYCORE_OBJECT_HANDLE_HPP

@@ -31,8 +31,8 @@
 
 #include "roughpy/platform/configuration.h" // IWYU pragma: associated
 
-#include "roughpy/core/slice.h"  // for Slice
-#include "roughpy/core/types.h"  // for string_view
+#include "roughpy/core/slice.hpp"  // for Slice
+#include "roughpy/core/types.hpp"  // for string_view
 
 using namespace rpy;
 

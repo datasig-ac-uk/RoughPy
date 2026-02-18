@@ -1,5 +1,5 @@
-#ifndef ROUGHPY_COMPUTE__SRC_PY_COMPAT_H
-#define ROUGHPY_COMPUTE__SRC_PY_COMPAT_H
+#ifndef ROUGHPY_PYCORE_COMPAT_H
+#define ROUGHPY_PYCORE_COMPAT_H
 
 #include "py_headers.h"
 
@@ -15,6 +15,42 @@
  */
 #include <pythoncapi_compat.h>
 
+#ifndef Py_XSETREF
+#define Py_XSETREF(op, op2) \
+    do {                    \
+        PyObject *_py_tmp = (PyObject *)(op); \
+        (op) = (op2);       \
+        Py_XDECREF(_py_tmp); \
+    } while (0)
+#endif
+
+#ifndef Py_SETREF
+#define Py_SETREF(op, op2) \
+    do {                   \
+        PyObject *_py_tmp = (PyObject *)(op); \
+        (op) = (op2);      \
+        Py_DECREF(_py_tmp); \
+    } while (0)
+#endif
+
+#ifndef Py_NewRef
+static inline PyObject* _RPY_Py_NewRef(PyObject *obj)
+{
+    Py_INCREF(obj);
+    return obj;
+}
+#define Py_NewRef(obj) _RPY_Py_NewRef((PyObject *)(obj))
+#endif
+
+#ifndef Py_XNewRef
+static inline PyObject* _RPY_Py_XNewRef(PyObject *obj)
+{
+    Py_XINCREF(obj);
+    return obj;
+}
+#define Py_XNewRef(obj) _RPY_Py_XNewRef((PyObject *)(obj))
+#endif
+
 /*
  * structmember.h was deprecated in Python 3.12 with the functionality folded
  * into the main Python headers. Unfortunately, they also renamed all the
@@ -23,7 +59,7 @@
  * This will make sure the header is included and proper aliases given for the
  * constants prior to 3.12
  */
-#if defined(RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER) && PY_VERSION_HEX < PYVER_HEX(3, 12)
+#if defined(RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER) && PY_VERSION_HEX < PYVER_HEX(3, 12)
 #include <structmember.h>
 
 #ifndef Py_T_CHAR
@@ -119,13 +155,14 @@
 
 #if PY_VERSION_HEX < PYVER_HEX(3, 13)
 #ifdef __cplusplus
-#define RPC_PY_KWORD_CAST(ARG) const_cast<char**>(ARG)
+#define RPY_PY_KWORD_CAST(ARG) const_cast<char**>(ARG)
 #else
-#define RPC_PY_KWORD_CAST(ARG) (char**) ARG
+#define RPY_PY_KWORD_CAST(ARG) (char**) ARG
 #endif
 #else
-#define RPC_PY_KWORD_CAST(ARG) ARG
+#define RPY_PY_KWORD_CAST(ARG) ARG
 #endif
 
 
-#endif// ROUGHPY_COMPUTE__SRC_PY_COMPAT_H
+
+#endif// ROUGHPY_PYCORE_COMPAT_H

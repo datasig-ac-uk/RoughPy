@@ -9,8 +9,8 @@
 #include <gmp.h>
 // #include <mpfr.h>
 
-#include "roughpy/core/types.h"
-#include "roughpy/core/traits.h"
+#include "roughpy/core/types.hpp"
+#include "roughpy/core/traits.hpp"
 
 #include "generics/builtin_types/builtin_type_ids.h"
 

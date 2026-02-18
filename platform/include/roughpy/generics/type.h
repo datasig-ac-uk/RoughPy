@@ -9,14 +9,14 @@
 #include <typeinfo>
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include <roughpy/platform/reference_counting.h>
 #include <roughpy/platform/roughpy_platform_export.h>
 
 #include "builtin_trait.h"
 #include "conversion_trait.h"
-#include "roughpy/core/hash.h"
+#include "roughpy/core/hash.hpp"
 #include "type_ptr.h"
 
 namespace rpy::generics {

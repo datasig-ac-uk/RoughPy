@@ -31,7 +31,7 @@
 
 #include "basis.h"
 
-#include <roughpy/core/traits.h>
+#include <roughpy/core/traits.hpp>
 
 #include "basis_info.h"
 

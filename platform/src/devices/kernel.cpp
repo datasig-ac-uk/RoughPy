@@ -32,12 +32,12 @@
 
 #include "devices/kernel.h"
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 #include <roughpy/core/check.h>
 #include <roughpy/core/debug_assertion.h>
 #include "roughpy/core/macros.h"              // for RPY_DLL_EXPORT
-#include "roughpy/core/slice.h"               // for Slice
-#include "roughpy/core/types.h"               // for bitmask_t, dimn_t, string
+#include "roughpy/core/slice.hpp"               // for Slice
+#include "roughpy/core/types.hpp"               // for bitmask_t, dimn_t, string
 
 #include "devices/event.h"
 #include "devices/queue.h"

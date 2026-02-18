@@ -31,9 +31,9 @@
 #include "real_interval.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/slice.h>
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/slice.hpp>
+#include <roughpy/core/traits.hpp>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 
 #include "roughpy_intervals_export.h"

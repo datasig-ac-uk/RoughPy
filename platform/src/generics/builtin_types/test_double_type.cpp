@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include <roughpy/core/hash.h>
+#include <roughpy/core/hash.hpp>
 
 #include <roughpy/generics/arithmetic_trait.h>
 #include <roughpy/generics/comparison_trait.h>

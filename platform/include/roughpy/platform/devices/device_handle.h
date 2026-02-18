@@ -29,7 +29,7 @@
 #define ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/filesystem.h>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>

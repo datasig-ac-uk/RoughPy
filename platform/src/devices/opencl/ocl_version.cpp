@@ -10,7 +10,7 @@
 #include <string>
 
 #include "roughpy/core/check.h"  // for throw_exception, RPY_CHECK
-#include "roughpy/core/types.h"  // for string
+#include "roughpy/core/types.hpp"  // for string
 
 #include <roughpy/platform/errors.h>
 

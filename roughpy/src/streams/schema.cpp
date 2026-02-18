@@ -33,7 +33,7 @@
 
 #include "roughpy/core/check.h"                              // for throw_ex...
 #include "roughpy/core/macros.h"                             // for RPY_LOCAL
-#include "roughpy/core/types.h"                              // for string
+#include "roughpy/core/types.hpp"                              // for string
 
 #include "args/parse_schema.h"
 #include <roughpy/streams/schema.h>

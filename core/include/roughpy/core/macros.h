@@ -106,8 +106,10 @@
 #  endif
 
 #  if defined(RPY_COMPILER_GCC) || defined(RPY_COMPILER_CLANG)
+#    define RPY_NO_EXPORT __attribute__((visibility("hidden")))
 #    define RPY_LOCAL __attribute__((visibility("hidden")))
 #  else
+#    define RPY_NO_EXPORT
 #    define RPY_LOCAL
 #  endif
 

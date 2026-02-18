@@ -9,7 +9,7 @@
 #include <numeric>
 #include <ostream>
 
-#include "roughpy/core/ranges.h"
+#include "roughpy/core/ranges.hpp"
 
 
 using namespace rpy;

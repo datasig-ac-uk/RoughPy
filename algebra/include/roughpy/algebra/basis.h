@@ -31,10 +31,9 @@
 
 #include "algebra_fwd.h"
 
-#include <roughpy/core/hash.h>
-#include <roughpy/core/smart_ptr.h>
-
-#include <roughpy/core/traits.h>
+#include <roughpy/core/hash.hpp>
+#include <roughpy/core/smart_ptr.hpp>
+#include <roughpy/core/traits.hpp>
 
 namespace rpy {
 namespace algebra {

@@ -8,11 +8,11 @@
 
 #include <memory>
 
-#include "roughpy/core/hash.h"
+#include "roughpy/core/hash.hpp"
 #include "roughpy/core/macros.h"
-#include "roughpy/core/meta.h"
-#include "roughpy/core/traits.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/meta.hpp"
+#include "roughpy/core/traits.hpp"
+#include "roughpy/core/types.hpp"
 
 #include "roughpy/generics/conversion_trait.h"
 #include "roughpy/generics/type_ptr.h"

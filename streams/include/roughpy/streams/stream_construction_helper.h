@@ -4,8 +4,8 @@
 #include "schema.h"
 
 #include "roughpy/core/check.h"          // for throw_exception
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/traits.hpp>
+#include <roughpy/core/types.hpp>
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/lie.h>

@@ -30,7 +30,7 @@
 
 #include "roughpy/core/debug_assertion.h"     // for RPY_DBG_ASSERT
 #include "roughpy/core/macros.h"              // for RPY_NO_DISCARD
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include <roughpy/platform/serialization.h>
 

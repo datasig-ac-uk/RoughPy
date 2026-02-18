@@ -6,10 +6,11 @@
 #include <roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp>
 #include <roughpy_compute/dense/intermediate/free_tensor_log.hpp>
 
+#include <roughpy/pycore/compat.h>
+#include <roughpy/pycore/object_handle.hpp>
+
 #include "call_config.hpp"
 #include "py_binary_array_fn.hpp"
-#include "py_compat.h"
-#include "py_obj_handle.hpp"
 #include "py_ternary_array_fn.hpp"
 
 using namespace rpy::compute;
@@ -76,7 +77,7 @@ PyObject* py_dense_ft_exp(
                 args,
                 kwargs,
                 "OOO|ii",
-                RPC_PY_KWORD_CAST(kwords),
+                RPY_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &arg_obj,
                 &basis_obj,
@@ -174,7 +175,7 @@ PyObject* py_dense_ft_fmexp(
                 args,
                 kwargs,
                 "OOOO|iii",
-                RPC_PY_KWORD_CAST(kwords),
+                RPY_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &multiplier_obj,
                 &exponent_obj,
@@ -268,7 +269,7 @@ PyObject* py_dense_ft_log(
                 args,
                 kwargs,
                 "OOO|ii",
-                RPC_PY_KWORD_CAST(kwords),
+                RPY_PY_KWORD_CAST(kwords),
                 &out_obj,
                 &arg_obj,
                 &basis_obj,

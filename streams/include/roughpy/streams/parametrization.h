@@ -29,7 +29,7 @@
 #define ROUGHPY_STREAMS_PARAMETRIZATION_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>

@@ -33,8 +33,8 @@
 #define ROUGHPY_DEVICE_SRC_CPU_CPU_DECLS_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/smart_ptr.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/smart_ptr.hpp>
+#include <roughpy/core/types.hpp>
 
 
 

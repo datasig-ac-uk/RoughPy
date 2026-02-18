@@ -30,7 +30,7 @@
 
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "roughpy/platform/roughpy_platform_export.h"
 

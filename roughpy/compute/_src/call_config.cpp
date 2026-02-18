@@ -1,9 +1,10 @@
 #include "call_config.hpp"
-#include "py_compat.h"
+#include <roughpy/pycore/compat.h>
 
 #include <roughpy_compute/common/basis.hpp>
 
 
+using namespace rpy;
 using namespace rpy::compute;
 
 

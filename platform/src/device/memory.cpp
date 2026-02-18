@@ -4,7 +4,7 @@
 
 #include "roughpy/device/memory.h"
 
-#include "roughpy/core/smart_ptr.h"
+#include "roughpy/core/smart_ptr.hpp"
 
 #include "roughpy/generics/type.h"
 
