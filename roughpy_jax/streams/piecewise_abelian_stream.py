@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Tuple
+import functools
 
 import jax.numpy as jnp
 from jax import lax
@@ -63,30 +64,56 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # 
         # associate scan of exps of the l2t of each piecewise segment, 
         # then take the log of the product of the exps over the query interval?
-        initial = FreeTensor.identity(tensor_basis=self.group_basis)
-        def compute_piece(acc, x_and_interval):
+        # initial = FreeTensor.identity(tensor_basis=self.group_basis)
+        initial = self._get_identity(dtype=self._data[0].data.dtype)
+        
+        # NOTE: This is a very naive implementation, and could be optimized by 
+        # first calculating the tensors of earch piece, then doing an associative 
+        # scan of the fused multiply exp of the tensors, and then taking the log 
+        # of the final product.
+        
+        def get_piece_tensor(x_and_interval):
             x, p  = x_and_interval
             # NOTE: Might be a clearer way of writing this?
             # NOTE: the intersection length can be None?
             intersection = p.intersection(interval)
             if intersection is None:
                 scale_factor = 1.0
-                t = FreeTensor.identity(tensor_basis=self.group_basis)
+                t = self._get_identity(dtype=x.data.dtype)
             else:
                 scale_factor = intersection.length / self._partition.length
                 t = lie_to_tensor(x, tensor_basis=self.group_basis, scale_factor=scale_factor)
- 
-            return ft_fmexp(acc, t, tensor_basis=self.group_basis)
+                
+            print(f"type(acc): {type(acc)}, type(t): {type(t)}")
+            return t
+        
+        def compute_acc(acc, x_and_interval):
+            t = get_piece_tensor(x_and_interval)
+            return ft_fmexp(acc, t, self.group_basis)
+
+        def compute_pair(x_and_int1, y_and_int2):
+            x, int_1 = x_and_int1
+            y, int_2 = y_and_int2
+            
+            t1 = get_piece_tensor((x, int_1))
+            t2 = get_piece_tensor((y, int_2))
+            
+            return ft_fmexp(t1, t2, self.group_basis)
         
         intervals = self._partition.to_intervals()
-        result = lax.associative_scan(compute_piece, initial, zip(self._data, intervals))
+        # result = lax.associative_scan(compute_piece, zip(self._data, intervals))
+        # The final result is the product of the exps over the query interval, so we take the last element of the scan.
+        result = lax.associative_scan(compute_pair, zip(self._data, intervals))[-1]
         return tensor_to_lie(result, lie_basis=self.lie_basis)
 
+    def _get_identity(self, dtype) -> FreeTensor:
+        """Return the identity element of the group."""
+        identity_data = jnp.zeros(self.group_basis.size(), dtype=dtype).at[0].set(1)
+        return FreeTensor(identity_data, self.group_basis)
     
-    # NOTE JL: Should this take a partition instead?
     def signature(self, interval: Interval) -> GroupT:
         """Compute the signature over an interval."""
-        # exponentiate the log signature
+        # exponentiate the log signature?
         return ft_exp(self.log_signature(interval), self.group_basis)
 
     

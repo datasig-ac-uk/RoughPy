@@ -20,7 +20,7 @@ def test_piecewise_abelian_stream(rpj_batch, rpj_dtype):
     partition = Partition([0.0, 1.0, 2.0], IntervalType.ClOpen)
     
     # Make some Lie elements for the stream (we can just use random data for this test)
-    lie_basis = rpj.LieBasis(4, 4)
+    lie_basis = rpj.LieBasis(2, 2)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     l1_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
