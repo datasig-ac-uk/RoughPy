@@ -4,6 +4,7 @@ import functools
 
 import jax.numpy as jnp
 from jax import lax
+import jax
 
 from .concepts import Stream, BasisLike, LieT, GroupT
 from ..intervals import Interval, Partition
@@ -84,7 +85,6 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
                 scale_factor = intersection.length / self._partition.length
                 t = lie_to_tensor(x, tensor_basis=self.group_basis, scale_factor=scale_factor)
                 
-            print(f"type(acc): {type(acc)}, type(t): {type(t)}")
             return t
         
         def compute_acc(acc, x_and_interval):
@@ -99,16 +99,21 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             t2 = get_piece_tensor((y, int_2))
             
             return ft_fmexp(t1, t2, self.group_basis)
+
+        def associate_compute_pair(t1, t2):
+            print(f"t1: {type(t1)}, shape: {t1[0].data.shape}, t2: {type(t2)}, shape: {t2[0].data.shape}")
+            return ft_fmexp(t1, t2, self.group_basis)
         
         intervals = self._partition.to_intervals()
-        # result = lax.associative_scan(compute_piece, zip(self._data, intervals))
+        result = functools.reduce(compute_acc, zip(self._data, intervals), initial)
         # The final result is the product of the exps over the query interval, so we take the last element of the scan.
-        result = lax.associative_scan(compute_pair, zip(self._data, intervals))[-1]
+        # tensors = jax.pytree([get_piece_tensor((x, p)) for x, p in zip(self._data, intervals)])
+        # result = lax.associative_scan(associate_compute_pair, tensors)[-1]
         return tensor_to_lie(result, lie_basis=self.lie_basis)
 
     def _get_identity(self, dtype) -> FreeTensor:
         """Return the identity element of the group."""
-        identity_data = jnp.zeros(self.group_basis.size(), dtype=dtype).at[0].set(1)
+        identity_data = jnp.zeros((*self._data[0].data.shape[:-1], self.group_basis.size()), dtype=dtype).at[..., 0].set(1)
         return FreeTensor(identity_data, self.group_basis)
     
     def signature(self, interval: Interval) -> GroupT:
