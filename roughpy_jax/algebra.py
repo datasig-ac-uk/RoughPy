@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TypeVar
 
-from typing import Any
-
 import jax
 import jax.numpy as jnp
 import numpy as np
