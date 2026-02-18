@@ -1,3 +1,1 @@
-
- from .concepts import Stream, ValueStream
-
+from .concepts import Stream, ValueStream

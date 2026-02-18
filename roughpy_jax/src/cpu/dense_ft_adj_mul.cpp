@@ -101,6 +101,7 @@ struct DenseFTAdjRMulFunctor : DenseFTAdjLMulFunctor<DType>
     using Scalar = typename Base::Scalar;
 
     std::vector<Scalar> op_workspace;
+    std::vector<Scalar> arg_workspace;
     std::vector<Scalar> out_workspace;
 
     explicit DenseFTAdjRMulFunctor(DenseFTAdjLMulStaticArgs args)
@@ -108,6 +109,7 @@ struct DenseFTAdjRMulFunctor : DenseFTAdjLMulFunctor<DType>
     {
         out_workspace.resize(data_size_to_degree(this->basis, this->basis.depth));
         op_workspace.resize(data_size_to_degree(this->basis, this->op_max_deg));
+        arg_workspace.resize(data_size_to_degree(this->basis, this->arg_max_deg));
     }
 
 
@@ -127,6 +129,13 @@ struct DenseFTAdjRMulFunctor : DenseFTAdjLMulFunctor<DType>
                 this->op_max_deg
         );
 
+        DenseTensorView<Scalar*> arg_workspace_view(
+                arg_workspace.data(),
+                this->basis,
+                0,
+                this->basis.depth
+        );
+
         DenseTensorView<Scalar*> out_workspace_view(
                 out_workspace.data(),
                 this->basis,
@@ -141,9 +150,16 @@ struct DenseFTAdjRMulFunctor : DenseFTAdjLMulFunctor<DType>
                 basic::DefaultSigner{}
         );
 
+        basic::ft_antipode(
+                arg_workspace_view,
+                arg_view,
+                basic::BasicAntipodeConfig{},
+                basic::DefaultSigner{}
+        );
+
         RPY_XLA_SUCCESS_OR_RETURN(
                 Base::
-                operator()(out_workspace.data(), op_workspace.data(), arg_data)
+                operator()(out_workspace.data(), op_workspace.data(), arg_workspace.data())
         );
 
         basic::ft_antipode(
@@ -216,7 +232,7 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(cpu_dense_ft_adj_lmul,
 
 
 XLA_FFI_DEFINE_HANDLER_SYMBOL(cpu_dense_ft_adj_rmul,
-    rpy::jax::cpu::cpu_dense_ft_adj_lmul_impl,
+    rpy::jax::cpu::cpu_dense_ft_adj_rmul_impl,
     xla::ffi::Ffi::Bind()
         .Ret<xla::ffi::AnyBuffer>()
         .Arg<xla::ffi::AnyBuffer>()
