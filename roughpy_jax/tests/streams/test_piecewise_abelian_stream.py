@@ -13,7 +13,6 @@ class TestPiecewiseAbelianStream:
         # Create a simple piecewise abelian stream with two intervals
         # [0, 1] and [1, 2] with corresponding Lie elements L1 and L2
         self.interval = RealInterval(0.0, 2.0, IntervalType.ClOpen)
-        self.query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
         self.partition = Partition([0.0, 1.0, 2.0], IntervalType.ClOpen)
         
         # Make some Lie elements for the stream (we can just use random data for this test)
@@ -37,15 +36,35 @@ class TestPiecewiseAbelianStream:
     def test_log_signature(self, rpj_nobatch, rpj_dtype):
         """Test the PiecewiseAbelianStream class.""" 
         self.setup(rpj_nobatch, rpj_dtype)
+        query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
         
         print("L1:", self.l1.data)
         
         # Compute log signature over [0, 1]
-        log_sig = self.stream.log_signature(self.query_interval)
+        log_sig = self.stream.log_signature(query_interval)
         
         print("log_sig:", log_sig.data)
         # Check that it equals L1 (which is l1 in this case)
         assert jnp.allclose(log_sig.data, self.l1.data, atol=1e-6)
+        
+    def test_signature(self, rpj_nobatch, rpj_dtype):
+        """Test that the signature of the stream over [0, 1] is exp(L1)."""
+        self.setup(rpj_nobatch, rpj_dtype)
+        query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
+        sig = self.stream.signature(query_interval)
+        
+    def test_log_signature_cbh(self, rpj_nobatch, rpj_dtype):
+        """Test that the log signature of the stream over [0, 2] is CBH(L1, L2)."""
+        self.setup(rpj_nobatch, rpj_dtype)
+        
+        query_interval = RealInterval(0.5, 1.5, IntervalType.ClOpen)
+        log_sig = self.stream.log_signature(query_interval)
+        
+        # Compute the expected log signature using the CBH formula
+        # NOTE: Use the cbh from lie_increment_stream?
+        expected_log_sig = rpj.cbh(self.l1, self.l2)
+        
+        assert jnp.allclose(log_sig.data, expected_log_sig.data, atol=1e-6)
     
     def test_ftfmexp(self, rpj_nobatch, rpj_dtype):
         """Test that the ft_fmexp of the identity and a piece gives the piece back."""
