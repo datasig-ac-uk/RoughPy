@@ -585,7 +585,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return result
 
     def signature(
-        self, interval: Interval | None = None, resolution: int | None = None
+        self, interval: Interval | None = None,
     ) -> FreeTensor:
         log_sig = self.log_signature(interval)
         tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
