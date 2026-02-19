@@ -66,6 +66,14 @@ class Interval(Protocol):
 class BaseInterval(Interval):
     
     @staticmethod
+    def __str__(interval) -> str:
+        reprs = {
+            IntervalType.ClOpen: "[{}, {})",
+            IntervalType.OpenCl: "({}, {}]",
+        }
+        return reprs[interval.interval_type].format(interval.inf, interval.sup)
+    
+    @staticmethod
     def length(interval: Interval) -> float:
         """
         Calculate the length of the interval.
@@ -95,7 +103,7 @@ class BaseInterval(Interval):
         new_inf = max(left_interval.inf, right_interval.inf)
         new_sup = min(left_interval.sup, right_interval.sup)
 
-        if new_inf > new_sup:
+        if new_inf >= new_sup:
             return None  # No intersection
         
         IntervalType = left_interval.__class__
@@ -218,6 +226,9 @@ class RealInterval(Generic[RealT]):
     _sup : RealT
     _interval_type: IntervalType
 
+    def __str__(self) -> str:
+        return BaseInterval.__str__(self)
+    
     @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
@@ -252,6 +263,9 @@ class Partition(Generic[RealT]):
 
     def __len__(self) -> int:
         return len(self._endpoints) - 1
+    
+    def __str__(self) -> str:
+        return BaseInterval.__str__(self)
 
     @property
     def interval_type(self) -> IntervalType:
