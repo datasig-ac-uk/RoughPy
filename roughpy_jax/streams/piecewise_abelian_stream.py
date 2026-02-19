@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Tuple
-import functools
 
 import jax.numpy as jnp
 from jax import lax
@@ -59,59 +58,36 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # This is a piecewise abelian stream, so the log signature over an 
         # interval is just the sum of the log signatures over the subintervals 
         # that intersect with the query interval.
-        # 
-        # This is a very simple implementation, and can be optimized by precomputing the
-        # cumulative sums of the log signatures over the partition intervals.
-        # 
-        # associate scan of exps of the l2t of each piecewise segment, 
-        # then take the log of the product of the exps over the query interval?
-        # initial = FreeTensor.identity(tensor_basis=self.group_basis)
+        # NOTE: replace this with the Basis.identity method when available
         initial = self._get_identity(dtype=self._data[0].data.dtype)
-        print(f"query interval: {interval}, partition: {self._partition}")
-        # NOTE: This is a very naive implementation, and could be optimized by 
-        # first calculating the tensors of earch piece, then doing an associative 
-        # scan of the fused multiply exp of the tensors, and then taking the log 
-        # of the final product.
         
         def get_piece_tensor(x_and_interval):
             x, p  = x_and_interval
-            print(f"piece interval: {p}")
             # NOTE: Might be a clearer way of writing this?
-            # NOTE: the intersection length can be None?
             intersection = p.intersection(interval)
             if intersection is None:
                 scale_factor = 1.0
                 t = self._get_identity(dtype=x.data.dtype)
-                print("using identity")
             else:
+                # TODO: Always scale by the scaling factor, even if it's zero
                 scale_factor = intersection.length / p.length
                 t = lie_to_tensor(x, tensor_basis=self._group_basis, scale_factor=scale_factor)
-                print(f"using piece tensor with scale factor {scale_factor}, intersection length: {intersection.length}")
             return t
         
-        def compute_acc(acc, x_and_interval):
-            t = get_piece_tensor(x_and_interval)
-            print(f"acc: {type(acc)}, acc_shape: {acc.data.shape}, t: {type(t)}, shape: {t.data.shape}")
-            return ft_fmexp(acc, t, self._group_basis)
-
-        def compute_pair(x_and_int1, y_and_int2):
-            x, int_1 = x_and_int1
-            y, int_2 = y_and_int2
-            
-            t1 = get_piece_tensor((x, int_1))
-            t2 = get_piece_tensor((y, int_2))
-            
-            return ft_fmexp(t1, t2, self._group_basis)
-
-        def associate_compute_pair(t1, t2):
-            print(f"t1: {type(t1)}, shape: {t1.data.shape}, t2: {type(t2)}, shape: {t2.data.shape}")
-            return ft_fmexp(t1, t2, self._group_basis)
-        
         intervals = self._partition.to_intervals()
-        result = functools.reduce(compute_acc, zip(self._data, intervals), initial)
-        # The final result is the product of the exps over the query interval, so we take the last element of the scan.
-        # tensors = jax.pytree([get_piece_tensor((x, p)) for x, p in zip(self._data, intervals)])
-        # result = lax.associative_scan(associate_compute_pair, tensors)[-1]
+        all_tensors = [initial] + [get_piece_tensor((x, p)) for x, p in zip(self._data, intervals)]
+
+        # Stack all tensors along a leading axis into a single batched FreeTensor.
+        batched = jax.tree.map(lambda *arrs: jnp.stack(arrs), *all_tensors)
+
+        # NOTE: could use a reduce here instead?
+        result_batched = lax.associative_scan(
+            lambda a, b: ft_fmexp(a, b, self._group_basis),
+            batched,
+        )
+
+        # Take the last prefix (the full product over all selected pieces).
+        result = jax.tree.map(lambda x: x[-1], result_batched)
         return tensor_to_lie(result, lie_basis=self.lie_basis)
 
     def _get_identity(self, dtype) -> FreeTensor:
