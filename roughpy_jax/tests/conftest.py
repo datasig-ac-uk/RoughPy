@@ -107,6 +107,15 @@ class BatchFixtureHelper:
         return data
 
 
+@pytest.fixture()
+def rpj_nobatch():
+    """
+    Fixture for tests that do not require batching. Provides helper methods for
+    creating non-batched tensors.
+    """
+    return BatchFixtureHelper(())
+
+
 # Batching test fixture returns helper class for common operations
 @pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
 def rpj_batch(request):

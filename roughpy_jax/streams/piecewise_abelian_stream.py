@@ -67,7 +67,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # then take the log of the product of the exps over the query interval?
         # initial = FreeTensor.identity(tensor_basis=self.group_basis)
         initial = self._get_identity(dtype=self._data[0].data.dtype)
-        
+        print(f"query interval: {interval}, partition: {self._partition}")
         # NOTE: This is a very naive implementation, and could be optimized by 
         # first calculating the tensors of earch piece, then doing an associative 
         # scan of the fused multiply exp of the tensors, and then taking the log 
@@ -75,20 +75,23 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         
         def get_piece_tensor(x_and_interval):
             x, p  = x_and_interval
+            print(f"piece interval: {p}")
             # NOTE: Might be a clearer way of writing this?
             # NOTE: the intersection length can be None?
             intersection = p.intersection(interval)
             if intersection is None:
                 scale_factor = 1.0
                 t = self._get_identity(dtype=x.data.dtype)
+                print("using identity")
             else:
-                scale_factor = intersection.length / self._partition.length
+                scale_factor = intersection.length / p.length
                 t = lie_to_tensor(x, tensor_basis=self.group_basis, scale_factor=scale_factor)
-                
+                print(f"using piece tensor with scale factor {scale_factor}, intersection length: {intersection.length}")
             return t
         
         def compute_acc(acc, x_and_interval):
             t = get_piece_tensor(x_and_interval)
+            print(f"acc: {type(acc)}, acc_shape: {acc.data.shape}, t: {type(t)}, shape: {t.data.shape}")
             return ft_fmexp(acc, t, self.group_basis)
 
         def compute_pair(x_and_int1, y_and_int2):
