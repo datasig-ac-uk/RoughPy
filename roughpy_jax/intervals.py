@@ -80,7 +80,7 @@ class BaseInterval(Interval):
         :return: The length of the interval, calculated as sup - inf.
         :rtype: float
         """
-        return interval.sup - interval.inf
+        return max(0.0, interval.sup - interval.inf)
     
     @staticmethod
     def intersection(
