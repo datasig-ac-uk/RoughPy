@@ -208,6 +208,24 @@ def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     return DenseFreeTensor(*out_data, op.basis)
 
 
+def ft_fma_derivative(
+    a: FreeTensorT,
+    b: FreeTensorT,
+    c: FreeTensorT,
+    t_a: FreeTensorT,
+    t_b: FreeTensorT,
+    t_c: FreeTensorT,
+) -> FreeTensorT: ...
+
+
+def ft_fma_adjoint_derivative(
+    a: FreeTensorT,
+    b: FreeTensorT,
+    c: FreeTensorT,
+    ct_result: ShuffleTensorT,
+) -> tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]: ...
+
+
 def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     """
     Free tensor multiply
@@ -242,6 +260,16 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     return DenseFreeTensor(*out_data, op.basis)
 
 
+def ft_mul_derivative(
+    a: FreeTensorT, b: FreeTensorT, t_a: FreeTensorT, t_b: FreeTensorT
+) -> FreeTensorT: ...
+
+
+def ft_mul_adjoint_derivative(
+    a: FreeTensorT, b: FreeTensorT, ct_result: ShuffleTensorT
+) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
+
+
 def antipode(a: FreeTensorT) -> FreeTensorT:
     """
     Antipode of a free tensor
@@ -264,6 +292,14 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
     out_data = op(a.data)
 
     return DenseFreeTensor(*out_data, out_basis)
+
+
+def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT: ...
+
+
+def antipode_adjoint_derivative(
+    a: FreeTensorT, ct_result: ShuffleTensorT
+) -> tuple[ShuffleTensorT]: ...
 
 
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
@@ -297,6 +333,24 @@ def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTe
     out_data = op(a.data, b.data, c.data)
 
     return DenseShuffleTensor(*out_data, op.basis)
+
+
+def st_fma_derivative(
+    a: ShuffleTensorT,
+    b: ShuffleTensorT,
+    c: ShuffleTensorT,
+    t_a: ShuffleTensorT,
+    t_b: ShuffleTensorT,
+    t_c: ShuffleTensorT,
+) -> ShuffleTensorT: ...
+
+
+def st_fma_adjoint_derivative(
+    a: ShuffleTensorT,
+    b: ShuffleTensorT,
+    c: ShuffleTensorT,
+    ct_result: FreeTensorT,
+) -> tuple[FreeTensorT, FreeTensorT, FreeTensorT]: ...
 
 
 def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
@@ -333,6 +387,19 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     return DenseShuffleTensor(*out_data, op.basis)
 
 
+def st_mul_derivative(
+    lhs: ShuffleTensorT,
+    rhs: ShuffleTensorT,
+    t_lhs: ShuffleTensorT,
+    t_rhs: ShuffleTensorT,
+) -> ShuffleTensorT: ...
+
+
+def st_mul_adjoint_derivative(
+    lhs: ShuffleTensorT, rhs: ShuffleTensorT, ct_result: FreeTensorT
+) -> tuple[FreeTensorT, FreeTensorT]: ...
+
+
 def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor exponent
@@ -363,6 +430,18 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     return DenseFreeTensor(*out_data, out_basis)
 
 
+def ft_exp_derivative(
+    x: FreeTensorT,
+    t_x: FreeTensorT,
+) -> FreeTensorT: ...
+
+
+def ft_exp_adjoint_derivative(
+    x: FreeTensorT,
+    ct_result: ShuffleTensorT,
+) -> tuple[ShuffleTensorT]: ...
+
+
 def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor logarithm
@@ -391,6 +470,18 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     out_data = op(x.data)
 
     return DenseFreeTensor(*out_data, out_basis)
+
+
+def ft_log_derivative(
+    x: FreeTensorT,
+    t_x: FreeTensorT,
+) -> FreeTensorT: ...
+
+
+def ft_log_adjoint_derivative(
+    x: FreeTensorT,
+    ct_result: ShuffleTensorT,
+) -> tuple[ShuffleTensorT]: ...
 
 
 def ft_fmexp(
@@ -437,6 +528,21 @@ def ft_fmexp(
     return DenseFreeTensor(*out_data, out_basis)
 
 
+def ft_fmexp_derivative(
+    multiplier: FreeTensorT,
+    exponent: FreeTensorT,
+    t_multiplier: FreeTensorT,
+    t_exponent: FreeTensorT,
+) -> FreeTensorT: ...
+
+
+def ft_fmexp_adjoint_derivative(
+    multiplier: FreeTensorT,
+    exponent: FreeTensorT,
+    ct_result: ShuffleTensorT,
+) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
+
+
 def lie_to_tensor(
     arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
 ) -> FreeTensorT:
@@ -465,6 +571,20 @@ def lie_to_tensor(
     return DenseFreeTensor(*out_data, out_basis)
 
 
+def lie_to_tensor_derivative(
+    arg: LieT,
+    t_arg: LieT,
+    scale_factor=None,
+) -> FreeTensorT: ...
+
+
+def lie_to_tensor_adjoint_derivative(
+    arg: LieT,
+    ct_result: ShuffleTensorT,
+    scale_factor=None,
+) -> tuple[LieT]: ...
+
+
 def tensor_to_lie(
     arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None
 ) -> LieT:
@@ -491,6 +611,20 @@ def tensor_to_lie(
 
     out_data = op(arg.data)
     return DenseLie(*out_data, out_basis)
+
+
+def tensor_to_lie_derivative(
+    arg: FreeTensorT,
+    t_arg: FreeTensorT | None = None,
+    scale_factor=None,
+) -> LieT: ...
+
+
+def tensor_to_lie_adjoint_derivative(
+    arg: FreeTensorT,
+    ct_result: LieT,
+    scale_factor=None,
+) -> tuple[ShuffleTensorT]: ...
 
 
 def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
@@ -530,6 +664,19 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     return DenseShuffleTensor(*out_data, out_basis)
 
 
+def ft_adjoint_left_mul_derivative(
+    op: FreeTensorT,
+    arg: ShuffleTensorT,
+    t_op: FreeTensorT,
+    t_arg: ShuffleTensorT,
+) -> ShuffleTensorT: ...
+
+
+def ft_adjoint_left_mul_adjoint_derivative(
+    op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
+) -> tuple[ShuffleTensorT, FreeTensorT]: ...
+
+
 def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of right free-tensor multiplication on shuffles.
@@ -567,6 +714,19 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     return DenseShuffleTensor(*out_data, out_basis)
 
 
+def ft_adjoint_right_mul_derivative(
+    op: FreeTensorT,
+    arg: ShuffleTensorT,
+    t_op: FreeTensorT,
+    t_arg: ShuffleTensorT,
+) -> ShuffleTensorT: ...
+
+
+def ft_adjoint_right_mul_adjoint_derivative(
+    op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
+) -> tuple[ShuffleTensorT, FreeTensorT]: ...
+
+
 def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Array:
     """
     Computes the tensor pairing between a functional tensor and a free tensor.
@@ -602,3 +762,18 @@ def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Arr
     (result,) = op(functional.data, argument.data)
 
     return result
+
+
+def tensor_pairing_derivative(
+    functional: ShuffleTensorT,
+    argument: FreeTensorT,
+    t_functional: ShuffleTensorT,
+    t_argument: FreeTensorT,
+) -> jax.Array: ...
+
+
+def tensor_pairing_adjoint_derivative(
+    functional: ShuffleTensorT,
+    argument: FreeTensorT,
+    ct_result: jax.Array,
+) -> tuple[FreeTensorT, ShuffleTensorT]: ...
