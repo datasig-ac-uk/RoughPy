@@ -63,8 +63,8 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         
         def get_piece_tensor(x_and_interval):
             x, p  = x_and_interval
-            # NOTE: Might be a clearer way of writing this?
             intersection = p.intersection(interval)
+            
             if intersection is None:
                 scale_factor = 1.0
                 t = self._get_identity(dtype=x.data.dtype)
@@ -80,7 +80,6 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # Stack all tensors along a leading axis into a single batched FreeTensor.
         batched = jax.tree.map(lambda *arrs: jnp.stack(arrs), *all_tensors)
 
-        # NOTE: could use a reduce here instead?
         result_batched = lax.associative_scan(
             lambda a, b: ft_fmexp(a, b, self._group_basis),
             batched,
@@ -88,7 +87,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
         # Take the last prefix (the full product over all selected pieces).
         result = jax.tree.map(lambda x: x[-1], result_batched)
-        return tensor_to_lie(result, lie_basis=self.lie_basis)
+        return tensor_to_lie(ft_log(result), lie_basis=self.lie_basis)
 
     def _get_identity(self, dtype) -> FreeTensor:
         """Return the identity element of the group."""
