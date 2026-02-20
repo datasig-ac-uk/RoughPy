@@ -10,6 +10,7 @@ from roughpy import compute as rpc
 
 from roughpy_jax.ops import Operation
 
+TensorT = TypeVar("TensorT")
 FreeTensorT = TypeVar("FreeTensorT")
 ShuffleTensorT = TypeVar("ShuffleTensorT")
 LieT = TypeVar("LieT")
@@ -270,7 +271,7 @@ def ft_mul_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
 
 
-def antipode(a: FreeTensorT) -> FreeTensorT:
+def antipode(a: TensorT) -> TensorT:
     """
     Antipode of a free tensor
 
@@ -280,7 +281,9 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
     op_cls = Operation.get_operation("ft_antipode", "dense")
     batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
+    out_class = a.__class__
     out_basis = a.basis
+
     op = op_cls(
         (out_basis,),
         a.data.dtype,
@@ -291,15 +294,43 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
 
     out_data = op(a.data)
 
-    return DenseFreeTensor(*out_data, out_basis)
+    return out_class(*out_data, out_basis)
 
 
-def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT: ...
+def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT:
+    """
+    Antipode derivative of free tensor peterbation `t_a` at `a`
+
+    This operation is linear, with the derivative being independent of
+    the argument, computated as the antipode of the tangent. This is
+    because antipode is a generalisation of transpose, taking the
+    equivalent of the transpose at each level, i.e. for level 1 it's
+    simply flipping the sign, for level 2 it's a regular 2D transpose,
+    and higher levels are similar but more complex variants of this.
+    So the derivative is simply flipped through this transpose.
+
+    :param a: argument
+    :param t_a: tangent pertubation at `a`
+    :return: derivative of `t_a` at `a`
+    """
+    return antipode(t_a)
 
 
 def antipode_adjoint_derivative(
     a: FreeTensorT, ct_result: ShuffleTensorT
-) -> tuple[ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT]:
+    """
+    Antipode adjoint derivative of a free tensor
+
+    As with the antipode derivative, this is a linear operation which
+    is independent of the position a, but instead operates in dual
+    space to free tensor, hence shuffle tensor cotangents.
+
+    :param a: argument
+    :param ct_result: cotangent perturbation at `a`
+    :return: adjoint derivative of `ct_result` at `a`
+    """
+    return antipode(ct_result)
 
 
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
