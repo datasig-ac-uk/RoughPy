@@ -15,6 +15,7 @@ def assert_is_linear(
     beta: Any,
     abs_tol: float = 1e-6,
     rel_tol: float = 1e-6,
+    data_map: Callable[[Any], Any] = lambda fn: fn, # FIXME remove and just use .data below? (breaks x and y being Any types)
 ):
     """
     Validates whether a given function adheres to the principle of linearity by checking if the
@@ -38,7 +39,7 @@ def assert_is_linear(
     z = alpha * x + beta * y
     fn_inner = fn(z)
     fn_outer = alpha * fn(x) + beta * fn(y)
-    assert_allclose(fn_inner, fn_outer, atol=abs_tol, rtol=rel_tol)
+    assert_allclose(data_map(fn_inner), data_map(fn_outer), atol=abs_tol, rtol=rel_tol)
 
 
 def assert_is_derivative(
@@ -49,6 +50,7 @@ def assert_is_derivative(
     eps_factors: Iterable[float] = (1.0e-3, 1.0e-6, 1.0e-9),
     abs_tol: float = 1e-6,
     rel_tol: float = 1e-6,
+    data_map: Callable[[Any], Any] = lambda fn: fn, # FIXME remove and just use .data below? (breaks x and y being Any types)
 ):
     """
     Asserts that a given function's derivative is accurate within specified tolerances
@@ -76,9 +78,12 @@ def assert_is_derivative(
         one_over_eps = 1.0 / eps
         perturbed_fx = fn(x + eps * tangent)
 
+        expected = one_over_eps * (perturbed_fx - fx)
+        deriv = fn_deriv(x, tangent)
+
         assert_allclose(
-            one_over_eps * (perturbed_fx - fx),
-            fn_deriv(x, tangent),
+            data_map(expected),
+            data_map(deriv),
             atol=abs_tol,
             rtol=rel_tol,
         )

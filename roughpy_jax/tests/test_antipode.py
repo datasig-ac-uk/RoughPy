@@ -2,6 +2,7 @@ import jax
 import jax.numpy as jnp
 import roughpy_jax as rpj
 
+from derivative_testing import *
 
 @jax.jit
 def _antipode_on_signature(x):
@@ -48,3 +49,44 @@ def test_antipode_idempotent(rpj_dtype, rpj_batch, rpj_no_acceleration):
     aax = _antipode_idempotent(x)
 
     assert jnp.allclose(x.data, aax.data)
+
+
+def test_antipode_linear(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    basis = rpj.TensorBasis(4, 3)
+    shape = rpj_batch.tensor_batch_shape(basis)
+    x_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
+    y_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
+    x = rpj.FreeTensor(x_data, basis)
+    y = rpj.FreeTensor(y_data, basis)
+
+    n_trials = 20
+    alphas = rpj_batch.rng.uniform(size=n_trials).astype(rpj_dtype)
+    betas = rpj_batch.rng.uniform(size=n_trials).astype(rpj_dtype)
+
+    for alpha, beta in zip(alphas, betas):
+        assert_is_linear(rpj.antipode, x, y, alpha, beta, data_map=lambda z: z.data)
+
+
+def test_antipode_derivative(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    basis = rpj.TensorBasis(4, 3)
+    shape = rpj_batch.tensor_batch_shape(basis)
+    x_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
+    x = rpj.FreeTensor(x_data, basis)
+
+    # FIXME should tangent be normalised and if so how?
+    tangent_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
+    tangent_data_norm = np.sqrt(np.sum(tangent_data**2)) # FIXME naive implementation
+    tangent = rpj.FreeTensor(tangent_data / tangent_data_norm, basis)
+
+    n_trials = 20
+    for _ in range(n_trials):
+        assert_is_derivative(
+            fn=rpj.antipode,
+            fn_deriv=rpj.antipode_derivative,
+            x=x,
+            tangent=tangent,
+            abs_tol=1e-2, # FIXME correct epsilon and tolerances per test's numeric type
+            rel_tol=1e-2,
+            # eps_factors=[1.0e-9],
+            data_map=lambda z: z.data
+        )

@@ -19,6 +19,8 @@ from roughpy_jax.algebra import (
     ft_adjoint_right_mul,
     ft_adjoint_left_mul,
     antipode,
+    antipode_derivative,
+    antipode_adjoint_derivative,
     lie_to_tensor,
     tensor_to_lie,
     tensor_pairing,
