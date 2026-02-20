@@ -42,3 +42,17 @@ def test_l2t_t2l_scaled_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     assert y.data.dtype == x.data.dtype == rpj_dtype
     assert jnp.allclose(0.5 * x.data, y.data, atol=1e-7)
+    
+    
+def test_l2t_t2l_l2t_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    lie_basis = rpj.LieBasis(4, 4)
+    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
+
+    x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
+    x = rpj.Lie(x_data, lie_basis)
+
+    tensor_x = rpj.lie_to_tensor(x, tensor_basis)
+    y = rpj.tensor_to_lie(tensor_x, lie_basis)
+    tensor_y = rpj.lie_to_tensor(x, tensor_basis)
+
+    assert jnp.allclose(tensor_x.data, tensor_y.data, atol=1e-7)
