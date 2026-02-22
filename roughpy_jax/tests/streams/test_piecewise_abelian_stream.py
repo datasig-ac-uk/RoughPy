@@ -1,5 +1,6 @@
 import pytest
 
+import jax
 import jax.numpy as jnp
 
 import roughpy_jax as rpj
@@ -104,3 +105,34 @@ class TestPiecewiseAbelianStream:
         
         assert identity.data.shape[-1] == self.tensor_basis.size()
         assert identity.data.shape == (*rpj_batch.shape, self.tensor_basis.size())
+        
+    def test_jitness_log_signature(self, rpj_batch, rpj_dtype):
+        """Test that the log signature can be JIT compiled."""
+        self.setup(rpj_batch, rpj_dtype)
+        query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
+        
+        # JIT compile the log signature method, keeping the query interval as a 
+        # static argument
+        jit_log_sig = jax.jit(self.stream.log_signature, static_argnums=(0,))
+        log_sig = jit_log_sig(query_interval)
+        
+        # Check that we're producing the same result as the non-JIT version
+        non_jit_log_sig = self.stream.log_signature(query_interval)
+        assert jnp.allclose(log_sig.data, non_jit_log_sig.data, atol=1e-6)
+        # Check that the log signature equals L1 (which is l1 in this case)
+        assert jnp.allclose(log_sig.data, self.l1.data, atol=1e-6)
+        
+        # Check that the JIT version is faster than the non-JIT version
+        import time
+        start_time = time.time()
+        for _ in range(10):
+            self.stream.log_signature(query_interval)
+        non_jit_time = time.time() - start_time
+        
+        start_time = time.time()
+        for _ in range(10):
+            jit_log_sig(query_interval)
+        jit_time = time.time() - start_time
+        
+        assert jit_time < non_jit_time
+        
