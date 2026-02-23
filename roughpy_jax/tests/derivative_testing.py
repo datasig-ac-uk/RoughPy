@@ -41,6 +41,46 @@ def assert_is_linear(
     assert_allclose(fn_inner, fn_outer, atol=abs_tol, rtol=rel_tol)
 
 
+def assert_is_adjoint(
+    fn: Callable[..., Any],
+    fn_adj: Callable[..., Any],
+    x: Any,
+    functional: Any,
+    domain_pairing: Callable[[Any, Any], Any],
+    codomain_pairing: Callable[[Any, Any], Any],
+    abs_tol: float = 1e-6,
+    rel_tol: float = 1e-6,
+):
+    """
+    Checks whether the provided function and its adjoint satisfy the adjoint property within
+    specified tolerances. This function compares the domain pairing of the adjoint applied
+    to the functional and the variable with the codomain pairing of the functional and the
+    original function applied to the variable.
+
+    The adjoint property ensures certain mathematical consistency between the behavior of
+    a function and its corresponding adjoint.
+
+    :param fn: The primary function being evaluated against its adjoint.
+    :param fn_adj: The adjoint of the primary function to be verified.
+    :param x: The variable input to the function and adjoint for evaluation.
+    :param functional: A functional being applied to test the adjoint property.
+    :param domain_pairing: A callable that establishes the pairing in the domain space
+        between the adjoint function applied to the functional and the variable.
+    :param codomain_pairing: A callable that establishes the pairing in the codomain
+        space between the functional and the primary function applied to the variable.
+    :param abs_tol: Absolute tolerance for the comparison. Defaults to 1e-6.
+    :param rel_tol: Relative tolerance for the comparison. Defaults to 1e-6.
+    :return: None. Ensures the adjoint property is satisfied based on input and tolerances,
+        raising an assertion error if not.
+    """
+    assert_allclose(
+        domain_pairing(fn_adj(functional), x),
+        codomain_pairing(functional, fn(x)),
+        atol=abs_tol,
+        rtol=rel_tol,
+    )
+
+
 def assert_is_derivative(
     fn: Callable[..., Any],
     fn_deriv: Callable[..., Any],
