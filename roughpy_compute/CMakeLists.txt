@@ -21,6 +21,7 @@ add_library(roughpy_compute INTERFACE
         dense/basic/free_tensor_fma.hpp
         dense/basic/free_tensor_inplace_mul.hpp
         dense/basic/shuffle_tensor_product.hpp
+        dense/basic/shuffle_tensor_adjoint_mul.hpp
         dense/basic/vector_addition.hpp
         dense/basic/vector_inplace_addition.hpp
         dense/basic/vector_inplace_scalar_multiply.hpp
