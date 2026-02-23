@@ -54,9 +54,6 @@ def assert_is_adjoint(
     to the functional and the variable with the codomain pairing of the functional and the
     original function applied to the variable.
 
-    The adjoint property ensures certain mathematical consistency between the behavior of
-    a function and its corresponding adjoint.
-
     :param fn: The primary function being evaluated against its adjoint.
     :param fn_adj: The adjoint of the primary function to be verified.
     :param x: The variable input to the function and adjoint for evaluation.
