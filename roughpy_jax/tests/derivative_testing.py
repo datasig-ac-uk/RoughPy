@@ -1,46 +1,7 @@
 from typing import Any, Callable, Iterable
+
 import numpy as np
 from numpy.testing import assert_allclose
-import roughpy_jax as rpj
-
-
-def _is_tensor(x: Any) -> bool:
-    return isinstance(x, (rpj.FreeTensor, rpj.ShuffleTensor, rpj.Lie))
-
-
-def _data(x: Any) -> Any:
-    return x.data if _is_tensor(x) else x
-
-
-def _binary_tensor_op(x: Any, y: Any, fn: Callable[[Any, Any], Any]) -> Any:
-    """
-    Binary operation between x and y, unpacking as tensor if appropriate.
-
-    Relaxed constraints if other side not a tensor, broadcast as appropriate.
-    """
-    if _is_tensor(x) or _is_tensor(y):
-        z_data = fn(_data(x), _data(y))
-        z_like = x if _is_tensor(x) else y
-        z_cls = type(z_like)
-        return z_cls(z_data, z_like.basis)
-    else:
-        return fn(x, y)
-
-
-def _add(x: Any, y: Any) -> Any:
-    return _binary_tensor_op(x, y, lambda a, b: a + b)
-
-
-def _mul(x: Any, y: Any) -> Any:
-    return _binary_tensor_op(x, y, lambda a, b: a * b)
-
-
-def _sub(x: Any, y: Any) -> Any:
-    return _binary_tensor_op(x, y, lambda a, b: a - b)
-
-
-def _div(x: Any, y: Any) -> Any:
-    return _binary_tensor_op(x, y, lambda a, b: a / b)
 
 
 def assert_is_linear(
@@ -71,14 +32,10 @@ def assert_is_linear(
     :return: None. The function asserts and raises an error if the function `fn` is found
              to not be linear within the specified tolerances.
     """
-    z = _add(_mul(alpha, x), _mul(beta, y))
+    z = alpha * x + beta * y
     fn_inner = fn(z)
-    fn_outer = _add(_mul(alpha, fn(x)), _mul(beta, fn(y)))
-
-    lhs = _data(fn_inner)
-    rhs = _data(fn_outer)
-
-    assert_allclose(lhs, rhs, atol=abs_tol, rtol=rel_tol)
+    fn_outer = alpha * fn(x) + beta * fn(y)
+    assert_allclose(fn_inner, fn_outer, atol=abs_tol, rtol=rel_tol)
 
 
 def assert_is_adjoint(
@@ -110,10 +67,12 @@ def assert_is_adjoint(
     :return: None. Ensures the adjoint property is satisfied based on input and tolerances,
         raising an assertion error if not.
     """
-    lhs = _data(domain_pairing(fn_adj(functional), x))
-    rhs = _data(codomain_pairing(functional, fn(x)))
-
-    assert_allclose(lhs, rhs, atol=abs_tol, rtol=rel_tol)
+    assert_allclose(
+        domain_pairing(fn_adj(functional), x),
+        codomain_pairing(functional, fn(x)),
+        atol=abs_tol,
+        rtol=rel_tol,
+    )
 
 
 def assert_is_derivative(
@@ -148,14 +107,16 @@ def assert_is_derivative(
     fx = fn(x)
 
     for eps in eps_factors:
-        approx = _div(_sub(fn(_add(x, _mul(eps, tangent))), fx), eps)
+        approx = (fn(x + eps * tangent) - fx) / eps
 
-        lhs = _data(approx)
-        rhs = _data(fn_deriv(x, tangent))
         atol = abs_tol + eps
         rtol = rel_tol + eps
-
-        assert_allclose(lhs, rhs, atol=atol, rtol=rtol)
+        assert_allclose(
+            approx,
+            fn_deriv(x, tangent),
+            atol=atol,
+            rtol=rtol,
+        )
 
 
 def assert_is_adjoint_derivative(
@@ -203,12 +164,10 @@ def assert_is_adjoint_derivative(
     fx = fn(x)
 
     for eps in eps_factors:
-        chord_eval = codomain_pairing(cotangent, _div(fn(_sub(_add(x, _mul(eps, tangent)), fx)), eps))
+        chord_eval = codomain_pairing(cotangent, fn(x + eps * tangent) - fx) / eps
         adjoint_eval = domain_pairing(fn_adj_deriv(x, cotangent), tangent)
 
-        lhs = _data(chord_eval)
-        rhs = _data(adjoint_eval)
         atol = abs_tol + eps
         rtol = rel_tol + eps
 
-        assert_allclose(lhs, rhs, atol=atol, rtol=rtol)
+        assert_allclose(chord_eval, adjoint_eval, atol=atol, rtol=rtol)
