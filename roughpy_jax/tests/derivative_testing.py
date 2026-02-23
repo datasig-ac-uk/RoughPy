@@ -108,12 +108,13 @@ def assert_is_derivative(
 
     for eps in eps_factors:
         approx = (fn(x + eps * tangent) - fx) / eps
+        computed_deriv = fn_deriv(x, tangent)
 
         atol = abs_tol + eps
         rtol = rel_tol + eps
         assert_allclose(
             approx,
-            fn_deriv(x, tangent),
+            computed_deriv,
             atol=atol,
             rtol=rtol,
         )
