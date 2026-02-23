@@ -23,7 +23,7 @@ void st_adj_mul(
     CacheArray<int16_t, 32> letters(out.max_degree());
     const Index width = out.width();
 
-    for (Degree func_degree = 0; func_degree <= func.max_degree(); ++func_degree) {
+    for (Degree func_degree = 0; func_degree <= arg.max_degree(); ++func_degree) {
         const auto func_level = arg.at_level(func_degree);
         const auto size = func_level.size();
 
