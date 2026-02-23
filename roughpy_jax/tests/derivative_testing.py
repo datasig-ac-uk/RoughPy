@@ -1,7 +1,17 @@
 from typing import Any, Callable, Iterable
-
 import numpy as np
-from numpy.testing import assert_allclose
+import roughpy_jax as rpj
+
+
+def _rpj_is_tensor(x: Any) -> bool:
+    return isinstance(x, (rpj.FreeTensor, rpj.ShuffleTensor, rpj.Lie))
+
+
+def _rpj_assert_allclose(x: Any, y: Any):
+    x = x.data if _rpj_is_tensor(x) else x
+    y = y.data if _rpj_is_tensor(y) else y
+
+    np.testing.assert_allclose(x, y)
 
 
 def assert_is_linear(
@@ -35,7 +45,7 @@ def assert_is_linear(
     z = alpha * x + beta * y
     fn_inner = fn(z)
     fn_outer = alpha * fn(x) + beta * fn(y)
-    assert_allclose(fn_inner, fn_outer, atol=abs_tol, rtol=rel_tol)
+    _rpj_assert_allclose(fn_inner, fn_outer, atol=abs_tol, rtol=rel_tol)
 
 
 def assert_is_adjoint(
@@ -67,7 +77,7 @@ def assert_is_adjoint(
     :return: None. Ensures the adjoint property is satisfied based on input and tolerances,
         raising an assertion error if not.
     """
-    assert_allclose(
+    _rpj_assert_allclose(
         domain_pairing(fn_adj(functional), x),
         codomain_pairing(functional, fn(x)),
         atol=abs_tol,
@@ -111,7 +121,7 @@ def assert_is_derivative(
 
         atol = abs_tol + eps
         rtol = rel_tol + eps
-        assert_allclose(
+        _rpj_assert_allclose(
             approx,
             fn_deriv(x, tangent),
             atol=atol,
@@ -170,4 +180,4 @@ def assert_is_adjoint_derivative(
         atol = abs_tol + eps
         rtol = rel_tol + eps
 
-        assert_allclose(chord_eval, adjoint_eval, atol=atol, rtol=rtol)
+        _rpj_assert_allclose(chord_eval, adjoint_eval, atol=atol, rtol=rtol)
