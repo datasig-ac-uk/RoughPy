@@ -86,6 +86,19 @@ def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     return cls(result_data, basis)
 
 
+def _algebra_scalar_divide(a: AlgebraT, s: jax.typing.DTypeLike) -> AlgebraT:
+    cls = type(a)
+
+    if not jnp.issubdtype(type(s), jnp.floating):
+        return NotImplemented
+
+    basis = a.basis
+
+    result_data = a.data / s
+
+    return cls(result_data, basis)
+
+
 def _algebra___array__(self, dtype=None, copy=None) -> np.ndarray:
     return self.data.__array__(dtype=dtype, copy=copy)
 
@@ -116,6 +129,8 @@ def _tensor_dataclass(cls):
         return NotImplemented
 
     cls.__rmul__ = _rmul_impl
+
+    cls.__truediv__ = _algebra_scalar_divide
 
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
