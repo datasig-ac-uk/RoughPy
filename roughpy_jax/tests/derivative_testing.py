@@ -203,7 +203,7 @@ def assert_is_adjoint_derivative(
     fx = fn(x)
 
     for eps in eps_factors:
-        chord_eval = codomain_pairing(cotangent, _div(fn(_sub(_add(x, _mul(eps, tangent))), fx), eps))
+        chord_eval = codomain_pairing(cotangent, _div(fn(_sub(_add(x, _mul(eps, tangent)), fx)), eps))
         adjoint_eval = domain_pairing(fn_adj_deriv(x, cotangent), tangent)
 
         lhs = _data(chord_eval)

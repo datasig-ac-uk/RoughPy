@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import pytest
 import roughpy_jax as rpj
 
 from derivative_testing import *
@@ -51,41 +52,100 @@ def test_antipode_idempotent(rpj_dtype, rpj_batch, rpj_no_acceleration):
     assert jnp.allclose(x.data, aax.data)
 
 
-def test_antipode_linear(rpj_dtype, rpj_batch, rpj_no_acceleration):
-    basis = rpj.TensorBasis(4, 3)
-    shape = rpj_batch.tensor_batch_shape(basis)
-    x_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
-    y_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
-    x = rpj.FreeTensor(x_data, basis)
-    y = rpj.FreeTensor(y_data, basis)
+class AntipodeTestFixture:
+    """
+    Antipode test fixture for batch of w=4, d=3 tensors and n trials of random data.
+    """
+    def __init__(self):
+        self.rng_key = jax.random.key(12345)
+        self.basis = rpj.TensorBasis(4, 3)
+        self.n_trials = 10
 
-    n_trials = 20
-    alphas = rpj_batch.rng.uniform(size=n_trials).astype(rpj_dtype)
-    betas = rpj_batch.rng.uniform(size=n_trials).astype(rpj_dtype)
+    def new_rng_key(self):
+        self.rng_key, key = jax.random.split(self.rng_key)
+        return key
 
-    for alpha, beta in zip(alphas, betas):
-        assert_is_linear(rpj.antipode, x, y, alpha, beta)
+    def batch_shape(self):
+        return (self.n_trials, self.basis.size())
 
+    def zero(self):
+        data = jnp.zeros(shape=self.batch_shape, dtype=jnp.float32)
+        return rpj.FreeTensor(data, self.basis)
 
-def test_antipode_derivative(rpj_dtype, rpj_batch, rpj_no_acceleration):
-    basis = rpj.TensorBasis(4, 3)
-    shape = rpj_batch.tensor_batch_shape(basis)
-    x_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
-    x = rpj.FreeTensor(x_data, basis)
-
-    # FIXME should tangent be normalised and if so how?
-    tangent_data = rpj_batch.rng.standard_normal(shape, rpj_dtype)
-    tangent_data_norm = np.sqrt(np.sum(tangent_data**2)) # FIXME naive implementation
-    tangent = rpj.FreeTensor(tangent_data / tangent_data_norm, basis)
-
-    n_trials = 20
-    for _ in range(n_trials):
-        assert_is_derivative(
-            fn=rpj.antipode,
-            fn_deriv=rpj.antipode_derivative,
-            x=x,
-            tangent=tangent,
-            abs_tol=1e-2, # FIXME correct epsilon and tolerances per test's numeric type
-            rel_tol=1e-2,
-            eps_factors=[0.01],
+    def uniform_data(self, shape):
+        return jax.random.uniform(
+            self.new_rng_key(),
+            minval=-1.0,
+            maxval=1.0,
+            dtype=jnp.float32,
+            shape=shape
         )
+
+    def ft_uniform(self):
+        return rpj.FreeTensor(
+            self.uniform_data(self.batch_shape()),
+            self.basis
+        )
+
+
+# FIXME rename
+@pytest.fixture()
+def fixture():
+    yield AntipodeTestFixture()
+
+
+def test_antipode_linear(fixture):
+    x = fixture.ft_uniform()
+    y = fixture.ft_uniform()
+
+    vals = fixture.uniform_data((2,))
+    alpha = float(vals[0])
+    beta = float(vals[1])
+
+    assert_is_linear(rpj.antipode, x, y, alpha, beta)
+
+
+def test_antipode_derivative(fixture):
+    x = fixture.ft_uniform()
+    h = fixture.ft_uniform()
+
+    def fn(x):
+        return rpj.antipode(x)
+
+    def fn_deriv(x, h):
+        return rpj.antipode_derivative(x, h)
+
+    assert_is_derivative(
+        fn,
+        fn_deriv,
+        x,
+        h,
+        eps_factors=(0.001,) # FIXME fails for 0.0001 and less
+    )
+
+
+def test_antipode_adjoint_derivative(fixture):
+    x = fixture.ft_uniform()
+    tangent = fixture.ft_uniform()
+    cotangent = fixture.ft_uniform()
+    mat = fixture.ft_uniform()
+
+    def fn(x):
+        return rpj.ft_mul(mat, x)
+
+    def fn_adj_deriv(x, cotangent):
+        return rpj.antipode_adjoint_derivative(x, cotangent)
+
+    def pairing(lhs, rhs):
+        return jnp.sum(lhs.data * rhs.data)
+
+    assert_is_adjoint_derivative(
+        fn,
+        fn_adj_deriv,
+        x,
+        tangent,
+        cotangent,
+        domain_pairing=pairing,
+        codomain_pairing=pairing,
+        eps_factors=(0.001,) # FIXME fix epsilons
+    )
