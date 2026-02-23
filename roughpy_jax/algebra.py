@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import partial
+from functools import partial, partialmethod
 from typing import TypeVar, Callable
 
 import jax
@@ -100,8 +100,8 @@ def _tensor_dataclass(cls):
 
     cls.__array__ = _algebra___array__
 
-    cls.__add__ = partial(_algebra_add, impl=jnp.add)
-    cls.__sub__ = partial(_algebra_add, impl=jnp.subtract)
+    cls.__add__ = partialmethod(_algebra_add, impl=jnp.add)
+    cls.__sub__ = partialmethod(_algebra_add, impl=jnp.subtract)
 
     def _mul_impl(self, other):
         if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
