@@ -52,7 +52,7 @@ def test_antipode_idempotent(rpj_dtype, rpj_batch, rpj_no_acceleration):
     assert jnp.allclose(x.data, aax.data)
 
 
-class AntipodeTestFixture:
+class AntipodeTrialsHelper:
     """
     Antipode test fixture for batch of w=4, d=3 tensors and n trials of random data.
     """
@@ -88,64 +88,50 @@ class AntipodeTestFixture:
         )
 
 
-# FIXME rename
 @pytest.fixture()
-def fixture():
-    yield AntipodeTestFixture()
+def trials():
+    yield AntipodeTrialsHelper()
 
 
-def test_antipode_linear(fixture):
-    x = fixture.ft_uniform()
-    y = fixture.ft_uniform()
+def test_antipode_linear(trials):
+    x = trials.ft_uniform()
+    y = trials.ft_uniform()
 
-    vals = fixture.uniform_data((2,))
+    vals = trials.uniform_data((2,))
     alpha = float(vals[0])
     beta = float(vals[1])
 
     assert_is_linear(rpj.antipode, x, y, alpha, beta)
 
 
-def test_antipode_derivative(fixture):
-    x = fixture.ft_uniform()
-    h = fixture.ft_uniform()
-
-    def fn(x):
-        return rpj.antipode(x)
-
-    def fn_deriv(x, h):
-        return rpj.antipode_derivative(x, h)
+def test_antipode_derivative(trials):
+    x = trials.ft_uniform()
+    h = trials.ft_uniform()
 
     assert_is_derivative(
-        fn,
-        fn_deriv,
+        rpj.antipode,
+        rpj.antipode_derivative,
         x,
         h,
-        eps_factors=(0.001,) # FIXME fails for 0.0001 and less
+        eps_factors=(0.1, 0.001,) # FIXME fails for 0.0001 and less
     )
 
 
-def test_antipode_adjoint_derivative(fixture):
-    x = fixture.ft_uniform()
-    tangent = fixture.ft_uniform()
-    cotangent = fixture.ft_uniform()
-    mat = fixture.ft_uniform()
-
-    def fn(x):
-        return rpj.ft_mul(mat, x)
-
-    def fn_adj_deriv(x, cotangent):
-        return rpj.antipode_adjoint_derivative(x, cotangent)
+def test_antipode_adjoint_derivative(trials):
+    x = trials.ft_uniform()
+    tangent = trials.ft_uniform()
+    cotangent = trials.ft_uniform()
 
     def pairing(lhs, rhs):
         return jnp.sum(lhs.data * rhs.data)
 
     assert_is_adjoint_derivative(
-        fn,
-        fn_adj_deriv,
+        rpj.antipode,
+        rpj.antipode_adjoint_derivative,
         x,
         tangent,
         cotangent,
         domain_pairing=pairing,
         codomain_pairing=pairing,
-        eps_factors=(0.001,) # FIXME fix epsilons
+        eps_factors=(0.1, 0.001,) # FIXME fails for 0.0001 and less
     )
