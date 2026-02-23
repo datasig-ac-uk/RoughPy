@@ -140,16 +140,17 @@ def assert_is_adjoint_derivative(
         It should take an input of type compatible with `x` and return a result of
         appropriate type that the pairing and other operations can handle.
     :param fn_adj_deriv: The adjoint derivative of the input function `fn`. It should
-        map the cotangent and the input `x` to the tangent space, effectively representing
+        map the input `x` and cotangent to the tangent space, effectively representing
         the dual map.
-    :param pairing: A callable that takes two inputs and computes the inner product or
-        pairing between them. Typically, this is an operation between elements of tangent
-        and cotangent spaces.
     :param x: The point in the domain of `fn` at which the adjoint derivative is verified.
     :param tangent: An element in the tangent space at `x`, used to evaluate the property
         of the adjoint derivative in comparison to finite differences.
     :param cotangent: An element in the cotangent space at the output of `fn`, used to
         test the duality between the adjoint derivative and finite difference approximations.
+    :param domain_pairing: A callable that pairs tangent and cotangent information in
+        the domain space.
+    :param codomain_pairing: A callable that pairs cotangent and chord information in
+        the codomain space.
     :param eps_factors: An iterable of floats representing the step sizes used for
         the finite difference approximation. The smaller the step size, the closer the
         approximation to the true derivative, subject to numerical precision limitations.
