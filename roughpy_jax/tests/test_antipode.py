@@ -3,7 +3,8 @@ import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
 
-from derivative_testing import *
+from derivative_testing import assert_is_linear, assert_is_derivative, assert_is_adjoint_derivative
+
 
 @jax.jit
 def _antipode_on_signature(x):
