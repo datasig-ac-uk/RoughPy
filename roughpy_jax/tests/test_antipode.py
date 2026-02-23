@@ -64,7 +64,7 @@ def test_antipode_linear(rpj_dtype, rpj_batch, rpj_no_acceleration):
     betas = rpj_batch.rng.uniform(size=n_trials).astype(rpj_dtype)
 
     for alpha, beta in zip(alphas, betas):
-        assert_is_linear(rpj.antipode, x, y, alpha, beta, data_map=lambda z: z.data)
+        assert_is_linear(rpj.antipode, x, y, alpha, beta)
 
 
 def test_antipode_derivative(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -87,6 +87,5 @@ def test_antipode_derivative(rpj_dtype, rpj_batch, rpj_no_acceleration):
             tangent=tangent,
             abs_tol=1e-2, # FIXME correct epsilon and tolerances per test's numeric type
             rel_tol=1e-2,
-            # eps_factors=[1.0e-9],
-            data_map=lambda z: z.data
+            eps_factors=[0.01],
         )
