@@ -38,7 +38,7 @@ void st_adj_mul(
 
             Scalar scalar = func_level[i];
 
-            for (Mask mask{}; mask <= Mask(out_deg); ++mask) {
+            for (Mask mask{}; mask <= Mask(func_degree); ++mask) {
                 Index op_idx = 0;
                 Degree  op_degree = 0;
                 Index  out_idx = 0;
