@@ -1,9 +1,6 @@
-import typing
 from typing import Any, Callable, Iterable
 
 import numpy as np
-import pytest
-
 from numpy.testing import assert_allclose
 
 
@@ -113,24 +110,26 @@ def assert_is_derivative(
     fx = fn(x)
 
     for eps in eps_factors:
-        one_over_eps = 1.0 / eps
-        perturbed_fx = fn(x + eps * tangent)
+        approx = (fn(x + eps * tangent) - fx) / eps
 
+        atol = abs_tol + eps
+        rtol = rel_tol + eps
         assert_allclose(
-            one_over_eps * (perturbed_fx - fx),
+            approx,
             fn_deriv(x, tangent),
-            atol=abs_tol,
-            rtol=rel_tol,
+            atol=atol,
+            rtol=rtol,
         )
 
 
 def assert_is_adjoint_derivative(
     fn: Callable[..., Any],
     fn_adj_deriv: Callable[..., Any],
-    pairing: Callable[[Any, Any], Any],
     x: Any,
     tangent: Any,
     cotangent: Any,
+    domain_pairing: Callable[[Any, Any], Any],
+    codomain_pairing: Callable[[Any, Any], Any],
     eps_factors: Iterable[float] = (1.0e-3, 1.0e-6, 1.0e-9),
     abs_tol: float = 1e-6,
     rel_tol: float = 1e-6,
@@ -167,10 +166,10 @@ def assert_is_adjoint_derivative(
     fx = fn(x)
 
     for eps in eps_factors:
-        one_over_eps = 1.0 / eps
-        perturbed_fx = fn(x + eps * tangent)
+        chord_eval = codomain_pairing(cotangent, fn(x + eps * tangent) - fx) / eps
+        adjoint_eval = domain_pairing(fn_adj_deriv(x, cotangent), tangent)
 
-        chord_eval = one_over_eps * pairing(cotangent, perturbed_fx - fx)
-        adjoint_eval = pairing(fn_adj_deriv(x, cotangent), tangent)
+        atol = abs_tol + eps
+        rtol = rel_tol + eps
 
-        assert_allclose(chord_eval, adjoint_eval, atol=abs_tol, rtol=rel_tol)
+        assert_allclose(chord_eval, adjoint_eval, atol=atol, rtol=rtol)
