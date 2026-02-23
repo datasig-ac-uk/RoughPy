@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import TypeVar
+from typing import TypeVar, Callable
 
 import jax
 import jax.numpy as jnp
@@ -10,7 +10,7 @@ from roughpy import compute as rpc
 
 from roughpy_jax.ops import Operation
 
-TensorT = TypeVar("TensorT")
+AlgebraT = TypeVar("AlgebraT")
 FreeTensorT = TypeVar("FreeTensorT")
 ShuffleTensorT = TypeVar("ShuffleTensorT")
 LieT = TypeVar("LieT")
@@ -61,6 +61,35 @@ class LieBasis(rpc.LieBasis):
     pass
 
 
+def _algebra_add(
+    a: AlgebraT, b: AlgebraT, *, impl: Callable[[jax.Array, ...], jax.Array]
+) -> AlgebraT:
+    cls = type(a)
+
+    if not issubclass(type(b), cls):
+        return NotImplemented
+
+    basis = a.basis
+    # TODO: check basis and batching dims etc for better messages or adjusting truncation depth
+
+    result_data = impl(a.data, b.data)
+
+    return cls(result_data, basis)
+
+
+def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
+    cls = type(a)
+    basis = a.basis
+
+    result_data = jnp.dot(a.data, s)
+
+    return cls(result_data, basis)
+
+
+def _algebra___array__(self, dtype=None, copy=None) -> np.ndarray:
+    return self.data.__array__(dtype=dtype, copy=copy)
+
+
 def _tensor_dataclass(cls):
     """
     Combined decorator for roughpy_jax tensor objects
@@ -68,6 +97,26 @@ def _tensor_dataclass(cls):
     Registers dataclass and JAX data class with dynamic data and static basis
     """
     cls = dataclass(cls)
+
+    cls.__array__ = _algebra___array__
+
+    cls.__add__ = partial(_algebra_add, impl=jnp.add)
+    cls.__sub__ = partial(_algebra_add, impl=jnp.subtract)
+
+    def _mul_impl(self, other):
+        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
+            return _algebra_scalar_multiply(self, other)
+        return NotImplemented
+
+    cls.__mul__ = _mul_impl
+
+    def _rmul_impl(self, other):
+        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
+            return _algebra_scalar_multiply(self, other)
+        return NotImplemented
+
+    cls.__rmul__ = _rmul_impl
+
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
     )
@@ -271,7 +320,7 @@ def ft_mul_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
 
 
-def antipode(a: TensorT) -> TensorT:
+def antipode(a: AlgebraT) -> AlgebraT:
     """
     Antipode of a free tensor
 
