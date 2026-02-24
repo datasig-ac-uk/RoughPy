@@ -596,9 +596,10 @@ def ft_fmexp_derivative(
     t_r_d = t_multiplier
 
     for d in range(depth, 0, -1):
-        r_dm1 = multiplier + ft_mul(exponent, r_d) / d
-        t_r_dm1 = (
-            t_multiplier + ft_mul(t_exponent, r_d) / d + ft_mul(exponent, t_r_d) / d
+        scale = 1.0 / d
+        r_dm1 = multiplier + scale * ft_mul(exponent, r_d)
+        t_r_dm1 = t_multiplier + scale * (
+            ft_mul(t_exponent, r_d) + ft_mul(exponent, t_r_d)
         )
 
         r_d = r_dm1
@@ -630,8 +631,9 @@ def ft_fmexp_adjoint_derivative(
 
     r_data = [None for _ in range(depth)] + [multiplier]
     for d in range(depth, 0, -1):
+        scale = 1.0 / d
         # noinspection PyTypeChecker
-        r_data[d - 1] = multiplier + ft_mul(exponent, r_data[d]) / d
+        r_data[d - 1] = multiplier + scale * ft_mul(exponent, r_data[d])
 
     # Now we can update the cotangents in sequence. We have to accumulate the
     # ct_multiplier and ct_exponent values, as well as the cotangents of
@@ -642,27 +644,32 @@ def ft_fmexp_adjoint_derivative(
     ct_r = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
 
     for d in range(depth):
+        scale = 1.0 / d
         ct_multiplier = ct_multiplier + ct_r
-        ct_exponent = ct_exponent + ft_adjoint_left_mul(r_data[d + 1], ct_r) / d
-        ct_r = ft_adjoint_right_mul(r_data[d + 1], ct_r) / d
+        ct_exponent = ct_exponent + scale * ft_adjoint_left_mul(r_data[d + 1], ct_r)
+        ct_r = scale * ft_adjoint_right_mul(exponent, ct_r)
 
     ct_multiplier = ct_multiplier + ct_r
     return ct_multiplier, ct_exponent
 
 
-def _ft_fmexp_vjp_fwd(multiplier: FreeTensorT, exponent: FreeTensorT, **kwargs):
-    result = ft_fmexp(multiplier, exponent, **kwargs)
+def _ft_fmexp_vjp_fwd(
+    multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None
+):
+    result = ft_fmexp(multiplier, exponent, out_basis)
     return result, (multiplier, exponent, result)
 
 
-def _ft_fmexp_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+def _ft_fmexp_vjp_bwd(
+    residuals, ct_result_data: jax.Array
+) -> tuple[jax.Array | None, ...]:
     multiplier, exponent, result = residuals
     ct_result = DenseShuffleTensor(ct_result_data, result.basis)
 
     ct_multiplier, ct_exponent = ft_fmexp_adjoint_derivative(
         multiplier, exponent, ct_result
     )
-    return ct_multiplier.data, ct_exponent.data
+    return ct_multiplier.data, ct_exponent.data, None
 
 
 ft_fmexp.defvjp(_ft_fmexp_vjp_fwd, _ft_fmexp_vjp_bwd)
