@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import partial
+from functools import partial, partialmethod
 from typing import TypeVar, Callable
 
 import jax
@@ -100,8 +100,8 @@ def _tensor_dataclass(cls):
 
     cls.__array__ = _algebra___array__
 
-    cls.__add__ = partial(_algebra_add, impl=jnp.add)
-    cls.__sub__ = partial(_algebra_add, impl=jnp.subtract)
+    cls.__add__ = partialmethod(_algebra_add, impl=jnp.add)
+    cls.__sub__ = partialmethod(_algebra_add, impl=jnp.subtract)
 
     def _mul_impl(self, other):
         if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
@@ -534,6 +534,7 @@ def ft_log_adjoint_derivative(
 ) -> tuple[ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def ft_fmexp(
     multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None
 ) -> FreeTensorT:
@@ -583,14 +584,88 @@ def ft_fmexp_derivative(
     exponent: FreeTensorT,
     t_multiplier: FreeTensorT,
     t_exponent: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    _check_basis_compat(
+        multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
+    )
+
+    basis = multiplier.basis
+    depth = basis.depth
+
+    r_d = multiplier
+    t_r_d = t_multiplier
+
+    for d in range(depth, 0, -1):
+        r_dm1 = multiplier + ft_mul(exponent, r_d) / d
+        t_r_dm1 = (
+            t_multiplier + ft_mul(t_exponent, r_d) / d + ft_mul(exponent, t_r_d) / d
+        )
+
+        r_d = r_dm1
+        t_r_d = t_r_dm1
+
+    return t_r_d
 
 
 def ft_fmexp_adjoint_derivative(
     multiplier: FreeTensorT,
     exponent: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT, ShuffleTensorT]:
+    _check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
+    dtype = multiplier.data.dtype
+
+    tensor_type = type(multiplier)
+    ct_type = type(ct_result)
+
+    basis = multiplier.basis
+    depth = basis.depth
+
+    # First recompute the intermediate approximations of the fmexp. The computation
+    # of the cotangents proceeds in the opposite order, from 0 to D instead of from
+    # D to 0. These are fairly cheap to recompute in theory because of the higher
+    # terms "dropping off the cliff" as the degree increases. This optimisation is
+    # not implemented here yet, because we haven't built the support into the high
+    # level functions of disregarding higher-order terms yet.
+
+    r_data = [None for _ in range(depth)] + [multiplier]
+    for d in range(depth, 0, -1):
+        # noinspection PyTypeChecker
+        r_data[d - 1] = multiplier + ft_mul(exponent, r_data[d]) / d
+
+    # Now we can update the cotangents in sequence. We have to accumulate the
+    # ct_multiplier and ct_exponent values, as well as the cotangents of
+    # each of the intermediate r terms.
+
+    ct_multiplier = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
+    ct_exponent = ct_type(jnp.zeros_like(exponent.data), exponent.basis)
+    ct_r = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
+
+    for d in range(depth):
+        ct_multiplier = ct_multiplier + ct_r
+        ct_exponent = ct_exponent + ft_adjoint_left_mul(r_data[d + 1], ct_r) / d
+        ct_r = ft_adjoint_right_mul(r_data[d + 1], ct_r) / d
+
+    ct_multiplier = ct_multiplier + ct_r
+    return ct_multiplier, ct_exponent
+
+
+def _ft_fmexp_vjp_fwd(multiplier: FreeTensorT, exponent: FreeTensorT, **kwargs):
+    result = ft_fmexp(multiplier, exponent, **kwargs)
+    return result, (multiplier, exponent, result)
+
+
+def _ft_fmexp_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+    multiplier, exponent, result = residuals
+    ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+
+    ct_multiplier, ct_exponent = ft_fmexp_adjoint_derivative(
+        multiplier, exponent, ct_result
+    )
+    return ct_multiplier.data, ct_exponent.data
+
+
+ft_fmexp.defvjp(_ft_fmexp_vjp_fwd, _ft_fmexp_vjp_bwd)
 
 
 def lie_to_tensor(
