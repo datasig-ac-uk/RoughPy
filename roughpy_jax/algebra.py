@@ -664,7 +664,14 @@ def _ft_fmexp_vjp_bwd(
     residuals, ct_result_data: jax.Array
 ) -> tuple[jax.Array | None, ...]:
     multiplier, exponent, result = residuals
-    ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
 
     ct_multiplier, ct_exponent = ft_fmexp_adjoint_derivative(
         multiplier, exponent, ct_result
