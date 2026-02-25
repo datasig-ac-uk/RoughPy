@@ -449,20 +449,19 @@ def lie_to_tensor(
     """
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    in_basis = arg.basis
     
-    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+    out_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
-        (in_basis, tensor_basis),
+        (arg.basis, out_basis),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
     )
 
     out_data = op(arg.data)
-    return DenseFreeTensor(*out_data, tensor_basis)
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 def tensor_to_lie(
@@ -477,20 +476,19 @@ def tensor_to_lie(
     """
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    in_basis = arg.basis
 
-    lie_basis = lie_basis or LieBasis(in_basis.width, in_basis.depth)
+    out_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("tensor_to_lie", "dense")
     op = op_cls(
-        (in_basis, lie_basis),
+        (arg.basis, out_basis),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
     )
 
     out_data = op(arg.data)
-    return DenseLie(*out_data, lie_basis)
+    return DenseLie(*out_data, out_basis)
 
 
 def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
