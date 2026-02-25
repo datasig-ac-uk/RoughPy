@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Any
 
 import jax
 import jax.numpy as jnp
@@ -61,10 +61,30 @@ class LieBasis(rpc.LieBasis):
     pass
 
 
+class TensorIdentity:
+    pass
+
+
+TensorIdentity = TensorIdentity()
+
+
 def _algebra_add(
     a: AlgebraT, b: AlgebraT, *, impl: Callable[[jax.Array, ...], jax.Array]
 ) -> AlgebraT:
     cls = type(a)
+
+    if (
+        identity_sentinel := getattr(cls, "__identity_sentinel__", None)
+    ) is not None and b is identity_sentinel:
+        if impl is jnp.add:
+            result_data = a.data.at[..., 0].add(1)
+            return cls(result_data, a.basis)
+        elif impl is jnp.subtract:
+            result_data = a.data.at[..., 0].sub(1)
+            return cls(result_data, a.basis)
+
+        data = jnp.zeros_like(a.data).at[..., 0].set(1)
+        b = cls(data, a.basis)
 
     if not issubclass(type(b), cls):
         return NotImplemented
@@ -103,6 +123,9 @@ def _tensor_dataclass(cls):
     cls.__add__ = partial(_algebra_add, impl=jnp.add)
     cls.__sub__ = partial(_algebra_add, impl=jnp.subtract)
 
+    cls.__radd__ = lambda x, y: _algebra_add(y, x, impl=jnp.add)
+    cls.__rsub__ = lambda x, y: _algebra_add(x, y, impl=jnp.subtract)
+
     def _mul_impl(self, other):
         if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
             return _algebra_scalar_multiply(self, other)
@@ -128,6 +151,8 @@ class DenseFreeTensor:
     Dense free tensor class built from basis and associated ndarray of data.
     """
 
+    __identity_sentinel__ = TensorIdentity
+
     data: jnp.ndarray
     basis: TensorBasis
 
@@ -141,6 +166,8 @@ class DenseShuffleTensor:
     """
     Dense shuffle tensor class built from basis and associated ndarray of data.
     """
+
+    __identity_sentinel__ = TensorIdentity
 
     data: jnp.ndarray
     basis: TensorBasis
@@ -450,6 +477,8 @@ def st_mul_adjoint_derivative(
 ) -> tuple[FreeTensorT, FreeTensorT]: ...
 
 
+# @partial(jax.custom_vjp, nondiff_argnums=(1,))
+@jax.custom_vjp
 def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor exponent
@@ -483,13 +512,94 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
 def ft_exp_derivative(
     x: FreeTensorT,
     t_x: FreeTensorT,
-) -> FreeTensorT: ...
+    out_basis: TensorBasis | None = None,
+) -> FreeTensorT:
+    _check_basis_compat(x.basis, t_x.basis)
+    basis = out_basis or x.basis
+    depth = basis.depth
+
+    r_d_data = (
+        jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype).at[..., 0].set(1)
+    )
+    r_d = DenseFreeTensor(r_d_data, basis)
+    t_r_d_data = jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype)
+    t_r_d = DenseFreeTensor(t_r_d_data, basis)
+
+    for d in range(depth, 0, -1):
+        scale = 1.0 / d
+        r_dm1 = scale * ft_mul(x, r_d)
+        r_dm1.data = r_dm1.data.at[..., 0].add(1)
+
+        t_r_dm1 = scale * (ft_mul(t_x, r_d) + ft_mul(x, t_r_d))
+
+        r_d = r_dm1
+        t_r_d = t_r_dm1
+
+    return t_r_d
 
 
 def ft_exp_adjoint_derivative(
     x: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT]: ...
+    out_basis: TensorBasis | None = None,
+) -> tuple[ShuffleTensorT]:
+    _check_basis_compat(x.basis, ct_result.basis)
+
+    basis = out_basis or ct_result.basis
+    depth = basis.depth
+
+    ident_data = (
+        jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype).at[..., 0].set(1)
+    )
+    ident = ShuffleTensor(ident_data, basis)
+
+    r_data = [None for _ in range(depth)] + [ident]
+    for d in range(depth, 0, -1):
+        scale = 1.0 / d
+        # noinspection PyTypeChecker
+        r_data[d - 1] = scale * ft_mul(x, r_data[d])
+        r_data[d - 1].data = r_data[d - 1].data.at[..., 0].add(1)
+
+    ct_x_data = jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype)
+    ct_x = DenseShuffleTensor(ct_x_data, basis)
+    ct_r = ct_result
+
+    for d in range(1, depth + 1):
+        scale = 1.0 / d
+        ct_x = ct_x + scale * ft_adjoint_left_mul(r_data[d], ct_r)
+        ct_r = scale * ft_adjoint_right_mul(x, ct_r)
+
+    return (ct_x,)
+
+
+def _ft_exp_vjp_fwd(
+    x: FreeTensorT, out_basis: TensorBasis | None = None
+) -> FreeTensorT:
+
+    result = ft_exp(x, out_basis=out_basis)
+    return result, (x, result)
+
+
+def _ft_exp_vjp_bwd(
+    residuals: tuple[Any, ...],
+    ct_result_data: ShuffleTensorT,
+) -> tuple[jax.Array | None, ...]:
+    x, result = residuals
+
+    if isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    elif isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    else:
+        raise TypeError(f"unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    (ct_x,) = ft_exp_adjoint_derivative(x, ct_result)
+    return ct_x.data, None
+
+
+ft_exp.defvjp(_ft_exp_vjp_fwd, _ft_exp_vjp_bwd)
 
 
 def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:

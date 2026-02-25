@@ -1,5 +1,9 @@
+from functools import partial
+
+import jax
 import jax.numpy as jnp
 import roughpy_jax as rpj
+import jax.test_util as jtu
 
 
 def test_dense_ft_exp_zero(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -20,7 +24,9 @@ def test_dense_ft_exp_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     exp_a = rpj.ft_exp(a)
 
-    expected = rpj_batch.repeat(jnp.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0], rpj_dtype))
+    expected = rpj_batch.repeat(
+        jnp.array([1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0], rpj_dtype)
+    )
     assert jnp.allclose(exp_a.data, expected)
 
 
@@ -43,6 +49,28 @@ def test_dense_ft_exp_log_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     log_exp_a = rpj.ft_log(exp_a)
 
     assert jnp.allclose(log_exp_a.data, a.data)
+
+
+def test_ft_exp_vjp_check_vjp(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 2)
+
+    x_data = jnp.asarray(rpj_batch.rng_uniform(-1.0, 1.0, basis.size(), rpj_dtype))
+    x_data = x_data.at[..., 0].set(0)
+
+    x = rpj.DenseFreeTensor(x_data, basis)
+
+    def _exp_data(x_d):
+        x_d.data = jnp.asarray(x_d.data).at[..., 0].set(0)
+        return rpj.ft_exp(x_d)
+
+    jtu.check_vjp(
+        _exp_data,
+        partial(jax.vjp, _exp_data),
+        (x,),
+        atol=2e-3,
+        rtol=2e-3,
+    )
 
 
 def test_dense_ft_exp_and_fmexp(rpj_dtype, rpj_batch, rpj_no_acceleration):
