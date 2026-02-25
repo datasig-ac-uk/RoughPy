@@ -95,6 +95,16 @@ class TestPiecewiseAbelianStream:
         assert identity.data.shape[-1] == self.tensor_basis.size()
         assert identity.data.shape == (*rpj_batch.shape, self.tensor_basis.size())
         
+    def test_support(self, rpj_batch, rpj_dtype):
+        """Test that the support interval is correct."""
+        self.setup(rpj_batch, rpj_dtype)
+        
+        support = self.stream.support
+        
+        assert support.inf == self.partition.inf
+        assert support.sup == self.partition.sup
+        assert support.interval_type == self.partition.interval_type
+        
     def test_jitness_log_signature(self, rpj_batch, rpj_dtype):
         """Test that the log signature can be JIT compiled."""
         self.setup(rpj_batch, rpj_dtype)

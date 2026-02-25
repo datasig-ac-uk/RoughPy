@@ -45,12 +45,12 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         return self._group_basis
     
     @property
-    def support(self) -> RealInterval:
+    def support(self) -> Interval:
         """Return the support interval."""
-        return Interval(
-            inf=self._partition.inf,
-            sup=self._partition.sup,
-            interval_type=self._partition.interval_type,
+        return RealInterval(
+            _inf=self._partition.inf,
+            _sup=self._partition.sup,
+            _interval_type=self._partition.interval_type,
         )
     
     def log_signature(self, interval: Interval) -> LieT:
