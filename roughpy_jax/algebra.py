@@ -641,12 +641,12 @@ def ft_fmexp_adjoint_derivative(
 
     ct_multiplier = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
     ct_exponent = ct_type(jnp.zeros_like(exponent.data), exponent.basis)
-    ct_r = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
+    ct_r = ct_result
 
-    for d in range(depth):
+    for d in range(1, depth + 1):
         scale = 1.0 / d
         ct_multiplier = ct_multiplier + ct_r
-        ct_exponent = ct_exponent + scale * ft_adjoint_left_mul(r_data[d + 1], ct_r)
+        ct_exponent = ct_exponent + scale * ft_adjoint_left_mul(r_data[d], ct_r)
         ct_r = scale * ft_adjoint_right_mul(exponent, ct_r)
 
     ct_multiplier = ct_multiplier + ct_r
