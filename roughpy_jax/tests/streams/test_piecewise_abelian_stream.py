@@ -73,25 +73,14 @@ class TestPiecewiseAbelianStream:
         
         query_interval = RealInterval(0.5, 1.5, IntervalType.ClOpen)
         log_sig = self.stream.log_signature(query_interval)
-        
-        print()
-        
+                
         acc = self.stream._get_identity(dtype=rpj_dtype)
         
         # Compute the expected log signature using the CBH formula
-        # expected_log_sig = rpj.cbh(self.l1, self.l2)
         for l in (self.l1, self.l2):
-            print(l.data)
             l_half = rpj.Lie(l.data * 0.5, l.basis)
             t = rpj.lie_to_tensor(l_half, tensor_basis=self.tensor_basis)
-            scaled_t = rpj.lie_to_tensor(l, tensor_basis=self.tensor_basis, scale_factor=0.5)
-            # t = rpj.FreeTensor(t.data * 0.5, self.tensor_basis)
-            print(f"Lie element: {l.data}")
-            print(f"Half Lie element: {l_half.data}")
-            print(f"Tensor from scaled Lie element: {scaled_t.data}")
-            print(f"Tensor from half Lie element: {t.data}")
-            print()
-            acc = rpj.ft_fmexp(acc, scaled_t, self.tensor_basis)
+            acc = rpj.ft_fmexp(acc, t, self.tensor_basis)
                 
         expected_log_sig = rpj.tensor_to_lie(rpj.ft_log(acc), lie_basis=self.lie_basis)
 
