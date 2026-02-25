@@ -335,6 +335,7 @@ def ft_mul_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def antipode(a: AlgebraT) -> AlgebraT:
     """
     Antipode of a free tensor
@@ -395,6 +396,24 @@ def antipode_adjoint_derivative(
     :return: adjoint derivative of `ct_result` at `a`
     """
     return antipode(ct_result)
+
+
+def _antipode_vjp_fwd(a: FreeTensorT, **kwargs):
+    result = antipode(a, **kwargs)
+    return result, (a,)
+
+
+def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+    a, = residuals
+
+    ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    ct_antipode = antipode_adjoint_derivative(
+        a, ct_result
+    )
+    return (DenseFreeTensor(ct_antipode.data, ct_result_data.basis),)
+
+
+antipode.defvjp(_antipode_vjp_fwd, _antipode_vjp_bwd)
 
 
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:

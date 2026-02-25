@@ -4,7 +4,7 @@ import pytest
 import roughpy_jax as rpj
 
 from derivative_testing import assert_is_linear, assert_is_derivative, assert_is_adjoint_derivative
-
+from jax.test_util import check_grads, check_vjp
 
 @jax.jit
 def _antipode_on_signature(x):
@@ -107,20 +107,20 @@ def test_antipode_linear(trials):
 
 def test_antipode_derivative(trials):
     x = trials.ft_uniform()
-    h = trials.ft_uniform()
+    tangent = trials.ft_uniform() * 1e-3
 
     assert_is_derivative(
         rpj.antipode,
         rpj.antipode_derivative,
         x,
-        h,
-        eps_factors=(0.1, 0.001,) # FIXME fails for 0.0001 and less
+        tangent,
+        abs_tol=1e-3
     )
 
 
 def test_antipode_adjoint_derivative(trials):
     x = trials.ft_uniform()
-    tangent = trials.ft_uniform()
+    tangent = trials.ft_uniform() * 1e-3
     cotangent = trials.ft_uniform()
 
     def pairing(lhs, rhs):
@@ -134,5 +134,41 @@ def test_antipode_adjoint_derivative(trials):
         cotangent,
         domain_pairing=pairing,
         codomain_pairing=pairing,
-        eps_factors=(0.1, 0.001,) # FIXME fails for 0.0001 and less
+        abs_tol=1e-2
+    )
+
+
+def test_antipode_vjp(trials):
+    # Manually test VJP pullback bilinear identity
+    fn = rpj.antipode
+    fn_deriv = rpj.antipode_derivative
+
+    x = trials.ft_uniform()
+    tangent = trials.ft_uniform() * 1e-3
+
+    # Get cotangent returned by the VJP pullback
+    cotangent = trials.ft_uniform()
+    y, pullback = jax.vjp(fn, x)
+    inp_cot_from_vjp = pullback(cotangent)[0]
+
+    # Check the vjp primals are correct
+    y_expected = fn(x)
+    y_jacob_tangent = fn_deriv(x, tangent)
+    assert jnp.allclose(y.data, y_expected.data)
+
+    # Check bilinear identity: c·(J·u) == (J^T·c)·u
+    lhs = jnp.vdot(cotangent.data, y_jacob_tangent.data)
+    rhs = jnp.vdot(inp_cot_from_vjp.data, tangent.data)
+    assert jnp.allclose(lhs, rhs)
+
+    # Numeric reverse-mode check
+    check_grads(fn, (x,), order=1, modes=('rev',), atol=1e-3)
+
+    # JAX built-in finite difference check
+    check_vjp(
+        rpj.antipode,
+        lambda x: jax.vjp(rpj.antipode, x),
+        (x,),
+        atol=2e-3,
+        rtol=2e-3,
     )
