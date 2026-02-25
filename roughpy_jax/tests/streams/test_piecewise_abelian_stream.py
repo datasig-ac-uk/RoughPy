@@ -33,6 +33,18 @@ class TestPiecewiseAbelianStream:
             _lie_basis=self.lie_basis,
             _group_basis=rpj.TensorBasis(self.lie_basis.width, self.lie_basis.depth)
         )
+        
+    def test_construction(self, rpj_batch, rpj_dtype):
+        """Test that the PiecewiseAbelianStream can be constructed without errors."""
+        self.setup(rpj_batch, rpj_dtype)
+        
+        with pytest.raises(ValueError):
+            PiecewiseAbelianStream(
+                _data=(self.l1,),  # Incorrect length of data
+                _partition=self.partition,
+                _lie_basis=self.lie_basis,
+                _group_basis=rpj.TensorBasis(self.lie_basis.width, self.lie_basis.depth)
+            )
     
     def test_log_signature(self, rpj_batch, rpj_dtype):
         """Test the PiecewiseAbelianStream class.""" 
