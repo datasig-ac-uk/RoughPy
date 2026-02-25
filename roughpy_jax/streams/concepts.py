@@ -156,7 +156,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
         """
         ...
 
-    def query(self, interval: Interval) -> StreamValueT:
+    def query(self, interval: Interval) -> Self:
         """
         Query the value stream over an interval.
 
