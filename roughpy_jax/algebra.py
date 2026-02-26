@@ -491,14 +491,15 @@ def ft_exp_derivative(
     out_basis: TensorBasis | None = None,
 ) -> FreeTensorT:
     _check_basis_compat(x.basis, t_x.basis)
+    batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
+    dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
+
     basis = out_basis or x.basis
     depth = basis.depth
 
-    r_d_data = (
-        jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype).at[..., 0].set(1)
-    )
+    r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype).at[..., 0].set(1)
     r_d = DenseFreeTensor(r_d_data, basis)
-    t_r_d_data = jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype)
+    t_r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=type)
     t_r_d = DenseFreeTensor(t_r_d_data, basis)
 
     for d in range(depth, 0, -1):
@@ -520,13 +521,13 @@ def ft_exp_adjoint_derivative(
     out_basis: TensorBasis | None = None,
 ) -> tuple[ShuffleTensorT]:
     _check_basis_compat(x.basis, ct_result.basis)
+    batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
+    dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
 
     basis = out_basis or ct_result.basis
     depth = basis.depth
 
-    ident_data = (
-        jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype).at[..., 0].set(1)
-    )
+    ident_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype).at[..., 0].set(1)
     ident = ShuffleTensor(ident_data, basis)
 
     r_data = [None for _ in range(depth)] + [ident]
@@ -536,7 +537,7 @@ def ft_exp_adjoint_derivative(
         r_data[d - 1] = scale * ft_mul(x, r_data[d])
         r_data[d - 1].data = r_data[d - 1].data.at[..., 0].add(1)
 
-    ct_x_data = jnp.zeros((*x.batch_shape, basis.size()), dtype=x.data.dtype)
+    ct_x_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
     ct_x = DenseShuffleTensor(ct_x_data, basis)
     ct_r = ct_result
 
