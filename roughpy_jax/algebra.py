@@ -588,6 +588,9 @@ def ft_fmexp_derivative(
     _check_basis_compat(
         multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
     )
+    _get_and_check_batch_dims(
+        multiplier.data, exponent.data, t_multiplier.data, t_exponent.data, core_dims=1
+    )
 
     basis = multiplier.basis
     depth = basis.depth
@@ -614,7 +617,9 @@ def ft_fmexp_adjoint_derivative(
     ct_result: ShuffleTensorT,
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]:
     _check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
-    dtype = multiplier.data.dtype
+    _get_and_check_batch_dims(
+        multiplier.data, exponent.data, ct_result.data, core_dims=1
+    )
 
     tensor_type = type(multiplier)
     ct_type = type(ct_result)
