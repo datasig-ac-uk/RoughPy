@@ -2,9 +2,11 @@ import enum
 import math
 import numbers
 import typing
-
-from dataclasses import dataclass
 from typing import Protocol, TypeVar, TypeAlias, Self, Any, Generic
+from dataclasses import dataclass
+
+import jax.numpy as jnp
+import jax
 
 
 RealT = TypeVar("RealT")
@@ -13,6 +15,30 @@ class IntervalType(enum.IntEnum):
     ClOpen = 0
     OpenCl = 1
 
+def _interval_dataclass(cls):
+    """
+    Combined decorator for roughpy_jax interval objects
+
+    Registers dataclass and JAX data class with dynamic inf and sup and static 
+    interval_type
+    """
+    cls = dataclass(cls, frozen=True)
+    return jax.tree_util.register_dataclass(
+        cls, data_fields=["_inf", "_sup"], meta_fields=["_interval_type"]
+    )
+
+
+def _partition_dataclass(cls):
+    """
+    Combined decorator for roughpy_jax partition objects
+
+    Registers dataclass and JAX data class with dynamic endpoints and 
+    interval_type
+    """
+    cls = dataclass(cls, frozen=True)
+    return jax.tree_util.register_dataclass(
+        cls, data_fields=["_endpoints"], meta_fields=["_interval_type"]
+    )
 
 @typing.runtime_checkable
 class Interval(Protocol):
@@ -80,7 +106,7 @@ class BaseInterval(Interval):
         :return: The length of the interval, calculated as sup - inf.
         :rtype: float
         """
-        return max(0.0, interval.sup - interval.inf)
+        return jnp.maximum(0.0, interval.sup - interval.inf)
     
     @staticmethod
     def intersection(
@@ -100,11 +126,15 @@ class BaseInterval(Interval):
         if left_interval.interval_type != right_interval.interval_type:
             raise TypeError("Both intervals must be of the same IntervalType")
         
-        new_inf = max(left_interval.inf, right_interval.inf)
-        new_sup = min(left_interval.sup, right_interval.sup)
+        new_inf = jnp.maximum(left_interval.inf, right_interval.inf)
+        new_sup = jnp.minimum(left_interval.sup, right_interval.sup)
 
-        if new_inf >= new_sup:
-            return None  # No intersection
+        # NOTE: If we just return a 0-length interval when there is no intersection, 
+        # then we can avoid returning None which is not jittable, and instead 
+        # use a jax.lax.cond to return the identity tensor on a zeroed 
+        # intersection length.
+        # if new_inf >= new_sup:
+        #     return None  # No intersection
         
         IntervalType = left_interval.__class__
         interval_type = left_interval.interval_type
@@ -112,7 +142,8 @@ class BaseInterval(Interval):
         # Intersections are defined by bounds, but not every Interval implementation
         # can be constructed from (inf, sup, interval_type) (e.g. DyadicInterval).
         # Use a canonical RealInterval result to avoid incorrect reconstruction.
-        return IntervalType(_inf=float(new_inf), _sup=float(new_sup), _interval_type=interval_type)
+        # NOTE: Do NOT call float() here — new_inf/new_sup may be JAX tracers during JIT.
+        return IntervalType(_inf=new_inf, _sup=new_sup, _interval_type=interval_type)
 
 
 @dataclass(frozen=True)
@@ -168,12 +199,6 @@ class DyadicInterval(Dyadic):
     
     _interval_type: IntervalType
 
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        it = self._interval_type
-        if not isinstance(it, IntervalType):
-            object.__setattr__(self, "_interval_type", IntervalType(it))
-
     @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
@@ -208,7 +233,7 @@ class DyadicInterval(Dyadic):
         raise NotImplementedError("Intersection of DyadicIntervals is not yet implemented")
 
 
-@dataclass(frozen=True)
+@_interval_dataclass
 class RealInterval(Generic[RealT]):
     """
     Represents a real interval with specified bounds and interval type.
@@ -256,7 +281,7 @@ class RealInterval(Generic[RealT]):
         return BaseInterval.intersection(self, other)
 
 
-@dataclass(frozen=True)
+@_partition_dataclass
 class Partition(Generic[RealT]):
     _endpoints: list[RealT]
     _interval_type: IntervalType

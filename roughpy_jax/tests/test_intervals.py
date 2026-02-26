@@ -73,7 +73,16 @@ def test_intersection(left_interval, right_interval, expected_inf, expected_sup)
     assert intersection is not None
     assert intersection.inf == expected_inf
     assert intersection.sup == expected_sup
+
+def test_intersection_no_overlap():
+    left_interval = RealInterval[float](_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen)
+    right_interval = RealInterval[float](_inf=1.5, _sup=2.0, _interval_type=IntervalType.ClOpen)
     
+    intersection = left_interval.intersection(right_interval)
+    assert intersection is not None
+    assert intersection.length == 0.0
+    assert intersection.inf == pytest.approx(1.5)
+    assert intersection.sup == pytest.approx(1.0)
     
 class TestPartition:
     def test_partition_endpoints_and_type(self):
@@ -88,7 +97,7 @@ class TestPartition:
         p2 = RealInterval[float](_inf=-0.1, _sup=0.75, _interval_type=IntervalType.OpenCl)
         
         intersection = p1.intersection(p2)
-        assert intersection is not None
+        assert intersection.length > 0.0
         assert intersection.inf == pytest.approx(0.0)
         assert intersection.sup == pytest.approx(0.75)
         assert len(intersection) == 2
@@ -98,14 +107,17 @@ class TestPartition:
         p2 = RealInterval[float](_inf=1.5, _sup=2.0, _interval_type=IntervalType.OpenCl)
         
         intersection = p1.intersection(p2)
-        assert intersection is None
+        # A no-intersection no longer returns None.
+        assert intersection is not None
+        assert intersection.length == 0.0
+        assert len(intersection) == 0
     
     def test_partition_intersection_subinterval(self):
         p1 = Partition[float](_endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl)
         p2 = RealInterval[float](_inf=0.25, _sup=0.75, _interval_type=IntervalType.OpenCl)
         
         intersection = p1.intersection(p2)
-        assert intersection is not None
+        assert intersection.length > 0.0
         assert intersection.inf == pytest.approx(0.25)
         assert intersection.sup == pytest.approx(0.75)
         assert len(intersection) == 2
