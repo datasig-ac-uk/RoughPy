@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Any
 
 import jax
 import jax.numpy as jnp
@@ -492,6 +492,7 @@ def ft_exp_adjoint_derivative(
 ) -> tuple[ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor logarithm
@@ -525,13 +526,86 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
 def ft_log_derivative(
     x: FreeTensorT,
     t_x: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    _check_basis_compat(x.basis, t_x.basis)
+    batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
+    dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
+
+    basis = x.basis
+    depth = basis.depth
+
+    r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    r_d = DenseFreeTensor(r_d_data, basis)
+    t_r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    t_r_d = DenseFreeTensor(t_r_d_data, basis)
+
+    for d in range(depth, 0, -1):
+        sign = -1 if depth % 2 == 0 else 1
+        r_d.data = r_d.data.at[..., 0].add(sign / depth)
+
+        r_dm1 = ft_mul(x, r_d)
+        t_r_d = ft_mul(t_x, r_d) + ft_mul(x, t_r_d)
+        r_d = r_dm1
+
+    return t_r_d
 
 
 def ft_log_adjoint_derivative(
     x: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT]:
+    _check_basis_compat(x.basis, ct_result.basis)
+    batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
+    dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
+
+    basis = x.basis
+    depth = basis.depth
+
+    zero_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    zero = DenseFreeTensor(zero_data, basis)
+    rs = [None for _ in range(depth)] + [zero]
+    for d in range(depth, 0, -1):
+        sign = -1 if depth % 2 == 0 else 1
+        r_data = rs[d].data.at[..., 0].add(sign / depth)
+        r = DenseFreeTensor(r_data, basis)
+        rs[d - 1] = ft_mul(x, r)
+
+    ct_r_d = ft_adjoint_left_mul(x, ct_result)
+    ct_x = ft_adjoint_right_mul(rs[0], ct_result)
+
+    for i in range(1, depth):
+        ct_x = ct_x + ft_adjoint_left_mul(rs[i], ct_r_d)
+        ct_r_d = ft_adjoint_right_mul(x, ct_r_d)
+
+    return (ct_x,)
+
+
+def _ft_log_vjp_fwd(
+    x: FreeTensorT, out_basis: TensorBasis | None = None
+) -> tuple[FreeTensorT, tuple[Any, ...]]:
+    result = ft_log(x, out_basis=out_basis)
+    return result, (x, result)
+
+
+def _ft_log_vjp_bwd(
+    residuals: tuple[Any, ...], ct_result_data: Any
+) -> tuple[jax.Array | None, ...]:
+    x, result = residuals
+
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    (ct_x,) = ft_log_adjoint_derivative(x, ct_result)
+    return (ct_x.data, None)
+
+
+ft_log.defvjp(_ft_log_vjp_fwd, _ft_log_vjp_bwd)
 
 
 def ft_fmexp(
