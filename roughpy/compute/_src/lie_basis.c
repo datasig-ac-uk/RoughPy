@@ -1260,7 +1260,7 @@ PyObject* get_t2l_matrix(PyObject* basis, PyObject* dtype_obj)
     if (t2l == NULL) { return NULL; }
 
     Py_INCREF(t2l);
-    PyDict_SetItem(self->l2t, (PyObject*) dtype, t2l);
+    PyDict_SetItem(self->t2l, (PyObject*) dtype, t2l);
 
     return t2l;
 }
