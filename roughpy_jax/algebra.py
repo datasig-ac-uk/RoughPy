@@ -398,8 +398,8 @@ def antipode_adjoint_derivative(
     return antipode(ct_result)
 
 
-def _antipode_vjp_fwd(a: FreeTensorT, **kwargs):
-    result = antipode(a, **kwargs)
+def _antipode_vjp_fwd(a: FreeTensorT):
+    result = antipode(a)
     return result, (a,)
 
 
@@ -410,7 +410,8 @@ def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, 
     ct_antipode = antipode_adjoint_derivative(
         a, ct_result
     )
-    return (DenseFreeTensor(ct_antipode.data, ct_result_data.basis),)
+
+    return (ct_antipode.data,)
 
 
 antipode.defvjp(_antipode_vjp_fwd, _antipode_vjp_bwd)
