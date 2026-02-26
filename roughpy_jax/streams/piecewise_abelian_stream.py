@@ -61,6 +61,57 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # NOTE: replace this with the Basis.identity method when available
         initial = self._get_identity(dtype=self._data[0].data.dtype)
         
+        def get_piece(x_and_interval):
+            """
+            Get the tensor representation of a piece of the stream, scaled by the
+            intersection length with the query interval. This is designed to be
+            JIT-compilable.
+            """
+            # TODO: This could be made more vectorized by processing all pieces at once
+            x, p = x_and_interval
+            intersection_length = p.intersection(interval).length
+            scale_factor = intersection_length / p.length
+            return jax.lax.cond(
+                intersection_length > 0,
+                lambda: lie_to_tensor(x, tensor_basis=self._group_basis, scale_factor=scale_factor),
+                lambda: self._get_identity(dtype=x.data.dtype),
+            )
+        
+        intervals = self._partition.to_intervals()
+        all_tensors = [initial] + [get_piece((x, p)) for x, p in zip(self._data, intervals)]
+
+        # Stack all tensors along a leading axis into a single batched FreeTensor.
+        batched = jax.tree.map(lambda *arrs: jnp.stack(arrs), *all_tensors)
+
+        result_batched = lax.associative_scan(
+            lambda a, b: ft_fmexp(a, b, self._group_basis),
+            batched,
+        )
+
+        # Take the last prefix (the full product over all selected pieces).
+        result = jax.tree.map(lambda x: x[-1], result_batched)
+        return tensor_to_lie(ft_log(result), lie_basis=self.lie_basis)
+
+    def _get_identity(self, dtype) -> FreeTensor:
+        """Return the identity element of the group."""
+        identity_data = jnp.zeros((*self._data[0].data.shape[:-1], self._group_basis.size()), dtype=dtype).at[..., 0].set(1)
+        return FreeTensor(identity_data, self._group_basis)
+    
+    def signature(self, interval: Interval) -> GroupT:
+        """Compute the signature over an interval."""
+        # exponentiate the log signature?
+        log_sig = self.log_signature(interval)
+        tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
+        return ft_exp(tensor, self._group_basis)
+
+
+class AlternativePiecewiseAbelianStream[LieT, GroupT](PiecewiseAbelianStream[LieT, GroupT]):
+    def log_signature(self, interval):
+        """
+        Compute the log signature over an interval using an alternative method.
+        """
+        initial = self._get_identity(dtype=self._data[0].data.dtype)
+
         def get_piece_tensor(x_and_interval):
             x, p  = x_and_interval
             intersection = p.intersection(interval)
@@ -88,19 +139,6 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # Take the last prefix (the full product over all selected pieces).
         result = jax.tree.map(lambda x: x[-1], result_batched)
         return tensor_to_lie(ft_log(result), lie_basis=self.lie_basis)
-
-    def _get_identity(self, dtype) -> FreeTensor:
-        """Return the identity element of the group."""
-        identity_data = jnp.zeros((*self._data[0].data.shape[:-1], self._group_basis.size()), dtype=dtype).at[..., 0].set(1)
-        return FreeTensor(identity_data, self._group_basis)
-    
-    def signature(self, interval: Interval) -> GroupT:
-        """Compute the signature over an interval."""
-        # exponentiate the log signature?
-        log_sig = self.log_signature(interval)
-        tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
-        return ft_exp(tensor, self._group_basis)
-
     
 def to_piecewise_abelian(
         stream: Stream[LieT, GroupT], partition: Partition                 

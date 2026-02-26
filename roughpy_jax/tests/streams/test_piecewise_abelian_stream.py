@@ -116,15 +116,16 @@ class TestPiecewiseAbelianStream:
         assert support.inf == self.partition.inf
         assert support.sup == self.partition.sup
         assert support.interval_type == self.partition.interval_type
-        
-    def test_jitness_log_signature(self, rpj_batch, rpj_dtype):
+    
+    @pytest.mark.parametrize("static", [True, False])
+    def test_jitness_log_signature(self, rpj_nobatch, rpj_dtype, static):
         """Test that the log signature can be JIT compiled."""
-        self.setup(rpj_batch, rpj_dtype)
+        self.setup(rpj_nobatch, jnp.float32)
         query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
         
         # JIT compile the log signature method, keeping the query interval as a 
         # static argument
-        jit_log_sig = jax.jit(self.stream.log_signature, static_argnums=(0,))
+        jit_log_sig = jax.jit(self.stream.log_signature, static_argnums=(0,) if static else ())
         log_sig = jit_log_sig(query_interval)
         
         # Check that we're producing the same result as the non-JIT version
@@ -147,3 +148,13 @@ class TestPiecewiseAbelianStream:
         
         assert jit_time < non_jit_time
         
+    
+    @pytest.mark.parametrize("scale_factor", [0.0, 0.01, 0.25, 0.5, 0.75, 1.0])
+    def test_scale_factor(self, rpj_nobatch, rpj_dtype, rpj_no_acceleration, scale_factor):
+        """Test that the log signature is correctly scaled by the intersection length."""
+        self.setup(rpj_nobatch, rpj_dtype)
+        
+        l_prescaled = rpj.Lie(self.l1.data * scale_factor, self.l1.basis)
+        t_prescaled = rpj.lie_to_tensor(l_prescaled, tensor_basis=self.tensor_basis)
+        t_postscaled = rpj.lie_to_tensor(self.l1, tensor_basis=self.tensor_basis, scale_factor=scale_factor)
+        assert jnp.allclose(t_prescaled.data, t_postscaled.data, atol=1e-6)
