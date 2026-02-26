@@ -10,7 +10,7 @@ import numpy as np
 
 from jax import Array
 
-from .csc import csc_matvec
+from .compressed import csc_matvec
 
 
 class BasisLike(typing.Protocol, cabc.Hashable):
