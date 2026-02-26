@@ -902,7 +902,7 @@ class DenseLieToTensor(Operation, DenseOperation):
         scale_factor: Union[None, np.float64],
     ) -> tuple[Array]:
         result = csc_matvec(l2t_data, l2t_indices, l2t_indptr, l2t_size, arg_data)
-        if scale_factor:
+        if scale_factor is not None:
             result = result * scale_factor
 
         return (result,)
@@ -944,7 +944,7 @@ class DenseTensorToLie(Operation, DenseOperation):
         scale_factor: Union[None, np.float64],
     ) -> tuple[Array]:
         result = csc_matvec(t2l_data, t2l_indices, t2l_indptr, t2l_size, arg_data)
-        if scale_factor:
+        if scale_factor is not None:
             result = result * scale_factor
 
         return (result,)
