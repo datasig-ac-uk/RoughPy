@@ -61,30 +61,10 @@ class LieBasis(rpc.LieBasis):
     pass
 
 
-class TensorIdentity:
-    pass
-
-
-TensorIdentity = TensorIdentity()
-
-
 def _algebra_add(
     a: AlgebraT, b: AlgebraT, *, impl: Callable[[jax.Array, ...], jax.Array]
 ) -> AlgebraT:
     cls = type(a)
-
-    if (
-        identity_sentinel := getattr(cls, "__identity_sentinel__", None)
-    ) is not None and b is identity_sentinel:
-        if impl is jnp.add:
-            result_data = a.data.at[..., 0].add(1)
-            return cls(result_data, a.basis)
-        elif impl is jnp.subtract:
-            result_data = a.data.at[..., 0].sub(1)
-            return cls(result_data, a.basis)
-
-        data = jnp.zeros_like(a.data).at[..., 0].set(1)
-        b = cls(data, a.basis)
 
     if not issubclass(type(b), cls):
         return NotImplemented
@@ -151,8 +131,6 @@ class DenseFreeTensor:
     Dense free tensor class built from basis and associated ndarray of data.
     """
 
-    __identity_sentinel__ = TensorIdentity
-
     data: jnp.ndarray
     basis: TensorBasis
 
@@ -166,8 +144,6 @@ class DenseShuffleTensor:
     """
     Dense shuffle tensor class built from basis and associated ndarray of data.
     """
-
-    __identity_sentinel__ = TensorIdentity
 
     data: jnp.ndarray
     basis: TensorBasis
