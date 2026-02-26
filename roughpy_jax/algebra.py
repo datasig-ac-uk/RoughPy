@@ -540,8 +540,8 @@ def ft_log_derivative(
     t_r_d = DenseFreeTensor(t_r_d_data, basis)
 
     for d in range(depth, 0, -1):
-        sign = -1 if depth % 2 == 0 else 1
-        r_d.data = r_d.data.at[..., 0].add(sign / depth)
+        sign = -1 if d % 2 == 0 else 1
+        r_d.data = r_d.data.at[..., 0].add(sign / d)
 
         r_dm1 = ft_mul(x, r_d)
         t_r_d = ft_mul(t_x, r_d) + ft_mul(x, t_r_d)
@@ -565,17 +565,22 @@ def ft_log_adjoint_derivative(
     zero = DenseFreeTensor(zero_data, basis)
     rs = [None for _ in range(depth)] + [zero]
     for d in range(depth, 0, -1):
-        sign = -1 if depth % 2 == 0 else 1
-        r_data = rs[d].data.at[..., 0].add(sign / depth)
+        sign = -1 if d % 2 == 0 else 1
+        r_data = rs[d].data.at[..., 0].add(sign / d)
         r = DenseFreeTensor(r_data, basis)
         rs[d - 1] = ft_mul(x, r)
 
-    ct_r_d = ft_adjoint_left_mul(x, ct_result)
-    ct_x = ft_adjoint_right_mul(rs[0], ct_result)
+    ct_x_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    ct_x = DenseShuffleTensor(ct_x_data, basis)
+    ct_r_d = ct_result
 
-    for i in range(1, depth):
-        ct_x = ct_x + ft_adjoint_left_mul(rs[i], ct_r_d)
-        ct_r_d = ft_adjoint_right_mul(x, ct_r_d)
+    for d in range(1, depth + 1):
+        sign = -1 if d % 2 == 0 else 1
+        u_d_data = rs[d].data.at[..., 0].add(sign / d)
+        u_d = DenseFreeTensor(u_d_data, basis)
+
+        ct_x = ct_x + ft_adjoint_right_mul(u_d, ct_r_d)
+        ct_r_d = ft_adjoint_left_mul(x, ct_r_d)
 
     return (ct_x,)
 
