@@ -600,9 +600,9 @@ def ft_fmexp_derivative(
 
     for d in range(depth, 0, -1):
         scale = 1.0 / d
-        r_dm1 = multiplier + scale * ft_mul(exponent, r_d)
+        r_dm1 = multiplier + scale * ft_mul(r_d, exponent)
         t_r_dm1 = t_multiplier + scale * (
-            ft_mul(t_exponent, r_d) + ft_mul(exponent, t_r_d)
+            ft_mul(r_d, t_exponent) + ft_mul(t_r_d, exponent)
         )
 
         r_d = r_dm1
