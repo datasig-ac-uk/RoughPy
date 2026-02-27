@@ -102,6 +102,82 @@ def test_dense_ft_fmexp(rpj_dtype, rpj_batch, rpj_no_acceleration):
     assert jnp.allclose(b.data, expected.data)
 
 
+def _rng_scaled_nonzero_free_tensor(rpj_batch, basis, dtype, scale=1.0):
+    return scale * rpj_batch.rng_nonzero_free_tensor(basis, dtype)
+
+
+def _ft_exp_adjoint_derivative(x, ct_result):
+    return rpj.ft_exp_adjoint_derivative(x, ct_result)[0]
+
+
+def test_ft_exp_derivative_linear_in_tangent(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+
+    x = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    t_x = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    t_y = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    alpha = jnp.asarray(0.7, rpj_dtype)
+    beta = jnp.asarray(-1.3, rpj_dtype)
+
+    fn = partial(rpj.ft_exp_derivative, x)
+    assert_is_linear(fn, t_x, t_y, alpha, beta)
+
+
+def test_ft_exp_derivative_satisfies_derivative_condition(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+
+    x = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    tangent = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+
+    assert_is_derivative(
+        rpj.ft_exp,
+        rpj.ft_exp_derivative,
+        x,
+        tangent,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=5.0e-2,
+        rel_tol=5.0e-2,
+    )
+
+
+def test_ft_exp_adjoint_derivative_linear_in_cotangent(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+
+    x = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    ct_x = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    ct_y = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    alpha = jnp.asarray(0.8, rpj_dtype)
+    beta = jnp.asarray(-0.4, rpj_dtype)
+
+    fn = partial(_ft_exp_adjoint_derivative, x)
+    assert_is_linear(fn, ct_x, ct_y, alpha, beta)
+
+
+def test_ft_exp_adjoint_derivative_satisfies_derivative_condition(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+
+    x = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    tangent = _rng_scaled_nonzero_free_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    cotangent = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+
+    assert_is_adjoint_derivative(
+        rpj.ft_exp,
+        _ft_exp_adjoint_derivative,
+        x,
+        tangent,
+        cotangent,
+        rpj.tensor_pairing,
+        rpj.tensor_pairing,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=5.0e-2,
+        rel_tol=5.0e-2,
+    )
+
+
 def test_ft_fmexp_custom_vjp_check_vjp(rpj_batch):
     rpj_dtype = jnp.dtype("float32")
     basis = rpj.TensorBasis(2, 4)
