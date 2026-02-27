@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
 
-from derivative_testing import assert_is_linear, assert_is_derivative
+from derivative_testing import assert_is_linear, assert_is_derivative, assert_is_adjoint_derivative
 from conftest import DerivativeTrialsHelper
 
 
@@ -74,5 +74,38 @@ def test_l2t_derivative(lt2_trials):
         rpj.lie_to_tensor_derivative,
         x,
         tangent,
+        abs_tol=lt2_trials.cond_dtype(1e-2, 1e-6)
+    )
+
+
+def test_l2t_derivative(lt2_trials):
+    x = lt2_trials.uniform_tensor()
+    tangent = lt2_trials.uniform_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
+
+    assert_is_derivative(
+        rpj.lie_to_tensor,
+        rpj.lie_to_tensor_derivative,
+        x,
+        tangent,
+        abs_tol=lt2_trials.cond_dtype(1e-2, 1e-6)
+    )
+
+
+def test_l2t_adjoint_derivative(lt2_trials):
+    x = lt2_trials.uniform_tensor()
+    tangent = lt2_trials.uniform_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
+    cotangent = lt2_trials.uniform_tensor()
+
+    def pairing(lhs, rhs):
+        return jnp.sum(lhs.data * rhs.data)
+
+    assert_is_adjoint_derivative(
+        rpj.lie_to_tensor,
+        rpj.lie_to_tensor_adjoint_derivative,
+        x,
+        tangent,
+        cotangent,
+        domain_pairing=pairing,
+        codomain_pairing=pairing,
         abs_tol=lt2_trials.cond_dtype(1e-2, 1e-6)
     )

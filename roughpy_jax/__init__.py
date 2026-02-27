@@ -23,6 +23,7 @@ from roughpy_jax.algebra import (
     antipode_adjoint_derivative,
     lie_to_tensor,
     lie_to_tensor_derivative,
+    lie_to_tensor_adjoint_derivative,
     tensor_to_lie,
     tensor_pairing,
 )

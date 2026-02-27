@@ -7,8 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 
 from roughpy import compute as rpc
-
 from roughpy_jax.ops import Operation
+
+from .compressed import csr_matvec
 
 AlgebraT = TypeVar("AlgebraT")
 FreeTensorT = TypeVar("FreeTensorT")
@@ -661,6 +662,7 @@ def ft_fmexp_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def lie_to_tensor(
     arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
 ) -> FreeTensorT:
@@ -707,10 +709,45 @@ def lie_to_tensor_derivative(
 
 def lie_to_tensor_adjoint_derivative(
     arg: LieT,
-    ct_result: ShuffleTensorT,
+    ct_result: LieT, # FIXME was shuffle tensor in stub, check
     scale_factor=None,
 ) -> tuple[LieT]:
-    ...
+    """
+    Antipode lie to tensor derivative of free tensor `ct_result` at `arg`
+
+    FIXME docstring
+    """
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+    l2t_size = np.int32(arg.basis.size())
+    data = csr_matvec(l2t.data, l2t.indices, l2t.indptr, l2t_size, ct_result.data)
+    if scale_factor:
+        data = data * scale_factor
+    result = Lie(data, arg.basis)
+
+    return lie_to_tensor(result, None, scale_factor)
+
+
+def _lie_to_tensor_vjp_fwd(
+    arg: LieT,
+    tensor_basis: TensorBasis | None = None,
+    scale_factor=None
+):
+    result = lie_to_tensor_derivative(arg, tensor_basis, scale_factor)
+    return result, (arg, scale_factor)
+
+
+def _lie_to_tensor_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+    arg, scale_factor = residuals
+
+    ct_result = Lie(ct_result_data.data, ct_result_data.basis)
+    ct_l2t_adjoint_deriv = lie_to_tensor_adjoint_derivative(
+        arg, ct_result, scale_factor
+    )
+
+    return (ct_l2t_adjoint_deriv.data,)
+
+
+lie_to_tensor.defvjp(_lie_to_tensor_vjp_fwd, _lie_to_tensor_vjp_bwd)
 
 
 def tensor_to_lie(
