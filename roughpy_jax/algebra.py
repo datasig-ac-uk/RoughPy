@@ -117,6 +117,13 @@ def _tensor_dataclass(cls):
 
     cls.__rmul__ = _rmul_impl
 
+    def _div_impl(self, other):
+        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
+            return _algebra_scalar_multiply(self, 1.0 / other)
+        return NotImplemented
+
+    cls.__truediv__ = _div_impl
+
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
     )
