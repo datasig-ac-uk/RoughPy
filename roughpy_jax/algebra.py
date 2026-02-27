@@ -499,7 +499,7 @@ def ft_exp_derivative(
 
     r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype).at[..., 0].set(1)
     r_d = DenseFreeTensor(r_d_data, basis)
-    t_r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=type)
+    t_r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
     t_r_d = DenseFreeTensor(t_r_d_data, basis)
 
     for d in range(depth, 0, -1):
