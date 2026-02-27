@@ -701,30 +701,25 @@ def lie_to_tensor_derivative(
 ) -> FreeTensorT:
     """
     Lie to tensor derivative of free tensor peterbation `t_arg` at `arg`
-
-    FIXME docstring
     """
     return lie_to_tensor(t_arg, None, scale_factor)
 
 
 def lie_to_tensor_adjoint_derivative(
     arg: LieT,
-    ct_result: LieT, # FIXME was shuffle tensor in stub, check
+    ct_result: ShuffleTensorT,
     scale_factor=None,
 ) -> tuple[LieT]:
     """
-    Antipode lie to tensor derivative of free tensor `ct_result` at `arg`
-
-    FIXME docstring
+    Lie to tensor derivative of free tensor `ct_result` at `arg`
     """
     l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
     l2t_size = np.int32(arg.basis.size())
     data = csr_matvec(l2t.data, l2t.indices, l2t.indptr, l2t_size, ct_result.data)
     if scale_factor:
         data = data * scale_factor
-    result = Lie(data, arg.basis)
 
-    return lie_to_tensor(result, None, scale_factor)
+    return Lie(data, arg.basis)
 
 
 def _lie_to_tensor_vjp_fwd(
