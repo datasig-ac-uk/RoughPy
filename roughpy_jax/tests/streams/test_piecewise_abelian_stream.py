@@ -41,8 +41,8 @@ class PASHelper:
 
 
 @pytest.fixture
-def pas_data(rpj_nobatch, rpj_dtype=jnp.float32):
-    return PASHelper(rpj_nobatch, rpj_dtype)
+def pas_data(rpj_batch, rpj_dtype):
+    return PASHelper(rpj_batch, rpj_dtype)
 
 
 class TestPiecewiseAbelianStream:
