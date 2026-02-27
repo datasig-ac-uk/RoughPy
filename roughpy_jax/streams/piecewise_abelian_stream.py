@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import partial
 from typing import Tuple
 
 import jax.numpy as jnp
@@ -9,7 +10,6 @@ from .concepts import Stream, BasisLike, LieT, GroupT
 from roughpy_jax.intervals import RealInterval, Partition, Interval
 from roughpy_jax.algebra import (
     FreeTensor,
-    TensorBasis, 
     lie_to_tensor, 
     tensor_to_lie, 
     ft_fmexp, 
@@ -18,7 +18,16 @@ from roughpy_jax.algebra import (
 )
 
 
-@dataclass(frozen=True)
+def _pas_dataclass(cls):
+    """Helper to apply the dataclass and register_dataclass decorators in the correct order."""
+    cls = dataclass(cls, frozen=True)
+    return jax.tree_util.register_dataclass(
+        cls, data_fields=["_data", "_partition"],
+        meta_fields=["_lie_basis", "_group_basis"],
+    )
+
+
+@_pas_dataclass
 class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     """A stream representing a piecewise abelian path."""
     
@@ -52,12 +61,10 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             _sup=self._partition.sup,
             _interval_type=self._partition.interval_type,
         )
-    
+
+    @jax.jit
     def log_signature(self, interval: Interval) -> LieT:
         """Compute the log signature over an interval."""
-        # This is a piecewise abelian stream, so the log signature over an 
-        # interval is just the sum of the log signatures over the subintervals 
-        # that intersect with the query interval.
         # NOTE: replace this with the Basis.identity method when available
         initial = self._get_identity(dtype=self._data[0].data.dtype)
         
@@ -96,16 +103,18 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         """Return the identity element of the group."""
         identity_data = jnp.zeros((*self._data[0].data.shape[:-1], self._group_basis.size()), dtype=dtype).at[..., 0].set(1)
         return FreeTensor(identity_data, self._group_basis)
-    
+
+    @jax.jit
     def signature(self, interval: Interval) -> GroupT:
         """Compute the signature over an interval."""
-        # exponentiate the log signature?
         log_sig = self.log_signature(interval)
         tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
         return ft_exp(tensor, self._group_basis)
 
-
+@_pas_dataclass
 class AlternativePiecewiseAbelianStream[LieT, GroupT](PiecewiseAbelianStream[LieT, GroupT]):
+    
+    @jax.jit
     def log_signature(self, interval):
         """
         Compute the log signature over an interval using an alternative method.
