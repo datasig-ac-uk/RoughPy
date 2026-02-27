@@ -1,5 +1,15 @@
 import jax.numpy as jnp
+import pytest
 import roughpy_jax as rpj
+
+from derivative_testing import assert_is_linear, assert_is_derivative
+from conftest import DerivativeTrialsHelper
+
+
+# Test fixture for batch of w=4, d=4 lie tensor
+@pytest.fixture(params=[jnp.float32, jnp.float64])
+def lt2_trials(request):
+    yield DerivativeTrialsHelper(request.param, rpj.LieBasis(4, 4), rpj.Lie)
 
 
 def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -42,3 +52,27 @@ def test_l2t_t2l_scaled_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     assert y.data.dtype == x.data.dtype == rpj_dtype
     assert jnp.allclose(0.5 * x.data, y.data, atol=1e-7)
+
+
+def test_l2t_linear(lt2_trials):
+    x = lt2_trials.uniform_tensor()
+    y = lt2_trials.uniform_tensor()
+
+    vals = lt2_trials.uniform_data((2,))
+    alpha = float(vals[0])
+    beta = float(vals[1])
+
+    assert_is_linear(rpj.lie_to_tensor, x, y, alpha, beta)
+
+
+def test_l2t_derivative(lt2_trials):
+    x = lt2_trials.uniform_tensor()
+    tangent = lt2_trials.uniform_tensor() * lt2_trials.tangent_scale
+
+    assert_is_derivative(
+        rpj.lie_to_tensor,
+        rpj.lie_to_tensor_derivative,
+        x,
+        tangent,
+        abs_tol=lt2_trials.base_tol
+    )

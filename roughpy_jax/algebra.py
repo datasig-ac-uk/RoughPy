@@ -31,6 +31,9 @@ class TensorBasis(rpc.TensorBasis):
 #     width: np.int32
 #     depth: np.int32
 #     degree_begin: np.ndarray[np.int64.dtype]
+#
+#     def get_l2t_matrix(dtype) -> PySparseMatrix
+#     def get_t2l_matrix(dtype) -> PySparseMatrix
 @partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
 class LieBasis(rpc.LieBasis):
     """
@@ -668,6 +671,9 @@ def lie_to_tensor(
     :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
     :return: new FreeTensor containing the embedding of "arg"
     """
+    if not isinstance(arg, Lie):
+        raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
+
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
     out_basis = arg.basis
@@ -690,14 +696,21 @@ def lie_to_tensor_derivative(
     arg: LieT,
     t_arg: LieT,
     scale_factor=None,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    """
+    Lie to tensor derivative of free tensor peterbation `t_arg` at `arg`
+
+    FIXME docstring
+    """
+    return lie_to_tensor(t_arg, None, scale_factor)
 
 
 def lie_to_tensor_adjoint_derivative(
     arg: LieT,
     ct_result: ShuffleTensorT,
     scale_factor=None,
-) -> tuple[LieT]: ...
+) -> tuple[LieT]:
+    ...
 
 
 def tensor_to_lie(
@@ -710,6 +723,9 @@ def tensor_to_lie(
     :param lie_basis:
     :return:
     """
+    if not isinstance(arg, FreeTensor):
+        raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
+
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
     out_basis = arg.basis
