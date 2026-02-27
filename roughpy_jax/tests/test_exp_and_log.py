@@ -164,9 +164,7 @@ def test_ft_fmexp_derivative_satisfies_derivative_condition(rpj_batch):
     exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
     zero_t = rpj.FreeTensor(rpj_batch.zeros(basis.size(), rpj_dtype), basis)
     x_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
-    tangent_multiplier = rpj.ft_exp(
-        rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype)
-    )
+    tangent_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
     x_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
     tangent_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
 
@@ -230,9 +228,7 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(rpj_batch):
     multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
     exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
     x_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
-    tangent_multiplier = rpj.ft_exp(
-        rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype)
-    )
+    tangent_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
     x_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
     tangent_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
     cotangent = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
