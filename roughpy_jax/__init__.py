@@ -14,6 +14,8 @@ from roughpy_jax.algebra import (
     ft_exp,
     ft_log,
     ft_fmexp,
+    ft_fmexp_derivative,
+    ft_fmexp_adjoint_derivative,
     st_fma,
     st_mul,
     ft_adjoint_right_mul,
