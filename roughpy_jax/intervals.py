@@ -41,7 +41,7 @@ def _partition_dataclass(cls):
     )
 
 @typing.runtime_checkable
-class Interval(Protocol):
+class Interval[RealT](Protocol):
     """
     Representation of an interval with an unspecified type for mathematical
     computations or range definitions. This interface outlines the required
@@ -67,15 +67,15 @@ class Interval(Protocol):
         ...
 
     @property
-    def inf(self) -> float:
+    def inf(self) -> RealT:
         ...
 
     @property
-    def sup(self) -> float:
+    def sup(self) -> RealT:
         ...
     
     @property
-    def length(self) -> float:
+    def length(self) -> RealT:
         ...
         
     def intersection(self, other: Self) -> typing.Optional[Self]:
@@ -90,6 +90,9 @@ class Interval(Protocol):
 
 
 class BaseInterval(Interval):
+    # TODO: These don't need to be in a class, just have module-level functions for str, length, and intersection that 
+    # take Intervals as arguments. The only reason to have these in a class is if we want to use inheritance to share 
+    # code between different Interval implementations.
     
     @staticmethod
     def __str__(interval) -> str:
@@ -100,7 +103,7 @@ class BaseInterval(Interval):
         return reprs[interval.interval_type].format(interval.inf, interval.sup)
     
     @staticmethod
-    def length(interval: Interval) -> float:
+    def length(interval: Interval) -> RealT:
         """
         Calculate the length of the interval.
         :return: The length of the interval, calculated as sup - inf.
@@ -161,9 +164,14 @@ class Dyadic:
     n: int
 
     def __post_init__(self) -> None:
+        # NOTE: This whole method feels a little unnecessary since the dataclass will already enforce that k and n are 
+        # integers but it does allow for some flexibility in accepting float inputs that are integer-valued, which could 
+        # be convenient in some cases. It also allows us to provide more informative error messages if the inputs are 
+        # not valid.
+        
         k = self.k
         n = self.n
-
+        
         if isinstance(k, numbers.Integral):
             k_int = int(k)
         elif isinstance(k, float) and k.is_integer():
@@ -186,6 +194,9 @@ class Dyadic:
 
     def __float__(self) -> float:
         return math.ldexp(self.k, -self.n)
+
+    def __jax_array__(self):
+        return jnp.array(math.ldexp(self.k, -self.n))
 
 
 @dataclass(frozen=True)
@@ -259,15 +270,15 @@ class RealInterval(Generic[RealT]):
         return self._interval_type
 
     @property
-    def inf(self) -> float:
+    def inf(self) -> RealT:
         return self._inf
 
     @property
-    def sup(self) -> float:
+    def sup(self) -> RealT:
         return self._sup
     
     @property
-    def length(self) -> float:
+    def length(self) -> RealT:
         return BaseInterval.length(self)
     
     def intersection(self, other: Self) -> typing.Optional[Self]:
@@ -297,24 +308,24 @@ class Partition(Generic[RealT]):
         return self._interval_type
 
     @property
-    def inf(self) -> float:
-        return float(self._endpoints[0])
+    def inf(self) -> RealT:
+        return jnp.asarray(self._endpoints[0])
 
     @property
-    def sup(self) -> float:
-        return float(self._endpoints[-1])
+    def sup(self) -> RealT:
+        return jnp.asarray(self._endpoints[-1])
     
     @property
-    def length(self) -> float:
+    def length(self) -> RealT:
         return BaseInterval.length(self)
     
-    def to_real_interval(self) -> RealInterval[float]:
+    def to_real_interval(self) -> RealInterval[RealT]:
         """
         Convert the partition to a RealInterval.
         :return: A RealInterval representing the partition.
         :rtype: RealInterval
         """ 
-        return RealInterval[float](
+        return RealInterval[RealT](
             _inf=self.inf,
             _sup=self.sup,
             _interval_type=self._interval_type,
@@ -358,7 +369,7 @@ class Partition(Generic[RealT]):
             _interval_type=self.interval_type,
         )
         
-    def to_intervals(self) -> list[Self]:
+    def to_intervals(self) -> list[Interval[RealT]]:
         """
         Convert the partition into a list of RealIntervals corresponding to 
         the subintervals defined by the partition.
@@ -368,8 +379,8 @@ class Partition(Generic[RealT]):
         :rtype: list[RealInterval]
         """
         # NOTE: typing here should be more generic than RealInterval[float], but this is the only type of interval we
-        return [RealInterval[float](
-            _inf=float(self._endpoints[i]),
-            _sup=float(self._endpoints[i+1]),
+        return [RealInterval[RealT](
+            _inf=self._endpoints[i],
+            _sup=self._endpoints[i+1],
             _interval_type=self.interval_type,
         ) for i in range(len(self._endpoints)-1)]
