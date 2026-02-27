@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import partial
+from functools import partial, partialmethod
 from typing import TypeVar, Callable, Any
 
 import jax
@@ -100,8 +100,8 @@ def _tensor_dataclass(cls):
 
     cls.__array__ = _algebra___array__
 
-    cls.__add__ = partial(_algebra_add, impl=jnp.add)
-    cls.__sub__ = partial(_algebra_add, impl=jnp.subtract)
+    cls.__add__ = partialmethod(_algebra_add, impl=jnp.add)
+    cls.__sub__ = partialmethod(_algebra_add, impl=jnp.subtract)
 
     cls.__radd__ = lambda x, y: _algebra_add(y, x, impl=jnp.add)
     cls.__rsub__ = lambda x, y: _algebra_add(x, y, impl=jnp.subtract)
@@ -119,6 +119,13 @@ def _tensor_dataclass(cls):
         return NotImplemented
 
     cls.__rmul__ = _rmul_impl
+
+    def _div_impl(self, other):
+        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
+            return _algebra_scalar_multiply(self, 1.0 / other)
+        return NotImplemented
+
+    cls.__truediv__ = _div_impl
 
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
@@ -323,7 +330,8 @@ def ft_mul_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
 
 
-def antipode(a: FreeTensorT) -> FreeTensorT:
+@jax.custom_vjp
+def antipode(a: AlgebraT) -> AlgebraT:
     """
     Antipode of a free tensor
 
@@ -333,7 +341,9 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
     op_cls = Operation.get_operation("ft_antipode", "dense")
     batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
+    out_class = a.__class__
     out_basis = a.basis
+
     op = op_cls(
         (out_basis,),
         a.data.dtype,
@@ -344,15 +354,62 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
 
     out_data = op(a.data)
 
-    return DenseFreeTensor(*out_data, out_basis)
+    return out_class(*out_data, out_basis)
 
 
-def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT: ...
+def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT:
+    """
+    Antipode derivative of free tensor peterbation `t_a` at `a`
+
+    This operation is linear, with the derivative being independent of
+    the argument, computated as the antipode of the tangent. This is
+    because antipode is a generalisation of transpose, taking the
+    equivalent of the transpose at each level, i.e. for level 1 it's
+    simply flipping the sign, for level 2 it's a regular 2D transpose,
+    and higher levels are similar but more complex variants of this.
+    So the derivative is simply flipped through this transpose.
+
+    :param a: argument
+    :param t_a: tangent pertubation at `a`
+    :return: derivative of `t_a` at `a`
+    """
+    return antipode(t_a)
 
 
 def antipode_adjoint_derivative(
     a: FreeTensorT, ct_result: ShuffleTensorT
-) -> tuple[ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT]:
+    """
+    Antipode adjoint derivative of a free tensor
+
+    As with the antipode derivative, this is a linear operation which
+    is independent of the position a, but instead operates in dual
+    space to free tensor, hence shuffle tensor cotangents.
+
+    :param a: argument
+    :param ct_result: cotangent perturbation at `a`
+    :return: adjoint derivative of `ct_result` at `a`
+    """
+    return antipode(ct_result)
+
+
+def _antipode_vjp_fwd(a: FreeTensorT):
+    result = antipode(a)
+    return result, (a,)
+
+
+def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+    a, = residuals
+
+    ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    ct_antipode = antipode_adjoint_derivative(
+        a, ct_result
+    )
+
+    return (ct_antipode.data,)
+
+
+antipode.defvjp(_antipode_vjp_fwd, _antipode_vjp_bwd)
 
 
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
@@ -621,6 +678,7 @@ def ft_log_adjoint_derivative(
 ) -> tuple[ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def ft_fmexp(
     multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None
 ) -> FreeTensorT:
@@ -670,14 +728,107 @@ def ft_fmexp_derivative(
     exponent: FreeTensorT,
     t_multiplier: FreeTensorT,
     t_exponent: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    _check_basis_compat(
+        multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
+    )
+    _get_and_check_batch_dims(
+        multiplier.data, exponent.data, t_multiplier.data, t_exponent.data, core_dims=1
+    )
+
+    basis = multiplier.basis
+    depth = basis.depth
+
+    r_d = multiplier
+    t_r_d = t_multiplier
+
+    for d in range(depth, 0, -1):
+        scale = 1.0 / d
+        r_dm1 = multiplier + scale * ft_mul(r_d, exponent)
+        t_r_dm1 = t_multiplier + scale * (
+            ft_mul(r_d, t_exponent) + ft_mul(t_r_d, exponent)
+        )
+
+        r_d = r_dm1
+        t_r_d = t_r_dm1
+
+    return t_r_d
 
 
 def ft_fmexp_adjoint_derivative(
     multiplier: FreeTensorT,
     exponent: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT, ShuffleTensorT]:
+    _check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
+    _get_and_check_batch_dims(
+        multiplier.data, exponent.data, ct_result.data, core_dims=1
+    )
+
+    tensor_type = type(multiplier)
+    ct_type = type(ct_result)
+
+    basis = multiplier.basis
+    depth = basis.depth
+
+    # First recompute the intermediate approximations of the fmexp. The computation
+    # of the cotangents proceeds in the opposite order, from 0 to D instead of from
+    # D to 0. These are fairly cheap to recompute in theory because of the higher
+    # terms "dropping off the cliff" as the degree increases. This optimisation is
+    # not implemented here yet, because we haven't built the support into the high
+    # level functions of disregarding higher-order terms yet.
+
+    r_data = [None for _ in range(depth)] + [multiplier]
+    for d in range(depth, 0, -1):
+        scale = 1.0 / d
+        # noinspection PyTypeChecker
+        r_data[d - 1] = multiplier + scale * ft_mul(exponent, r_data[d])
+
+    # Now we can update the cotangents in sequence. We have to accumulate the
+    # ct_multiplier and ct_exponent values, as well as the cotangents of
+    # each of the intermediate r terms.
+
+    ct_multiplier = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
+    ct_exponent = ct_type(jnp.zeros_like(exponent.data), exponent.basis)
+    ct_r = ct_result
+
+    for d in range(1, depth + 1):
+        scale = 1.0 / d
+        ct_multiplier = ct_multiplier + ct_r
+        ct_exponent = ct_exponent + scale * ft_adjoint_left_mul(r_data[d], ct_r)
+        ct_r = scale * ft_adjoint_right_mul(exponent, ct_r)
+
+    ct_multiplier = ct_multiplier + ct_r
+    return ct_multiplier, ct_exponent
+
+
+def _ft_fmexp_vjp_fwd(
+    multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None
+):
+    result = ft_fmexp(multiplier, exponent, out_basis)
+    return result, (multiplier, exponent, result)
+
+
+def _ft_fmexp_vjp_bwd(
+    residuals, ct_result_data: jax.Array
+) -> tuple[jax.Array | None, ...]:
+    multiplier, exponent, result = residuals
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    ct_multiplier, ct_exponent = ft_fmexp_adjoint_derivative(
+        multiplier, exponent, ct_result
+    )
+    return ct_multiplier.data, ct_exponent.data, None
+
+
+ft_fmexp.defvjp(_ft_fmexp_vjp_fwd, _ft_fmexp_vjp_bwd)
 
 
 def lie_to_tensor(

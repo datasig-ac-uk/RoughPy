@@ -2,6 +2,12 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
+from jax import test_util as jtu
+from derivative_testing import (
+    assert_is_adjoint_derivative,
+    assert_is_derivative,
+    assert_is_linear,
+)
 import roughpy_jax as rpj
 import jax.test_util as jtu
 
@@ -94,3 +100,198 @@ def test_dense_ft_fmexp(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     expected = rpj.ft_mul(a, rpj.ft_exp(x))
     assert jnp.allclose(b.data, expected.data)
+
+
+def test_ft_fmexp_custom_vjp_check_vjp(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+    multiplier = rpj.ft_exp(0.2 * rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+
+    exponent_data = jnp.asarray(
+        rpj_batch.rng_uniform(-0.2, 0.2, basis.size(), rpj_dtype)
+    )
+    assert isinstance(exponent_data, jax.Array)
+    exponent_data = exponent_data.at[..., 0].set(0)
+    exponent = rpj.FreeTensor(exponent_data, basis)
+
+    def _fmexp_data(multiplier_data, exponent_data):
+        # The check_vjp routine below will generate cotangents and apply them
+        # in a way that might walk the result off the surface of grouplike
+        # elements. It might also convert these implicitly to numpy arrays,
+        # causing jax-array specific calls to fail.
+        multiplier_data.data = jnp.asarray(multiplier_data.data)
+        exponent_data.data = jnp.asarray(exponent_data.data).at[..., 0].set(0)
+        return rpj.ft_fmexp(multiplier_data, exponent_data)
+
+    atol = 5e-2
+    rtol = 5e-2
+    jtu.check_vjp(
+        _fmexp_data,
+        partial(jax.vjp, _fmexp_data),
+        (multiplier, exponent),
+        atol=atol,
+        rtol=rtol,
+    )
+
+
+def _rng_exponent_tensor(rpj_batch, basis, dtype, scale=1.0):
+    data = jnp.asarray(rpj_batch.rng_uniform(-scale, scale, basis.size(), dtype))
+    data = data.at[..., 0].set(0)
+    return rpj.FreeTensor(data, basis)
+
+
+def test_ft_fmexp_derivative_linear_in_t_multiplier(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+    multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    zero_t_exponent = rpj.FreeTensor(rpj_batch.zeros(basis.size(), rpj_dtype), basis)
+
+    t_mul_x = rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype)
+    t_mul_y = rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype)
+    alpha = jnp.asarray(0.7, rpj_dtype)
+    beta = jnp.asarray(-1.3, rpj_dtype)
+
+    def fn(t_multiplier):
+        return rpj.ft_fmexp_derivative(
+            multiplier, exponent, t_multiplier, zero_t_exponent
+        )
+
+    assert_is_linear(fn, t_mul_x, t_mul_y, alpha, beta)
+
+
+def test_ft_fmexp_derivative_linear_in_t_exponent(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+    multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    zero_t_multiplier = rpj.FreeTensor(rpj_batch.zeros(basis.size(), rpj_dtype), basis)
+
+    t_exp_x = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    t_exp_y = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    alpha = jnp.asarray(0.6, rpj_dtype)
+    beta = jnp.asarray(-0.8, rpj_dtype)
+
+    def fn(t_exponent):
+        return rpj.ft_fmexp_derivative(
+            multiplier, exponent, zero_t_multiplier, t_exponent
+        )
+
+    assert_is_linear(fn, t_exp_x, t_exp_y, alpha, beta)
+
+
+def test_ft_fmexp_derivative_satisfies_derivative_condition(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+    multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    zero_t = rpj.FreeTensor(rpj_batch.zeros(basis.size(), rpj_dtype), basis)
+    x_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    tangent_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    x_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    tangent_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+
+    def fn_multiplier(arg_multiplier):
+        return rpj.ft_fmexp(arg_multiplier, exponent)
+
+    def fn_multiplier_deriv(arg_multiplier, t_arg_multiplier):
+        return rpj.ft_fmexp_derivative(
+            arg_multiplier, exponent, t_arg_multiplier, zero_t
+        )
+
+    def fn_exponent(arg_exponent):
+        return rpj.ft_fmexp(multiplier, arg_exponent)
+
+    def fn_exponent_deriv(arg_exponent, t_arg_exponent):
+        return rpj.ft_fmexp_derivative(multiplier, arg_exponent, zero_t, t_arg_exponent)
+
+    assert_is_derivative(
+        fn_multiplier,
+        fn_multiplier_deriv,
+        x_multiplier,
+        tangent_multiplier,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=3.0e-2,
+        rel_tol=3.0e-2,
+    )
+    assert_is_derivative(
+        fn_exponent,
+        fn_exponent_deriv,
+        x_exponent,
+        tangent_exponent,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=3.0e-2,
+        rel_tol=3.0e-2,
+    )
+
+
+def test_ft_fmexp_adjoint_derivative_linear_in_cotangent(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+    multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    ct_x = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    ct_y = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    alpha = jnp.asarray(0.8, rpj_dtype)
+    beta = jnp.asarray(-0.4, rpj_dtype)
+
+    def fn_mul(ct_result):
+        return rpj.ft_fmexp_adjoint_derivative(multiplier, exponent, ct_result)[0]
+
+    def fn_exp(ct_result):
+        return rpj.ft_fmexp_adjoint_derivative(multiplier, exponent, ct_result)[1]
+
+    assert_is_linear(fn_mul, ct_x, ct_y, alpha, beta)
+    assert_is_linear(fn_exp, ct_x, ct_y, alpha, beta)
+
+
+def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(2, 4)
+    multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype)
+    x_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    tangent_multiplier = rpj.ft_exp(rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype))
+    x_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    tangent_exponent = _rng_exponent_tensor(rpj_batch, basis, rpj_dtype, scale=0.2)
+    cotangent = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+
+    def pairing(lhs, rhs):
+        return rpj.tensor_pairing(lhs, rhs)
+
+    def fn_multiplier(arg_multiplier):
+        return rpj.ft_fmexp(arg_multiplier, exponent)
+
+    def fn_multiplier_adj_deriv(arg_multiplier, ct_result):
+        return rpj.ft_fmexp_adjoint_derivative(arg_multiplier, exponent, ct_result)[0]
+
+    def fn_exponent(arg_exponent):
+        return rpj.ft_fmexp(multiplier, arg_exponent)
+
+    def fn_exponent_adj_deriv(arg_exponent, ct_result):
+        return rpj.ft_fmexp_adjoint_derivative(multiplier, arg_exponent, ct_result)[1]
+
+    assert_is_adjoint_derivative(
+        fn_multiplier,
+        fn_multiplier_adj_deriv,
+        x_multiplier,
+        tangent_multiplier,
+        cotangent,
+        pairing,
+        pairing,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=5.0e-2,
+        rel_tol=5.0e-2,
+    )
+    assert_is_adjoint_derivative(
+        fn_exponent,
+        fn_exponent_adj_deriv,
+        x_exponent,
+        tangent_exponent,
+        cotangent,
+        pairing,
+        pairing,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=5.0e-2,
+        rel_tol=5.0e-2,
+    )
