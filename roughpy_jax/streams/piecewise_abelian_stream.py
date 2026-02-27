@@ -65,7 +65,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     @jax.jit
     def log_signature(self, interval: Interval) -> LieT:
         """Compute the log signature over an interval."""
-        # NOTE: replace this with the Basis.identity method when available
+        # TODO: #303 replace this with the convenience function when it exists
         initial = self._get_identity(dtype=self._data[0].data.dtype)
         
         def get_piece(x_and_interval):
@@ -74,13 +74,16 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             intersection length with the query interval. This is designed to be
             JIT-compilable.
             """
-            # TODO: This could be made more vectorized by processing all pieces at once
+            # NOTE: This could be made more vectorized by processing all pieces at once.
+            # UPDATE: Tried and it wasn't faster, and made the code more 
+            # complicated, so leaving it as is for now.
             x, p = x_and_interval
             intersection_length = p.intersection(interval).length
             scale_factor = intersection_length / p.length
             return jax.lax.cond(
                 intersection_length > 0,
                 lambda: lie_to_tensor(x, tensor_basis=self._group_basis, scale_factor=scale_factor),
+                # TODO: #303 replace this with the function on basis when it exists
                 lambda: self._get_identity(dtype=x.data.dtype),
             )
         
