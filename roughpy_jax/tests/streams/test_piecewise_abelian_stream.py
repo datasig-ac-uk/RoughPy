@@ -6,7 +6,6 @@ import jax.numpy as jnp
 import roughpy_jax as rpj
 from roughpy_jax.streams import PiecewiseAbelianStream
 from roughpy_jax.intervals import RealInterval, IntervalType, Partition
-from roughpy_jax.streams.piecewise_abelian_stream import AlternativePiecewiseAbelianStream
 
 
 class PASHelper:
@@ -172,31 +171,3 @@ class TestPiecewiseAbelianStreamBench():
         jit_log_sig = jax.jit(pas_data.stream.log_signature, static_argnums=())
         
         benchmark(jit_log_sig, query_interval)
-        
-    def test_log_signature_alternative_bench(self, benchmark, pas_data):
-        """Benchmark the alternative log signature computation."""
-        query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
-        
-        alt_stream = AlternativePiecewiseAbelianStream(
-            _data=pas_data.stream._data,
-            _partition=pas_data.stream._partition,
-            _lie_basis=pas_data.stream._lie_basis,
-            _group_basis=pas_data.stream._group_basis
-        )
-        
-        benchmark(alt_stream.log_signature, query_interval)
-        
-    def test_log_signature_alternative_jit_bench(self, benchmark, pas_data):
-        """Benchmark the JIT-compiled alternative log signature computation."""
-        query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
-        
-        alt_stream = AlternativePiecewiseAbelianStream(
-            _data=pas_data.stream._data,
-            _partition=pas_data.stream._partition,
-            _lie_basis=pas_data.stream._lie_basis,
-            _group_basis=pas_data.stream._group_basis
-        )
-        
-        jit_alt_log_sig = jax.jit(alt_stream.log_signature, static_argnums=(0,))
-        
-        benchmark(jit_alt_log_sig, query_interval)
