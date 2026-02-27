@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import partial
+from functools import partial, partialmethod
 from typing import TypeVar, Callable
 
 import jax
@@ -86,6 +86,19 @@ def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     return cls(result_data, basis)
 
 
+def _algebra_scalar_divide(a: AlgebraT, s: jax.typing.DTypeLike) -> AlgebraT:
+    cls = type(a)
+
+    if not jnp.issubdtype(type(s), jnp.floating):
+        return NotImplemented
+
+    basis = a.basis
+
+    result_data = a.data / s
+
+    return cls(result_data, basis)
+
+
 def _algebra___array__(self, dtype=None, copy=None) -> np.ndarray:
     return self.data.__array__(dtype=dtype, copy=copy)
 
@@ -100,8 +113,8 @@ def _tensor_dataclass(cls):
 
     cls.__array__ = _algebra___array__
 
-    cls.__add__ = partial(_algebra_add, impl=jnp.add)
-    cls.__sub__ = partial(_algebra_add, impl=jnp.subtract)
+    cls.__add__ = partialmethod(_algebra_add, impl=jnp.add)
+    cls.__sub__ = partialmethod(_algebra_add, impl=jnp.subtract)
 
     def _mul_impl(self, other):
         if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
@@ -116,6 +129,8 @@ def _tensor_dataclass(cls):
         return NotImplemented
 
     cls.__rmul__ = _rmul_impl
+
+    cls.__truediv__ = _algebra_scalar_divide
 
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
@@ -320,7 +335,8 @@ def ft_mul_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
 
 
-def antipode(a: FreeTensorT) -> FreeTensorT:
+@jax.custom_vjp
+def antipode(a: AlgebraT) -> AlgebraT:
     """
     Antipode of a free tensor
 
@@ -330,7 +346,9 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
     op_cls = Operation.get_operation("ft_antipode", "dense")
     batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
+    out_class = a.__class__
     out_basis = a.basis
+
     op = op_cls(
         (out_basis,),
         a.data.dtype,
@@ -341,15 +359,62 @@ def antipode(a: FreeTensorT) -> FreeTensorT:
 
     out_data = op(a.data)
 
-    return DenseFreeTensor(*out_data, out_basis)
+    return out_class(*out_data, out_basis)
 
 
-def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT: ...
+def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT:
+    """
+    Antipode derivative of free tensor peterbation `t_a` at `a`
+
+    This operation is linear, with the derivative being independent of
+    the argument, computated as the antipode of the tangent. This is
+    because antipode is a generalisation of transpose, taking the
+    equivalent of the transpose at each level, i.e. for level 1 it's
+    simply flipping the sign, for level 2 it's a regular 2D transpose,
+    and higher levels are similar but more complex variants of this.
+    So the derivative is simply flipped through this transpose.
+
+    :param a: argument
+    :param t_a: tangent pertubation at `a`
+    :return: derivative of `t_a` at `a`
+    """
+    return antipode(t_a)
 
 
 def antipode_adjoint_derivative(
     a: FreeTensorT, ct_result: ShuffleTensorT
-) -> tuple[ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT]:
+    """
+    Antipode adjoint derivative of a free tensor
+
+    As with the antipode derivative, this is a linear operation which
+    is independent of the position a, but instead operates in dual
+    space to free tensor, hence shuffle tensor cotangents.
+
+    :param a: argument
+    :param ct_result: cotangent perturbation at `a`
+    :return: adjoint derivative of `ct_result` at `a`
+    """
+    return antipode(ct_result)
+
+
+def _antipode_vjp_fwd(a: FreeTensorT):
+    result = antipode(a)
+    return result, (a,)
+
+
+def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+    a, = residuals
+
+    ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    ct_antipode = antipode_adjoint_derivative(
+        a, ct_result
+    )
+
+    return (ct_antipode.data,)
+
+
+antipode.defvjp(_antipode_vjp_fwd, _antipode_vjp_bwd)
 
 
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
