@@ -111,44 +111,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
         return ft_exp(tensor, self._group_basis)
 
-@_pas_dataclass
-class AlternativePiecewiseAbelianStream[LieT, GroupT](PiecewiseAbelianStream[LieT, GroupT]):
-    
-    @jax.jit
-    def log_signature(self, interval):
-        """
-        Compute the log signature over an interval using an alternative method.
-        """
-        initial = self._get_identity(dtype=self._data[0].data.dtype)
 
-        def get_piece_tensor(x_and_interval):
-            x, p  = x_and_interval
-            intersection = p.intersection(interval)
-            
-            if intersection is None:
-                scale_factor = 1.0
-                t = self._get_identity(dtype=x.data.dtype)
-            else:
-                # TODO: Always scale by the scaling factor, even if it's zero
-                scale_factor = intersection.length / p.length
-                t = lie_to_tensor(x, tensor_basis=self._group_basis, scale_factor=scale_factor)
-            return t
-        
-        intervals = self._partition.to_intervals()
-        all_tensors = [initial] + [get_piece_tensor((x, p)) for x, p in zip(self._data, intervals)]
-
-        # Stack all tensors along a leading axis into a single batched FreeTensor.
-        batched = jax.tree.map(lambda *arrs: jnp.stack(arrs), *all_tensors)
-
-        result_batched = lax.associative_scan(
-            lambda a, b: ft_fmexp(a, b, self._group_basis),
-            batched,
-        )
-
-        # Take the last prefix (the full product over all selected pieces).
-        result = jax.tree.map(lambda x: x[-1], result_batched)
-        return tensor_to_lie(ft_log(result), lie_basis=self.lie_basis)
-    
 def to_piecewise_abelian(
         stream: Stream[LieT, GroupT], partition: Partition                 
     ) -> PiecewiseAbelianStream[LieT, GroupT]:
