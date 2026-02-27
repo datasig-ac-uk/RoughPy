@@ -74,20 +74,20 @@ def test_antipode_linear(trials):
 
 def test_antipode_derivative(trials):
     x = trials.uniform_tensor()
-    tangent = trials.uniform_tensor() * trials.tangent_scale
+    tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
 
     assert_is_derivative(
         rpj.antipode,
         rpj.antipode_derivative,
         x,
         tangent,
-        abs_tol=trials.base_tol
+        abs_tol=trials.cond_dtype(1e-3, 1e-6)
     )
 
 
 def test_antipode_adjoint_derivative(trials):
     x = trials.uniform_tensor()
-    tangent = trials.uniform_tensor() * trials.tangent_scale
+    tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
     cotangent = trials.uniform_tensor()
 
     def pairing(lhs, rhs):
@@ -101,7 +101,7 @@ def test_antipode_adjoint_derivative(trials):
         cotangent,
         domain_pairing=pairing,
         codomain_pairing=pairing,
-        abs_tol=trials.base_tol * 1e1
+        abs_tol=trials.cond_dtype(1e-2, 1e-6)
     )
 
 
@@ -112,7 +112,7 @@ def test_antipode_pullback_vjp(trials):
 
     # Get cotangent returned by the VJP pullback
     x = trials.uniform_tensor()
-    tangent = trials.uniform_tensor() * trials.tangent_scale
+    tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
     cotangent = trials.uniform_tensor()
 
     y, pullback = jax.vjp(rpj.antipode, x)
@@ -136,6 +136,6 @@ def test_antipode_check_vjp(trials):
         rpj.antipode,
         lambda x: jax.vjp(rpj.antipode, x),
         (x,),
-        atol=trials.base_tol * 2e0,
-        rtol=trials.base_tol * 2e0,
+        atol=trials.cond_dtype(2e-3, 1e-6),
+        rtol=trials.cond_dtype(2e-3, 1e-6)
     )

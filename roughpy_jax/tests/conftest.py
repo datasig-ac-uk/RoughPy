@@ -140,12 +140,7 @@ class DerivativeTrialsHelper:
         self.basis = basis
         self.tensor_type = tensor_type
         self.n_trials = n_trials
-
         self.rng_key = jax.random.key(12345)
-
-        # Baseline scales and tolerances used for differing dtypes
-        self.tangent_scale = 1e-3 if self.dtype == jnp.float32 else 1.0
-        self.base_tol = 1e-3 if self.dtype == jnp.float32 else 1e-6
 
     def new_rng_key(self):
         self.rng_key, key = jax.random.split(self.rng_key)
@@ -168,6 +163,16 @@ class DerivativeTrialsHelper:
             self.uniform_data(self.batch_shape()),
             self.basis
         )
+
+    def cond_dtype(self, val_f32, val_f64):
+        """Select val_f32 or val_f64 depending on dtype, for accuracy control in tests"""
+        if self.dtype == jnp.float32:
+            return val_f32
+
+        if self.dtype == jnp.float64:
+            return val_f64
+
+        raise ValueError(f"Unsupported dtype {self.dtype}")
 
 
 # Data type test fixture
