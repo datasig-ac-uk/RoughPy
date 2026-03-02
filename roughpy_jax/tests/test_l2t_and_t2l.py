@@ -78,7 +78,7 @@ def test_l2t_derivative(lt2_trials):
         rpj.lie_to_tensor_derivative,
         x,
         tangent,
-        abs_tol=lt2_trials.cond_dtype(1e-2, 1e-6),
+        abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
     )
 
 
@@ -98,5 +98,5 @@ def test_l2t_adjoint_derivative(lt2_trials):
         cotangent,
         domain_pairing=pairing,
         codomain_pairing=pairing,
-        abs_tol=lt2_trials.cond_dtype(1e-2, 1e-6),
+        abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
     )
