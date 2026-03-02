@@ -418,12 +418,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -688,20 +686,19 @@ def lie_to_tensor(
 
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    out_basis = arg.basis
 
-    tensor_basis = tensor_basis or out_basis
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
-        (out_basis, tensor_basis),
+        (arg.basis, tensor_basis),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
     )
 
     out_data = op(arg.data)
-    return DenseFreeTensor(*out_data, out_basis)
+    return DenseFreeTensor(*out_data, tensor_basis)
 
 
 def lie_to_tensor_derivative(
@@ -710,7 +707,7 @@ def lie_to_tensor_derivative(
     scale_factor=None,
 ) -> FreeTensorT:
     """
-    Lie to tensor derivative of free tensor peterbation `t_arg` at `arg`
+    Lie to tensor derivative of free tensor perturbation `t_arg` at `arg`
     """
     return lie_to_tensor(t_arg, None, scale_factor)
 
@@ -729,19 +726,19 @@ def lie_to_tensor_adjoint_derivative(
     if scale_factor:
         data = data * scale_factor
 
-    return Lie(data, arg.basis)
+    return DenseLie(data, arg.basis)
 
 
 def _lie_to_tensor_vjp_fwd(
-    arg: LieT,
-    tensor_basis: TensorBasis | None = None,
-    scale_factor=None
+    arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
 ):
     result = lie_to_tensor_derivative(arg, tensor_basis, scale_factor)
     return result, (arg, scale_factor)
 
 
-def _lie_to_tensor_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
+def _lie_to_tensor_vjp_bwd(
+    residuals, ct_result_data: jax.Array
+) -> tuple[jax.Array, ...]:
     arg, scale_factor = residuals
 
     ct_result = Lie(ct_result_data.data, ct_result_data.basis)
