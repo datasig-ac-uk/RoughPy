@@ -3,15 +3,21 @@ import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
 
-from derivative_testing import assert_is_linear, assert_is_derivative, assert_is_adjoint_derivative
+from derivative_testing import (
+    DerivativeTrialsHelper,
+    assert_is_adjoint_derivative,
+    assert_is_derivative,
+    assert_is_linear,
+)
 from jax.test_util import check_vjp
-from conftest import DerivativeTrialsHelper
 
 
 # Antipode test fixture for batch of w=4, d=3 free tensors
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def trials(request):
-    yield DerivativeTrialsHelper(request.param, rpj.TensorBasis(4, 3), rpj.FreeTensor)
+    yield DerivativeTrialsHelper(
+        request.param, width=4, depth=3, default_tensor_type=rpj.FreeTensor
+    )
 
 
 @jax.jit
