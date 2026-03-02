@@ -22,7 +22,6 @@ LieT = TypeVar("LieT")
 #     width: np.int32
 #     depth: np.int32
 #     degree_begin: np.ndarray[np.int64.dtype]
-@partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
 class TensorBasis(rpc.TensorBasis):
     pass
 
@@ -35,7 +34,6 @@ class TensorBasis(rpc.TensorBasis):
 #
 #     def get_l2t_matrix(dtype) -> PySparseMatrix
 #     def get_t2l_matrix(dtype) -> PySparseMatrix
-@partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
 class LieBasis(rpc.LieBasis):
     """
     An instance of a Hall basis for the Lie algebra.
@@ -63,6 +61,18 @@ class LieBasis(rpc.LieBasis):
     """
 
     pass
+
+
+def _basis_flatten(basis):
+    return (), basis
+
+
+def _basis_unflatten(aux, _children):
+    return aux
+
+
+jax.tree_util.register_pytree_node(TensorBasis, _basis_flatten, _basis_unflatten)
+jax.tree_util.register_pytree_node(LieBasis, _basis_flatten, _basis_unflatten)
 
 
 def _algebra_add(
