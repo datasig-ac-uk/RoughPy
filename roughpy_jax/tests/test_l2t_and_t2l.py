@@ -2,14 +2,18 @@ import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
 
-from derivative_testing import assert_is_linear, assert_is_derivative, assert_is_adjoint_derivative
-from conftest import DerivativeTrialsHelper
+from derivative_testing import (
+    DerivativeTrialsHelper,
+    assert_is_adjoint_derivative,
+    assert_is_derivative,
+    assert_is_linear,
+)
 
 
 # Test fixture for batch of w=4, d=4 lie tensor
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def lt2_trials(request):
-    yield DerivativeTrialsHelper(request.param, rpj.LieBasis(4, 4), rpj.Lie)
+    yield DerivativeTrialsHelper(request.param, width=4, depth=4)
 
 
 def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -55,8 +59,8 @@ def test_l2t_t2l_scaled_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
 
 def test_l2t_linear(lt2_trials):
-    x = lt2_trials.uniform_tensor()
-    y = lt2_trials.uniform_tensor()
+    x = lt2_trials.uniform_lie()
+    y = lt2_trials.uniform_lie()
 
     vals = lt2_trials.uniform_data((2,))
     alpha = float(vals[0])
@@ -66,8 +70,8 @@ def test_l2t_linear(lt2_trials):
 
 
 def test_l2t_derivative(lt2_trials):
-    x = lt2_trials.uniform_tensor()
-    tangent = lt2_trials.uniform_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
+    x = lt2_trials.uniform_lie()
+    tangent = lt2_trials.uniform_lie() * lt2_trials.cond_dtype(1e-3, 1e0)
 
     assert_is_derivative(
         rpj.lie_to_tensor,
@@ -79,9 +83,9 @@ def test_l2t_derivative(lt2_trials):
 
 
 def test_l2t_adjoint_derivative(lt2_trials):
-    x = lt2_trials.uniform_tensor()
-    tangent = lt2_trials.uniform_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
-    cotangent = lt2_trials.uniform_tensor()
+    x = lt2_trials.uniform_lie()
+    tangent = lt2_trials.uniform_lie() * lt2_trials.cond_dtype(1e-3, 1e0)
+    cotangent = lt2_trials.uniform_free_tensor()
 
     def pairing(lhs, rhs):
         return jnp.sum(lhs.data * rhs.data)
