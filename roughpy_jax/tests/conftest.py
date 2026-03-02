@@ -119,62 +119,6 @@ def rpj_small_batch(request):
     return BatchFixtureHelper(request.param)
 
 
-class DerivativeTrialsHelper:
-    """
-    Helper class for derivative tests using a particular basis and tensor type
-
-    Work in batches of size n_trials for various derivative_testing methods.
-
-    Example usage:
-
-        @pytest.fixture(params=[jnp.float32, jnp.float64])
-        def trials(request):
-            yield DerivativeTrialsHelper(request.param, rpj.TensorBasis(4, 3), rpj.FreeTensor)
-
-        def test_antipode_adjoint_derivative(trials):
-            x = trials.uniform_tensor()
-            ...
-    """
-    def __init__(self, dtype, basis, tensor_type, n_trials=10):
-        self.dtype = dtype
-        self.basis = basis
-        self.tensor_type = tensor_type
-        self.n_trials = n_trials
-        self.rng_key = jax.random.key(12345)
-
-    def new_rng_key(self):
-        self.rng_key, key = jax.random.split(self.rng_key)
-        return key
-
-    def batch_shape(self):
-        return (self.n_trials, self.basis.size())
-
-    def uniform_data(self, shape):
-        return jax.random.uniform(
-            self.new_rng_key(),
-            minval=-1.0,
-            maxval=1.0,
-            dtype=self.dtype,
-            shape=shape
-        )
-
-    def uniform_tensor(self):
-        return self.tensor_type(
-            self.uniform_data(self.batch_shape()),
-            self.basis
-        )
-
-    def cond_dtype(self, val_f32, val_f64):
-        """Select val_f32 or val_f64 depending on dtype, for accuracy control in tests"""
-        if self.dtype == jnp.float32:
-            return val_f32
-
-        if self.dtype == jnp.float64:
-            return val_f64
-
-        raise ValueError(f"Unsupported dtype {self.dtype}")
-
-
 # Data type test fixture
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def rpj_dtype(request):
