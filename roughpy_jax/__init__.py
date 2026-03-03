@@ -26,4 +26,6 @@ from roughpy_jax.algebra import (
     lie_to_tensor,
     tensor_to_lie,
     tensor_pairing,
+    tensor_pairing_derivative,
+    tensor_pairing_adjoint_derivative,
 )
