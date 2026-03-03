@@ -396,12 +396,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -828,6 +826,7 @@ def tensor_to_lie_adjoint_derivative(
 ) -> tuple[ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of left free-tensor multiplication on shuffles.
@@ -870,14 +869,43 @@ def ft_adjoint_left_mul_derivative(
     arg: ShuffleTensorT,
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
-) -> ShuffleTensorT: ...
+) -> ShuffleTensorT:
+    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    _get_and_check_batch_dims(op.data, arg.data, t_op.data, t_arg.data, core_dims=1)
+
+    t_result = ft_adjoint_left_mul(t_op, arg) + ft_adjoint_left_mul(op, t_arg)
+
+    return t_result
 
 
 def ft_adjoint_left_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
-) -> tuple[ShuffleTensorT, FreeTensorT]: ...
+) -> tuple[ShuffleTensorT, FreeTensorT]:
+    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
+
+    ct_op = ft_mul(ct_result, arg)  # TODO: map arg to a free tensor before multiplying
+    ct_arg = ft_mul(op, ct_result)
+
+    return ct_op, ct_arg
 
 
+def _ft_adjoint_left_mul_vjp_fwd(op: FreeTensorT, arg: ShuffleTensorT):
+    ct_result = ft_adjoint_left_mul_adjoint_derivative(op, arg)
+    return ct_result, (op, arg)
+
+
+def _ft_adjoint_left_mul_vjp_bwd(residuals, ct_result):
+    op, arg = residuals
+
+    ct_op, ct_arg = ft_adjoint_left_mul_adjoint_derivative(op, arg, ct_result)
+    return ct_op.data, ct_arg.data
+
+
+ft_adjoint_left_mul.defvjp(_ft_adjoint_left_mul_vjp_fwd, _ft_adjoint_left_mul_vjp_bwd)
+
+
+@jax.custom_vjp
 def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of right free-tensor multiplication on shuffles.
@@ -920,12 +948,42 @@ def ft_adjoint_right_mul_derivative(
     arg: ShuffleTensorT,
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
-) -> ShuffleTensorT: ...
+) -> ShuffleTensorT:
+    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+
+    t_result = ft_adjoint_right_mul(t_op, arg) + ft_adjoint_right_mul(op, t_arg)
+    return t_result
 
 
 def ft_adjoint_right_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
-) -> tuple[ShuffleTensorT, FreeTensorT]: ...
+) -> tuple[ShuffleTensorT, FreeTensorT]:
+    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
+
+    ct_op = ft_mul(
+        arg, ct_result
+    )  # TODO: convert arg to a free tensor before computing
+    ct_arg = ft_mul(ct_result, op)
+
+    return ct_op, ct_arg
+
+
+def _ft_adjoint_right_mul_vjp_fwd(op, arg):
+    result = ft_adjoint_right_mul(op, arg)
+    return result, (op, arg)
+
+
+def _ft_adjoint_right_mul_vjp_bwd(residuals, ct_result):
+    op, arg = residuals
+    ct_op, ct_arg = ft_adjoint_right_mul_adjoint_derivative(op, arg, ct_result)
+    return ct_op.data, ct_arg.data
+
+
+ft_adjoint_right_mul.defvjp(
+    _ft_adjoint_right_mul_vjp_fwd, _ft_adjoint_right_mul_vjp_bwd
+)
 
 
 def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Array:
