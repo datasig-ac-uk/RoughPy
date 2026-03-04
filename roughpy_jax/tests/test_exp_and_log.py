@@ -199,7 +199,6 @@ def test_ft_fmexp_custom_vjp_check_vjp(rpj_batch):
         rpj_batch.rng_uniform(-0.2, 0.2, basis.size(), rpj_dtype)
     )
     assert isinstance(exponent_data, jax.Array)
-    exponent_data = exponent_data.at[..., 0].set(0)
     exponent = rpj.FreeTensor(exponent_data, basis)
 
     def _fmexp_data(multiplier_data, exponent_data):
@@ -208,7 +207,7 @@ def test_ft_fmexp_custom_vjp_check_vjp(rpj_batch):
         # elements. It might also convert these implicitly to numpy arrays,
         # causing jax-array specific calls to fail.
         multiplier_data.data = jnp.asarray(multiplier_data.data)
-        exponent_data.data = jnp.asarray(exponent_data.data).at[..., 0].set(0)
+        exponent_data.data = jnp.asarray(exponent_data.data)
         return rpj.ft_fmexp(multiplier_data, exponent_data)
 
     atol = 5e-2
@@ -224,7 +223,6 @@ def test_ft_fmexp_custom_vjp_check_vjp(rpj_batch):
 
 def _rng_exponent_tensor(rpj_batch, basis, dtype, scale=1.0):
     data = jnp.asarray(rpj_batch.rng_uniform(-scale, scale, basis.size(), dtype))
-    data = data.at[..., 0].set(0)
     return rpj.FreeTensor(data, basis)
 
 

@@ -845,6 +845,9 @@ def ft_fmexp_derivative(
         multiplier.data, exponent.data, t_multiplier.data, t_exponent.data, core_dims=1
     )
 
+    exponent = _remove_unit_term(exponent)
+    t_exponent = _remove_unit_term(t_exponent)
+
     basis = multiplier.basis
     depth = basis.depth
 
@@ -880,6 +883,8 @@ def ft_fmexp_adjoint_derivative(
     basis = multiplier.basis
     depth = basis.depth
 
+    exponent = _remove_unit_term(exponent)
+
     # First recompute the intermediate approximations of the fmexp. The computation
     # of the cotangents proceeds in the opposite order, from 0 to D instead of from
     # D to 0. These are fairly cheap to recompute in theory because of the higher
@@ -908,6 +913,9 @@ def ft_fmexp_adjoint_derivative(
         ct_r = scale * ft_adjoint_right_mul(exponent, ct_r)
 
     ct_multiplier = ct_multiplier + ct_r
+
+    ct_exponent = _remove_unit_term(ct_exponent)
+
     return ct_multiplier, ct_exponent
 
 
