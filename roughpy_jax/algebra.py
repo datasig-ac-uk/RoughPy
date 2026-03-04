@@ -78,11 +78,36 @@ def _algebra_add(
     return cls(result_data, basis)
 
 
+def _broadcast_to_batch_shape(
+    data: jax.Array, batch_shape: tuple[int, ...], *, core_dims=1
+) -> jax.Array:
+    data_shape = data.shape
+
+    ds_len = len(data_shape)
+    bs_len = len(batch_shape)
+
+    if ds_len <= bs_len and data_shape == batch_shape[:ds_len]:
+        new_shape = data_shape + (1,) * (bs_len - ds_len) + (1,) * core_dims
+    elif (
+        ds_len == bs_len + 1 and data_shape[:-1] == batch_shape and data_shape[-1] == 1
+    ):
+        new_shape = data_shape
+    else:
+        raise ValueError(
+            f"batch shape {batch_shape} is incompatible with data shape {data_shape}"
+        )
+
+    return jnp.reshape(data, new_shape)
+
+
 def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     cls = type(a)
     basis = a.basis
 
-    result_data = jnp.dot(a.data, s)
+    scalar = jnp.asarray(s)
+    ext_scalar = _broadcast_to_batch_shape(scalar, a.batch_shape)
+
+    result_data = jnp.multiply(a.data, ext_scalar)
 
     return cls(result_data, basis)
 
@@ -98,7 +123,7 @@ def _redepth_data(data: jax.Array, new_alg_dim: int) -> jax.Array:
         return data[..., :new_alg_dim]
 
     pad_dims = [(0, 0)] * (len(shape) - 1) + [(0, new_alg_dim - shape[-1])]
-    return jnp.pad(pad_dims)
+    return jnp.pad(data, pad_dims)
 
 
 def _algebra_change_depth(algebra: AlgebraT, new_depth: int) -> AlgebraT:
@@ -1008,7 +1033,7 @@ def tensor_pairing_derivative(
     _check_basis_compat(functional.basis, argument.basis)
     _ = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
     x = tensor_pairing(functional, t_argument)
-    y = tensor_pairing(functional, t_functional)
+    y = tensor_pairing(argument, t_functional)
     return x + y
 
 
