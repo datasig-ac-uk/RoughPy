@@ -223,6 +223,14 @@ def _get_and_check_batch_dims(*arrays, core_dims=1):
     return batch_dims
 
 
+def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
+    if not isinstance(tensor.basis, TensorBasis):
+        raise TypeError(f"object must be a tensor")
+
+    new_data = tensor.data.at[..., 0].set(0)
+    return type(tensor)(new_data, tensor.basis)
+
+
 def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     """
     Free tensor fused multiply-add
@@ -531,6 +539,9 @@ def ft_log_derivative(
     batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
 
+    x = _remove_unit_term(x)
+    t_x = _remove_unit_term(t_x)
+
     basis = x.basis
     depth = basis.depth
 
@@ -557,6 +568,8 @@ def ft_log_adjoint_derivative(
     _check_basis_compat(x.basis, ct_result.basis)
     batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
+
+    x = _remove_unit_term(x)
 
     basis = x.basis
     depth = basis.depth
