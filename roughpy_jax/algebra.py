@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial, partialmethod
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Type
 
 import jax
 import jax.numpy as jnp
@@ -10,6 +10,7 @@ from roughpy import compute as rpc
 
 from roughpy_jax.ops import Operation
 
+T = TypeVar("T")
 AlgebraT = TypeVar("AlgebraT")
 FreeTensorT = TypeVar("FreeTensorT")
 ShuffleTensorT = TypeVar("ShuffleTensorT")
@@ -77,17 +78,66 @@ def _algebra_add(
     return cls(result_data, basis)
 
 
+def _broadcast_to_batch_shape(
+    data: jax.Array, batch_shape: tuple[int, ...], *, core_dims=1
+) -> jax.Array:
+    data_shape = data.shape
+
+    ds_len = len(data_shape)
+    bs_len = len(batch_shape)
+
+    if ds_len <= bs_len and data_shape == batch_shape[:ds_len]:
+        new_shape = data_shape + (1,) * (bs_len - ds_len) + (1,) * core_dims
+    elif (
+        ds_len == bs_len + 1 and data_shape[:-1] == batch_shape and data_shape[-1] == 1
+    ):
+        new_shape = data_shape
+    else:
+        raise ValueError(
+            f"batch shape {batch_shape} is incompatible with data shape {data_shape}"
+        )
+
+    return jnp.reshape(data, new_shape)
+
+
 def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     cls = type(a)
     basis = a.basis
 
-    result_data = jnp.dot(a.data, s)
+    scalar = jnp.asarray(s)
+    ext_scalar = _broadcast_to_batch_shape(scalar, a.batch_shape)
+
+    result_data = jnp.multiply(a.data, ext_scalar)
 
     return cls(result_data, basis)
 
 
 def _algebra___array__(self, dtype=None, copy=None) -> np.ndarray:
     return self.data.__array__(dtype=dtype, copy=copy)
+
+
+def _redepth_data(data: jax.Array, new_alg_dim: int) -> jax.Array:
+    shape = data.shape
+
+    if new_alg_dim < shape[-1]:
+        return data[..., :new_alg_dim]
+
+    pad_dims = [(0, 0)] * (len(shape) - 1) + [(0, new_alg_dim - shape[-1])]
+    return jnp.pad(data, pad_dims)
+
+
+def _algebra_change_depth(algebra: AlgebraT, new_depth: int) -> AlgebraT:
+    if new_depth == algebra.basis.depth:
+        return algebra
+
+    algebra_cls = type(algebra)
+    basis_cls = type(algebra.basis)
+
+    new_basis = basis_cls(algebra.basis.width, new_depth)
+
+    new_size = new_basis.size()
+
+    return algebra_cls(_redepth_data(algebra.data, new_size), new_basis)
 
 
 def _tensor_dataclass(cls):
@@ -123,6 +173,8 @@ def _tensor_dataclass(cls):
         return NotImplemented
 
     cls.__truediv__ = _div_impl
+
+    cls.change_depth = _algebra_change_depth
 
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
@@ -228,6 +280,14 @@ def _get_and_check_batch_dims(*arrays, core_dims=1):
             )
 
     return batch_dims
+
+
+def _tensor_to_dual(
+    tensor: AlgebraT, new_cls: Type[T], new_basis: TensorBasis | None
+) -> T:
+    if new_basis is None:
+        new_basis = tensor.basis
+    return new_cls(_redepth_data(tensor.data, new_basis.size()), new_basis)
 
 
 def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
@@ -396,12 +456,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -928,6 +986,7 @@ def ft_adjoint_right_mul_adjoint_derivative(
 ) -> tuple[ShuffleTensorT, FreeTensorT]: ...
 
 
+@jax.custom_vjp
 def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Array:
     """
     Computes the tensor pairing between a functional tensor and a free tensor.
@@ -970,11 +1029,55 @@ def tensor_pairing_derivative(
     argument: FreeTensorT,
     t_functional: ShuffleTensorT,
     t_argument: FreeTensorT,
-) -> jax.Array: ...
+) -> jax.Array:
+    _check_basis_compat(functional.basis, argument.basis)
+    _ = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+    x = tensor_pairing(functional, t_argument)
+    y = tensor_pairing(argument, t_functional)
+    return x + y
 
 
 def tensor_pairing_adjoint_derivative(
     functional: ShuffleTensorT,
     argument: FreeTensorT,
     ct_result: jax.Array,
-) -> tuple[FreeTensorT, ShuffleTensorT]: ...
+) -> tuple[FreeTensorT, ShuffleTensorT]:
+    _check_basis_compat(functional.basis, argument.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    ct_shape = ct_result.shape
+    if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
+        raise ValueError(
+            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
+        )
+
+    new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)
+    ext_ct = jnp.reshape(ct_result, new_shape)
+
+    functional_cls = type(functional)
+    argument_cls = type(argument)
+
+    ct_functional_cls = argument_cls
+    ct_argument_cls = functional_cls
+
+    ct_func = ext_ct * _tensor_to_dual(argument, ct_functional_cls, functional.basis)
+    ct_arg = ext_ct * _tensor_to_dual(functional, ct_argument_cls, argument.basis)
+
+    return ct_func, ct_arg
+
+
+def _tensor_pairing_vjp_fwd(functional, argument):
+    result = tensor_pairing(functional, argument)
+    return result, (functional, argument)
+
+
+def _tensor_pairing_vjp_bwd(residual, ct_result):
+    functional, argument = residual
+    ct_functional, ct_argument = tensor_pairing_adjoint_derivative(
+        functional, argument, ct_result
+    )
+
+    return ct_functional.data, ct_argument.data
+
+
+tensor_pairing.defvjp(_tensor_pairing_vjp_fwd, _tensor_pairing_vjp_bwd)
