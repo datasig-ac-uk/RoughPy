@@ -505,7 +505,14 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor logarithm
 
-    This function is equivalent to `log(x)`.
+    This function computes `log(1 + x)` through the (truncated) power series
+    expansion in `x`. This function assumes that `x` is actually of the form `1 + x`, and
+    the power series computation simply ignores the unit coefficient if it is present. This
+    means that the result of `ft_log(x)` where `x` has a unit term different from 1 might
+    be different than expected. The intention is that this function should only be applied
+    to tensors that are known to be of the form `1 + x`, such as group-like elements such as
+    those computed using `ft_exp`.
+
     Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `x` is used.
 
