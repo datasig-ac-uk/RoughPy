@@ -884,7 +884,7 @@ def ft_adjoint_left_mul_adjoint_derivative(
     _check_basis_compat(op.basis, arg.basis, ct_result.basis)
     _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
 
-    ct_op = ft_mul(ct_result, arg)  # TODO: map arg to a free tensor before multiplying
+    ct_op = ft_adjoint_right_mul(ct_result, arg)
     ct_arg = ft_mul(op, ct_result)
 
     return ct_op, ct_arg
@@ -962,9 +962,7 @@ def ft_adjoint_right_mul_adjoint_derivative(
     _check_basis_compat(op.basis, arg.basis, ct_result.basis)
     _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
 
-    ct_op = ft_mul(
-        arg, ct_result
-    )  # TODO: convert arg to a free tensor before computing
+    ct_op = ft_adjoint_left_mul(ct_result, arg)
     ct_arg = ft_mul(ct_result, op)
 
     return ct_op, ct_arg
