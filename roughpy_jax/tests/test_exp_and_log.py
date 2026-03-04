@@ -76,12 +76,10 @@ def test_ft_exp_vjp_check_vjp(rpj_batch):
     basis = rpj.TensorBasis(2, 2)
 
     x_data = jnp.asarray(rpj_batch.rng_uniform(-1.0, 1.0, basis.size(), rpj_dtype))
-    x_data = x_data.at[..., 0].set(0)
-
     x = rpj.DenseFreeTensor(x_data, basis)
 
     def _exp_data(x_d):
-        x_d.data = jnp.asarray(x_d.data).at[..., 0].set(0)
+        x_d.data = jnp.asarray(x_d.data)
         return rpj.ft_exp(x_d)
 
     jtu.check_vjp(
