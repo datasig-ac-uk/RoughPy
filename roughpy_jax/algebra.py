@@ -559,6 +559,10 @@ def ft_exp_derivative(
 
     x = _remove_unit_term(x)
 
+    # The ft_exp function is really the composition of exp with the projection onto the non-unit
+    # terms, so we must apply this projection to the incoming tangent as well.
+    t_x = _remove_unit_term(t_x)
+
     basis = out_basis or x.basis
     depth = basis.depth
 
@@ -612,6 +616,10 @@ def ft_exp_adjoint_derivative(
         scale = 1.0 / d
         ct_x = ct_x + scale * ft_adjoint_left_mul(r_data[d], ct_r)
         ct_r = scale * ft_adjoint_right_mul(x, ct_r)
+
+    # The function ft_exp is actually exp composed with the projection onto the non-unit terms
+    # so the adjoint derivative needs to apply this to the resulting cotangent.
+    ct_x = _remove_unit_term(ct_x)
 
     return (ct_x,)
 
