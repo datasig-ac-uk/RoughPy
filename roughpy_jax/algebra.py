@@ -407,12 +407,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -559,6 +557,8 @@ def ft_exp_derivative(
     batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
 
+    x = _remove_unit_term(x)
+
     basis = out_basis or x.basis
     depth = basis.depth
 
@@ -588,6 +588,8 @@ def ft_exp_adjoint_derivative(
     _check_basis_compat(x.basis, ct_result.basis)
     batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
+
+    x = _remove_unit_term(x)
 
     basis = out_basis or ct_result.basis
     depth = basis.depth
