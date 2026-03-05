@@ -68,6 +68,7 @@ if (ROUGHPY_BUILD_TESTS)
             dense/basic/vector_inplace_addition_tests.cpp
             dense/basic/free_tensor_fma_tests.cpp
             dense/basic/shuffle_tensor_product_tests.cpp
+            dense/basic/shuffle_tensor_adjoint_mul_tests.cpp
     )
 
 
