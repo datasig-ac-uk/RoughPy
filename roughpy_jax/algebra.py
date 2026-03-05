@@ -415,6 +415,7 @@ def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, 
 antipode.defvjp(_antipode_vjp_fwd, _antipode_vjp_bwd)
 
 
+@jax.custom_vjp
 def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTensorT:
     """
     Shuffle tensor fused multiply-add
@@ -455,7 +456,13 @@ def st_fma_derivative(
     t_a: ShuffleTensorT,
     t_b: ShuffleTensorT,
     t_c: ShuffleTensorT,
-) -> ShuffleTensorT: ...
+) -> ShuffleTensorT:
+    _check_basis_compat(a.basis, b.basis, c.basis, t_a.basis, t_b.basis, t_c.basis)
+    _get_and_check_batch_dims(
+        a.data, b.data, c.data, t_a.data, t_b.data, t_c.data, core_dims=1
+    )
+
+    return t_a + st_mul_derivative(b, c, t_b, t_c)
 
 
 def st_fma_adjoint_derivative(
@@ -463,7 +470,30 @@ def st_fma_adjoint_derivative(
     b: ShuffleTensorT,
     c: ShuffleTensorT,
     ct_result: FreeTensorT,
-) -> tuple[FreeTensorT, FreeTensorT, FreeTensorT]: ...
+) -> tuple[FreeTensorT, FreeTensorT, FreeTensorT]:
+    _check_basis_compat(a.basis, b.basis, c.basis, ct_result.basis)
+    _get_and_check_batch_dims(a.data, b.data, c.data, ct_result.data, core_dims=1)
+
+    ct_a = ct_result  # TODO: Map explicitly to adjoint type
+    ct_b, ct_c = st_mul_adjoint_derivative(b, c, ct_result)
+
+    return ct_a, ct_b, ct_c
+
+
+def _st_fma_vjp_fwd(a, b, c):
+    result = st_fma(a, b, c)
+    return result, (a, b, c)
+
+
+def _st_fma_vjp_bwd(residuals, ct_result):
+    a, b, c = residuals
+
+    ct_a, ct_b, ct_c = st_fma_adjoint_derivative(a, b, c, ct_result)
+
+    return ct_a.data, ct_b.data, ct_c.data
+
+
+st_fma.defvjp(_st_fma_vjp_fwd, _st_fma_vjp_bwd)
 
 
 @jax.custom_vjp
@@ -530,12 +560,15 @@ def _st_mul_vjp_fwd(lhs, rhs):
     result = st_mul(lhs, rhs)
     return result, (lhs, rhs)
 
+
 def _st_mul_vjp_bwd(residuals, ct_result):
     lhs, rhs = residuals
     ct_lhs, ct_rhs = st_mul_adjoint_derivative(lhs, rhs, ct_result)
     return ct_lhs.data, ct_rhs.data
 
+
 st_mul.defvjp(_st_mul_vjp_fwd, _st_mul_vjp_bwd)
+
 
 def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
