@@ -376,3 +376,5 @@ examples/documentation-testing.py
 
 todo.md
 tools/vcpkg/
+
+.asv/
