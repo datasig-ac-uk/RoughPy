@@ -404,12 +404,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -1077,3 +1075,64 @@ def tensor_pairing_adjoint_derivative(
     argument: FreeTensorT,
     ct_result: jax.Array,
 ) -> tuple[FreeTensorT, ShuffleTensorT]: ...
+
+
+@jax.custom_vjp
+def st_adjoint_mul(
+    op: ShuffleTensorT,
+    arg: FreeTensorT,
+) -> FreeTensorT:
+    dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
+    _check_basis_compat(op.basis, op.data)
+    batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+
+    op_cls = Operation.get_operation("st_adjoint_mul", "dense")
+
+    op = op_cls(
+        (op.basis, arg.basis),
+        dtype,
+        batch_dims,
+        op_max_deg=op.basis.depth,
+        arg_max_deg=arg.basis.depth,
+    )
+
+    (result,) = op(op.data, arg.data)
+
+    return result
+
+
+def st_adjoint_mul_derivative(
+    op: ShuffleTensorT, arg: FreeTensorT, t_op: ShuffleTensorT, t_arg: FreeTensorT
+) -> ShuffleTensorT:
+    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+
+    t_result = st_adjoint_mul(op, t_arg) + st_adjoint_mul(t_op, arg)
+
+    return t_result
+
+
+def st_adjoint_mul_adjoint_derivative(
+    op: ShuffleTensorT, arg: FreeTensorT, ct_result: ShuffleTensorT
+) -> tuple[FreeTensorT, ShuffleTensorT]:
+    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+
+    ct_op = st_adjoint_mul(ct_result, arg)
+    ct_arg = st_mul(op, ct_result)
+
+    return ct_op, ct_arg
+
+
+def _st_adjoint_mul_vjp_fwd(op, arg):
+    result = st_adjoint_mul(op, arg)
+    return result, (op, arg)
+
+
+def _st_adjoint_mul_vjp_bwd(residuals, ct_result):
+    op, arg = residuals
+    ct_op, ct_arg = st_adjoint_mul_adjoint_derivative(op, arg, ct_result)
+    return ct_op.data, ct_arg.data
+
+
+st_adjoint_mul.defvjp(_st_adjoint_mul_vjp_fwd, _st_adjoint_mul_vjp_bwd)
