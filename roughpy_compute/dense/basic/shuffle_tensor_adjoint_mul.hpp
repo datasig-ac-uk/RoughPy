@@ -3,6 +3,7 @@
 
 #include "roughpy_compute/common/basis.hpp"
 #include "roughpy_compute/common/bitmask.hpp"
+#include "roughpy_compute/common/cache_array.hpp"
 #include "roughpy_compute/dense/views.hpp"
 
 
@@ -17,6 +18,7 @@ void st_adj_mul(
 {
     using Degree = typename DenseTensorView<OutIter>::Degree;
     using Index = typename DenseTensorView<OpIter>::Index;
+    using Scalar = typename DenseTensorView<OutIter>::Scalar;
 
     using Mask = BitMask<Index>;
 
@@ -24,7 +26,7 @@ void st_adj_mul(
     const Index width = out.width();
 
     for (Degree func_degree = 0; func_degree <= arg.max_degree(); ++func_degree) {
-        const auto func_level = arg.at_level(func_degree);
+        auto func_level = arg.at_level(func_degree);
         const auto size = func_level.size();
 
         for (Index i=0; i < size; ++i) {
@@ -44,9 +46,9 @@ void st_adj_mul(
                 Index  out_idx = 0;
                 Degree  out_degree = 0;
 
-                TensorBasis::unpack_index_to_letters(
+                TensorBasis::pack_masked_index(
                     letters.data(),
-                    func_degree,
+                    func_degree - 1,
                     width,
                     mask,
                     op_degree,
