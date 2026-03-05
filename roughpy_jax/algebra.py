@@ -1136,31 +1136,31 @@ def tensor_pairing_adjoint_derivative(
 
 @jax.custom_vjp
 def st_adjoint_mul(
-    op: ShuffleTensorT,
+    op_arg: ShuffleTensorT,
     arg: FreeTensorT,
 ) -> FreeTensorT:
-    dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
-    _check_basis_compat(op.basis, op.data)
-    batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+    dtype = jnp.result_type(op_arg.data.dtype, arg.data.dtype)
+    _check_basis_compat(op_arg.basis, arg.basis)
+    batch_dims = _get_and_check_batch_dims(op_arg.data, arg.data, core_dims=1)
 
-    op_cls = Operation.get_operation("st_adjoint_mul", "dense")
+    op_cls = Operation.get_operation("st_adj_mul", "dense")
 
-    op = op_cls(
-        (op.basis, arg.basis),
+    op_call = op_cls(
+        (op_arg.basis, arg.basis),
         dtype,
         batch_dims,
-        op_max_deg=op.basis.depth,
-        arg_max_deg=arg.basis.depth,
+        op_max_deg=np.int32(op_arg.basis.depth),
+        arg_max_deg=np.int32(arg.basis.depth),
     )
 
-    (result,) = op(op.data, arg.data)
+    (result,) = op_call(op_arg.data, arg.data)
 
-    return result
+    return DenseFreeTensor(result, op_call.basis)
 
 
 def st_adjoint_mul_derivative(
     op: ShuffleTensorT, arg: FreeTensorT, t_op: ShuffleTensorT, t_arg: FreeTensorT
-) -> ShuffleTensorT:
+) -> FreeTensorT:
     _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
