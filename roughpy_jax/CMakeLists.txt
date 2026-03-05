@@ -40,6 +40,8 @@ python_add_library(RoughPy_JaxModule MODULE
     src/cpu/dense_ft_fmexp.cpp
     src/cpu/dense_ft_antipode.cpp
     src/cpu/dense_st_fma.cpp
+    src/cpu/dense_st_adj_mul.cpp
+    src/cpu/dense_st_adj_mul.h
     src/cpu/xla_common.cpp
     src/roughpy_jax_module.c
 )
