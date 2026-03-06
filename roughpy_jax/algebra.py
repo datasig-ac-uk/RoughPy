@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial, partialmethod
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Any
 
 import jax
 import jax.numpy as jnp
@@ -100,19 +100,6 @@ def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     return cls(result_data, basis)
 
 
-def _algebra_scalar_divide(a: AlgebraT, s: jax.typing.DTypeLike) -> AlgebraT:
-    cls = type(a)
-
-    if not jnp.issubdtype(type(s), jnp.floating):
-        return NotImplemented
-
-    basis = a.basis
-
-    result_data = a.data / s
-
-    return cls(result_data, basis)
-
-
 def _algebra___array__(self, dtype=None, copy=None) -> np.ndarray:
     return self.data.__array__(dtype=dtype, copy=copy)
 
@@ -144,7 +131,12 @@ def _tensor_dataclass(cls):
 
     cls.__rmul__ = _rmul_impl
 
-    cls.__truediv__ = _algebra_scalar_divide
+    def _div_impl(self, other):
+        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
+            return _algebra_scalar_multiply(self, 1.0 / other)
+        return NotImplemented
+
+    cls.__truediv__ = _div_impl
 
     return jax.tree_util.register_dataclass(
         cls, data_fields=["data"], meta_fields=["basis"]
@@ -250,6 +242,14 @@ def _get_and_check_batch_dims(*arrays, core_dims=1):
             )
 
     return batch_dims
+
+
+def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
+    if not isinstance(tensor.basis, TensorBasis):
+        raise TypeError(f"object must be a tensor")
+
+    new_data = tensor.data.at[..., 0].set(0)
+    return type(tensor)(new_data, tensor.basis)
 
 
 def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
@@ -569,11 +569,19 @@ def ft_exp_adjoint_derivative(
 ) -> tuple[ShuffleTensorT]: ...
 
 
+@jax.custom_vjp
 def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     """
     Free tensor logarithm
 
-    This function is equivalent to `log(x)`.
+    This function computes `log(1 + x)` through the (truncated) power series
+    expansion in `x`. This function assumes that `x` is actually of the form `1 + x`, and
+    the power series computation simply ignores the unit coefficient if it is present. This
+    means that the result of `ft_log(x)` where `x` has a unit term different from 1 might
+    be different than expected. The intention is that this function should only be applied
+    to tensors that are known to be of the form `1 + x`, such as group-like elements such as
+    those computed using `ft_exp`.
+
     Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `x` is used.
 
@@ -602,15 +610,99 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
 def ft_log_derivative(
     x: FreeTensorT,
     t_x: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    _check_basis_compat(x.basis, t_x.basis)
+    batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
+    dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
+
+    x = _remove_unit_term(x)
+    t_x = _remove_unit_term(t_x)
+
+    basis = x.basis
+    depth = basis.depth
+
+    r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    r_d = DenseFreeTensor(r_d_data, basis)
+    t_r_d_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    t_r_d = DenseFreeTensor(t_r_d_data, basis)
+
+    for d in range(depth, 0, -1):
+        sign = -1 if d % 2 == 0 else 1
+        r_d.data = r_d.data.at[..., 0].add(sign / d)
+
+        r_dm1 = ft_mul(x, r_d)
+        t_r_d = ft_mul(t_x, r_d) + ft_mul(x, t_r_d)
+        r_d = r_dm1
+
+    return t_r_d
 
 
 def ft_log_adjoint_derivative(
     x: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT]:
+    _check_basis_compat(x.basis, ct_result.basis)
+    batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
+    dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
+
+    x = _remove_unit_term(x)
+
+    basis = x.basis
+    depth = basis.depth
+
+    zero_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    zero = DenseFreeTensor(zero_data, basis)
+    rs = [None for _ in range(depth)] + [zero]
+    for d in range(depth, 0, -1):
+        sign = -1 if d % 2 == 0 else 1
+        r_data = rs[d].data.at[..., 0].add(sign / d)
+        r = DenseFreeTensor(r_data, basis)
+        rs[d - 1] = ft_mul(x, r)
+
+    ct_x_data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
+    ct_x = DenseShuffleTensor(ct_x_data, basis)
+    ct_r_d = ct_result
+
+    for d in range(1, depth + 1):
+        sign = -1 if d % 2 == 0 else 1
+        u_d_data = rs[d].data.at[..., 0].add(sign / d)
+        u_d = DenseFreeTensor(u_d_data, basis)
+
+        ct_x = ct_x + ft_adjoint_right_mul(u_d, ct_r_d)
+        ct_r_d = ft_adjoint_left_mul(x, ct_r_d)
+
+    return (ct_x,)
 
 
+def _ft_log_vjp_fwd(
+    x: FreeTensorT, out_basis: TensorBasis | None = None
+) -> tuple[FreeTensorT, tuple[Any, ...]]:
+    result = ft_log(x, out_basis=out_basis)
+    return result, (x, result)
+
+
+def _ft_log_vjp_bwd(
+    residuals: tuple[Any, ...], ct_result_data: Any
+) -> tuple[jax.Array | None, ...]:
+    x, result = residuals
+
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    (ct_x,) = ft_log_adjoint_derivative(x, ct_result)
+    return (ct_x.data, None)
+
+
+ft_log.defvjp(_ft_log_vjp_fwd, _ft_log_vjp_bwd)
+
+
+@jax.custom_vjp
 def ft_fmexp(
     multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None = None
 ) -> FreeTensorT:
@@ -660,14 +752,107 @@ def ft_fmexp_derivative(
     exponent: FreeTensorT,
     t_multiplier: FreeTensorT,
     t_exponent: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    _check_basis_compat(
+        multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
+    )
+    _get_and_check_batch_dims(
+        multiplier.data, exponent.data, t_multiplier.data, t_exponent.data, core_dims=1
+    )
+
+    basis = multiplier.basis
+    depth = basis.depth
+
+    r_d = multiplier
+    t_r_d = t_multiplier
+
+    for d in range(depth, 0, -1):
+        scale = 1.0 / d
+        r_dm1 = multiplier + scale * ft_mul(r_d, exponent)
+        t_r_dm1 = t_multiplier + scale * (
+            ft_mul(r_d, t_exponent) + ft_mul(t_r_d, exponent)
+        )
+
+        r_d = r_dm1
+        t_r_d = t_r_dm1
+
+    return t_r_d
 
 
 def ft_fmexp_adjoint_derivative(
     multiplier: FreeTensorT,
     exponent: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT, ShuffleTensorT]:
+    _check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
+    _get_and_check_batch_dims(
+        multiplier.data, exponent.data, ct_result.data, core_dims=1
+    )
+
+    tensor_type = type(multiplier)
+    ct_type = type(ct_result)
+
+    basis = multiplier.basis
+    depth = basis.depth
+
+    # First recompute the intermediate approximations of the fmexp. The computation
+    # of the cotangents proceeds in the opposite order, from 0 to D instead of from
+    # D to 0. These are fairly cheap to recompute in theory because of the higher
+    # terms "dropping off the cliff" as the degree increases. This optimisation is
+    # not implemented here yet, because we haven't built the support into the high
+    # level functions of disregarding higher-order terms yet.
+
+    r_data = [None for _ in range(depth)] + [multiplier]
+    for d in range(depth, 0, -1):
+        scale = 1.0 / d
+        # noinspection PyTypeChecker
+        r_data[d - 1] = multiplier + scale * ft_mul(exponent, r_data[d])
+
+    # Now we can update the cotangents in sequence. We have to accumulate the
+    # ct_multiplier and ct_exponent values, as well as the cotangents of
+    # each of the intermediate r terms.
+
+    ct_multiplier = ct_type(jnp.zeros_like(multiplier.data), multiplier.basis)
+    ct_exponent = ct_type(jnp.zeros_like(exponent.data), exponent.basis)
+    ct_r = ct_result
+
+    for d in range(1, depth + 1):
+        scale = 1.0 / d
+        ct_multiplier = ct_multiplier + ct_r
+        ct_exponent = ct_exponent + scale * ft_adjoint_left_mul(r_data[d], ct_r)
+        ct_r = scale * ft_adjoint_right_mul(exponent, ct_r)
+
+    ct_multiplier = ct_multiplier + ct_r
+    return ct_multiplier, ct_exponent
+
+
+def _ft_fmexp_vjp_fwd(
+    multiplier: FreeTensorT, exponent: FreeTensorT, out_basis: TensorBasis | None
+):
+    result = ft_fmexp(multiplier, exponent, out_basis)
+    return result, (multiplier, exponent, result)
+
+
+def _ft_fmexp_vjp_bwd(
+    residuals, ct_result_data: jax.Array
+) -> tuple[jax.Array | None, ...]:
+    multiplier, exponent, result = residuals
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, result.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    ct_multiplier, ct_exponent = ft_fmexp_adjoint_derivative(
+        multiplier, exponent, ct_result
+    )
+    return ct_multiplier.data, ct_exponent.data, None
+
+
+ft_fmexp.defvjp(_ft_fmexp_vjp_fwd, _ft_fmexp_vjp_bwd)
 
 
 @jax.custom_vjp
