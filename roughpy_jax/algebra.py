@@ -7,8 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 
 from roughpy import compute as rpc
-
 from roughpy_jax.ops import Operation
+
+from .compressed import csr_matvec
 
 AlgebraT = TypeVar("AlgebraT")
 FreeTensorT = TypeVar("FreeTensorT")
@@ -21,7 +22,6 @@ LieT = TypeVar("LieT")
 #     width: np.int32
 #     depth: np.int32
 #     degree_begin: np.ndarray[np.int64.dtype]
-@partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
 class TensorBasis(rpc.TensorBasis):
     pass
 
@@ -31,7 +31,9 @@ class TensorBasis(rpc.TensorBasis):
 #     width: np.int32
 #     depth: np.int32
 #     degree_begin: np.ndarray[np.int64.dtype]
-@partial(jax.tree_util.register_dataclass, data_fields=[], meta_fields=[])
+#
+#     def get_l2t_matrix(dtype) -> PySparseMatrix
+#     def get_t2l_matrix(dtype) -> PySparseMatrix
 class LieBasis(rpc.LieBasis):
     """
     An instance of a Hall basis for the Lie algebra.
@@ -59,6 +61,18 @@ class LieBasis(rpc.LieBasis):
     """
 
     pass
+
+
+def _basis_flatten(basis):
+    return (), basis
+
+
+def _basis_unflatten(aux, _children):
+    return aux
+
+
+jax.tree_util.register_pytree_node(TensorBasis, _basis_flatten, _basis_unflatten)
+jax.tree_util.register_pytree_node(LieBasis, _basis_flatten, _basis_unflatten)
 
 
 def _algebra_add(
@@ -404,12 +418,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -843,6 +855,7 @@ def _ft_fmexp_vjp_bwd(
 ft_fmexp.defvjp(_ft_fmexp_vjp_fwd, _ft_fmexp_vjp_bwd)
 
 
+@jax.custom_vjp
 def lie_to_tensor(
     arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
 ) -> FreeTensorT:
@@ -853,36 +866,75 @@ def lie_to_tensor(
     :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
     :return: new FreeTensor containing the embedding of "arg"
     """
+    if not isinstance(arg, Lie):
+        raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
+
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    out_basis = arg.basis
 
-    tensor_basis = tensor_basis or out_basis
+    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
-        (out_basis, tensor_basis),
+        (arg.basis, tensor_basis),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
     )
 
     out_data = op(arg.data)
-    return DenseFreeTensor(*out_data, out_basis)
+    return DenseFreeTensor(*out_data, tensor_basis)
 
 
 def lie_to_tensor_derivative(
     arg: LieT,
     t_arg: LieT,
     scale_factor=None,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    """
+    Lie to tensor derivative of free tensor perturbation `t_arg` at `arg`
+    """
+    return lie_to_tensor(t_arg, None, scale_factor)
 
 
 def lie_to_tensor_adjoint_derivative(
     arg: LieT,
     ct_result: ShuffleTensorT,
     scale_factor=None,
-) -> tuple[LieT]: ...
+) -> tuple[LieT]:
+    """
+    Lie to tensor derivative of free tensor `ct_result` at `arg`
+    """
+    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+    l2t_size = np.int32(arg.basis.size())
+    data = csr_matvec(l2t.data, l2t.indices, l2t.indptr, l2t_size, ct_result.data)
+    if scale_factor:
+        data = data * scale_factor
+
+    return DenseLie(data, arg.basis)
+
+
+def _lie_to_tensor_vjp_fwd(
+    arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
+):
+    result = lie_to_tensor_derivative(arg, tensor_basis, scale_factor)
+    return result, (arg, scale_factor)
+
+
+def _lie_to_tensor_vjp_bwd(
+    residuals, ct_result_data: jax.Array
+) -> tuple[jax.Array, ...]:
+    arg, scale_factor = residuals
+
+    ct_result = Lie(ct_result_data.data, ct_result_data.basis)
+    ct_l2t_adjoint_deriv = lie_to_tensor_adjoint_derivative(
+        arg, ct_result, scale_factor
+    )
+
+    return (ct_l2t_adjoint_deriv.data,)
+
+
+lie_to_tensor.defvjp(_lie_to_tensor_vjp_fwd, _lie_to_tensor_vjp_bwd)
 
 
 def tensor_to_lie(
@@ -895,6 +947,9 @@ def tensor_to_lie(
     :param lie_basis:
     :return:
     """
+    if not isinstance(arg, FreeTensor):
+        raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
+
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
     out_basis = arg.basis

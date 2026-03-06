@@ -1,7 +1,88 @@
 from typing import Any, Callable, Iterable
 
+import jax
+import jax.numpy as jnp
+import roughpy_jax as rpj
 import numpy as np
 from numpy.testing import assert_allclose
+
+
+class DerivativeTrialsHelper:
+    """
+    Helper class for derivative tests using paired Lie and Tensor bases.
+
+    Work in batches of size n_trials for various derivative_testing methods.
+    """
+
+    def __init__(
+        self,
+        dtype,
+        width,
+        depth,
+        n_trials=10,
+        default_tensor_type=rpj.FreeTensor,
+    ):
+        self.dtype = dtype
+        self.width = width
+        self.depth = depth
+        self.lie_basis = rpj.LieBasis(width, depth)
+        self.tensor_basis = rpj.TensorBasis(width, depth)
+        self.default_tensor_type = default_tensor_type
+        self.n_trials = n_trials
+        self.rng_key = jax.random.key(12345)
+
+    def new_rng_key(self):
+        self.rng_key, key = jax.random.split(self.rng_key)
+        return key
+
+    def batch_shape(self, basis):
+        return (self.n_trials, basis.size())
+
+    def uniform_data(self, shape):
+        return jax.random.uniform(
+            self.new_rng_key(),
+            minval=-1.0,
+            maxval=1.0,
+            dtype=self.dtype,
+            shape=shape,
+        )
+
+    def uniform_tensor(self):
+        """
+        Backwards-compatible generic tensor generator used by existing tests.
+        """
+        return self.default_tensor_type(
+            self.uniform_data(self.batch_shape(self.tensor_basis)),
+            self.tensor_basis,
+        )
+
+    def uniform_free_tensor(self):
+        return rpj.FreeTensor(
+            self.uniform_data(self.batch_shape(self.tensor_basis)),
+            self.tensor_basis,
+        )
+
+    def uniform_shuffle_tensor(self):
+        return rpj.ShuffleTensor(
+            self.uniform_data(self.batch_shape(self.tensor_basis)),
+            self.tensor_basis,
+        )
+
+    def uniform_lie(self):
+        return rpj.Lie(
+            self.uniform_data(self.batch_shape(self.lie_basis)),
+            self.lie_basis,
+        )
+
+    def cond_dtype(self, val_f32, val_f64):
+        """Select val_f32 or val_f64 depending on dtype, for accuracy control in tests"""
+        if self.dtype == jnp.float32:
+            return val_f32
+
+        if self.dtype == jnp.float64:
+            return val_f64
+
+        raise ValueError(f"Unsupported dtype {self.dtype}")
 
 
 def assert_is_linear(
