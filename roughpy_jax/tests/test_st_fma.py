@@ -1,6 +1,10 @@
+from functools import partial
+
+import jax
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
+from jax import test_util as jtu
 
 from derivative_testing import (
     DerivativeTrialsHelper,
@@ -32,6 +36,28 @@ def test_shuffle_dense_st_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     # Mismatch first and third widths
     with pytest.raises(ValueError):
         rpj.st_fma(f.st_f32(2, 2), f.st_f32(2, 2), f.st_f32(3, 2))
+
+
+def test_st_fma_check_vjp(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(4, 3)
+    a = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    b = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    c = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+
+    def fma_(a, b, c):
+        a.data = jnp.asarray(a.data)
+        b.data = jnp.asarray(b.data)
+        c.data = jnp.asarray(c.data)
+        return rpj.st_fma(a, b, c)
+
+    jtu.check_vjp(
+        fma_,
+        partial(jax.vjp, fma_),
+        (a, b, c),
+        atol=5e-2,
+        rtol=5e-2,
+    )
 
 
 def test_st_fma_derivative_wrt_a(shuffle_deriv_trials):

@@ -1,6 +1,10 @@
+from functools import partial
+
+import jax
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
+from jax import test_util as jtu
 
 from derivative_testing import (
     DerivativeTrialsHelper,
@@ -96,6 +100,26 @@ def test_shuffle_st_adj_mul_linear_in_arg(rpj_dtype, rpj_small_batch):
         return st_adjoint_mul(op, arg)
 
     assert_is_linear(fn, arg_x, arg_y, alpha, beta)
+
+
+def test_st_adjoint_mul_check_vjp(rpj_batch):
+    rpj_dtype = jnp.dtype("float32")
+    basis = rpj.TensorBasis(4, 3)
+    op = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
+    arg = rpj_batch.rng_nonzero_free_tensor(basis, rpj_dtype)
+
+    def adj_mul_(op, arg):
+        op.data = jnp.asarray(op.data)
+        arg.data = jnp.asarray(arg.data)
+        return st_adjoint_mul(op, arg)
+
+    jtu.check_vjp(
+        adj_mul_,
+        partial(jax.vjp, adj_mul_),
+        (op, arg),
+        atol=5e-2,
+        rtol=5e-2,
+    )
 
 
 def test_st_adjoint_mul_derivative_linear_in_t_op(shuffle_deriv_trials):
