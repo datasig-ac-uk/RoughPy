@@ -1079,6 +1079,18 @@ class DenseTensorPairing(Operation, DenseOperation):
         return partial(self.fallback, **self.make_ffi_static_args())
 
 
+class DenseSTAdjMul(Operation, DenseOperation):
+    fn_name = "st_adj_mul"
+
+    class StaticArgs(TypedDict):
+        op_max_deg: np.int32
+        arg_max_deg: np.int32
+        op_min_deg: np.int32
+        arg_min_deg: np.int32
+
+    def get_fallback(self) -> Callable[..., Any]: ...
+
+
 # Register all CPU implementations for dense operations
 try:
     from ._rpy_jax_internals import cpu_functions
