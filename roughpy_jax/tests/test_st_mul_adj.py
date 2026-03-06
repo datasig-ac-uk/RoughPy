@@ -1,9 +1,37 @@
-import pytest
 import jax.numpy as jnp
+import pytest
 import roughpy_jax as rpj
 
-from derivative_testing import assert_is_linear
-from roughpy_jax.algebra import st_adjoint_mul
+from derivative_testing import (
+    DerivativeTrialsHelper,
+    assert_is_adjoint_derivative,
+    assert_is_derivative,
+    assert_is_linear,
+)
+from roughpy_jax.algebra import (
+    st_adjoint_mul,
+    st_adjoint_mul_adjoint_derivative,
+    st_adjoint_mul_derivative,
+)
+
+
+@pytest.fixture(params=[jnp.float32, jnp.float64])
+def shuffle_deriv_trials(request):
+    yield DerivativeTrialsHelper(request.param, width=4, depth=3)
+
+
+def _zero_shuffle(trials):
+    return rpj.ShuffleTensor(
+        jnp.zeros(trials.batch_shape(trials.tensor_basis), trials.dtype),
+        trials.tensor_basis,
+    )
+
+
+def _zero_free(trials):
+    return rpj.FreeTensor(
+        jnp.zeros(trials.batch_shape(trials.tensor_basis), trials.dtype),
+        trials.tensor_basis,
+    )
 
 
 def test_shuffle_dense_st_adj_mul_array_mismatch(rpj_test_fixture_type_mismatch):
@@ -68,3 +96,141 @@ def test_shuffle_st_adj_mul_linear_in_arg(rpj_dtype, rpj_small_batch):
         return st_adjoint_mul(op, arg)
 
     assert_is_linear(fn, arg_x, arg_y, alpha, beta)
+
+
+def test_st_adjoint_mul_derivative_linear_in_t_op(shuffle_deriv_trials):
+    op = shuffle_deriv_trials.uniform_shuffle_tensor()
+    arg = shuffle_deriv_trials.uniform_free_tensor()
+    zero_t_arg = _zero_free(shuffle_deriv_trials)
+    t_op_x = shuffle_deriv_trials.uniform_shuffle_tensor()
+    t_op_y = shuffle_deriv_trials.uniform_shuffle_tensor()
+    vals = shuffle_deriv_trials.uniform_data((2,))
+    alpha = float(vals[0])
+    beta = float(vals[1])
+
+    def fn(t_op):
+        return st_adjoint_mul_derivative(op, arg, t_op, zero_t_arg)
+
+    assert_is_linear(fn, t_op_x, t_op_y, alpha, beta)
+
+
+def test_st_adjoint_mul_derivative_linear_in_t_arg(shuffle_deriv_trials):
+    op = shuffle_deriv_trials.uniform_shuffle_tensor()
+    arg = shuffle_deriv_trials.uniform_free_tensor()
+    zero_t_op = _zero_shuffle(shuffle_deriv_trials)
+    t_arg_x = shuffle_deriv_trials.uniform_free_tensor()
+    t_arg_y = shuffle_deriv_trials.uniform_free_tensor()
+    vals = shuffle_deriv_trials.uniform_data((2,))
+    alpha = float(vals[0])
+    beta = float(vals[1])
+
+    def fn(t_arg):
+        return st_adjoint_mul_derivative(op, arg, zero_t_op, t_arg)
+
+    assert_is_linear(fn, t_arg_x, t_arg_y, alpha, beta)
+
+
+def test_st_adjoint_mul_derivative_wrt_op(shuffle_deriv_trials):
+    op = shuffle_deriv_trials.uniform_shuffle_tensor()
+    arg = shuffle_deriv_trials.uniform_free_tensor()
+    tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
+        1e-3, 1e0
+    )
+    zero_t_arg = _zero_free(shuffle_deriv_trials)
+
+    def fn(arg_op):
+        return st_adjoint_mul(arg_op, arg)
+
+    def fn_deriv(arg_op, t_arg_op):
+        return st_adjoint_mul_derivative(arg_op, arg, t_arg_op, zero_t_arg)
+
+    assert_is_derivative(
+        fn,
+        fn_deriv,
+        op,
+        tangent,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+        rel_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+    )
+
+
+def test_st_adjoint_mul_derivative_wrt_arg(shuffle_deriv_trials):
+    op = shuffle_deriv_trials.uniform_shuffle_tensor()
+    arg = shuffle_deriv_trials.uniform_free_tensor()
+    tangent = shuffle_deriv_trials.uniform_free_tensor() * shuffle_deriv_trials.cond_dtype(
+        1e-3, 1e0
+    )
+    zero_t_op = _zero_shuffle(shuffle_deriv_trials)
+
+    def fn(arg_arg):
+        return st_adjoint_mul(op, arg_arg)
+
+    def fn_deriv(arg_arg, t_arg_arg):
+        return st_adjoint_mul_derivative(op, arg_arg, zero_t_op, t_arg_arg)
+
+    assert_is_derivative(
+        fn,
+        fn_deriv,
+        arg,
+        tangent,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+        rel_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+    )
+
+
+def test_st_adjoint_mul_adjoint_derivative_wrt_op(shuffle_deriv_trials):
+    op = shuffle_deriv_trials.uniform_shuffle_tensor()
+    arg = shuffle_deriv_trials.uniform_free_tensor()
+    tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
+        1e-3, 1e0
+    )
+    cotangent = shuffle_deriv_trials.uniform_shuffle_tensor()
+
+    def fn(arg_op):
+        return st_adjoint_mul(arg_op, arg)
+
+    def fn_adj_deriv(arg_op, ct_result):
+        return st_adjoint_mul_adjoint_derivative(arg_op, arg, ct_result)[0]
+
+    assert_is_adjoint_derivative(
+        fn,
+        fn_adj_deriv,
+        op,
+        tangent,
+        cotangent,
+        domain_pairing=rpj.tensor_pairing,
+        codomain_pairing=rpj.tensor_pairing,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+        rel_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+    )
+
+
+def test_st_adjoint_mul_adjoint_derivative_wrt_arg(shuffle_deriv_trials):
+    op = shuffle_deriv_trials.uniform_shuffle_tensor()
+    arg = shuffle_deriv_trials.uniform_free_tensor()
+    tangent = shuffle_deriv_trials.uniform_free_tensor() * shuffle_deriv_trials.cond_dtype(
+        1e-3, 1e0
+    )
+    cotangent = shuffle_deriv_trials.uniform_shuffle_tensor()
+
+    def fn(arg_arg):
+        return st_adjoint_mul(op, arg_arg)
+
+    def fn_adj_deriv(arg_arg, ct_result):
+        return st_adjoint_mul_adjoint_derivative(op, arg_arg, ct_result)[1]
+
+    assert_is_adjoint_derivative(
+        fn,
+        fn_adj_deriv,
+        arg,
+        tangent,
+        cotangent,
+        domain_pairing=rpj.tensor_pairing,
+        codomain_pairing=rpj.tensor_pairing,
+        eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
+        abs_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+        rel_tol=shuffle_deriv_trials.cond_dtype(5e-2, 1e-5),
+    )
