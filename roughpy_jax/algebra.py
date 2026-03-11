@@ -404,12 +404,10 @@ def _antipode_vjp_fwd(a: FreeTensorT):
 
 
 def _antipode_vjp_bwd(residuals, ct_result_data: jax.Array) -> tuple[jax.Array, ...]:
-    a, = residuals
+    (a,) = residuals
 
     ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
-    ct_antipode = antipode_adjoint_derivative(
-        a, ct_result
-    )
+    ct_antipode = antipode_adjoint_derivative(a, ct_result)
 
     return (ct_antipode.data,)
 
@@ -1069,11 +1067,123 @@ def tensor_pairing_derivative(
     argument: FreeTensorT,
     t_functional: ShuffleTensorT,
     t_argument: FreeTensorT,
-) -> jax.Array: ...
+) -> jax.Array:
+    _check_basis_compat(
+        functional.basis, argument.basis, t_functional.basis, t_argument.basis
+    )
+    _ = _get_and_check_batch_dims(
+        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
+    )
+
+    x = tensor_pairing(functional, t_argument)
+    y = tensor_pairing(t_functional, argument)
+    return x + y
+
+
+def _reshape_pairing_cotangent(
+    ct_result: jax.Array, batch_dims: tuple[int, ...]
+) -> jax.Array:
+    ct_shape = ct_result.shape
+    if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
+        raise ValueError(
+            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
+        )
+
+    new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)
+    return jnp.reshape(ct_result, new_shape)
 
 
 def tensor_pairing_adjoint_derivative(
     functional: ShuffleTensorT,
     argument: FreeTensorT,
     ct_result: jax.Array,
-) -> tuple[FreeTensorT, ShuffleTensorT]: ...
+) -> tuple[FreeTensorT, ShuffleTensorT]:
+    _check_basis_compat(functional.basis, argument.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
+
+    ct_functional = DenseFreeTensor(ext_ct * argument.data, functional.basis)
+    ct_argument = DenseShuffleTensor(ext_ct * functional.data, argument.basis)
+
+    return ct_functional, ct_argument
+
+
+@jax.custom_vjp
+def lie_pairing(functional: LieT, argument: LieT) -> jax.Array:
+    """
+    Compute the pairing of two Lie algebra elements.
+
+    This is the coefficient-space pairing induced by the Hall basis. The result
+    is scalar-valued, with any leading batch dimensions preserved.
+
+    :param functional: Left-hand Lie element.
+    :param argument: Right-hand Lie element.
+    :return: Pairing of ``functional`` and ``argument``.
+    """
+    dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
+
+    _check_basis_compat(functional.basis, argument.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    op_cls = Operation.get_operation("lie_pairing", "dense")
+
+    op = op_cls(
+        (functional.basis, argument.basis),
+        dtype,
+        batch_dims,
+        functional_max_degree=functional.basis.depth,
+        argument_max_degree=argument.basis.depth,
+    )
+
+    (result,) = op(functional.data, argument.data)
+    return result
+
+
+def lie_pairing_derivative(
+    functional: LieT,
+    argument: LieT,
+    t_functional: LieT,
+    t_argument: LieT,
+) -> jax.Array:
+    _check_basis_compat(
+        functional.basis, argument.basis, t_functional.basis, t_argument.basis
+    )
+    _ = _get_and_check_batch_dims(
+        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
+    )
+
+    x = lie_pairing(functional, t_argument)
+    y = lie_pairing(t_functional, argument)
+    return x + y
+
+
+def lie_pairing_adjoint_derivative(
+    functional: LieT, argument: LieT, ct_result: jax.Array
+) -> tuple[LieT, LieT]:
+    _check_basis_compat(functional.basis, argument.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
+
+    ct_functional = DenseLie(ext_ct * argument.data, functional.basis)
+    ct_argument = DenseLie(ext_ct * functional.data, argument.basis)
+
+    return ct_functional, ct_argument
+
+
+def _lie_pairing_vjp_fwd(functional: LieT, argument: LieT) -> tuple[jax.Array, Any]:
+    result = lie_pairing(functional, argument)
+    return result, (functional, argument)
+
+
+def _lie_pairing_vjp_bwd(residuals, ct_result) -> tuple[jax.Array, ...]:
+    functional, argument = residuals
+
+    ct_functional, ct_argument = lie_pairing_adjoint_derivative(
+        functional, argument, ct_result
+    )
+    return ct_functional.data, ct_argument.data
+
+
+lie_pairing.defvjp(_lie_pairing_vjp_fwd, _lie_pairing_vjp_bwd)

@@ -53,7 +53,7 @@ def _batched_fallback_wrapper(single_tensor_fn):
 
         # Unpack the resulting tuple args into original batch shapes
         result = tuple(
-            flat_result_arg.reshape((*batch_shape, flat_result_arg.shape[-1]))
+            flat_result_arg.reshape((*batch_shape, *flat_result_arg.shape[1:]))
             for flat_result_arg in flat_result_tuple
         )
         return result
@@ -1054,6 +1054,10 @@ class DenseTensorPairing(Operation, DenseOperation):
         functional_max_degree: np.int32
         argument_max_degree: np.int32
 
+    @classmethod
+    def make_result_dtypes(cls, basis, dtype, batch_dims):
+        return (jax.ShapeDtypeStruct(batch_dims, dtype),)
+
     @staticmethod
     def fallback(
         functional_data: Array,
@@ -1073,6 +1077,42 @@ class DenseTensorPairing(Operation, DenseOperation):
         elt_data = argument_data[..., :common_size]
 
         result = jnp.einsum("...i,...i -> ...", func_data, elt_data)
+        return (result,)
+
+    def get_fallback(self) -> Callable[..., Any]:
+        return partial(self.fallback, **self.make_ffi_static_args())
+
+
+class DenseLiePairing(Operation, DenseOperation):
+    fn_name = "lie_pairing"
+
+    class StaticArgs(TypedDict):
+        functional_max_degree: np.int32
+        argument_max_degree: np.int32
+
+    @classmethod
+    def make_result_dtypes(cls, basis, dtype, batch_dims):
+        return (jax.ShapeDtypeStruct(batch_dims, dtype),)
+
+    @staticmethod
+    def fallback(
+        functional_data: Array,
+        argument_data: Array,
+        width: np.int32,
+        depth: np.int32,
+        degree_begin: np.ndarray[np.int64.dtype],
+        functional_max_degree: np.int32,
+        argument_max_degree: np.int32,
+    ) -> tuple[Array]:
+        common_size = min(
+            degree_begin[functional_max_degree + 1],
+            degree_begin[argument_max_degree + 1],
+        )
+
+        func_data = functional_data[..., :common_size]
+        arg_data = argument_data[..., :common_size]
+
+        result = jnp.einsum("...i,...i -> ...", func_data, arg_data)
         return (result,)
 
     def get_fallback(self) -> Callable[..., Any]:
