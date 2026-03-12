@@ -1,11 +1,12 @@
 "Hypothesis strategies for testing"
 
-import jax
+import math
 import jax.numpy as jnp
 from hypothesis import strategies as st, settings, HealthCheck
 import hypothesis.extra.numpy as hnp
 
 from . import LieBasis, Lie, lie_to_tensor, ft_exp
+from .intervals import RealInterval, IntervalType
 
 # test case generation is slow, suppress warning
 settings.register_profile("roughpy_jax", suppress_health_check=[HealthCheck.too_slow])
@@ -30,3 +31,24 @@ def signature(draw, **kwargs):
     "Exponentiates Lie increments to generate signatures"
     lie = draw(lie_increment(**kwargs))
     return ft_exp(lie)
+
+def strictly_increasing_float_pair():
+    """Returns a pair of floats a, b, with b > a"""
+    base = st.floats(allow_nan=False, allow_infinity=False)
+    # filter out values where nextafter would be infinite (i.e., largest representable float)
+    base = base.filter(lambda a: not math.isinf(math.nextafter(a, math.inf)))
+    return base.flatmap(
+        lambda a: st.tuples(
+            st.just(a),
+            st.floats(
+                min_value=math.nextafter(a, math.inf),
+                allow_nan=False,
+                allow_infinity=False
+            )
+        )
+    )
+
+@st.composite
+def intervals(draw, type: IntervalType):
+    a, b = draw(strictly_increasing_float_pair())
+    return RealInterval(a, b, _interval_type=type)
