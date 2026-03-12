@@ -871,12 +871,12 @@ def lie_to_tensor(
 
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-
-    tensor_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+    
+    out_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
-        (arg.basis, tensor_basis),
+        (arg.basis, out_basis),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
@@ -953,13 +953,12 @@ def tensor_to_lie(
 
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    out_basis = arg.basis
 
-    lie_basis = lie_basis or out_basis
+    out_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("tensor_to_lie", "dense")
     op = op_cls(
-        (out_basis, lie_basis),
+        (arg.basis, out_basis),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
