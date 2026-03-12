@@ -13,19 +13,13 @@ from jax import Array
 from .csc import csc_matvec
 
 # Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
-#
-# The C++ LieBasis.get_l2t_matrix() and get_t2l_matrix() share the same
-# internal buffer: each call overwrites it and returns a view of the new
-# contents.  Calling get_t2l_matrix() therefore corrupts any subsequent call
-# to get_l2t_matrix() (and vice-versa).
-#
-# We work around this by computing *both* matrices together on first access,
-# copying the numpy arrays immediately after each call so they own their own
-# memory, and storing the copies here.  All subsequent accesses use the cached
-# copies and never call the C++ functions again.
+# Potentially useful to have cached versions to the l2t and t2l matrices as JAX 
+# arrays, as these are used in many operations and converting from the C++ 
+# buffers to JAX arrays can be expensive. 
+global _lie_sparse_matrix_cache
 _lie_sparse_matrix_cache: dict[
-    tuple, tuple[tuple[np.ndarray, np.ndarray, np.ndarray],
-                 tuple[np.ndarray, np.ndarray, np.ndarray]]
+    tuple, tuple[tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+                 tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]
 ] = {}
 
 
@@ -37,12 +31,20 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
     """
     key = (lie_basis.width, lie_basis.depth, str(dtype))
     if key not in _lie_sparse_matrix_cache:
-        # Get l2t FIRST and copy immediately before t2l can overwrite the buffer
+        # Get l2t FIRST and convert to JAX arrays before t2l can overwrite the buffer
         l2t = lie_basis.get_l2t_matrix(dtype)
-        l2t_arrays = (l2t.data.copy(), l2t.indices.copy(), l2t.indptr.copy())
-        # Now get t2l – this may overwrite the C++ buffer, but l2t is already saved
+        l2t_arrays = (
+            jnp.asarray(l2t.data, copy=True), 
+            jnp.asarray(l2t.indices, copy=True), 
+            jnp.asarray(l2t.indptr, copy=True)
+        )
+        # Now get t2l – this amay overwrite the C++ buffer, but l2t is already saved
         t2l = lie_basis.get_t2l_matrix(dtype)
-        t2l_arrays = (t2l.data.copy(), t2l.indices.copy(), t2l.indptr.copy())
+        t2l_arrays = (
+            jnp.asarray(t2l.data, copy=True), 
+            jnp.asarray(t2l.indices, copy=True), 
+            jnp.asarray(t2l.indptr, copy=True)
+        )
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
     return _lie_sparse_matrix_cache[key]
 
