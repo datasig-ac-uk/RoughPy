@@ -34,7 +34,7 @@
 
 #include "roughpy/core/check.h"       // for throw_exception, RPY_CHECK
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar_type.h>
 

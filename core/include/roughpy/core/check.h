@@ -9,9 +9,9 @@
 #include <string>
 #include <string_view>
 
-#include "check_helpers.h"
+#include "check_helpers.hpp"
 #include "macros.h"
-#include "string_utils.h"
+#include "string_utils.hpp"
 
 #if defined(RPY_COMPILER_GCC)
 #  define RPY_FUNC_NAME __PRETTY_FUNCTION__

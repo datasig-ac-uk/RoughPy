@@ -1,5 +1,5 @@
 #define NPY_IMPORT_THE_APIS_PLEASE
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 #include "dense_basic.h"
 #include "dense_intermediate.h"

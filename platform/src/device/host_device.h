@@ -6,7 +6,7 @@
 #define ROUGHPY_DEVICE_INTERNAL_HOST_DEVICE_H
 
 #include "roughpy/core/macros.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 #include "roughpy/device/device_handle.h"
 

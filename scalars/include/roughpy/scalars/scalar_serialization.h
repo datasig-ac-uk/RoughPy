@@ -28,7 +28,7 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_SERIALIZATION_H_
 #define ROUGHPY_SCALARS_SCALAR_SERIALIZATION_H_
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 #include <roughpy/platform/serialization.h>
 
 #include "scalar_types.h"

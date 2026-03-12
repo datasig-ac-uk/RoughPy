@@ -33,8 +33,8 @@
 #ifndef ROUGHPY_STREAMS_SCHEMA_H
 #define ROUGHPY_STREAMS_SCHEMA_H
 
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/traits.hpp>
+#include <roughpy/core/types.hpp>
 
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/lie_basis.h>

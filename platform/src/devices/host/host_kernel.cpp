@@ -32,7 +32,7 @@
 #include "host_kernel.h"
 #include "host_device_impl.h"
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 
 using namespace rpy;
 using namespace rpy::devices;

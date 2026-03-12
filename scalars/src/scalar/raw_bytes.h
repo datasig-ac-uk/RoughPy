@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_SCALARS_RAW_BYTES_H
 #define ROUGHPY_SCALARS_RAW_BYTES_H
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include "scalar_types.h"
 #include "scalars_fwd.h"
 

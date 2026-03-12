@@ -36,7 +36,7 @@
 #include <condition_variable>
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "devices/core.h"
 #include "devices/device_object_base.h"

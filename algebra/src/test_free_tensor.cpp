@@ -30,7 +30,7 @@
 
 #include "tensor_fixture.h"
 
-#include "roughpy/core/ranges.h"
+#include "roughpy/core/ranges.hpp"
 #include "roughpy/algebra/free_tensor.h"
 
 namespace {

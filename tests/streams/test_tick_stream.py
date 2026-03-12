@@ -33,18 +33,8 @@ import pytest
 from roughpy import DPReal, Lie, RealInterval, TickStream
 
 DATA_FORMATS = [
-    {
-        1.0: [
-            ("first", "increment", 1.0),
-            ("second", "increment", 1.0)
-        ]
-    },
-    {
-        1.0: {
-            "first": ("increment", 1.0),
-            "second": ("increment", 1.0)
-        }
-    },
+    {1.0: [("first", "increment", 1.0), ("second", "increment", 1.0)]},
+    {1.0: {"first": ("increment", 1.0), "second": ("increment", 1.0)}},
     {
         1.0: [
             {"label": "first", "type": "increment", "data": 1.0},
@@ -70,62 +60,46 @@ DATA_FORMATS = [
         (1.0, {"label": "second", "type": "increment", "data": 1.0}),
     ],
     [
-        (1.0, [
-            ("first", "increment", 1.0),
-            ("second", "increment", 1.0),
-        ])
+        (
+            1.0,
+            [
+                ("first", "increment", 1.0),
+                ("second", "increment", 1.0),
+            ],
+        )
     ],
     [
-        (1.0, [
-            {"label": "first", "type": "increment", "data": 1.0},
+        (
+            1.0,
+            [
+                {"label": "first", "type": "increment", "data": 1.0},
+                {"label": "second", "type": "increment", "data": 1.0},
+            ],
+        )
+    ],
+    [
+        (
+            1.0,
+            {
+                "first": ("increment", 1.0),
+                "second": ("increment", 1.0),
+            },
+        )
+    ],
+    {
+        1.0: [
+            ("first", "increment", 1.0),
             {"label": "second", "type": "increment", "data": 1.0},
-        ])
-    ],
-    [
-        (1.0, {
-            "first": ("increment", 1.0),
-            "second": ("increment", 1.0),
-        })
-    ],
+        ]
+    },
+    {1.0: [("first", "increment", 1.0), {"second": ("increment", 1.0)}]},
     {
         1.0: [
             ("first", "increment", 1.0),
-            {
-                "label": "second",
-                "type": "increment",
-                "data": 1.0
-            }
+            {"second": {"type": "increment", "data": 1.0}},
         ]
     },
-    {
-        1.0: [
-            ("first", "increment", 1.0),
-            {
-                "second": ("increment", 1.0)
-            }
-        ]
-    },
-    {
-        1.0: [
-            ("first", "increment", 1.0),
-            {
-                "second": {
-                    "type": "increment",
-                    "data": 1.0
-                }
-            }
-        ]
-    },
-    {
-        1.0: {
-            "first": ("increment", 1.0),
-            "second": {
-                "type": "increment",
-                "data": 1.0
-            }
-        }
-    }
-
+    {1.0: {"first": ("increment", 1.0), "second": {"type": "increment", "data": 1.0}}},
 ]
 
 
@@ -140,12 +114,24 @@ def test_construct_tick_path_from_data(data):
     assert lsig == expected, f"{lsig} == {expected}"
 
 
-
-
 def test_construct_tick_stream_with_time(rng):
     data = DATA_FORMATS[0]
 
-    stream = TickStream.from_data(data, width=2, depth=2, include_time=True,
-                                  dtype=DPReal)
+    stream = TickStream.from_data(
+        data, width=2, depth=2, include_time=True, dtype=DPReal
+    )
 
     assert stream.width == 3
+
+
+def test_zero_data_at_zero_timestamp():
+    data = {
+        0.0: [("x", "value", 0.0)],
+        1.0: [("x", "value", 2.0)],
+    }
+
+    stream = TickStream.from_data(data, width=2, depth=2, dtype=DPReal)
+    # This used to cause a segmentation fault
+    sig = stream.signature(RealInterval(0.0, 2.0))
+
+    assert sig is not None

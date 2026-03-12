@@ -29,7 +29,7 @@
 #define ROUGHPY_SCALARS_TRAITS_H_
 
 #include <roughpy/platform/devices/core.h>
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 
 namespace rpy {
 namespace scalars {

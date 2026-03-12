@@ -8,7 +8,7 @@
 
 #include <boost/pool/singleton_pool.hpp>
 #include <boost/align/aligned_alloc.hpp>
-#include <roughpy/core/traits.h>
+#include <roughpy/core/traits.hpp>
 
 using namespace rpy;
 using namespace rpy::mem;

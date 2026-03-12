@@ -6,7 +6,7 @@
 #define ROUGHPY_GENERICS_INTERNAL_UNSIGNED_INT_TYPE_H
 
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "builtin_type.h"
 

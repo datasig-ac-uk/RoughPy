@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_CORE_ALLOC_H_
 #define ROUGHPY_CORE_ALLOC_H_
 
-#include "traits.h"
+#include "traits.hpp"
 
 namespace rpy {
 

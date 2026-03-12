@@ -35,7 +35,7 @@
 
 #include <libalgebra_lite/tensor_basis.h>
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/algebra/basis.h>
 #include <roughpy/algebra/basis_impl.h>
 #include <roughpy/algebra/basis_info.h>

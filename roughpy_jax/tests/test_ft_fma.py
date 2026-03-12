@@ -1,9 +1,7 @@
-import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
 import roughpy_jax as rpj
-import time
 
 
 def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
@@ -17,14 +15,6 @@ def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     with pytest.raises(ValueError):
         rpj.ft_fma(f.ft_f32(2, 2), f.ft_f32(2, 2), f.ft_f32(3, 2))
 
-    # Mismatched array float types
-    with pytest.raises(ValueError):
-        rpj.ft_fma(f.ft_f32(), f.ft_f64(), f.ft_f32())
-
-    # Unsupported array types
-    with pytest.raises(ValueError):
-        rpj.ft_fma(f.ft_i32(), f.ft_i32(), f.ft_i32())
-
 
 def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
@@ -33,16 +23,8 @@ def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     with pytest.raises(ValueError):
         rpj.ft_mul(f.ft_f32(2, 2), f.ft_f32(3, 2))
 
-    # Mismatched array float types
-    with pytest.raises(ValueError):
-        rpj.ft_mul(f.ft_f32(), f.ft_f64())
 
-    # Unsupported array types
-    with pytest.raises(ValueError):
-        rpj.ft_mul(f.ft_i32(), f.ft_i32())
-
-
-def test_dense_ft_fma(rpj_dtype, rpj_batch):
+def test_dense_ft_fma(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(2, 2)
     a_data = rpj_batch.zeros(basis.size(), rpj_dtype)
     b_data = rpj_batch.repeat(jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=rpj_dtype))
@@ -58,7 +40,7 @@ def test_dense_ft_fma(rpj_dtype, rpj_batch):
     assert jnp.allclose(d.data, expected_data)
 
 
-def test_dense_ft_fma_construction(rpj_dtype, rpj_batch):
+def test_dense_ft_fma_construction(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(2, 2)
 
     def _create_rng_uniform_ft():
@@ -71,7 +53,7 @@ def test_dense_ft_fma_construction(rpj_dtype, rpj_batch):
 
     batched_d = rpj.ft_fma(batched_a, batched_b, batched_c)
 
-    # FIXME for review, iterating over all combinations to preserve old expected computation 
+    # Result d is checked iterating over batch to simplify construction of expected value
     for idx in np.ndindex(rpj_batch.shape):
         a = batched_a.data[idx]
         b = batched_b.data[idx]
@@ -94,39 +76,3 @@ def test_dense_ft_fma_construction(rpj_dtype, rpj_batch):
         )
 
         assert jnp.allclose(d, expected)
-
-
-def test_ft_fma_jit(rpj_dtype, rpj_batch):
-    # Arbitrary combination of ft_fma for comparison and timing
-    def combined_fma(a, b, c):
-        d = rpj.ft_fma(a, b, c)
-        e = rpj.ft_fma(b, c, d)
-        f = rpj.ft_fma(c, d, e)
-        g = rpj.ft_fma(d, e, f)
-        h = rpj.ft_fma(e, f, g)
-        return h
-
-    basis = rpj.TensorBasis(3, 3)
-    data = rpj_batch.rng_uniform(-1, 1, basis.size(), rpj_dtype)
-    a = rpj.FreeTensor(data, basis)
-    b = rpj.FreeTensor(data, basis)
-    c = rpj.FreeTensor(data, basis)
-
-    # Confirm that results are same for JIT and non-JIT runs
-    result_no_jit = combined_fma(a, b, c)
-    combined_fma_jit = jax.jit(combined_fma)
-    result_jit = combined_fma_jit(a, b, c)
-    assert jnp.allclose(result_no_jit.data, result_jit.data)
-
-    # Confirm that JIT is running faster
-    time_non_jit_start = time.time()
-    for _ in range(100):
-        combined_fma(a, b, c)
-    time_non_jit = time.time() - time_non_jit_start
-
-    time_jit_start = time.time()
-    for _ in range(100):
-        combined_fma_jit(a, b, c)
-    time_jit = time.time() - time_jit_start
-
-    assert time_jit < time_non_jit

@@ -7,7 +7,7 @@
 
 #include <gmp.h>
 
-#include <roughpy/core/hash.h>
+#include <roughpy/core/hash.hpp>
 
 namespace rpy::generics {
 

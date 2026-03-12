@@ -34,7 +34,7 @@
 
 #include "roughpy/core/check.h"       // for throw_exception, RPY_CHECK
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>      // for basic_string, pair, move
+#include <roughpy/core/types.hpp>      // for basic_string, pair, move
 
 #include <roughpy/streams/schema.h>
 

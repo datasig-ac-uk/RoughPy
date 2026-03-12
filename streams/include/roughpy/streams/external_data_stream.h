@@ -32,7 +32,7 @@
 
 #include "dyadic_caching_layer.h"
 #include "stream.h"
-#include <roughpy/core/traits.h>
+#include <roughpy/core/traits.hpp>
 #include <roughpy/platform.h>
 #include <roughpy/platform/serialization.h>
 

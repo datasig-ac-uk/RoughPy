@@ -10,10 +10,10 @@
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
-#include "roughpy/core/hash.h"
-#include "roughpy/core/helpers.h"
-#include "roughpy/core/traits.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/hash.hpp"
+#include "roughpy/core/helpers.hpp"
+#include "roughpy/core/traits.hpp"
+#include "roughpy/core/types.hpp"
 
 
 namespace rpy::generics {

@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include "roughpy/core/hash.h"
+#include "roughpy/core/hash.hpp"
 #include "roughpy/generics/type.h"
 #include "roughpy/generics/values.h"
 

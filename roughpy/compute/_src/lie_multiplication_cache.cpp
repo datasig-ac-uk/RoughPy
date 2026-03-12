@@ -8,12 +8,11 @@
 #include <unordered_set>
 #include <utility>
 
-#ifndef RPY_UNLIKELY
-#  define RPY_UNLIKELY(x) (x)
-#endif
+
 
 extern "C" {
 static void lmc_dealloc(PyObject* obj);
+static int lmc_traverse(PyObject* obj, visitproc visit, void* arg);
 
 static PyObject* lmc_repr(PyObject* obj);
 }
@@ -101,54 +100,27 @@ struct PyLieMultiplicationCache {
 };
 /* clang-format on */
 
-static PyTypeObject PyLieMultiplicationCache_Type = {
-        PyVarObject_HEAD_INIT(NULL, 0)
-                RPY_CPT_TYPE_NAME(LieMultiplicationCache), /* tp_name */
-        sizeof(PyLieMultiplicationCache),                  /* tp_basicsize */
-        0,                                                 /* tp_itemsize */
-        reinterpret_cast<destructor>(lmc_dealloc),         /* tp_dealloc */
-        0,                                    /* tp_vectorcall_offset */
-        nullptr,                              /* tp_getattr */
-        nullptr,                              /* tp_setattr */
-        nullptr,                              /* tp_as_async */
-        reinterpret_cast<reprfunc>(lmc_repr), /* tp_repr */
-        nullptr,                              /* tp_as_number */
-        nullptr,                              /* tp_as_sequence */
-        nullptr,                              /* tp_as_mapping */
-        nullptr,                              /* tp_hash */
-        nullptr,                              /* tp_call */
-        nullptr,                              /* tp_str */
-        nullptr,                              /* tp_getattro */
-        nullptr,                              /* tp_setattro */
-        nullptr,                              /* tp_as_buffer */
-        Py_TPFLAGS_DEFAULT,                   /* tp_flags */
-        nullptr,                              /* tp_doc */
-        nullptr,                              /* tp_traverse */
-        nullptr,                              /* tp_clear */
-        nullptr,                              /* tp_richcompare */
-        0,                                    /* tp_weaklistoffset */
-        nullptr,                              /* tp_iter */
-        nullptr,                              /* tp_iternext */
-        nullptr,                              /* tp_methods */
-        nullptr,                              /* tp_members */
-        nullptr,                              /* tp_getset */
-        nullptr,                              /* tp_base */
-        nullptr,                              /* tp_dict */
-        nullptr,                              /* tp_descr_get */
-        nullptr,                              /* tp_descr_set */
-        0,                                    /* tp_dictoffset */
-        nullptr,                              /* tp_init */
-        nullptr,                              /* tp_alloc */
-        nullptr,                              /* tp_new */
-        nullptr,                              /* tp_free */
-        nullptr,                              /* tp_is_gc */
+static PyTypeObject* PyLieMultiplicationCache_Type = nullptr;
+
+static PyType_Slot lmc_slots[] = {
+        {Py_tp_dealloc, reinterpret_cast<void*>(lmc_dealloc)},
+        {Py_tp_traverse, reinterpret_cast<void*>(lmc_traverse)},
+        {Py_tp_repr, reinterpret_cast<void*>(lmc_repr)},
+        {0, nullptr}
+};
+
+static PyType_Spec lmc_spec = {
+        "roughpy.compute.LieMultiplicationCache",
+        sizeof(PyLieMultiplicationCache),
+        0,
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+        lmc_slots
 };
 
 PyObject* PyLieMultiplicationCache_new(const int32_t width)
 {
     auto* lmc = reinterpret_cast<PyLieMultiplicationCache*>(
-            PyLieMultiplicationCache_Type
-                    .tp_alloc(&PyLieMultiplicationCache_Type, 0)
+            PyLieMultiplicationCache_Type->tp_alloc(PyLieMultiplicationCache_Type, 0)
     );
 
     if (lmc == nullptr) { return reinterpret_cast<PyObject*>(lmc); }
@@ -156,7 +128,7 @@ PyObject* PyLieMultiplicationCache_new(const int32_t width)
     try {
         // I don't think the constructor can fail, but wrap anyway
         ::new (&lmc->cache)
-                std::unordered_set<LieWord, LieWordHash, LieWordEqual>();
+                std::unordered_map<LieWord, LieCacheEntryPtr, LieWordHash, LieWordEqual>();
     } catch (...) {
         Py_DECREF(lmc);
         PyErr_NoMemory();
@@ -463,7 +435,7 @@ const LieMultiplicationCacheEntry* PyLieMultiplicationCache_get(
 
 PyObject* lie_multiplication_cache_clear(PyObject* cache)
 {
-    if (PyObject_TypeCheck(cache, &PyLieMultiplicationCache_Type)) {
+    if (!PyObject_TypeCheck(cache, PyLieMultiplicationCache_Type)) {
         PyErr_SetString(
                 PyExc_TypeError,
                 "cannot be used as a Lie multiplication cache"
@@ -479,12 +451,10 @@ PyObject* lie_multiplication_cache_clear(PyObject* cache)
 
 int init_lie_multiplication_cache(PyObject* module)
 {
-    if (PyType_Ready(&PyLieMultiplicationCache_Type) < 0) { return -1; }
+    PyLieMultiplicationCache_Type = (PyTypeObject*) PyType_FromSpec(&lmc_spec);
+    if (PyLieMultiplicationCache_Type == nullptr) { return -1; }
 
-    // PyObject* lmc_cache = PyDict_New();
-    // if (lmc_cache == nullptr) { return -1; }
     plm_cache_cache = PyDict_New();
-    // make this immortal?
     if (plm_cache_cache == nullptr) {
         return -1;
     }
@@ -501,11 +471,23 @@ void lmc_dealloc(PyObject* obj)
 {
     auto* self = reinterpret_cast<PyLieMultiplicationCache*>(obj);
     self->cache.~unordered_map();
-    Py_TYPE(obj)->tp_free(obj);
+
+    PyTypeObject* type = Py_TYPE(obj);
+    auto tp_free = reinterpret_cast<freefunc>(PyType_GetSlot(type, Py_tp_free));
+    if (tp_free != nullptr) {
+        tp_free(obj);
+    }
+}
+
+int lmc_traverse(PyObject* obj, visitproc visit, void* arg)
+{
+    Py_VISIT(Py_TYPE(obj));
+
+    return 0;
 }
 
 PyObject* lmc_repr(PyObject* obj)
 {
     const auto* self = reinterpret_cast<PyLieMultiplicationCache*>(obj);
-    return PyUnicode_FromFormat("%s(%d)", Py_TYPE(obj)->tp_name, self->width);
+    return PyUnicode_FromFormat("LieMultiplicationCache(%d)", self->width);
 }

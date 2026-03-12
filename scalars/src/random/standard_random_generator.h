@@ -45,10 +45,10 @@
 #include <pcg_random.hpp>
 #include <pcg_uint128.hpp>
 
-#include "roughpy/core/construct_inplace.h"
+#include "roughpy/core/construct_inplace.hpp"
 #include <roughpy/core/check.h>
-#include <roughpy/core/slice.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/slice.hpp>
+#include <roughpy/core/types.hpp>
 
 #include "roughpy/scalars/scalars_fwd.h"
 

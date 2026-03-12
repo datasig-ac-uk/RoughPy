@@ -33,7 +33,7 @@
 
 #include <boost/container/flat_map.hpp>
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/scalars/key_scalar_stream.h>

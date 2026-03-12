@@ -32,7 +32,7 @@
 
 #include "roughpy/intervals/dyadic.h"
 
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 #include <cmath>
 #include <ostream>

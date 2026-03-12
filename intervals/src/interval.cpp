@@ -36,7 +36,7 @@
 #include <stdexcept>
 
 #include <roughpy/core/check.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "roughpy_intervals_export.h"
 

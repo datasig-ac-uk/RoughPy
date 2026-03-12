@@ -8,7 +8,7 @@
 #include "roughpy_python.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/platform/devices/core.h>
 
 #include <boost/container/small_vector.hpp>

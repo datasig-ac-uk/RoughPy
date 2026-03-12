@@ -1,7 +1,7 @@
 #ifndef ROUGHPY_COMPUTE__SRC_CHECK_DIMS_HPP
 #define ROUGHPY_COMPUTE__SRC_CHECK_DIMS_HPP
 
-#include "py_headers.h"
+#include <roughpy/pycore/py_headers.h>
 
 namespace rpy::compute {
 

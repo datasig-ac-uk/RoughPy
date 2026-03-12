@@ -30,7 +30,7 @@
 //
 
 #include <roughpy/core/check.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include "devices/core.h"
 #include "devices/buffer.h"

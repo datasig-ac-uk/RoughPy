@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "roughpy/core/types.h"
+#include "roughpy/core/types.hpp"
 
 #include "devices/core.h"
 

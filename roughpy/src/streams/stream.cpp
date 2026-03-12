@@ -32,9 +32,9 @@
 #include <cstring>
 #include <sstream>
 
-#include "roughpy/core/construct_inplace.h"            // for construct_inplace
+#include "roughpy/core/construct_inplace.hpp"            // for construct_inplace
 #include "roughpy/core/macros.h"                       // for RPY_UNUSED_VAR
-#include "roughpy/core/types.h"                        // for resolution_t
+#include "roughpy/core/types.hpp"                        // for resolution_t
 
 #include <roughpy/intervals/partition.h>
 #include <roughpy/platform/archives.h>

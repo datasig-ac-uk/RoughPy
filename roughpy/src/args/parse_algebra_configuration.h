@@ -8,7 +8,7 @@
 
 #include "roughpy_module.h"
 
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/scalars/scalars_fwd.h>
 #include <roughpy/algebra/context_fwd.h>
 

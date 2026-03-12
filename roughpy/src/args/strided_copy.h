@@ -36,7 +36,7 @@
 #include "roughpy_module.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 #include <roughpy/scalars/scalars_fwd.h>
 
 namespace rpy {

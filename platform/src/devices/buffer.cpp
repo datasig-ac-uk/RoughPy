@@ -34,8 +34,8 @@
 #include <roughpy/core/check.h>
 #include <roughpy/core/debug_assertion.h>
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
-#include <roughpy/core/smart_ptr.h>
+#include <roughpy/core/types.hpp>
+#include <roughpy/core/smart_ptr.hpp>
 
 #include "devices/memory_view.h"
 #include "devices/device_handle.h"

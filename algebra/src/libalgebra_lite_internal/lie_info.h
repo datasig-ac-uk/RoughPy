@@ -36,7 +36,7 @@
 #include "lie_basis_info.h"
 #include <roughpy/algebra/algebra_info.h>
 
-#include <roughpy/core/traits.h>
+#include <roughpy/core/traits.hpp>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <libalgebra_lite/lie.h>

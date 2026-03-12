@@ -32,8 +32,8 @@
 #include "externally_sourced_stream.h"
 
 #include "roughpy/core/check.h"                    // for throw_exception
-#include "roughpy/core/types.h"                    // for string
-#include <roughpy/core/helpers.h>
+#include "roughpy/core/types.hpp"                    // for string
+#include <roughpy/core/helpers.hpp>
 #include <roughpy/core/macros.h>
 
 #include <roughpy/platform.h>

@@ -29,9 +29,9 @@
 #define ROUGHPY_CORE_POINTER_HELPERS_H_
 
 #include "macros.h"
-#include "traits.h"
-#include "types.h"
-#include "detail/bit_cast.h" // IWYU pragma: EXPORT
+#include "traits.hpp"
+#include "types.hpp"
+#include "detail/bit_cast.hpp" // IWYU pragma: EXPORT
 
 #include <bitset>
 #include <climits>

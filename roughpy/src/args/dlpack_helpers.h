@@ -37,9 +37,9 @@
 
 #include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
 #include "roughpy/core/macros.h"            // for RPY_UNREACHABLE_RETURN
-#include "roughpy/core/types.h"             // for uint8_t, string
+#include "roughpy/core/types.hpp"             // for uint8_t, string
 
-#include <roughpy/core/helpers.h>
+#include <roughpy/core/helpers.hpp>
 #include <roughpy/scalars/scalars_fwd.h>
 #include <roughpy/scalars/scalar_type.h>
 

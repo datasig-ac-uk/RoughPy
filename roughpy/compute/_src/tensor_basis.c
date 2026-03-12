@@ -4,21 +4,21 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define RPC_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
-#include "py_compat.h"
+#define RPY_PYCOMPAT_INCLUDE_STRUCTMEMBER 1
+#include <roughpy/pycore/compat.h>
 
-#include "py_fnv1a_hash.h"
+#include <roughpy/pycore/fnv1a_hash.h>
 
-/* clang-format off */
 struct _PyTensorBasis {
     PyObject_HEAD//
-    int32_t width;
+            int32_t width;
     int32_t depth;
     PyObject* degree_begin;
 
     Py_hash_t cached_hash;
 };
-/* clang-format on */
+
+PyTypeObject* PyTensorBasis_Type = NULL;
 
 static PyObject* tensor_basis_new(
         PyTypeObject* type,
@@ -29,7 +29,10 @@ static PyObject* tensor_basis_new(
     PyTensorBasis* self = (PyTensorBasis*) type->tp_alloc(type, 0);
     if (!self) { return NULL; }
 
-    Py_XSETREF(self->degree_begin, Py_NewRef(Py_None));
+    self->width = 0;
+    self->depth = 0;
+    self->degree_begin = Py_None;
+    Py_INCREF(Py_None);
 
     self->cached_hash = -1;
 
@@ -116,11 +119,14 @@ tensor_basis_init(PyTensorBasis* self, PyObject* args, PyObject* kwargs)
             return -1;
         }
 
-        Py_XSETREF(self->degree_begin, Py_NewRef(degree_begin));
+        Py_INCREF(degree_begin);
+        Py_XDECREF(self->degree_begin);
+        self->degree_begin = degree_begin;
     } else {
         PyObject* arr = construct_tensor_db(self->width, self->depth);
         if (arr == NULL) { return -1; }
-        Py_XSETREF(self->degree_begin, arr);
+        Py_XDECREF(self->degree_begin);
+        self->degree_begin = arr;
     }
 
     return 0;
@@ -186,7 +192,7 @@ tensor_basis_truncate(PyObject* self, PyObject* args, PyObject* kwargs)
     }
 
     PyTensorBasis* new_obj
-            = PyObject_NewVar(PyTensorBasis, &PyTensorBasis_Type, 0);
+            = (PyTensorBasis*) PyType_GenericAlloc(PyTensorBasis_Type, 0);
     if (new_obj == NULL) { return NULL; }
 
     new_obj->width = self_->width;
@@ -207,10 +213,22 @@ PyObject* tensor_basis_size(PyObject* self, PyObject* Py_UNUSED(arg))
     return PyLong_FromLong(data[self_->depth + 1]);
 }
 
+static int
+tensor_basis_traverse(PyTensorBasis* self, visitproc visit, void* arg)
+{
+    Py_VISIT(Py_TYPE(self));
+    Py_VISIT(self->degree_begin);
+    return 0;
+}
+
 static void tensor_basis_dealloc(PyTensorBasis* self)
 {
+    PyObject_GC_UnTrack(self);
     Py_XDECREF(self->degree_begin);
-    Py_TYPE(self)->tp_free((PyObject*) self);
+    PyTypeObject* type = Py_TYPE(self);
+    freefunc tp_free = (freefunc) PyType_GetSlot(type, Py_tp_free);
+    if (tp_free) { tp_free(self); }
+    Py_DECREF(type);
 }
 
 static PyObject*
@@ -278,35 +296,40 @@ static PyMethodDef PyTensorBasis_methods[] = {
         {NULL}
 };
 
-/* clang-format off */
-PyTypeObject PyTensorBasis_Type = {
-        .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = RPY_CPT_TYPE_NAME(TensorBasis),
-        .tp_basicsize = sizeof(PyTensorBasis),
-        .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "TensorBasis",
-        .tp_methods = PyTensorBasis_methods,
-        .tp_members = PyTensorBasis_members,
-        .tp_new = tensor_basis_new,
-        .tp_init = (initproc) tensor_basis_init,
-        .tp_dealloc = (destructor) tensor_basis_dealloc,
-        .tp_repr = (reprfunc) tensor_basis_repr,
-        .tp_hash = (hashfunc) tensor_basis_hash,
-        .tp_richcompare = (richcmpfunc) tensor_basis_richcompare,
+static PyType_Slot tensor_basis_slots[] = {
+        {        Py_tp_new,         tensor_basis_new},
+        {       Py_tp_init,        tensor_basis_init},
+        {    Py_tp_dealloc,     tensor_basis_dealloc},
+        {   Py_tp_traverse,    tensor_basis_traverse},
+        {       Py_tp_repr,        tensor_basis_repr},
+        {       Py_tp_hash,        tensor_basis_hash},
+        {Py_tp_richcompare, tensor_basis_richcompare},
+        {    Py_tp_methods,    PyTensorBasis_methods},
+        {    Py_tp_members,    PyTensorBasis_members},
+        {        Py_tp_doc,            "TensorBasis"},
+        {                0,                     NULL}
 };
-/* clang-format on */
+
+static PyType_Spec tensor_basis_spec
+        = {.name = "roughpy.TensorBasis",
+           .basicsize = sizeof(PyTensorBasis),
+           .itemsize = 0,
+           .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+           .slots = tensor_basis_slots};
 
 int init_tensor_basis(PyObject* module)
 {
-    if (PyType_Ready(&PyTensorBasis_Type) < 0) { return -1; }
+    PyTensorBasis_Type = (PyTypeObject*) PyType_FromSpec(&tensor_basis_spec);
+    if (PyTensorBasis_Type == NULL) { return -1; }
 
-    if (PyModule_AddObjectRef(
+    Py_INCREF(PyTensorBasis_Type);
+    if (PyModule_AddObject(
                 module,
                 "TensorBasis",
-                (PyObject*) &PyTensorBasis_Type
+                (PyObject*) PyTensorBasis_Type
         )
         < 0) {
+        Py_DECREF(PyTensorBasis_Type);
         return -1;
     }
 
@@ -321,8 +344,7 @@ PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth)
     }
 
     PyTensorBasis* self
-            = (PyTensorBasis*)
-                      PyTensorBasis_Type.tp_alloc(&PyTensorBasis_Type, 0);
+            = (PyTensorBasis*) PyType_GenericAlloc(PyTensorBasis_Type, 0);
     if (!self) { return NULL; }
 
     self->width = width;
@@ -334,7 +356,8 @@ PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth)
         return NULL;
     }
 
-    Py_XSETREF(self->degree_begin, db);
+    Py_XDECREF(self->degree_begin);
+    self->degree_begin = db;
     return self;
 }
 
@@ -344,6 +367,4 @@ PyTensorBasis* PyTensorBasis_get(int32_t width, int32_t depth)
 int32_t PyTensorBasis_width(PyTensorBasis* basis) { return basis->width; }
 int32_t PyTensorBasis_depth(PyTensorBasis* basis) { return basis->depth; }
 PyArrayObject* PyTensorBasis_degree_begin(PyTensorBasis* basis)
-{
-    return (PyArrayObject*) basis->degree_begin;
-}
+{ return (PyArrayObject*) basis->degree_begin; }

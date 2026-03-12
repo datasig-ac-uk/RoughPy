@@ -29,7 +29,7 @@
 #define ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_INTERFACE_H_
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
+#include <roughpy/core/types.hpp>
 
 #include <roughpy/algebra/tensor_basis.h>
 #include <roughpy/algebra/shuffle_tensor.h>

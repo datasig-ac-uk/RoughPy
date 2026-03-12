@@ -1,6 +1,5 @@
-#ifndef ROUGHPY_COMPUTE__SRC_FNV1A_HASH_H
-#define ROUGHPY_COMPUTE__SRC_FNV1A_HASH_H
-
+#ifndef ROUGHPY_CORE_FNV1A_HASH_H
+#define ROUGHPY_CORE_FNV1A_HASH_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -37,4 +36,4 @@ fnv1a_hash_bytes64(uint64_t state, const void* bytes, size_t len);
 }
 #endif
 
-#endif// ROUGHPY_COMPUTE__SRC_FNV1A_HASH_H
+#endif// ROUGHPY_CORE_FNV1A_HASH_H

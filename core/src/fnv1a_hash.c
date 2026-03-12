@@ -1,4 +1,4 @@
-#include "fnv1a_hash.h"
+#include <roughpy/core/fnv1a_hash.h>
 
 /*
  * This is an implementation of the FNV-1A hash function which essentially

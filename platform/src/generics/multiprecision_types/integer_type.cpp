@@ -11,8 +11,8 @@
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
-#include "roughpy/core/hash.h"
-#include "roughpy/core/types.h"
+#include "roughpy/core/hash.hpp"
+#include "roughpy/core/types.hpp"
 
 #include "integer_conversion.h"
 
