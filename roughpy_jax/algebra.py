@@ -937,6 +937,7 @@ def _lie_to_tensor_vjp_bwd(
 lie_to_tensor.defvjp(_lie_to_tensor_vjp_fwd, _lie_to_tensor_vjp_bwd)
 
 
+@jax.custom_vjp
 def tensor_to_lie(
     arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None
 ) -> LieT:
@@ -970,16 +971,70 @@ def tensor_to_lie(
 
 def tensor_to_lie_derivative(
     arg: FreeTensorT,
-    t_arg: FreeTensorT | None = None,
+    t_arg: FreeTensorT,
+    lie_basis: LieBasis | None = None,
     scale_factor=None,
-) -> LieT: ...
+) -> LieT:
+    """
+    Tensor to Lie derivative of Lie perturbation `t_arg` at `arg`
+
+    Since tensor_to_lie is a linear map T2L, its derivative is
+    independent of the position and is simply T2L applied to the
+    tangent direction.
+    """
+    return tensor_to_lie(t_arg, lie_basis, scale_factor)
 
 
 def tensor_to_lie_adjoint_derivative(
     arg: FreeTensorT,
     ct_result: LieT,
+    lie_basis: LieBasis | None = None,
     scale_factor=None,
-) -> tuple[ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT]:
+    """
+    Tensor to Lie adjoint derivative of Lie cotangent `ct_result` at `arg`
+
+    Computes T2L^T applied to the cotangent. The transpose is obtained
+    by feeding the CSC-stored t2l matrix data into csr_matvec, which
+    implicitly transposes the matrix.
+    """
+    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
+    t2l_size = np.int32(arg.basis.size())
+    data = csr_matvec(t2l.data, t2l.indices, t2l.indptr, t2l_size, ct_result.data)
+    if scale_factor:
+        data = data * scale_factor
+
+    return DenseShuffleTensor(data, arg.basis)
+
+
+def _tensor_to_lie_vjp_fwd(
+    arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None
+):
+    result = tensor_to_lie(arg, lie_basis, scale_factor)
+    return result, (arg, lie_basis, scale_factor)
+
+
+def _tensor_to_lie_vjp_bwd(
+    residuals, ct_result_data: jax.Array
+) -> tuple[jax.Array, ...]:
+    arg, lie_basis, scale_factor = residuals
+
+    if isinstance(ct_result_data, DenseLie):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseLie(ct_result_data.data, ct_result_data.basis)
+    else:
+        ct_result = DenseLie(ct_result_data.data, ct_result_data.basis)
+
+    ct_t2l_adjoint_deriv = tensor_to_lie_adjoint_derivative(
+        arg, ct_result, lie_basis, scale_factor
+    )
+
+    return (ct_t2l_adjoint_deriv.data, None, None)
+
+
+tensor_to_lie.defvjp(_tensor_to_lie_vjp_fwd, _tensor_to_lie_vjp_bwd)
 
 
 def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:

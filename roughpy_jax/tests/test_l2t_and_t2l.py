@@ -100,3 +100,50 @@ def test_l2t_adjoint_derivative(lt2_trials):
         codomain_pairing=pairing,
         abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
     )
+
+
+def test_t2l_linear(lt2_trials):
+    lie_basis = lt2_trials.lie_basis
+    x = lt2_trials.uniform_free_tensor()
+    y = lt2_trials.uniform_free_tensor()
+
+    vals = lt2_trials.uniform_data((2,))
+    alpha = float(vals[0])
+    beta = float(vals[1])
+
+    assert_is_linear(rpj.tensor_to_lie, x, y, alpha, beta)
+
+
+def test_t2l_derivative(lt2_trials):
+    lie_basis = lt2_trials.lie_basis
+    x = lt2_trials.uniform_free_tensor()
+    tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
+    
+    assert_is_derivative(
+        rpj.tensor_to_lie,
+        rpj.tensor_to_lie_derivative,
+        x,
+        tangent,
+        abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
+    )
+
+
+def test_t2l_adjoint_derivative(lt2_trials):
+    lie_basis = lt2_trials.lie_basis
+    x = lt2_trials.uniform_free_tensor()
+    tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
+    cotangent = lt2_trials.uniform_lie()
+
+    def pairing(lhs, rhs):
+        return jnp.sum(lhs.data * rhs.data)
+    
+    assert_is_adjoint_derivative(
+        rpj.tensor_to_lie,
+        rpj.tensor_to_lie_adjoint_derivative,
+        x,
+        tangent,
+        cotangent,
+        domain_pairing=pairing,
+        codomain_pairing=pairing,
+        abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
+    )
