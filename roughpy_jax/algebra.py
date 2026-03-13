@@ -906,7 +906,7 @@ def lie_to_tensor_adjoint_derivative(
     Lie to tensor derivative of free tensor `ct_result` at `arg`
     """
     l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
-    l2t_size = np.int32(arg.basis.size())
+    l2t_size = arg.basis.size()
     data = csr_matvec(l2t.data, l2t.indices, l2t.indptr, l2t_size, ct_result.data)
     if scale_factor:
         data = data * scale_factor
@@ -999,7 +999,7 @@ def tensor_to_lie_adjoint_derivative(
     """
     lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
     t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
-    t2l_size = np.int32(arg.basis.size())
+    t2l_size = arg.basis.size()
     data = csr_matvec(t2l.data, t2l.indices, t2l.indptr, t2l_size, ct_result.data)
     if scale_factor:
         data = data * scale_factor
