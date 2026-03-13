@@ -11,6 +11,8 @@ from roughpy_jax.algebra import (
     Lie,
     ft_fma,
     ft_mul,
+    ft_mul_derivative,
+    ft_mul_adjoint_derivative,
     ft_exp,
     ft_log,
     ft_log_derivative,
