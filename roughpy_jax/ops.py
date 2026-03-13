@@ -34,16 +34,12 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
         # Get l2t FIRST and convert to JAX arrays before t2l can overwrite the buffer
         l2t = lie_basis.get_l2t_matrix(dtype)
         l2t_arrays = (
-            jnp.asarray(l2t.data, copy=True), 
-            jnp.asarray(l2t.indices, copy=True), 
-            jnp.asarray(l2t.indptr, copy=True)
+            l2t.data, l2t.indices, l2t.indptr
         )
         # Now get t2l – this amay overwrite the C++ buffer, but l2t is already saved
         t2l = lie_basis.get_t2l_matrix(dtype)
         t2l_arrays = (
-            jnp.asarray(t2l.data, copy=True), 
-            jnp.asarray(t2l.indices, copy=True), 
-            jnp.asarray(t2l.indptr, copy=True)
+            t2l.data, t2l.indices, t2l.indptr
         )
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
     return _lie_sparse_matrix_cache[key]
