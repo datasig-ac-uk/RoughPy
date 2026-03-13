@@ -3,55 +3,21 @@ import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
 
-from derivative_testing import assert_is_linear, assert_is_derivative, assert_is_adjoint_derivative
+from derivative_testing import (
+    DerivativeTrialsHelper,
+    assert_is_adjoint_derivative,
+    assert_is_derivative,
+    assert_is_linear,
+)
 from jax.test_util import check_vjp
 
 
-class AntipodeTrialsHelper:
-    """
-    Antipode test fixture for batch of w=4, d=3 tensors and n trials of random data.
-    """
-    def __init__(self, dtype):
-        self.dtype = dtype
-
-        self.rng_key = jax.random.key(12345)
-        self.basis = rpj.TensorBasis(4, 3)
-        self.n_trials = 10
-
-        # Baseline scales and tolerances used for differing dtypes
-        self.tangent_scale = 1e-3 if self.dtype == jnp.float32 else 1.0
-        self.base_tol = 1e-3 if self.dtype == jnp.float32 else 1e-6
-
-    def new_rng_key(self):
-        self.rng_key, key = jax.random.split(self.rng_key)
-        return key
-
-    def batch_shape(self):
-        return (self.n_trials, self.basis.size())
-
-    def zero(self):
-        data = jnp.zeros(shape=self.batch_shape, dtype=self.dtype)
-        return rpj.FreeTensor(data, self.basis)
-
-    def uniform_data(self, shape):
-        return jax.random.uniform(
-            self.new_rng_key(),
-            minval=-1.0,
-            maxval=1.0,
-            dtype=self.dtype,
-            shape=shape
-        )
-
-    def ft_uniform(self):
-        return rpj.FreeTensor(
-            self.uniform_data(self.batch_shape()),
-            self.basis
-        )
-
-
+# Antipode test fixture for batch of w=4, d=3 free tensors
 @pytest.fixture(params=[jnp.float32, jnp.float64])
 def trials(request):
-    yield AntipodeTrialsHelper(request.param)
+    yield DerivativeTrialsHelper(
+        request.param, width=4, depth=3, default_tensor_type=rpj.FreeTensor
+    )
 
 
 @jax.jit
@@ -102,8 +68,8 @@ def test_antipode_idempotent(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
 
 def test_antipode_linear(trials):
-    x = trials.ft_uniform()
-    y = trials.ft_uniform()
+    x = trials.uniform_tensor()
+    y = trials.uniform_tensor()
 
     vals = trials.uniform_data((2,))
     alpha = float(vals[0])
@@ -113,22 +79,22 @@ def test_antipode_linear(trials):
 
 
 def test_antipode_derivative(trials):
-    x = trials.ft_uniform()
-    tangent = trials.ft_uniform() * trials.tangent_scale
+    x = trials.uniform_tensor()
+    tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
 
     assert_is_derivative(
         rpj.antipode,
         rpj.antipode_derivative,
         x,
         tangent,
-        abs_tol=trials.base_tol
+        abs_tol=trials.cond_dtype(1e-3, 1e-6)
     )
 
 
 def test_antipode_adjoint_derivative(trials):
-    x = trials.ft_uniform()
-    tangent = trials.ft_uniform() * trials.tangent_scale
-    cotangent = trials.ft_uniform()
+    x = trials.uniform_tensor()
+    tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
+    cotangent = trials.uniform_tensor()
 
     def pairing(lhs, rhs):
         return jnp.sum(lhs.data * rhs.data)
@@ -141,7 +107,7 @@ def test_antipode_adjoint_derivative(trials):
         cotangent,
         domain_pairing=pairing,
         codomain_pairing=pairing,
-        abs_tol=trials.base_tol * 1e1
+        abs_tol=trials.cond_dtype(1e-2, 1e-6)
     )
 
 
@@ -151,9 +117,9 @@ def test_antipode_pullback_vjp(trials):
     # bookkeeping or edge cases that FD sampling might miss.
 
     # Get cotangent returned by the VJP pullback
-    x = trials.ft_uniform()
-    tangent = trials.ft_uniform() * trials.tangent_scale
-    cotangent = trials.ft_uniform()
+    x = trials.uniform_tensor()
+    tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
+    cotangent = trials.uniform_tensor()
 
     y, pullback = jax.vjp(rpj.antipode, x)
     inp_cot_from_vjp = pullback(cotangent)[0]
@@ -171,11 +137,11 @@ def test_antipode_pullback_vjp(trials):
 
 def test_antipode_check_vjp(trials):
     # JAX built-in finite difference check
-    x = trials.ft_uniform()
+    x = trials.uniform_tensor()
     check_vjp(
         rpj.antipode,
         lambda x: jax.vjp(rpj.antipode, x),
         (x,),
-        atol=trials.base_tol * 2e0,
-        rtol=trials.base_tol * 2e0,
+        atol=trials.cond_dtype(2e-3, 1e-6),
+        rtol=trials.cond_dtype(2e-3, 1e-6)
     )
