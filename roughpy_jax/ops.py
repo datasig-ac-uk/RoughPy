@@ -12,6 +12,42 @@ from jax import Array
 
 from .compressed import csc_matvec
 
+# Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
+# Potentially useful to have cached versions to the l2t and t2l matrices as JAX 
+# arrays, as these are used in many operations and converting from the C++ 
+# buffers to JAX arrays can be expensive. 
+global _lie_sparse_matrix_cache
+_lie_sparse_matrix_cache: dict[
+    tuple, tuple[tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+                 tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]
+] = {}
+
+
+def _get_lie_sparse_matrices(lie_basis, dtype):
+    """Return cached (l2t_arrays, t2l_arrays) for a given LieBasis and dtype.
+
+    l2t_arrays = (data, indices, indptr) for the Lie-to-tensor sparse matrix.
+    t2l_arrays = (data, indices, indptr) for the tensor-to-Lie sparse matrix.
+    """
+    key = (lie_basis.width, lie_basis.depth, str(dtype))
+    if key not in _lie_sparse_matrix_cache:
+        # Get l2t FIRST and convert to JAX arrays before t2l can overwrite the buffer
+        l2t = lie_basis.get_l2t_matrix(dtype)
+        l2t_arrays = (
+            jnp.asarray(l2t.data, copy=True), 
+            jnp.asarray(l2t.indices, copy=True), 
+            jnp.asarray(l2t.indptr, copy=True)
+        )
+        # Now get t2l – this amay overwrite the C++ buffer, but l2t is already saved
+        t2l = lie_basis.get_t2l_matrix(dtype)
+        t2l_arrays = (
+            jnp.asarray(t2l.data, copy=True), 
+            jnp.asarray(t2l.indices, copy=True), 
+            jnp.asarray(t2l.indptr, copy=True)
+        )
+        _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
+    return _lie_sparse_matrix_cache[key]
+
 
 class BasisLike(typing.Protocol, cabc.Hashable):
     width: np.int32
@@ -879,12 +915,14 @@ class DenseLieToTensor(Operation, DenseOperation):
         arg_basis = self.bases[0]
         tensor_basis = self.bases[1]
 
-        l2t = arg_basis.get_l2t_matrix(self.data_dtype)
+        l2t_data, l2t_indices, l2t_indptr = _get_lie_sparse_matrices(
+            arg_basis, self.data_dtype
+        )[0]
 
         return self.StaticArgs(
-            l2t_data=l2t.data,
-            l2t_indices=l2t.indices,
-            l2t_indptr=l2t.indptr,
+            l2t_data=l2t_data,
+            l2t_indices=l2t_indices,
+            l2t_indptr=l2t_indptr,
             l2t_size=np.int32(tensor_basis.size()),
             **kwargs,
         )
@@ -902,7 +940,7 @@ class DenseLieToTensor(Operation, DenseOperation):
         scale_factor: Union[None, np.float64],
     ) -> tuple[Array]:
         result = csc_matvec(l2t_data, l2t_indices, l2t_indptr, l2t_size, arg_data)
-        if scale_factor:
+        if scale_factor is not None:
             result = result * scale_factor
 
         return (result,)
@@ -921,12 +959,14 @@ class DenseTensorToLie(Operation, DenseOperation):
     def make_static_args(self, kwargs) -> type[TypedDict]:
         lie_basis = self.bases[1]
 
-        t2l = lie_basis.get_t2l_matrix(self.data_dtype)
+        t2l_data, t2l_indices, t2l_indptr = _get_lie_sparse_matrices(
+            lie_basis, self.data_dtype
+        )[1]
 
         return self.StaticArgs(
-            t2l_data=t2l.data,
-            t2l_indices=t2l.indices,
-            t2l_indptr=t2l.indptr,
+            t2l_data=t2l_data,
+            t2l_indices=t2l_indices,
+            t2l_indptr=t2l_indptr,
             t2l_size=np.int32(lie_basis.size()),
             **kwargs,
         )
@@ -944,7 +984,7 @@ class DenseTensorToLie(Operation, DenseOperation):
         scale_factor: Union[None, np.float64],
     ) -> tuple[Array]:
         result = csc_matvec(t2l_data, t2l_indices, t2l_indptr, t2l_size, arg_data)
-        if scale_factor:
+        if scale_factor is not None:
             result = result * scale_factor
 
         return (result,)
