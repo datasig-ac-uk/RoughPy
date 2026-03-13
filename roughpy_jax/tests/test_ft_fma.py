@@ -1,0 +1,78 @@
+import jax.numpy as jnp
+import numpy as np
+import pytest
+import roughpy_jax as rpj
+
+
+def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
+    f = rpj_test_fixture_type_mismatch
+
+    # Mismatch first and second widths
+    with pytest.raises(ValueError):
+        rpj.ft_fma(f.ft_f32(2, 2), f.ft_f32(3, 2), f.ft_f32(2, 2))
+
+    # Mismatch first and third widths
+    with pytest.raises(ValueError):
+        rpj.ft_fma(f.ft_f32(2, 2), f.ft_f32(2, 2), f.ft_f32(3, 2))
+
+
+def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
+    f = rpj_test_fixture_type_mismatch
+
+    # Mismatch first and second widths
+    with pytest.raises(ValueError):
+        rpj.ft_mul(f.ft_f32(2, 2), f.ft_f32(3, 2))
+
+
+def test_dense_ft_fma(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    basis = rpj.TensorBasis(2, 2)
+    a_data = rpj_batch.zeros(basis.size(), rpj_dtype)
+    b_data = rpj_batch.repeat(jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=rpj_dtype))
+    c_data = rpj_batch.repeat(jnp.array([-1, 4, 0, 1, 1, 0, 2], dtype=rpj_dtype))
+
+    a = rpj.FreeTensor(a_data, basis)
+    b = rpj.FreeTensor(b_data, basis)
+    c = rpj.FreeTensor(c_data, basis)
+
+    d = rpj.ft_fma(a, b, c)
+
+    expected_data = rpj_batch.repeat(jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=rpj_dtype))
+    assert jnp.allclose(d.data, expected_data)
+
+
+def test_dense_ft_fma_construction(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    basis = rpj.TensorBasis(2, 2)
+
+    def _create_rng_uniform_ft():
+        data = rpj_batch.rng_uniform(-1, 1, basis.size(), rpj_dtype)
+        return rpj.FreeTensor(data, basis)
+
+    batched_a = _create_rng_uniform_ft()
+    batched_b = _create_rng_uniform_ft()
+    batched_c = _create_rng_uniform_ft()
+
+    batched_d = rpj.ft_fma(batched_a, batched_b, batched_c)
+
+    # Result d is checked iterating over batch to simplify construction of expected value
+    for idx in np.ndindex(rpj_batch.shape):
+        a = batched_a.data[idx]
+        b = batched_b.data[idx]
+        c = batched_c.data[idx]
+        d = batched_d.data[idx]
+
+        expected = np.array(a)
+
+        # scalar term
+        expected[0] += b[0] * c[0]
+
+        # first order term
+        expected[1:3] += b[0] * c[1:3] + c[0] * b[1:3]
+
+        # second order term
+        expected[3:] += (
+            b[0] * c[3:]
+            + c[0] * b[3:]
+            + np.outer(b[1:3], c[1:3]).flatten()
+        )
+
+        assert jnp.allclose(d, expected)
