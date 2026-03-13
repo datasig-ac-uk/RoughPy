@@ -1,9 +1,9 @@
 import typing
-
-from typing import Protocol, TypeVar, Callable
-
+from typing import Protocol, TypeVar, Self, Callable
+from dataclasses import dataclass
 
 from roughpy_jax.intervals import Interval
+
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
@@ -111,8 +111,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
     at any given parameter t is obtained by propagating the base value using the
     signature over from t_0 up to t.
 
-    A very basic version of a ValueStream is a tensor-valued stream, where the
-    value type is a free tensor and the propagation operation is left multiplication
+    A very basic version of a ValueStream is a tensor-valued stream, where the value type is a free tensor and the propagation operation is left multiplication
     by the signature. More generally, this might involve the action of a linear
     projection of the signature.
 
@@ -157,7 +156,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
         """
         ...
 
-    def query(self, interval: Interval) -> ValueStream:
+    def query(self, interval: Interval) -> Self:
         """
         Query the value stream over an interval.
 
@@ -173,3 +172,4 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
                  stream.
         """
         ...
+
