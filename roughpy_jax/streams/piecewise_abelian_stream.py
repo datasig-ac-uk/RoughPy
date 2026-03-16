@@ -6,7 +6,9 @@ import jax.numpy as jnp
 from jax import lax
 import jax
 
-from .concepts import Stream, BasisLike, LieT, GroupT
+from roughpy_jax.bases import Basis
+
+from .concepts import Stream, LieT, GroupT
 from roughpy_jax.intervals import RealInterval, Partition, Interval
 from roughpy_jax.algebra import (
     FreeTensor,
@@ -33,8 +35,8 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     
     _data: Tuple[LieT, ...]
     _partition: Partition
-    _lie_basis: BasisLike
-    _group_basis: BasisLike
+    _lie_basis: Basis
+    _group_basis: Basis
 
     def __post_init__(self):
         """Validate the piecewise abelian stream."""
@@ -44,12 +46,12 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
                              )
 
     @property
-    def lie_basis(self) -> BasisLike:
+    def lie_basis(self) -> Basis:
         """Return the Lie basis."""
         return self._lie_basis
     
     @property
-    def group_basis(self) -> BasisLike:
+    def group_basis(self) -> Basis:
         """Return the group basis."""
         return self._group_basis
     

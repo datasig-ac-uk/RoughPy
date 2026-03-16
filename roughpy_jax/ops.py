@@ -10,6 +10,7 @@ import numpy as np
 
 from jax import Array
 
+from .bases import Basis, check_basis_compat, result_basis
 from .compressed import csc_matvec
 
 # Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
@@ -43,14 +44,6 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
         )
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
     return _lie_sparse_matrix_cache[key]
-
-
-class BasisLike(typing.Protocol, cabc.Hashable):
-    width: np.int32
-    depth: np.int32
-    degree_begin: np.ndarray[np.int64.dtype]
-
-    def size(self) -> int: ...
 
 
 class EmptyStaticArgs(TypedDict): ...
@@ -134,7 +127,7 @@ class Operation:
     :type StaticArgs: ClassVar[type[TypedDict]]
 
     :ivar basis: The primary basis object associated with the operation.
-    :type basis: BasisLike
+    :type basis: Basis
 
     :ivar data_dtype: The data type for all input and output data for the operation.
     :type data_dtype: jnp.dtype
@@ -207,9 +200,9 @@ class Operation:
     ## select from available implementations and populate static arguments.
 
     # The primary basis associated with the operation
-    basis: BasisLike
+    basis: Basis
     # The bases for each argument
-    bases: tuple[BasisLike, ...]
+    bases: tuple[Basis, ...]
     # data type for all data inputs and outputs
     data_dtype: jnp.dtype
     # the configuration of batching
@@ -303,48 +296,29 @@ class Operation:
 
     @classmethod
     def get_result_basis(
-        cls, bases: tuple[BasisLike, ...], preferred_basis
-    ) -> BasisLike:
+        cls, bases: tuple[Basis, ...], preferred_basis
+    ) -> Basis:
         """
         Determines the appropriate basis from a list of bases, considering an optional
         preferred basis. The method ensures that all bases in the list have matching
         widths, and it selects the basis with the greatest depth if no preferred basis
         is provided. If a preferred basis is supplied and valid, it returns that basis.
 
-        :param bases: A tuple of BasisLike objects. These represent the candidate bases
+        :param bases: A tuple of Basis objects. These represent the candidate bases
                       to be considered. The method ensures all bases have the same width
                       and selects the deepest valid basis.
-        :param preferred_basis: An optional BasisLike object. If supplied and valid, this
+        :param preferred_basis: An optional Basis object. If supplied and valid, this
                                 basis will be returned instead of evaluating the others.
-        :return: The selected BasisLike object, either the preferred basis (if provided
+        :return: The selected Basis object, either the preferred basis (if provided
                  and valid) or the valid deepest basis from the `bases` tuple.
         :raises ValueError: If the `bases` tuple is empty or if any basis in the tuple
                             does not match the width of the first basis. Also raised if
                             the `preferred_basis` width does not match the base width.
         """
-        if not bases and preferred_basis is None:
-            raise ValueError("basis list should be non-empty")
-
-        choice, *other = bases
-
-        if preferred_basis is not None and choice.width != preferred_basis.width:
-            raise ValueError(
-                f"mismatched width on basis 0, expected {preferred_basis.width} but got {choice.width}"
-            )
-
-        for i, basis in enumerate(other, start=1):
-            if basis.width != choice.width:
-                raise ValueError(
-                    f"mismatched width on basis {i}, expected {choice.width} but got {basis.width}"
-                )
-
-            if basis.depth >= choice.depth:
-                choice = basis
-
         if preferred_basis is not None:
-            return preferred_basis
+            return result_basis(preferred_basis, *bases, strategy="first")
 
-        return choice
+        return result_basis(bases, strategy="max_depth")
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -365,7 +339,7 @@ class Operation:
         dtype,
         batch_dims,
         ffi_call_args: Optional[dict[str, Any]] = None,
-        specific_basis: Optional[BasisLike] = None,
+        specific_basis: Optional[Basis] = None,
         **kwargs,
     ):
         self.basis = basis = self.get_result_basis(bases, specific_basis)
@@ -907,6 +881,21 @@ class DenseLieToTensor(Operation, DenseOperation):
         l2t_size: np.int64
         scale_factor: Union[None, np.float64]
 
+    @classmethod
+    def get_result_basis(
+        cls, bases: tuple[Basis, ...], preferred_basis
+    ) -> Basis:
+        arg_basis, tensor_basis = bases
+
+        check_basis_compat(arg_basis, tensor_basis)
+
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, arg_basis, tensor_basis)
+            check_basis_compat(preferred_basis, tensor_basis, same_type=True)
+            return preferred_basis
+
+        return tensor_basis
+
     def make_static_args(self, kwargs) -> type[TypedDict]:
         arg_basis = self.bases[0]
         tensor_basis = self.bases[1]
@@ -951,6 +940,21 @@ class DenseTensorToLie(Operation, DenseOperation):
         t2l_indptr: np.ndarray[np.int64]
         t2l_size: np.int64
         scale_factor: Union[None, np.float64]
+
+    @classmethod
+    def get_result_basis(
+        cls, bases: tuple[Basis, ...], preferred_basis
+    ) -> Basis:
+        arg_basis, lie_basis = bases
+
+        check_basis_compat(arg_basis, lie_basis)
+
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, arg_basis, lie_basis)
+            check_basis_compat(preferred_basis, lie_basis, same_type=True)
+            return preferred_basis
+
+        return lie_basis
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
         lie_basis = self.bases[1]
