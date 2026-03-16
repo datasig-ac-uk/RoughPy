@@ -6,73 +6,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from roughpy import compute as rpc
 from roughpy_jax.ops import Operation
 
+from .bases import TensorBasis, LieBasis, check_basis_compat
 from .compressed import csr_matvec
 
 AlgebraT = TypeVar("AlgebraT")
 FreeTensorT = TypeVar("FreeTensorT")
 ShuffleTensorT = TypeVar("ShuffleTensorT")
 LieT = TypeVar("LieT")
-
-
-# For exposition only
-# class TensorBasis:
-#     width: np.int32
-#     depth: np.int32
-#     degree_begin: np.ndarray[np.int64.dtype]
-class TensorBasis(rpc.TensorBasis):
-    pass
-
-
-# For exposition only
-# class LieBasis:
-#     width: np.int32
-#     depth: np.int32
-#     degree_begin: np.ndarray[np.int64.dtype]
-#
-#     def get_l2t_matrix(dtype) -> PySparseMatrix
-#     def get_t2l_matrix(dtype) -> PySparseMatrix
-class LieBasis(rpc.LieBasis):
-    """
-    An instance of a Hall basis for the Lie algebra.
-
-    A Hall basis is indexed by integer keys k > 0. To each key there is an
-    associated pair of parents (a, b) where a and b are both keys belonging
-    to the Hall basis. The exceptions are the "letters", which are those keys
-    k for which the parents are (0, k). For convenience, we usually add a null
-    element to the basis at key 0 and with parents (0, 0), which serves to
-    offset elements correctly. However, this is not a valid key for the vectors
-    and thus the key to index map subtracts 1 from the key to obtain the
-    position in the vector.
-
-    The default constructor requires only width and depth and constructs a
-    Hall set greedily, minimizing the degree of the left parent. For instance,
-    for width 2 and depth 4, the basis contains 5 keys 1 -> (0, 1), 2 -> (0, 2),
-    3 -> (1, 2) (which represents the bracket [1,2]), 4 -> (1, 3) ([1,[1,2]]),
-    and 5 -> (2, 3) ([2,[1,2]]).
-
-    This implementation is designed to be flexible as to the exact contents of
-    the Hall set, provided it is given in the format described above. The basis
-    must also be ordered by degree, so elements of degree k must appear
-    sequentially and between elements of degree k - 1 and degree k + 1 (if such
-    elements exist).
-    """
-
-    pass
-
-
-def _basis_flatten(basis):
-    return (), basis
-
-
-def _basis_unflatten(aux, _children):
-    return aux
-
-
-jax.tree_util.register_pytree_node(TensorBasis, _basis_flatten, _basis_unflatten)
-jax.tree_util.register_pytree_node(LieBasis, _basis_flatten, _basis_unflatten)
 
 
 def _algebra_add(
@@ -192,12 +134,6 @@ TODO: These should be replaced by type aliases later, and we should
 FreeTensor = DenseFreeTensor
 ShuffleTensor = DenseShuffleTensor
 Lie = DenseLie
-
-
-def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
-    for i, basis in enumerate(other_bases):
-        if basis.width != first_basis.width:
-            raise ValueError(f"Incompatible width between basis 0 and basis {i + 1}")
 
 
 def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
@@ -611,7 +547,7 @@ def ft_log_derivative(
     x: FreeTensorT,
     t_x: FreeTensorT,
 ) -> FreeTensorT:
-    _check_basis_compat(x.basis, t_x.basis)
+    check_basis_compat(x.basis, t_x.basis)
     batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
 
@@ -641,7 +577,7 @@ def ft_log_adjoint_derivative(
     x: FreeTensorT,
     ct_result: ShuffleTensorT,
 ) -> tuple[ShuffleTensorT]:
-    _check_basis_compat(x.basis, ct_result.basis)
+    check_basis_compat(x.basis, ct_result.basis)
     batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
 
@@ -722,7 +658,7 @@ def ft_fmexp(
     dtype = multiplier.data.dtype
 
     out_basis = out_basis or multiplier.basis
-    _check_basis_compat(out_basis, multiplier.basis, exponent.basis)
+    check_basis_compat(out_basis, multiplier.basis, exponent.basis)
 
     batch_dims = _get_and_check_batch_dims(multiplier.data, exponent.data, core_dims=1)
 
@@ -753,7 +689,7 @@ def ft_fmexp_derivative(
     t_multiplier: FreeTensorT,
     t_exponent: FreeTensorT,
 ) -> FreeTensorT:
-    _check_basis_compat(
+    check_basis_compat(
         multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
     )
     _get_and_check_batch_dims(
@@ -784,7 +720,7 @@ def ft_fmexp_adjoint_derivative(
     exponent: FreeTensorT,
     ct_result: ShuffleTensorT,
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]:
-    _check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
+    check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
     _get_and_check_batch_dims(
         multiplier.data, exponent.data, ct_result.data, core_dims=1
     )
@@ -1051,7 +987,7 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
 
     out_basis = arg.basis
-    _check_basis_compat(out_basis, op.basis)
+    check_basis_compat(out_basis, op.basis)
 
     batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
@@ -1101,7 +1037,7 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
 
     out_basis = arg.basis
-    _check_basis_compat(out_basis, op.basis)
+    check_basis_compat(out_basis, op.basis)
 
     batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
@@ -1155,7 +1091,7 @@ def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Arr
     """
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
 
-    _check_basis_compat(functional.basis, functional.basis)
+    check_basis_compat(functional.basis, functional.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     op_cls = Operation.get_operation("tensor_pairing", "dense")
