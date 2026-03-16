@@ -11,6 +11,8 @@ import jax.numpy as jnp
 
 from jax.typing import ArrayLike
 
+from roughpy_jax.bases import to_tensor_basis, to_lie_basis
+
 from roughpy_jax.algebra import (
     Lie,
     LieBasis,
@@ -98,9 +100,7 @@ def _cbh(
     tensor_basis: TensorBasis | None = None,
     axis: int = 0,
 ) -> Lie:
-    tensor_basis = tensor_basis or TensorBasis(
-        width=cache_basis.width, depth=cache_basis.depth
-    )
+    tensor_basis = tensor_basis or to_tensor_basis(cache_basis)
 
     batch_shape = data.shape[:axis] + data.shape[axis + 1 :]
     acc = _ft_identity(tensor_basis, batch_shape, data.dtype)
@@ -294,7 +294,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         self._cache = cache
         self._lie_basis = lie_basis
-        self._group_basis = group_basis or TensorBasis(lie_basis.width, lie_basis.depth)
+        self._group_basis = group_basis or to_tensor_basis(lie_basis)
         self._support = support or RealInterval(0.0, 1.0, IntervalType.ClOpen)
         self._resolution = int(resolution)
         self._interval_type = interval_type
@@ -468,7 +468,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             _, exp = jnp.frexp(min_diff)
             resolution = int(1 - exp)
 
-        tensor_basis = TensorBasis(width=lie_basis.width, depth=lie_basis.depth)
+        tensor_basis = to_tensor_basis(lie_basis)
 
         rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
         k_arrays = [
@@ -585,7 +585,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return result
 
     def signature(
-        self, interval: Interval | None = None,
+        self,
+        interval: Interval | None = None,
     ) -> FreeTensor:
         log_sig = self.log_signature(interval)
         tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)

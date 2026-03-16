@@ -8,7 +8,13 @@ import numpy as np
 
 from roughpy_jax.ops import Operation
 
-from .bases import TensorBasis, LieBasis, check_basis_compat
+from .bases import (
+    TensorBasis,
+    LieBasis,
+    check_basis_compat,
+    to_lie_basis,
+    to_tensor_basis,
+)
 from .compressed import csr_matvec
 
 AlgebraT = TypeVar("AlgebraT")
@@ -807,8 +813,8 @@ def lie_to_tensor(
 
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    
-    out_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
+
+    out_basis = tensor_basis or to_tensor_basis(arg.basis)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
@@ -890,7 +896,7 @@ def tensor_to_lie(
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
 
-    out_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    out_basis = lie_basis or to_lie_basis(arg.basis)
 
     op_cls = Operation.get_operation("tensor_to_lie", "dense")
     op = op_cls(
@@ -933,7 +939,7 @@ def tensor_to_lie_adjoint_derivative(
     by feeding the CSC-stored t2l matrix data into csr_matvec, which
     implicitly transposes the matrix.
     """
-    lie_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
+    lie_basis = lie_basis or to_lie_basis(arg.basis)
     t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
     t2l_size = arg.basis.size()
     data = csr_matvec(t2l.data, t2l.indices, t2l.indptr, t2l_size, ct_result.data)
