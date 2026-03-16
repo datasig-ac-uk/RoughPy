@@ -41,6 +41,48 @@ def get_common_batch_shape(*operands) -> tuple[int, ...]:
     return batch_shape
 
 
+def broadcast_to_batch_shape(
+    data: jax.typing.ArrayLike,
+    batch_shape: tuple[int, ...],
+    *,
+    core_dims: int = 1,
+) -> jax.Array:
+    """
+    Reshape data for broadcasting over a target batch shape and core dimensions.
+
+    Scalars and batch prefixes are reshaped by appending singleton dimensions
+    until they are broadcast-compatible with arrays of shape
+    ``batch_shape + core_shape``. Inputs already shaped as
+    ``batch_shape + (1,) * core_dims`` are returned unchanged.
+
+    :param data: Array-like input to reshape.
+    :param batch_shape: Target batch shape.
+    :param core_dims: Number of trailing core dimensions.
+    :return: Reshaped JAX array.
+    :raises ValueError: If ``data`` is incompatible with ``batch_shape``.
+    """
+    data = jnp.asarray(data)
+    data_shape = data.shape
+
+    ds_len = len(data_shape)
+    bs_len = len(batch_shape)
+
+    if ds_len <= bs_len and data_shape == batch_shape[:ds_len]:
+        new_shape = data_shape + (1,) * (bs_len - ds_len) + (1,) * core_dims
+    elif ds_len == bs_len + core_dims and data_shape[:-core_dims] == batch_shape:
+        if data_shape[-core_dims:] != (1,) * core_dims:
+            raise ValueError(
+                f"batch shape {batch_shape} is incompatible with data shape {data_shape}"
+            )
+        new_shape = data_shape
+    else:
+        raise ValueError(
+            f"batch shape {batch_shape} is incompatible with data shape {data_shape}"
+        )
+
+    return jnp.reshape(data, new_shape)
+
+
 def _pad_final_dim(data: jax.Array, size: int) -> jax.Array:
     """
     Pad the trailing algebra dimension of ``data`` with zeros up to ``size``.
@@ -108,7 +150,25 @@ def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     return cls(result_data, a.basis)
 
 
-def _redepth_data(data: jax.Array, new_alg_dim: int) -> jax.Array: ...
+def _redepth_data(data: jax.Array, new_alg_dim: int) -> jax.Array:
+    """
+    Resize the trailing algebra dimension by truncating or zero-padding.
+
+    This helper is used when changing the truncation depth of a dense algebra
+    element. Shrinking the algebra dimension drops higher-order coordinates,
+    while increasing it appends zeros for the newly introduced basis elements.
+
+    :param data: Coefficient array to resize.
+    :param new_alg_dim: Target size of the trailing algebra dimension.
+    :return: Resized coefficient array.
+    """
+    shape = data.shape
+
+    if new_alg_dim < shape[-1]:
+        return data[..., :new_alg_dim]
+
+    pad_dims = [(0, 0)] * (len(shape) - 1) + [(0, new_alg_dim - shape[-1])]
+    return jnp.pad(data, pad_dims)
 
 
 @jax.tree_util.register_pytree_node_class
