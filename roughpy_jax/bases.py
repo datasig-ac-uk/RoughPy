@@ -1,6 +1,6 @@
 import typing
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Hashable
 from typing import TypeVar, Literal
 
 import jax
@@ -11,7 +11,7 @@ from roughpy import compute as rpc
 
 
 @typing.runtime_checkable
-class Basis(typing.Protocol):
+class Basis(typing.Protocol, Hashable):
     """
     Structural protocol shared by basis objects used in ``roughpy_jax``.
 
@@ -24,6 +24,7 @@ class Basis(typing.Protocol):
     degree_begin: np.ndarray[np.int64.dtype]
 
     def size(self) -> int: ...
+    def __eq__(self, other: object) -> bool: ...
 
 
 BasisT = TypeVar("BasisT", bound=Basis)
