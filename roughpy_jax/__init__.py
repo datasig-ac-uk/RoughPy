@@ -1,8 +1,15 @@
+from .bases import (
+    LieBasis,
+    TensorBasis,
+    check_basis_compat,
+    result_basis,
+    to_tensor_basis,
+    to_lie_basis,
+)
+
 import roughpy_jax.ops
 
 from roughpy_jax.algebra import (
-    TensorBasis,
-    LieBasis,
     DenseFreeTensor,
     DenseShuffleTensor,
     DenseLie,
