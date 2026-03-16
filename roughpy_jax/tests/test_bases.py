@@ -16,6 +16,18 @@ class MockBasis:
     def size(self) -> int:
         return int(self.degree_begin[-1])
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, MockBasis):
+            return NotImplemented
+        return (
+            self.width == other.width
+            and self.depth == other.depth
+            and np.array_equal(self.degree_begin, other.degree_begin)
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.width, self.depth, tuple(self.degree_begin.tolist())))
+
 
 def make_mock_basis(width: int, depth: int) -> MockBasis:
     return MockBasis(
@@ -109,6 +121,27 @@ def test_basis_protocol_matches_basis_like_object():
     basis_like = make_mock_basis(2, 2)
 
     assert isinstance(basis_like, rpj_bases.Basis)
+
+
+def test_basis_like_object_is_hashable_and_comparable():
+    basis_like = make_mock_basis(2, 3)
+    same_basis = make_mock_basis(2, 3)
+    different_basis = make_mock_basis(2, 4)
+
+    assert basis_like == same_basis
+    assert basis_like != different_basis
+    assert hash(basis_like) == hash(same_basis)
+
+
+@pytest.mark.parametrize("basis_type", [rpj_bases.TensorBasis, rpj_bases.LieBasis])
+def test_concrete_basis_is_hashable_and_comparable(basis_type):
+    basis = basis_type(3, 4)
+    same_basis = basis_type(3, 4)
+    different_basis = basis_type(3, 5)
+
+    assert basis == same_basis
+    assert basis != different_basis
+    assert hash(basis) == hash(same_basis)
 
 
 @pytest.mark.parametrize(
