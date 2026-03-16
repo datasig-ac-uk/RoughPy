@@ -939,7 +939,7 @@ def tensor_to_lie_adjoint_derivative(
     by feeding the CSC-stored t2l matrix data into csr_matvec, which
     implicitly transposes the matrix.
     """
-    #TODO: consider changing basis resolution logic
+    # TODO: consider changing basis resolution logic
     lie_basis = lie_basis or to_lie_basis(arg.basis)
     t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
     t2l_size = arg.basis.size()
