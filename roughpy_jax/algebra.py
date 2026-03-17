@@ -1183,8 +1183,12 @@ def tensor_pairing_derivative(
     t_functional: ShuffleTensorT,
     t_argument: FreeTensorT,
 ) -> jax.Array:
-    check_basis_compat(functional.basis, argument.basis, t_functional.basis, t_argument.basis)
-    _ = _get_and_check_batch_dims(functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1)
+    check_basis_compat(
+        functional.basis, argument.basis, t_functional.basis, t_argument.basis
+    )
+    _ = _get_and_check_batch_dims(
+        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
+    )
     x = tensor_pairing(functional, t_argument)
     y = tensor_pairing(t_functional, argument)
     return x + y
@@ -1250,7 +1254,7 @@ def lie_pairing(functional: LieT, argument: LieT) -> jax.Array:
     """
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
 
-    _check_basis_compat(functional.basis, argument.basis)
+    check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     op_cls = Operation.get_operation("lie_pairing", "dense")
@@ -1273,7 +1277,7 @@ def lie_pairing_derivative(
     t_functional: LieT,
     t_argument: LieT,
 ) -> jax.Array:
-    _check_basis_compat(
+    check_basis_compat(
         functional.basis, argument.basis, t_functional.basis, t_argument.basis
     )
     _ = _get_and_check_batch_dims(
@@ -1288,7 +1292,7 @@ def lie_pairing_derivative(
 def lie_pairing_adjoint_derivative(
     functional: LieT, argument: LieT, ct_result: jax.Array
 ) -> tuple[LieT, LieT]:
-    _check_basis_compat(functional.basis, argument.basis)
+    check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
