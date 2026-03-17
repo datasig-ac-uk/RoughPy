@@ -128,6 +128,7 @@ class TestPiecewiseAbelianStream:
         assert support.sup == pas_data.partition.sup
         assert support.interval_type == pas_data.partition.interval_type
 
+    @pytest.mark.extra
     @pytest.mark.parametrize("static", [True, False])
     def test_jitness_log_signature(self, pas_data, static):
         """Test that the log signature can be JIT compiled."""
