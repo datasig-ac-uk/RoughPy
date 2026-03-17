@@ -10,6 +10,8 @@ from roughpy_jax.algebra import (
     ShuffleTensor,
     Lie,
     ft_fma,
+    ft_fma_derivative,
+    ft_fma_adjoint_derivative,
     ft_mul,
     ft_mul_derivative,
     ft_mul_adjoint_derivative,

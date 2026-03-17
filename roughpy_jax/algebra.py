@@ -252,6 +252,7 @@ def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
     return type(tensor)(new_data, tensor.basis)
 
 
+@jax.custom_vjp
 def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     """
     Free tensor fused multiply-add
@@ -294,7 +295,19 @@ def ft_fma_derivative(
     t_a: FreeTensorT,
     t_b: FreeTensorT,
     t_c: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    """
+    Free tensor fused multiply-add derivative
+
+    :param a: addition operand
+    :param b: left-hand multiply operand
+    :param c: right-hand multiple operand
+    :param t_a: tangent perturbation at a
+    :param t_b: tangent perturbation at b
+    :param t_c: tangent perturbation at c
+    :return: derivative in tangent direction (s_a, s_b, s_c)
+    """
+    return t_a + ft_mul_derivative(b, c, t_b, t_c)
 
 
 def ft_fma_adjoint_derivative(
@@ -302,7 +315,45 @@ def ft_fma_adjoint_derivative(
     b: FreeTensorT,
     c: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]:
+    """
+    Free tensor fused multiply-add adjoint derivative
+
+    :param a: addition operand
+    :param b: left-hand multiply operand
+    :param c: right-hand multiple operand
+    :param ct_result: cotangent from the output
+    :return: (cotangent for a, cotangent for b, cotangent for c)
+    """
+    ct_a = ct_result
+    ct_b, ct_c = ft_mul_adjoint_derivative(b, c, ct_result)
+    return ct_a, ct_b, ct_c
+
+
+def _ft_fma_vjp_fwd(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT):
+    result = ft_fma(a, b, c)
+    return result, (a, b, c)
+
+
+def _ft_fma_vjp_bwd(
+    residuals, ct_result_data
+) -> tuple[jax.Array, ...]:
+    a, b, c = residuals
+
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, a.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    ct_a, ct_b, ct_c = ft_fma_adjoint_derivative(a, b, c, ct_result)
+    return ct_a.data, ct_b.data, ct_c.data
+
+
+ft_fma.defvjp(_ft_fma_vjp_fwd, _ft_fma_vjp_bwd)
 
 
 @jax.custom_vjp
