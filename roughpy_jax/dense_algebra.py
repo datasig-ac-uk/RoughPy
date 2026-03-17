@@ -334,6 +334,7 @@ class DenseAlgebra(Generic[BasisT]):
 DenseAlgebra.DualVector = DenseAlgebra
 
 
+@jax.tree_util.register_pytree_node_class
 class DenseTensor(DenseAlgebra["TensorBasis"]):
     """
     Dense tensor algebra element.
@@ -426,84 +427,3 @@ def to_dual(algebra: DenseAlgebra) -> DenseAlgebra:
     :return: The same coefficients viewed in the dual algebra type.
     """
     return algebra.DualVector(algebra.data, algebra.basis)
-
-
-def add(lhs, rhs):
-    """
-    Add dense algebra operands, falling back to ``jnp.add`` otherwise.
-
-    :param lhs: Left operand.
-    :param rhs: Right operand.
-    :return: Sum in dense-algebra or array form, depending on the inputs.
-    """
-    if isinstance(lhs, DenseAlgebra) or isinstance(rhs, DenseAlgebra):
-        return lhs + rhs
-    return jnp.add(lhs, rhs)
-
-
-def subtract(lhs, rhs):
-    """
-    Subtract dense algebra operands, falling back to ``jnp.subtract`` otherwise.
-
-    :param lhs: Left operand.
-    :param rhs: Right operand.
-    :return: Difference in dense-algebra or array form, depending on the inputs.
-    """
-    if isinstance(lhs, DenseAlgebra) or isinstance(rhs, DenseAlgebra):
-        return lhs - rhs
-    return jnp.subtract(lhs, rhs)
-
-
-def multiply(lhs, rhs):
-    """
-    Multiply dense algebra operands, falling back to ``jnp.multiply`` otherwise.
-
-    For dense algebra objects this dispatches to scalar multiplication.
-
-    :param lhs: Left operand.
-    :param rhs: Right operand.
-    :return: Product in dense-algebra or array form, depending on the inputs.
-    """
-    if isinstance(lhs, DenseAlgebra) or isinstance(rhs, DenseAlgebra):
-        return lhs * rhs
-    return jnp.multiply(lhs, rhs)
-
-
-def divide(lhs, rhs):
-    """
-    Divide dense algebra operands, falling back to ``jnp.divide`` otherwise.
-
-    For dense algebra objects this dispatches to scalar division.
-
-    :param lhs: Left operand.
-    :param rhs: Right operand.
-    :return: Quotient in dense-algebra or array form, depending on the inputs.
-    """
-    if isinstance(lhs, DenseAlgebra) or isinstance(rhs, DenseAlgebra):
-        return lhs / rhs
-    return jnp.divide(lhs, rhs)
-
-
-def negative(arg):
-    """
-    Negate a dense algebra element or array-like argument.
-
-    :param arg: Operand to negate.
-    :return: Negated value with basis preserved for dense algebra inputs.
-    """
-    if isinstance(arg, DenseAlgebra):
-        return type(arg)(jnp.negative(arg.data), arg.basis)
-    return jnp.negative(arg)
-
-
-def matmul(lhs, rhs):
-    """
-    Matrix-multiply operands, deferring to algebra ``@`` when available.
-
-    :param lhs: Left operand.
-    :param rhs: Right operand.
-    :return: Matrix product in dense-algebra or array form, depending on the inputs.
-    """
-    if isinstance(lhs, DenseAlgebra) or isinstance(rhs, DenseAlgebra):
-        return lhs @ rhs
-    return jnp.matmul(lhs, rhs)
