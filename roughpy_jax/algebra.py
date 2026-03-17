@@ -8,6 +8,14 @@ import numpy as np
 
 from roughpy import compute as rpc
 from roughpy_jax.ops import Operation
+from roughpy_jax.dense_algebra import (
+    DenseAlgebra,
+    DenseTensor,
+    get_common_batch_shape,
+    broadcast_to_batch_shape,
+    zero_like,
+    identity_like,
+)
 
 from .compressed import csr_matvec
 
@@ -92,34 +100,12 @@ def _algebra_add(
     return cls(result_data, basis)
 
 
-def _broadcast_to_batch_shape(
-    data: jax.Array, batch_shape: tuple[int, ...], *, core_dims=1
-) -> jax.Array:
-    data_shape = data.shape
-
-    ds_len = len(data_shape)
-    bs_len = len(batch_shape)
-
-    if ds_len <= bs_len and data_shape == batch_shape[:ds_len]:
-        new_shape = data_shape + (1,) * (bs_len - ds_len) + (1,) * core_dims
-    elif (
-        ds_len == bs_len + 1 and data_shape[:-1] == batch_shape and data_shape[-1] == 1
-    ):
-        new_shape = data_shape
-    else:
-        raise ValueError(
-            f"batch shape {batch_shape} is incompatible with data shape {data_shape}"
-        )
-
-    return jnp.reshape(data, new_shape)
-
-
 def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     cls = type(a)
     basis = a.basis
 
     scalar = jnp.asarray(s)
-    ext_scalar = _broadcast_to_batch_shape(scalar, a.batch_shape)
+    ext_scalar = broadcast_to_batch_shape(scalar, a.batch_shape)
 
     result_data = jnp.multiply(a.data, ext_scalar)
 
@@ -252,50 +238,6 @@ def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
             raise ValueError(f"Incompatible width between basis 0 and basis {i + 1}")
 
 
-def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
-    for i, ft in enumerate([first_tensor] + list(other_tensors)):
-        if ft.data.dtype != jnp.float32:
-            if ft.data.dtype != jnp.float64:
-                raise ValueError(
-                    f"Expecting jnp.float32 or jnp.float64 array for tensor {i}"
-                )
-
-    for i, tensor in enumerate(other_tensors):
-        if tensor.data.dtype != first_tensor.data.dtype:
-            raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
-
-
-def _get_and_check_batch_dims(*arrays, core_dims=1):
-    if not arrays:
-        raise ValueError("expected at least one array")
-
-    first, *rem = arrays
-
-    n_dims = len(first.shape)
-    if n_dims < core_dims:
-        raise ValueError(
-            f"array at index 0 has wrong number of dimensions, expected at least {core_dims}"
-        )
-
-    batch_dims = first.shape[:-core_dims]
-    n_batch_dims = len(batch_dims)
-
-    for i, arr in enumerate(rem, start=1):
-        if len(arr.shape) != n_dims:
-            raise ValueError(
-                f"mismatched number of dimensions at index {i}: "
-                f"expected {n_dims} but got {len(arr.shape)}"
-            )
-
-        if arr.shape[:n_batch_dims] != batch_dims:
-            raise ValueError(
-                f"incompatible shape in argument at index {i}:"
-                f"expected batch shape {batch_dims} but got {arr.shape[:n_batch_dims]}"
-            )
-
-    return batch_dims
-
-
 def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
     if not isinstance(tensor.basis, TensorBasis):
         raise TypeError(f"object must be a tensor")
@@ -325,7 +267,7 @@ def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     :return: result
     """
     dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
-    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
+    batch_dims = get_common_batch_shape(a, b, c)
 
     a_max_deg = a.basis.depth
 
@@ -378,7 +320,7 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     :return: result
     """
     dtype = jnp.result_type(a.data.dtype, b.data.dtype)
-    batch_dims = _get_and_check_batch_dims(a.data, b.data, core_dims=1)
+    batch_dims = get_common_batch_shape(a, b)
 
     # Use same basis convention as ft_mul in roughpy/compute
     op_cls = Operation.get_operation("ft_mul", "dense")
@@ -418,7 +360,7 @@ def antipode(a: AlgebraT) -> AlgebraT:
     :return: new tensor with antipode of `a`
     """
     op_cls = Operation.get_operation("ft_antipode", "dense")
-    batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
+    batch_dims = get_common_batch_shape(a)
 
     out_class = a.__class__
     out_basis = a.basis
@@ -502,7 +444,7 @@ def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTe
     :param c: right-hand operand
     :return: shuffle fused multiply-add
     """
-    batch_dims = _get_and_check_batch_dims(a.data, b.data, c.data, core_dims=1)
+    batch_dims = get_common_batch_shape(a, b, c)
     dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
 
     op_cls = Operation.get_operation("st_fma", "dense")
@@ -553,7 +495,7 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     :return: the shuffle product of lhs and rhs
     """
     dtype = jnp.result_type(lhs.data.dtype, rhs.data.dtype)
-    batch_dims = _get_and_check_batch_dims(lhs.data, rhs.data, core_dims=1)
+    batch_dims = get_common_batch_shape(lhs, rhs)
 
     op_cls = Operation.get_operation("st_mul", "dense")
     out_max_deg = lhs.basis.depth
@@ -592,14 +534,12 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     Free tensor exponent
 
     This function is equivalent to `e ^ x`.
-    Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `x` is used.
 
     :param x: argument
     :param out_basis: optional output basis.
     :return: tensor exponential of `x`
     """
-    _check_tensor_dtype(x)
     dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
@@ -642,14 +582,12 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     to tensors that are known to be of the form `1 + x`, such as group-like elements such as
     those computed using `ft_exp`.
 
-    Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `x` is used.
 
     :param x: argument
     :param out_basis: optional output basis.
     :return: tensor logarithm of `x`
     """
-    _check_tensor_dtype(x)
     dtype = x.data.dtype
 
     out_basis = out_basis or x.basis
@@ -672,7 +610,7 @@ def ft_log_derivative(
     t_x: FreeTensorT,
 ) -> FreeTensorT:
     _check_basis_compat(x.basis, t_x.basis)
-    batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
+    batch_dims = get_common_batch_shape(x, t_x)
     dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
 
     x = _remove_unit_term(x)
@@ -702,7 +640,7 @@ def ft_log_adjoint_derivative(
     ct_result: ShuffleTensorT,
 ) -> tuple[ShuffleTensorT]:
     _check_basis_compat(x.basis, ct_result.basis)
-    batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
+    batch_dims = get_common_batch_shape(x, ct_result)
     dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
 
     x = _remove_unit_term(x)
@@ -770,7 +708,6 @@ def ft_fmexp(
     Free tensor fused multiply-exponential
 
     This function is equivalent to `a * exp(x)` where `a` is `multiplier` and `x` is `exponent`.
-    Supports float 32 or 64 but all data buffers must have matching type.
     If `out_basis` is not specified, the same basis as `multiplier` is used.
 
     :param multiplier: Multiplier free tensor
@@ -778,13 +715,12 @@ def ft_fmexp(
     :param out_basis: Optional output basis. If not specified, the same basis as `multiplier` is used.
     :return: Resulting fused multiply-exponential of `multiplier` and `exponent`
     """
-    _check_tensor_dtype(multiplier, exponent)
     dtype = multiplier.data.dtype
 
     out_basis = out_basis or multiplier.basis
     _check_basis_compat(out_basis, multiplier.basis, exponent.basis)
 
-    batch_dims = _get_and_check_batch_dims(multiplier.data, exponent.data, core_dims=1)
+    batch_dims = get_common_batch_shape(multiplier, exponent)
 
     out_depth = multiplier.basis.depth
     mul_depth = multiplier.basis.depth
@@ -816,9 +752,7 @@ def ft_fmexp_derivative(
     _check_basis_compat(
         multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
     )
-    _get_and_check_batch_dims(
-        multiplier.data, exponent.data, t_multiplier.data, t_exponent.data, core_dims=1
-    )
+    get_common_batch_shape(multiplier, exponent, t_multiplier, t_exponent)
 
     basis = multiplier.basis
     depth = basis.depth
@@ -845,9 +779,7 @@ def ft_fmexp_adjoint_derivative(
     ct_result: ShuffleTensorT,
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]:
     _check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
-    _get_and_check_batch_dims(
-        multiplier.data, exponent.data, ct_result.data, core_dims=1
-    )
+    get_common_batch_shape(multiplier, exponent, ct_result)
 
     tensor_type = type(multiplier)
     ct_type = type(ct_result)
@@ -929,9 +861,8 @@ def lie_to_tensor(
     if not isinstance(arg, Lie):
         raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
 
-    _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    
+
     out_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
@@ -1011,7 +942,6 @@ def tensor_to_lie(
     if not isinstance(arg, FreeTensor):
         raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
 
-    _check_tensor_dtype(arg)
     dtype = arg.data.dtype
 
     out_basis = lie_basis or LieBasis(arg.basis.width, arg.basis.depth)
@@ -1113,7 +1043,7 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     out_basis = arg.basis
     _check_basis_compat(out_basis, op.basis)
 
-    batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+    batch_dims = get_common_batch_shape(op, arg)
 
     op_max_deg = op.basis.depth
     arg_max_deg = arg.basis.depth
@@ -1163,7 +1093,7 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     out_basis = arg.basis
     _check_basis_compat(out_basis, op.basis)
 
-    batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+    batch_dims = get_common_batch_shape(op, arg)
 
     op_max_deg = op.basis.depth
     arg_max_deg = arg.basis.depth
@@ -1217,7 +1147,7 @@ def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Arr
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
 
     _check_basis_compat(functional.basis, functional.basis)
-    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+    batch_dims = get_common_batch_shape(functional, argument)
 
     op_cls = Operation.get_operation("tensor_pairing", "dense")
 
@@ -1243,9 +1173,7 @@ def tensor_pairing_derivative(
     _check_basis_compat(
         functional.basis, argument.basis, t_functional.basis, t_argument.basis
     )
-    _ = _get_and_check_batch_dims(
-        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
-    )
+    get_common_batch_shape(functional, t_functional, t_argument)
 
     x = tensor_pairing(functional, t_argument)
     y = tensor_pairing(t_functional, argument)
@@ -1271,9 +1199,9 @@ def tensor_pairing_adjoint_derivative(
     ct_result: jax.Array,
 ) -> tuple[FreeTensorT, ShuffleTensorT]:
     _check_basis_compat(functional.basis, argument.basis)
-    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+    batch_dims = get_common_batch_shape(functional, argument)
 
-    ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
+    ext_ct = broadcast_to_batch_shape(ct_result, batch_dims)
 
     ct_functional = DenseFreeTensor(ext_ct * argument.data, functional.basis)
     ct_argument = DenseShuffleTensor(ext_ct * functional.data, argument.basis)
@@ -1313,7 +1241,7 @@ def lie_pairing(functional: LieT, argument: LieT) -> jax.Array:
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
 
     _check_basis_compat(functional.basis, argument.basis)
-    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+    batch_dims = get_common_batch_shape(functional, argument)
 
     op_cls = Operation.get_operation("lie_pairing", "dense")
 
@@ -1338,9 +1266,7 @@ def lie_pairing_derivative(
     _check_basis_compat(
         functional.basis, argument.basis, t_functional.basis, t_argument.basis
     )
-    _ = _get_and_check_batch_dims(
-        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
-    )
+    get_common_batch_shape(functional, argument, t_functional, t_argument)
 
     x = lie_pairing(functional, t_argument)
     y = lie_pairing(t_functional, argument)
@@ -1351,9 +1277,9 @@ def lie_pairing_adjoint_derivative(
     functional: LieT, argument: LieT, ct_result: jax.Array
 ) -> tuple[LieT, LieT]:
     _check_basis_compat(functional.basis, argument.basis)
-    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+    batch_dims = get_common_batch_shape(functional, argument)
 
-    ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
+    ext_ct = broadcast_to_batch_shape(ct_result, batch_dims)
 
     ct_functional = DenseLie(ext_ct * argument.data, functional.basis)
     ct_argument = DenseLie(ext_ct * functional.data, argument.basis)
