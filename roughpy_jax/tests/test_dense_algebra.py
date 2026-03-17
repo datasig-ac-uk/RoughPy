@@ -123,19 +123,23 @@ def test_dense_algebra_change_depth_same_depth_returns_self():
     assert result is algebra
 
 
-def test_dense_algebra_addition_promotes_to_deeper_basis():
+@pytest.mark.parametrize("lhs_is_deeper", [False, True])
+def test_dense_algebra_addition_promotes_to_deeper_basis(lhs_is_deeper):
     shallow_basis = rpj.TensorBasis(2, 2)
     deep_basis = rpj.TensorBasis(2, 3)
-    lhs = DenseTensor(jnp.ones(shallow_basis.size(), dtype=jnp.float32), shallow_basis)
-    rhs = DenseTensor(jnp.ones(deep_basis.size(), dtype=jnp.float32), deep_basis)
+
+    if lhs_is_deeper:
+        lhs = DenseTensor(jnp.ones(deep_basis.size(), dtype=jnp.float32), deep_basis)
+        rhs = DenseTensor(jnp.ones(shallow_basis.size(), dtype=jnp.float32), shallow_basis)
+    else:
+        lhs = DenseTensor(jnp.ones(shallow_basis.size(), dtype=jnp.float32), shallow_basis)
+        rhs = DenseTensor(jnp.ones(deep_basis.size(), dtype=jnp.float32), deep_basis)
 
     result = lhs + rhs
 
     assert isinstance(result, DenseTensor)
     assert result.basis == deep_basis
-    expected = (
-        jnp.ones(deep_basis.size(), dtype=jnp.float32).at[: shallow_basis.size()].add(1)
-    )
+    expected = jnp.ones(deep_basis.size(), dtype=jnp.float32).at[: shallow_basis.size()].add(1)
     np.testing.assert_array_equal(result.data, expected)
 
 
