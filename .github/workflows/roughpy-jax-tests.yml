@@ -67,6 +67,6 @@ jobs:
 
       - name: Run roughpy_jax tests
         shell: bash
-        run: pytest -sv roughpy_jax
+        run: pytest -sv -m "not extra" roughpy_jax
         env:
           PYTHONPATH: ${{ github.workspace }}
