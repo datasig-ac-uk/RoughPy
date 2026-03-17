@@ -143,6 +143,29 @@ def test_dense_algebra_addition_promotes_to_deeper_basis(lhs_is_deeper):
     np.testing.assert_array_equal(result.data, expected)
 
 
+@pytest.mark.parametrize("lhs_is_deeper", [False, True])
+def test_dense_algebra_subtraction_promotes_to_deeper_basis(lhs_is_deeper):
+    shallow_basis = rpj.TensorBasis(2, 2)
+    deep_basis = rpj.TensorBasis(2, 3)
+
+    if lhs_is_deeper:
+        lhs = DenseTensor(2 * jnp.ones(deep_basis.size(), dtype=jnp.float32), deep_basis)
+        rhs = DenseTensor(jnp.ones(shallow_basis.size(), dtype=jnp.float32), shallow_basis)
+        expected = 2 * jnp.ones(deep_basis.size(), dtype=jnp.float32)
+        expected = expected.at[: shallow_basis.size()].add(-1)
+    else:
+        lhs = DenseTensor(2 * jnp.ones(shallow_basis.size(), dtype=jnp.float32), shallow_basis)
+        rhs = DenseTensor(jnp.ones(deep_basis.size(), dtype=jnp.float32), deep_basis)
+        expected = (-1) * jnp.ones(deep_basis.size(), dtype=jnp.float32)
+        expected = expected.at[: shallow_basis.size()].add(2)
+
+    result = lhs - rhs
+
+    assert isinstance(result, DenseTensor)
+    assert result.basis == deep_basis
+    np.testing.assert_array_equal(result.data, expected)
+
+
 def test_dense_algebra_addition_rejects_mismatched_width():
     lhs = DenseTensor(
         jnp.ones(rpj.TensorBasis(2, 2).size(), dtype=jnp.float32), rpj.TensorBasis(2, 2)
