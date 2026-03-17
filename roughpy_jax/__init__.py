@@ -39,4 +39,6 @@ from roughpy_jax.algebra import (
     st_adjoint_mul,
     st_adjoint_mul_derivative,
     st_adjoint_mul_adjoint_derivative,
+    tensor_pairing_derivative,
+    tensor_pairing_adjoint_derivative,
 )
