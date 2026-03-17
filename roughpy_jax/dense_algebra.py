@@ -164,7 +164,9 @@ def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
     :return: Scaled algebra element in the same basis as ``a``.
     """
     cls = type(a)
-    result_data = jnp.dot(a.data, s)
+    scalar = jnp.asarray(s)
+    ext_scalar = broadcast_to_batch_shape(scalar, a.batch_shape)
+    result_data = jnp.multiply(a.data, ext_scalar)
     return cls(result_data, a.basis)
 
 
