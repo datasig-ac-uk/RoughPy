@@ -1,6 +1,6 @@
 import roughpy_jax.ops
 
-from dense_algebra import (
+from .dense_algebra import (
     get_common_batch_shape,
     broadcast_to_batch_shape,
     zero_like,
