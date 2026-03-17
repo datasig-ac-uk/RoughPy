@@ -1,5 +1,13 @@
 import roughpy_jax.ops
 
+from dense_algebra import (
+    get_common_batch_shape,
+    broadcast_to_batch_shape,
+    zero_like,
+    identity_like,
+    to_dual,
+)
+
 from roughpy_jax.algebra import (
     TensorBasis,
     LieBasis,
