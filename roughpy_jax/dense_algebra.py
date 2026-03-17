@@ -334,6 +334,60 @@ class DenseAlgebra(Generic[BasisT]):
 DenseAlgebra.DualVector = DenseAlgebra
 
 
+class DenseTensor(DenseAlgebra["TensorBasis"]):
+    """
+    Dense tensor algebra element.
+
+    This class represents elements of the tensor algebra over a given basis.
+    It is a subclass of ``DenseAlgebra`` and inherits its algebraic structure.
+    """
+
+    @classmethod
+    def identity(
+        cls: Type[_T],
+        basis: "TensorBasis",
+        dtype: jax.typing.DTypeLike = jnp.dtype("float32"),
+        batch_dims: tuple[int, ...] = tuple(),
+    ) -> _T:
+        """
+            Construct the multiplicative identity in a tensor basis.
+
+        return cls(result_data, basis)
+            The returned element has coefficient array shape
+            ``batch_dims + (basis.size(),)``. Its unit coordinate is set to ``1``
+            and all other coefficients are zero. This is valid for the tensor
+            algebra subclasses whose product has the empty word as identity.
+
+            :param basis: Tensor basis in which the identity should live.
+            :param dtype: Data type used for the coefficient array.
+            :param batch_dims: Optional leading batch dimensions.
+            :return: The identity element of ``cls`` in ``basis``.
+        """
+        shape = batch_dims + (basis.size(),)
+        data = jnp.zeros(dtype=jnp.dtype(dtype), shape=shape)
+        data = data.at[..., 0].set(1)
+        return cls(data, basis)
+
+
+def identity_like(tensor, dtype=None):
+    """
+    Creates an identity-like object based on the structure and type of the provided tensor. The resulting object retains
+    the basis of the input tensor but modifies its data to follow an identity pattern. The primary element indicating
+    identity is set to 1, while the remaining structure of the data is zeroed out.
+
+    :param tensor: Input tensor that provides the basis and structure for the resulting identity-like object.
+    :type tensor: type of the input tensor
+    :param dtype: Optional data type to apply to the resulting identity-like object's data. If not provided, the data type
+        of the input tensor is used.
+    :type dtype: Optional
+    :return: A new object of the same type as the input tensor, with modified data representing an identity-like structure.
+    :rtype: type of the input tensor
+    """
+    data = jnp.zeros_like(tensor.data, dtype=dtype)
+    data = data.at[..., 0].set(1)
+    return type(tensor)(data, tensor.basis)
+
+
 def to_dual(algebra: DenseAlgebra) -> DenseAlgebra:
     """
     Map an algebra element to its isomorphic dual-space representation.
