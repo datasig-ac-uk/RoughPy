@@ -369,7 +369,9 @@ class DenseTensor(DenseAlgebra["TensorBasis"]):
         return cls(data, basis)
 
 
-def identity_like(tensor, dtype=None):
+DenseTensor.DualVector = DenseTensor
+
+
 def zero_like(algebra: _T, dtype: jax.typing.DTypeLike | None = None) -> _T:
     """
     Construct a zero element with the same type, shape, and basis as ``algebra``.
