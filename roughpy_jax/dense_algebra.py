@@ -370,6 +370,24 @@ class DenseTensor(DenseAlgebra["TensorBasis"]):
 
 
 def identity_like(tensor, dtype=None):
+def zero_like(algebra: _T, dtype: jax.typing.DTypeLike | None = None) -> _T:
+    """
+    Construct a zero element with the same type, shape, and basis as ``algebra``.
+
+    The returned object keeps the basis metadata and concrete dense algebra
+    class of the input while replacing all coefficients with zeros. An
+    optional ``dtype`` may be supplied to override the data type of the
+    resulting coefficient array.
+
+    :param algebra: Dense algebra element whose structure should be copied.
+    :param dtype: Optional data type for the zero coefficient array.
+    :return: Zero element matching the input algebra structure.
+    """
+    data = jnp.zeros_like(algebra.data, dtype=dtype)
+    return type(algebra)(data, algebra.basis)
+
+
+def identity_like(tensor: _T, dtype: jax.typing.DTypeLike | None = None) -> _T:
     """
     Creates an identity-like object based on the structure and type of the provided tensor. The resulting object retains
     the basis of the input tensor but modifies its data to follow an identity pattern. The primary element indicating
@@ -397,6 +415,10 @@ def to_dual(algebra: DenseAlgebra) -> DenseAlgebra:
     algebras used in roughpy-jax (free, shuffle, and Lie), this map is
     represented by changing the concrete algebra type while leaving the
     coefficient data and basis metadata unchanged.
+
+    This operation is only valid for algebras whose dual is isomorphic and is given
+    the dual basis. Care should be used when using this function to check
+    that these conditions hold.
 
     :param algebra: The algebra element to reinterpret in the dual space.
     :return: The same coefficients viewed in the dual algebra type.
