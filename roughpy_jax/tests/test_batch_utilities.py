@@ -23,6 +23,15 @@ def test_broadcast_to_batch_shape_prefix_batch():
     assert jnp.array_equal(result, expected)
 
 
+def test_broadcast_to_batch_shape_accepts_existing_core_singletons():
+    data = jnp.ones((3, 2, 1), dtype=jnp.float32)
+
+    result = broadcast_to_batch_shape(data, (3, 2))
+
+    assert result.shape == data.shape
+    assert jnp.array_equal(result, data)
+
+
 def test_broadcast_to_batch_shape_rejects_incompatible_shape():
     data = jnp.ones((2, 2), dtype=jnp.float32)
 
