@@ -11,16 +11,33 @@ AlgebraT = TypeVar("AlgebraT")
 _T = TypeVar("_T")
 
 
+def get_batch_shape(operand) -> tuple[int, ...]:
+    """
+    Return the batch shape associated with an operand.
+
+    Dense algebra objects contribute their ``batch_shape`` property, i.e. the
+    leading dimensions before the trailing algebra coordinate. Plain arrays are
+    treated as pure batch data and therefore contribute their full shape.
+
+    :param operand: Dense algebra object or array-like operand.
+    :return: Batch shape for the operand.
+    """
+    if (batch_shape := getattr(operand, "batch_shape", None)) is not None:
+        return batch_shape
+
+    return jnp.shape(operand)
+
+
 def get_common_batch_shape(*operands) -> tuple[int, ...]:
     """
     Validate that all operands share the same batch shape and return it.
 
-    For dense algebra objects, the batch shape is the prefix of the data shape
-    preceding the trailing algebra dimension. At present, operations in
-    roughpy-jax require all operands to have identical batch shape, and this
-    helper returns that common value after validation.
+    Dense algebra objects contribute the leading dimensions before the trailing
+    algebra coordinate. Plain arrays contribute their full shape. At present,
+    operations in roughpy-jax require all operands to have identical batch
+    shape, and this helper returns that common value after validation.
 
-    :param operands: Dense algebra operands to validate.
+    :param operands: Dense algebra objects or array-like operands to validate.
     :return: The batch shape common to all operands.
     :raises ValueError: If no operands are supplied or any operand has a
         different batch shape.
@@ -29,13 +46,14 @@ def get_common_batch_shape(*operands) -> tuple[int, ...]:
         raise ValueError("expected at least one operand")
 
     first, *rem = operands
-    batch_shape = first.batch_shape
+    batch_shape = get_batch_shape(first)
 
     for i, operand in enumerate(rem, start=1):
-        if operand.batch_shape != batch_shape:
+        operand_batch_shape = get_batch_shape(operand)
+        if operand_batch_shape != batch_shape:
             raise ValueError(
                 f"incompatible batch shape in argument at index {i}:"
-                f" expected {batch_shape} but got {operand.batch_shape}"
+                f" expected {batch_shape} but got {operand_batch_shape}"
             )
 
     return batch_shape
