@@ -34,27 +34,11 @@ def ft_mul_trials(request):
     
 
 def test_ft_mul_check_vjp(ft_mul_trials):
-    # rpj_dtype = jnp.dtype("float32")
-    # basis = rpj.TensorBasis(4, 3)
-    # lhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
-    # rhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
-
-    # def mul_(lhs, rhs):
-    #     lhs.data = jnp.asarray(lhs.data)
-    #     rhs.data = jnp.asarray(rhs.data)
-    #     return rpj.st_mul(lhs, rhs)
-
-    # jtu.check_vjp(
-    #     mul_,
-    #     partial(jax.vjp, mul_),
-    #     (lhs, rhs),
-    #     atol=5e-2,
-    #     rtol=5e-2,
-    # )
     lhs = ft_mul_trials.uniform_free_tensor()
     rhs = ft_mul_trials.uniform_free_tensor()
 
     def mul_(lhs, rhs):
+        # TODO: JL - Unclear that this is necessary?
         lhs.data = jnp.asarray(lhs.data)
         rhs.data = jnp.asarray(rhs.data)
         return rpj.ft_mul(lhs, rhs)

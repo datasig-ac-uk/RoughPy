@@ -371,8 +371,8 @@ def ft_mul_adjoint_derivative(
     :param ct_result: cotangent from the output
     :return: (cotangent for lhs, cotangent for rhs)
     """
-    ct_lhs = ft_adjoint_right_mul(lhs, ct_result)
-    ct_rhs = ft_adjoint_left_mul(rhs, ct_result)
+    ct_lhs = ft_adjoint_right_mul(rhs, ct_result)
+    ct_rhs = ft_adjoint_left_mul(lhs, ct_result)
     return ct_lhs, ct_rhs
 
 
