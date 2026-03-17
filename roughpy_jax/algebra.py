@@ -1159,7 +1159,7 @@ def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Arr
     """
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
 
-    check_basis_compat(functional.basis, functional.basis)
+    check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     op_cls = Operation.get_operation("tensor_pairing", "dense")
@@ -1183,7 +1183,7 @@ def tensor_pairing_derivative(
     t_functional: ShuffleTensorT,
     t_argument: FreeTensorT,
 ) -> jax.Array:
-    _check_basis_compat(functional.basis, argument.basis)
+    check_basis_compat(functional.basis, argument.basis)
     _ = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
     x = tensor_pairing(functional, t_argument)
     y = tensor_pairing(argument, t_functional)
@@ -1195,7 +1195,7 @@ def tensor_pairing_adjoint_derivative(
     argument: FreeTensorT,
     ct_result: jax.Array,
 ) -> tuple[FreeTensorT, ShuffleTensorT]:
-    _check_basis_compat(functional.basis, argument.basis)
+    check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     ct_shape = ct_result.shape
