@@ -22,13 +22,6 @@ def shuffle_deriv_trials(request):
     yield DerivativeTrialsHelper(request.param, width=4, depth=3)
 
 
-def _zero_shuffle(trials):
-    return rpj.ShuffleTensor(
-        jnp.zeros(trials.batch_shape(trials.tensor_basis), trials.dtype),
-        trials.tensor_basis,
-    )
-
-
 def _word_to_idx_fn(width: int) -> Callable[[...], int]:
     def inner(*letters) -> int:
         idx = 0
@@ -142,7 +135,7 @@ def test_st_mul_check_vjp(rpj_batch):
 def test_st_mul_derivative_linear_in_t_lhs(shuffle_deriv_trials):
     lhs = shuffle_deriv_trials.uniform_shuffle_tensor()
     rhs = shuffle_deriv_trials.uniform_shuffle_tensor()
-    zero_t_rhs = _zero_shuffle(shuffle_deriv_trials)
+    zero_t_rhs = shuffle_deriv_trials.zero_shuffle_tensor()
     t_lhs_x = shuffle_deriv_trials.uniform_shuffle_tensor()
     t_lhs_y = shuffle_deriv_trials.uniform_shuffle_tensor()
     vals = shuffle_deriv_trials.uniform_data((2,))
@@ -158,7 +151,7 @@ def test_st_mul_derivative_linear_in_t_lhs(shuffle_deriv_trials):
 def test_st_mul_derivative_linear_in_t_rhs(shuffle_deriv_trials):
     lhs = shuffle_deriv_trials.uniform_shuffle_tensor()
     rhs = shuffle_deriv_trials.uniform_shuffle_tensor()
-    zero_t_lhs = _zero_shuffle(shuffle_deriv_trials)
+    zero_t_lhs = shuffle_deriv_trials.zero_shuffle_tensor()
     t_rhs_x = shuffle_deriv_trials.uniform_shuffle_tensor()
     t_rhs_y = shuffle_deriv_trials.uniform_shuffle_tensor()
     vals = shuffle_deriv_trials.uniform_data((2,))
@@ -177,7 +170,7 @@ def test_st_mul_derivative_wrt_lhs(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t_rhs = _zero_shuffle(shuffle_deriv_trials)
+    zero_t_rhs = shuffle_deriv_trials.zero_shuffle_tensor()
 
     def fn(arg_lhs):
         return rpj.st_mul(arg_lhs, rhs)
@@ -202,7 +195,7 @@ def test_st_mul_derivative_wrt_rhs(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t_lhs = _zero_shuffle(shuffle_deriv_trials)
+    zero_t_lhs = shuffle_deriv_trials.zero_shuffle_tensor()
 
     def fn(arg_rhs):
         return rpj.st_mul(lhs, arg_rhs)

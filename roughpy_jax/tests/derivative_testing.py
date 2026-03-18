@@ -81,7 +81,7 @@ class DerivativeTrialsHelper:
         )
 
     def zero_shuffle_tensor(self):
-        return rpj.FreeTensor(
+        return rpj.ShuffleTensor(
             jnp.zeros(self.batch_shape(self.tensor_basis), dtype=self.dtype),
             self.tensor_basis,
         )

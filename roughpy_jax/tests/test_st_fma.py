@@ -19,13 +19,6 @@ def shuffle_deriv_trials(request):
     yield DerivativeTrialsHelper(request.param, width=4, depth=3)
 
 
-def _zero_shuffle(trials):
-    return rpj.ShuffleTensor(
-        jnp.zeros(trials.batch_shape(trials.tensor_basis), trials.dtype),
-        trials.tensor_basis,
-    )
-
-
 def test_shuffle_dense_st_fma_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
 
@@ -67,7 +60,7 @@ def test_st_fma_derivative_wrt_a(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t = _zero_shuffle(shuffle_deriv_trials)
+    zero_t = shuffle_deriv_trials.zero_shuffle_tensor()
 
     def fn(arg_a):
         return rpj.st_fma(arg_a, b, c)
@@ -93,7 +86,7 @@ def test_st_fma_derivative_wrt_b(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t = _zero_shuffle(shuffle_deriv_trials)
+    zero_t = shuffle_deriv_trials.zero_shuffle_tensor()
 
     def fn(arg_b):
         return rpj.st_fma(a, arg_b, c)
@@ -119,7 +112,7 @@ def test_st_fma_derivative_wrt_c(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t = _zero_shuffle(shuffle_deriv_trials)
+    zero_t = shuffle_deriv_trials.zero_shuffle_tensor()
 
     def fn(arg_c):
         return rpj.st_fma(a, b, arg_c)

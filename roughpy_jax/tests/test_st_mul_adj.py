@@ -24,20 +24,6 @@ def shuffle_deriv_trials(request):
     yield DerivativeTrialsHelper(request.param, width=4, depth=3)
 
 
-def _zero_shuffle(trials):
-    return rpj.ShuffleTensor(
-        jnp.zeros(trials.batch_shape(trials.tensor_basis), trials.dtype),
-        trials.tensor_basis,
-    )
-
-
-def _zero_free(trials):
-    return rpj.FreeTensor(
-        jnp.zeros(trials.batch_shape(trials.tensor_basis), trials.dtype),
-        trials.tensor_basis,
-    )
-
-
 def test_shuffle_dense_st_adj_mul_array_mismatch(rpj_test_fixture_type_mismatch):
     f = rpj_test_fixture_type_mismatch
 
@@ -125,7 +111,7 @@ def test_st_adjoint_mul_check_vjp(rpj_batch):
 def test_st_adjoint_mul_derivative_linear_in_t_op(shuffle_deriv_trials):
     op = shuffle_deriv_trials.uniform_shuffle_tensor()
     arg = shuffle_deriv_trials.uniform_free_tensor()
-    zero_t_arg = _zero_free(shuffle_deriv_trials)
+    zero_t_arg = shuffle_deriv_trials.zero_free_tensor()
     t_op_x = shuffle_deriv_trials.uniform_shuffle_tensor()
     t_op_y = shuffle_deriv_trials.uniform_shuffle_tensor()
     vals = shuffle_deriv_trials.uniform_data((2,))
@@ -141,7 +127,7 @@ def test_st_adjoint_mul_derivative_linear_in_t_op(shuffle_deriv_trials):
 def test_st_adjoint_mul_derivative_linear_in_t_arg(shuffle_deriv_trials):
     op = shuffle_deriv_trials.uniform_shuffle_tensor()
     arg = shuffle_deriv_trials.uniform_free_tensor()
-    zero_t_op = _zero_shuffle(shuffle_deriv_trials)
+    zero_t_op = shuffle_deriv_trials.zero_shuffle_tensor()
     t_arg_x = shuffle_deriv_trials.uniform_free_tensor()
     t_arg_y = shuffle_deriv_trials.uniform_free_tensor()
     vals = shuffle_deriv_trials.uniform_data((2,))
@@ -160,7 +146,7 @@ def test_st_adjoint_mul_derivative_wrt_op(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_shuffle_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t_arg = _zero_free(shuffle_deriv_trials)
+    zero_t_arg = shuffle_deriv_trials.zero_free_tensor()
 
     def fn(arg_op):
         return st_adjoint_mul(arg_op, arg)
@@ -185,7 +171,7 @@ def test_st_adjoint_mul_derivative_wrt_arg(shuffle_deriv_trials):
     tangent = shuffle_deriv_trials.uniform_free_tensor() * shuffle_deriv_trials.cond_dtype(
         1e-3, 1e0
     )
-    zero_t_op = _zero_shuffle(shuffle_deriv_trials)
+    zero_t_op = shuffle_deriv_trials.zero_shuffle_tensor()
 
     def fn(arg_arg):
         return st_adjoint_mul(op, arg_arg)
