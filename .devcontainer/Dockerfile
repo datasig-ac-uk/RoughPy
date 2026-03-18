@@ -5,6 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/GMT apt-get update && apt-get install 
     python3-venv \
     python3-pip \
     git \
+    openssh-client \
     gdb \
     curl \
     zip \
@@ -33,7 +34,10 @@ RUN pip install \
     pytest \
     pytest-cov \ 
     pytest-benchmark \
-    asv
+    asv \
+    pre-commit \ 
+    ruff \ 
+    ty
 
 # Use system tools for vcpkg when building aarch64 (Linux on MacOS)
 ENV VCPKG_FORCE_SYSTEM_BINARIES=0

@@ -142,6 +142,9 @@ repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} --ignore
 dev = [
     "jax",
     "pytest-benchmark",
+    "ruff", 
+    "pre-commit",
+    "ty",
 ]
 jax = [
     "jax>=0.4.0",
