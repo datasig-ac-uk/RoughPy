@@ -40,7 +40,7 @@ def test_shuffle_dense_st_mul_array_mismatch(rpj_test_fixture_type_mismatch):
         rpj.st_mul(f.st_f32(2, 2), f.st_f32(3, 2))
 
 
-def test_shuffle_product_commutative(rpj_dtype, rpj_batch):
+def test_shuffle_product_commutative(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(4, 3)
     lhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
     rhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
@@ -52,7 +52,7 @@ def test_shuffle_product_commutative(rpj_dtype, rpj_batch):
     assert jnp.allclose(result1.data, result2.data, atol=atol)
 
 
-def test_shuffle_product_unit(rpj_dtype, rpj_batch):
+def test_shuffle_product_unit(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(4, 3)
     lhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
 

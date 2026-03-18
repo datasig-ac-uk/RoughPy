@@ -32,7 +32,7 @@ def test_shuffle_dense_st_adj_mul_array_mismatch(rpj_test_fixture_type_mismatch)
         st_adjoint_mul(f.st_f32(2, 2), f.ft_f32(3, 2))
 
 
-def test_shuffle_st_adj_mul_identity(rpj_dtype, rpj_batch):
+def test_shuffle_st_adj_mul_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(4, 3)
 
     op_data = rpj_batch.identity_zero_data(basis, rpj_dtype)
@@ -44,7 +44,7 @@ def test_shuffle_st_adj_mul_identity(rpj_dtype, rpj_batch):
     assert jnp.allclose(result.data, arg.data)
 
 
-def test_shuffle_st_adj_mul_random_equivalent(rpj_dtype, rpj_batch):
+def test_shuffle_st_adj_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(4, 3)
 
     op = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
