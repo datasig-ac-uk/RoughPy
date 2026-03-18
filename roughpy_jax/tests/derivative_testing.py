@@ -73,7 +73,13 @@ class DerivativeTrialsHelper:
             self.uniform_data(self.batch_shape(self.lie_basis)),
             self.lie_basis,
         )
-
+        
+    def zero_free_tensor(self):
+        return rpj.FreeTensor(
+            jnp.zeros(self.batch_shape(self.tensor_basis), dtype=self.dtype),
+            self.tensor_basis,
+        )
+        
     def cond_dtype(self, val_f32, val_f64):
         """Select val_f32 or val_f64 depending on dtype, for accuracy control in tests"""
         if self.dtype == jnp.float32:
