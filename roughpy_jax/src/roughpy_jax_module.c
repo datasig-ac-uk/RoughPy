@@ -15,6 +15,7 @@
 #include "cpu/dense_ft_log.h"
 #include "cpu/dense_st_fma.h"
 #include "cpu/dense_ft_adj_mul.h"
+#include "cpu/dense_st_adj_mul.h"
 
 
 static inline int add_fn_capsule(PyObject* dict, const char* name, void* fn_ptr)
@@ -66,6 +67,9 @@ static int make_jax_function_dict(PyObject* module) {
         goto finish;
     }
     if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_ft_adj_rmul) < 0) {
+        goto finish;
+    }
+    if (RPJ_ADD_FN_CAPSULE(dict, cpu_dense_st_adj_mul) < 0) {
         goto finish;
     }
 
