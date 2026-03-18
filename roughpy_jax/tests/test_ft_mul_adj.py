@@ -106,10 +106,7 @@ def _fd_eps():
 def test_ft_adjoint_left_mul_derivative_linear_in_t_op(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
-    zero_t_arg = rpj.ShuffleTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_arg = adj_mul_trials.zero_shuffle_tensor()
     t_op_x = adj_mul_trials.uniform_free_tensor()
     t_op_y = adj_mul_trials.uniform_free_tensor()
     vals = adj_mul_trials.uniform_data((2,))
@@ -125,10 +122,7 @@ def test_ft_adjoint_left_mul_derivative_linear_in_t_op(adj_mul_trials):
 def test_ft_adjoint_left_mul_derivative_linear_in_t_arg(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
-    zero_t_op = rpj.FreeTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_op = adj_mul_trials.zero_free_tensor()
     t_arg_x = adj_mul_trials.uniform_shuffle_tensor()
     t_arg_y = adj_mul_trials.uniform_shuffle_tensor()
     vals = adj_mul_trials.uniform_data((2,))
@@ -145,10 +139,7 @@ def test_ft_adjoint_left_mul_derivative_wrt_op(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
     tangent = adj_mul_trials.uniform_free_tensor() * adj_mul_trials.cond_dtype(1e-3, 1e0)
-    zero_t_arg = rpj.ShuffleTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_arg = adj_mul_trials.zero_shuffle_tensor()
 
     def fn(arg_op):
         return rpj.ft_adjoint_left_mul(arg_op, arg)
@@ -171,10 +162,7 @@ def test_ft_adjoint_left_mul_derivative_wrt_arg(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
     tangent = adj_mul_trials.uniform_shuffle_tensor() * adj_mul_trials.cond_dtype(1e-3, 1e0)
-    zero_t_op = rpj.FreeTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_op = adj_mul_trials.zero_free_tensor()
 
     def fn(arg_arg):
         return rpj.ft_adjoint_left_mul(op, arg_arg)
@@ -248,10 +236,7 @@ def test_ft_adjoint_left_mul_adjoint_derivative_wrt_arg(adj_mul_trials):
 def test_ft_adjoint_right_mul_derivative_linear_in_t_op(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
-    zero_t_arg = rpj.ShuffleTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_arg = adj_mul_trials.zero_shuffle_tensor()
     t_op_x = adj_mul_trials.uniform_free_tensor()
     t_op_y = adj_mul_trials.uniform_free_tensor()
     vals = adj_mul_trials.uniform_data((2,))
@@ -275,10 +260,7 @@ def test_ft_adjoint_right_mul_derivative_linear_in_t_op(adj_mul_trials):
 def test_ft_adjoint_right_mul_derivative_linear_in_t_arg(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
-    zero_t_op = rpj.FreeTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_op = adj_mul_trials.zero_free_tensor()
     t_arg_x = adj_mul_trials.uniform_shuffle_tensor()
     t_arg_y = adj_mul_trials.uniform_shuffle_tensor()
     vals = adj_mul_trials.uniform_data((2,))
@@ -295,10 +277,7 @@ def test_ft_adjoint_right_mul_derivative_wrt_op(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
     tangent = adj_mul_trials.uniform_free_tensor() * adj_mul_trials.cond_dtype(1e-3, 1e0)
-    zero_t_arg = rpj.ShuffleTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_arg = adj_mul_trials.zero_shuffle_tensor()
 
     def fn(arg_op):
         return rpj.ft_adjoint_right_mul(arg_op, arg)
@@ -321,10 +300,7 @@ def test_ft_adjoint_right_mul_derivative_wrt_arg(adj_mul_trials):
     op = adj_mul_trials.uniform_free_tensor()
     arg = adj_mul_trials.uniform_shuffle_tensor()
     tangent = adj_mul_trials.uniform_shuffle_tensor() * adj_mul_trials.cond_dtype(1e-3, 1e0)
-    zero_t_op = rpj.FreeTensor(
-        jnp.zeros(adj_mul_trials.batch_shape(adj_mul_trials.tensor_basis), adj_mul_trials.dtype),
-        adj_mul_trials.tensor_basis,
-    )
+    zero_t_op = adj_mul_trials.zero_free_tensor()
 
     def fn(arg_arg):
         return rpj.ft_adjoint_right_mul(op, arg_arg)
