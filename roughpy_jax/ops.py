@@ -13,13 +13,16 @@ from jax import Array
 from .compressed import csc_matvec
 
 # Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
-# Potentially useful to have cached versions to the l2t and t2l matrices as JAX 
-# arrays, as these are used in many operations and converting from the C++ 
-# buffers to JAX arrays can be expensive. 
+# Potentially useful to have cached versions to the l2t and t2l matrices as JAX
+# arrays, as these are used in many operations and converting from the C++
+# buffers to JAX arrays can be expensive.
 global _lie_sparse_matrix_cache
 _lie_sparse_matrix_cache: dict[
-    tuple, tuple[tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
-                 tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]
+    tuple,
+    tuple[
+        tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+    ],
 ] = {}
 
 
@@ -33,14 +36,10 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
     if key not in _lie_sparse_matrix_cache:
         # Get l2t FIRST and convert to JAX arrays before t2l can overwrite the buffer
         l2t = lie_basis.get_l2t_matrix(dtype)
-        l2t_arrays = (
-            l2t.data, l2t.indices, l2t.indptr
-        )
+        l2t_arrays = (l2t.data, l2t.indices, l2t.indptr)
         # Now get t2l – this amay overwrite the C++ buffer, but l2t is already saved
         t2l = lie_basis.get_t2l_matrix(dtype)
-        t2l_arrays = (
-            t2l.data, t2l.indices, t2l.indptr
-        )
+        t2l_arrays = (t2l.data, t2l.indices, t2l.indptr)
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
     return _lie_sparse_matrix_cache[key]
 
@@ -91,6 +90,32 @@ def _batched_fallback_wrapper(single_tensor_fn):
         return result
 
     return wrapped
+
+
+def _normalise_dtype_for_resolution(dtype: jnp.dtype) -> jnp.dtype:
+    """
+    Normalise esoteric float types to something more standard that can be resolved
+    with jnp.promote_types.
+
+    promote_types does not work with floats smaller than 2 bytes or sub-byte integer
+    representations.
+
+    :param dtype: input dtype to be normalised
+    :return: normalised dtype
+    """
+
+    if not jnp.issubdtype(dtype, jnp.floating):
+        return jnp.dtype("float32")
+
+    name = dtype.name
+    if (
+        name.startswith("float4_")
+        or name.startswith("float6_")
+        or name.startswith("float8_")
+    ):
+        return jnp.dtype("float16")
+
+    return dtype
 
 
 class Operation:
@@ -386,22 +411,76 @@ class Operation:
         """
         return self.StaticArgs(**kwargs)
 
+    def get_min_supported_cpu_dtype(
+        self, target_dtype: jnp.dtype
+    ) -> tuple[jnp.dtype, str]:
+        if jnp.issubdtype(target_dtype, jnp.complexfloating):
+            raise TypeError(f"Complex dtypes are not supported, got {target_dtype}")
+
+        # We have to account for strange dtypes that don't work correctly with promotion rules
+        tgt_dtype = _normalise_dtype_for_resolution(target_dtype)
+
+        valid_types = [
+            (dtype, name)
+            for (platform, dstr), name in self.implementations.items()
+            if platform == "cpu"
+            if (dtype := jnp.dtype(dstr)) == jnp.promote_types(dtype, tgt_dtype)
+        ]
+
+        if not valid_types:
+            raise ValueError(
+                f"No valid CPU implementations found for dtype {target_dtype}"
+            )
+
+        return min(
+            valid_types,
+            key=lambda x: x[0].itemsize,
+        )
+
     def get_fallback(self) -> Callable[..., Any]:
         """
         Provides a mechanism to retrieve a fallback callable with pre-configured
         static parameters. If a fallback callable is not defined, raises an error
         indicating the absence of a fallback operation.
 
+        The preferred method is to get a JAX-defined fallback. If that is not available,
+        we fall back to a CPU implementation. This is not ideal, but it is a fallback
+        pathway that should only be used when no other options are available.
+
         :raises AttributeError: Raised when no fallback operation has been defined.
         :return: A callable object configured with the fallback operation and
             associated static parameters.
         :rtype: Callable[..., Any]
         """
+        # The preferred method is to get a JAX-defined fallback.
         if (fb := getattr(self, "fallback", None)) is not None:
             fallback = _batched_fallback_wrapper(fb)
             return partial(fallback, **self.make_ffi_static_args())
 
-        raise AttributeError("{type(self)} does not name a fallback operation")
+        dtype, name = self.get_min_supported_cpu_dtype(self.data_dtype)
+        shape_dtype = self.make_result_dtypes(self.basis, dtype, self.batch_dims)
+        ffi_static_args = self.make_ffi_static_args()
+
+        # Before we can use the cpu ffi we have to move all the data back to the CPU.
+        # This is not perfect, and not just because move data is expensive. The real
+        # problem is that this will not respect sharding or multi-cpu systems. That
+        # is why this is only valid as a fallback pathway, but we might have to
+        # revisit this to make sure that sharding is properly reflected.
+        host = jax.devices("cpu")[0]
+
+        def call(*args):
+            converted_args = tuple(
+                jax.device_put(jnp.astype(arg, dtype), device=host) for arg in args
+            )
+            results = jax.ffi.ffi_call(
+                name,
+                shape_dtype,
+                **self.ffi_call_args,
+            )(*converted_args, **ffi_static_args)
+
+            return tuple(jnp.astype(result, self.data_dtype) for result in results)
+
+        return call
 
     def make_ffi_static_args(self) -> dict:
         """
@@ -807,22 +886,6 @@ class DenseSTMul(Operation, DenseOperation):
         lhs_min_deg: np.int32  # not required
         rhs_min_deg: np.int32  # not required
 
-    @staticmethod
-    def fallback(
-        b_data: Array,
-        c_data: Array,
-        width: np.int32,
-        depth: np.int32,
-        degree_begin: np.ndarray[np.int64.dtype],
-        out_max_deg: np.int32,
-        lhs_max_deg: np.int32,
-        rhs_max_deg: np.int32,
-        lhs_min_deg: np.int32 = 0,
-        rhs_min_deg: np.int32 = 0,
-    ) -> tuple[Array]:
-        raise NotImplementedError(
-            "st_mul is not implemented for native JAX, use CPU backend"
-        )
 
 
 class DenseFTAdjLeftMul(Operation, DenseOperation):
@@ -1164,7 +1227,6 @@ class DenseSTAdjMul(Operation, DenseOperation):
         op_min_deg: np.int32
         arg_min_deg: np.int32
 
-    def get_fallback(self) -> Callable[..., Any]: ...
 
 
 # Register all CPU implementations for dense operations
