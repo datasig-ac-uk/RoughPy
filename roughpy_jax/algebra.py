@@ -315,6 +315,7 @@ def _tensor_to_dual(
     return new_cls(_redepth_data(tensor.data, new_basis.size()), new_basis)
 
 
+@jax.custom_vjp
 def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     """
     Free tensor fused multiply-add
@@ -357,7 +358,19 @@ def ft_fma_derivative(
     t_a: FreeTensorT,
     t_b: FreeTensorT,
     t_c: FreeTensorT,
-) -> FreeTensorT: ...
+) -> FreeTensorT:
+    """
+    Free tensor fused multiply-add derivative
+
+    :param a: addition operand
+    :param b: left-hand multiply operand
+    :param c: right-hand multiple operand
+    :param t_a: tangent perturbation at a
+    :param t_b: tangent perturbation at b
+    :param t_c: tangent perturbation at c
+    :return: derivative in tangent direction (s_a, s_b, s_c)
+    """
+    return t_a + ft_mul_derivative(b, c, t_b, t_c)
 
 
 def ft_fma_adjoint_derivative(
@@ -365,9 +378,48 @@ def ft_fma_adjoint_derivative(
     b: FreeTensorT,
     c: FreeTensorT,
     ct_result: ShuffleTensorT,
-) -> tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]: ...
+) -> tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]:
+    """
+    Free tensor fused multiply-add adjoint derivative
+
+    :param a: addition operand
+    :param b: left-hand multiply operand
+    :param c: right-hand multiple operand
+    :param ct_result: cotangent from the output
+    :return: (cotangent for a, cotangent for b, cotangent for c)
+    """
+    ct_a = ct_result
+    ct_b, ct_c = ft_mul_adjoint_derivative(b, c, ct_result)
+    return ct_a, ct_b, ct_c
 
 
+def _ft_fma_vjp_fwd(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT):
+    result = ft_fma(a, b, c)
+    return result, (a, b, c)
+
+
+def _ft_fma_vjp_bwd(
+    residuals, ct_result_data
+) -> tuple[jax.Array, ...]:
+    a, b, c = residuals
+
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, a.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    ct_a, ct_b, ct_c = ft_fma_adjoint_derivative(a, b, c, ct_result)
+    return ct_a.data, ct_b.data, ct_c.data
+
+
+ft_fma.defvjp(_ft_fma_vjp_fwd, _ft_fma_vjp_bwd)
+
+
+@jax.custom_vjp
 def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     """
     Free tensor multiply
@@ -403,13 +455,67 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
 
 
 def ft_mul_derivative(
-    a: FreeTensorT, b: FreeTensorT, t_a: FreeTensorT, t_b: FreeTensorT
-) -> FreeTensorT: ...
+    lhs: FreeTensorT, rhs: FreeTensorT, t_lhs: FreeTensorT, t_rhs: FreeTensorT
+) -> FreeTensorT:
+    """
+    Free tensor multiply derivative (product rule).
+
+    Dm(a,b)[s,t] = s*b + a*t  where * is the tensor product.
+
+    :param lhs: left-hand operand
+    :param rhs: right-hand operand
+    :param t_lhs: tangent perturbation at lhs
+    :param t_rhs: tangent perturbation at rhs
+    :return: derivative in tangent direction (s,t)
+    """
+    return ft_mul(lhs, t_rhs) + ft_mul(t_lhs, rhs)
 
 
 def ft_mul_adjoint_derivative(
-    a: FreeTensorT, b: FreeTensorT, ct_result: ShuffleTensorT
-) -> tuple[ShuffleTensorT, ShuffleTensorT]: ...
+    lhs: FreeTensorT, rhs: FreeTensorT, ct_result: ShuffleTensorT
+) -> tuple[ShuffleTensorT, ShuffleTensorT]:
+    """
+    Free tensor multiply adjoint derivative.
+
+    [Dm(a,b)*]φ = (R_b* φ, L_a* φ) where L_a and R_b are the left
+    and right multiplication operators respectively.
+
+    :param lhs: left-hand operand
+    :param rhs: right-hand operand
+    :param ct_result: cotangent from the output
+    :return: (cotangent for lhs, cotangent for rhs)
+    """
+    ct_lhs = ft_adjoint_right_mul(rhs, ct_result)
+    ct_rhs = ft_adjoint_left_mul(lhs, ct_result)
+    return ct_lhs, ct_rhs
+
+
+def _ft_mul_vjp_fwd(lhs: FreeTensorT, rhs: FreeTensorT):
+    result = ft_mul(lhs, rhs)
+    return result, (lhs, rhs)
+
+
+def _ft_mul_vjp_bwd(
+    residuals, ct_result_data
+) -> tuple[jax.Array, ...]:
+    lhs, rhs = residuals
+
+    # TODO: Not sure if this can be all different array types (a la ft_log) or 
+    # if it will always be DenseFreeTensor. If the latter, we can simplify this.
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseShuffleTensor(ct_result_data, lhs.basis)
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = DenseShuffleTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
+
+    ct_lhs, ct_rhs = ft_mul_adjoint_derivative(lhs, rhs, ct_result)
+    return ct_lhs.data, ct_rhs.data
+
+
+ft_mul.defvjp(_ft_mul_vjp_fwd, _ft_mul_vjp_bwd)
 
 
 @jax.custom_vjp
@@ -1203,6 +1309,7 @@ def _tensor_to_lie_vjp_bwd(
 tensor_to_lie.defvjp(_tensor_to_lie_vjp_fwd, _tensor_to_lie_vjp_bwd)
 
 
+@jax.custom_vjp
 def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of left free-tensor multiplication on shuffles.
@@ -1245,14 +1352,43 @@ def ft_adjoint_left_mul_derivative(
     arg: ShuffleTensorT,
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
-) -> ShuffleTensorT: ...
+) -> ShuffleTensorT:
+    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    _get_and_check_batch_dims(op.data, arg.data, t_op.data, t_arg.data, core_dims=1)
+
+    t_result = ft_adjoint_left_mul(t_op, arg) + ft_adjoint_left_mul(op, t_arg)
+
+    return t_result
 
 
 def ft_adjoint_left_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
-) -> tuple[ShuffleTensorT, FreeTensorT]: ...
+) -> tuple[ShuffleTensorT, FreeTensorT]:
+    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
+
+    ct_op = ft_adjoint_right_mul(ct_result, arg)
+    ct_arg = ft_mul(op, ct_result)
+
+    return ct_op, ct_arg
 
 
+def _ft_adjoint_left_mul_vjp_fwd(op: FreeTensorT, arg: ShuffleTensorT):
+    ct_result = ft_adjoint_left_mul_adjoint_derivative(op, arg)
+    return ct_result, (op, arg)
+
+
+def _ft_adjoint_left_mul_vjp_bwd(residuals, ct_result):
+    op, arg = residuals
+
+    ct_op, ct_arg = ft_adjoint_left_mul_adjoint_derivative(op, arg, ct_result)
+    return ct_op.data, ct_arg.data
+
+
+ft_adjoint_left_mul.defvjp(_ft_adjoint_left_mul_vjp_fwd, _ft_adjoint_left_mul_vjp_bwd)
+
+
+@jax.custom_vjp
 def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     """
     Compute the adjoint action of right free-tensor multiplication on shuffles.
@@ -1295,12 +1431,40 @@ def ft_adjoint_right_mul_derivative(
     arg: ShuffleTensorT,
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
-) -> ShuffleTensorT: ...
+) -> ShuffleTensorT:
+    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
+
+    t_result = ft_adjoint_right_mul(t_op, arg) + ft_adjoint_right_mul(op, t_arg)
+    return t_result
 
 
 def ft_adjoint_right_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
-) -> tuple[ShuffleTensorT, FreeTensorT]: ...
+) -> tuple[ShuffleTensorT, FreeTensorT]:
+    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
+
+    ct_op = ft_adjoint_left_mul(ct_result, arg)
+    ct_arg = ft_mul(ct_result, op)
+
+    return ct_op, ct_arg
+
+
+def _ft_adjoint_right_mul_vjp_fwd(op, arg):
+    result = ft_adjoint_right_mul(op, arg)
+    return result, (op, arg)
+
+
+def _ft_adjoint_right_mul_vjp_bwd(residuals, ct_result):
+    op, arg = residuals
+    ct_op, ct_arg = ft_adjoint_right_mul_adjoint_derivative(op, arg, ct_result)
+    return ct_op.data, ct_arg.data
+
+
+ft_adjoint_right_mul.defvjp(
+    _ft_adjoint_right_mul_vjp_fwd, _ft_adjoint_right_mul_vjp_bwd
+)
 
 
 @jax.custom_vjp
@@ -1347,11 +1511,29 @@ def tensor_pairing_derivative(
     t_functional: ShuffleTensorT,
     t_argument: FreeTensorT,
 ) -> jax.Array:
-    _check_basis_compat(functional.basis, argument.basis)
-    _ = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+    _check_basis_compat(
+        functional.basis, argument.basis, t_functional.basis, t_argument.basis
+    )
+    _ = _get_and_check_batch_dims(
+        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
+    )
+
     x = tensor_pairing(functional, t_argument)
-    y = tensor_pairing(argument, t_functional)
+    y = tensor_pairing(t_functional, argument)
     return x + y
+
+
+def _reshape_pairing_cotangent(
+    ct_result: jax.Array, batch_dims: tuple[int, ...]
+) -> jax.Array:
+    ct_shape = ct_result.shape
+    if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
+        raise ValueError(
+            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
+        )
+
+    new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)
+    return jnp.reshape(ct_result, new_shape)
 
 
 def tensor_pairing_adjoint_derivative(
@@ -1362,25 +1544,12 @@ def tensor_pairing_adjoint_derivative(
     _check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
-    ct_shape = ct_result.shape
-    if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
-        raise ValueError(
-            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
-        )
+    ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
 
-    new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)
-    ext_ct = jnp.reshape(ct_result, new_shape)
+    ct_functional = DenseFreeTensor(ext_ct * argument.data, functional.basis)
+    ct_argument = DenseShuffleTensor(ext_ct * functional.data, argument.basis)
 
-    functional_cls = type(functional)
-    argument_cls = type(argument)
-
-    ct_functional_cls = argument_cls
-    ct_argument_cls = functional_cls
-
-    ct_func = ext_ct * _tensor_to_dual(argument, ct_functional_cls, functional.basis)
-    ct_arg = ext_ct * _tensor_to_dual(functional, ct_argument_cls, argument.basis)
-
-    return ct_func, ct_arg
+    return ct_functional, ct_argument
 
 
 def _tensor_pairing_vjp_fwd(functional, argument):
@@ -1398,3 +1567,83 @@ def _tensor_pairing_vjp_bwd(residual, ct_result):
 
 
 tensor_pairing.defvjp(_tensor_pairing_vjp_fwd, _tensor_pairing_vjp_bwd)
+
+
+@jax.custom_vjp
+def lie_pairing(functional: LieT, argument: LieT) -> jax.Array:
+    """
+    Compute the pairing of two Lie algebra elements.
+
+    This is the coefficient-space pairing induced by the Hall basis. The result
+    is scalar-valued, with any leading batch dimensions preserved.
+
+    :param functional: Left-hand Lie element.
+    :param argument: Right-hand Lie element.
+    :return: Pairing of ``functional`` and ``argument``.
+    """
+    dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
+
+    _check_basis_compat(functional.basis, argument.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    op_cls = Operation.get_operation("lie_pairing", "dense")
+
+    op = op_cls(
+        (functional.basis, argument.basis),
+        dtype,
+        batch_dims,
+        functional_max_degree=functional.basis.depth,
+        argument_max_degree=argument.basis.depth,
+    )
+
+    (result,) = op(functional.data, argument.data)
+    return result
+
+
+def lie_pairing_derivative(
+    functional: LieT,
+    argument: LieT,
+    t_functional: LieT,
+    t_argument: LieT,
+) -> jax.Array:
+    _check_basis_compat(
+        functional.basis, argument.basis, t_functional.basis, t_argument.basis
+    )
+    _ = _get_and_check_batch_dims(
+        functional.data, argument.data, t_functional.data, t_argument.data, core_dims=1
+    )
+
+    x = lie_pairing(functional, t_argument)
+    y = lie_pairing(t_functional, argument)
+    return x + y
+
+
+def lie_pairing_adjoint_derivative(
+    functional: LieT, argument: LieT, ct_result: jax.Array
+) -> tuple[LieT, LieT]:
+    _check_basis_compat(functional.basis, argument.basis)
+    batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
+
+    ext_ct = _reshape_pairing_cotangent(ct_result, batch_dims)
+
+    ct_functional = DenseLie(ext_ct * argument.data, functional.basis)
+    ct_argument = DenseLie(ext_ct * functional.data, argument.basis)
+
+    return ct_functional, ct_argument
+
+
+def _lie_pairing_vjp_fwd(functional: LieT, argument: LieT) -> tuple[jax.Array, Any]:
+    result = lie_pairing(functional, argument)
+    return result, (functional, argument)
+
+
+def _lie_pairing_vjp_bwd(residuals, ct_result) -> tuple[jax.Array, ...]:
+    functional, argument = residuals
+
+    ct_functional, ct_argument = lie_pairing_adjoint_derivative(
+        functional, argument, ct_result
+    )
+    return ct_functional.data, ct_argument.data
+
+
+lie_pairing.defvjp(_lie_pairing_vjp_fwd, _lie_pairing_vjp_bwd)
