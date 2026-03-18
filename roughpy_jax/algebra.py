@@ -660,13 +660,27 @@ def st_fma_adjoint_derivative(
     return ct_a, ct_b, ct_c
 
 
-def _st_fma_vjp_fwd(a, b, c):
+def _st_fma_vjp_fwd(
+    a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT
+) -> tuple[ShuffleTensorT, tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]]:
     result = st_fma(a, b, c)
     return result, (a, b, c)
 
 
-def _st_fma_vjp_bwd(residuals, ct_result):
+def _st_fma_vjp_bwd(
+    residuals: tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT],
+    ct_result_data: jax.Array | DenseFreeTensor | DenseShuffleTensor,
+) -> tuple[jax.Array, ...]:
     a, b, c = residuals
+
+    if isinstance(ct_result_data, jax.Array):
+        ct_result = DenseFreeTensor(ct_result_data, a.basis)
+    elif isinstance(ct_result_data, DenseFreeTensor):
+        ct_result = ct_result_data
+    elif isinstance(ct_result_data, DenseShuffleTensor):
+        ct_result = DenseFreeTensor(ct_result_data.data, ct_result_data.basis)
+    else:
+        raise TypeError(f"Unexpected type for ct_result_data: {type(ct_result_data)}")
 
     ct_a, ct_b, ct_c = st_fma_adjoint_derivative(a, b, c, ct_result)
 
