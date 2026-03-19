@@ -43,7 +43,7 @@ def _partition_dataclass(cls):
 
 
 @typing.runtime_checkable
-class Interval[RealT](Protocol):
+class Interval(Protocol[RealT]):
     """
     Representation of an interval with an unspecified type for mathematical
     computations or range definitions. This interface outlines the required
@@ -223,12 +223,12 @@ class DyadicInterval(Dyadic):
     @property
     def inf(self) -> float:
         k = self.k if self._interval_type == IntervalType.ClOpen else self.k - 1
-        return math.ldexp(self.k, -self.n)
+        return math.ldexp(k, -self.n)
 
     @property
     def sup(self) -> float:
         k = (self.k + 1) if self._interval_type == IntervalType.ClOpen else self.k
-        return math.ldexp(self.k + 1, -self.n)
+        return math.ldexp(k + 1, -self.n)
 
     @property
     def length(self) -> float:

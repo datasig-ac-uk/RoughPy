@@ -1,3 +1,5 @@
+import dataclasses
+
 import pytest
 from roughpy_jax.intervals import (
     Dyadic,
@@ -27,7 +29,7 @@ def test_real_interval_basic_and_frozen():
     assert ri.sup == pytest.approx(0.2)
 
     # Frozen dataclass should not allow mutation
-    with pytest.raises(Exception):
+    with pytest.raises(dataclasses.FrozenInstanceError):
         ri._inf = 0.0
 
 

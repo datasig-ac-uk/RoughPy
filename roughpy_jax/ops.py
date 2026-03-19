@@ -36,7 +36,7 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
         # Get l2t FIRST and convert to JAX arrays before t2l can overwrite the buffer
         l2t = lie_basis.get_l2t_matrix(dtype)
         l2t_arrays = (l2t.data, l2t.indices, l2t.indptr)
-        # Now get t2l – this amay overwrite the C++ buffer, but l2t is already saved
+        # Now get t2l - this amay overwrite the C++ buffer, but l2t is already saved
         t2l = lie_basis.get_t2l_matrix(dtype)
         t2l_arrays = (t2l.data, t2l.indices, t2l.indptr)
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
@@ -297,7 +297,15 @@ class Operation:
         :return: A tuple containing a shape and dtype structure for the computation.
         :rtype: tuple
         """
-        return (jax.ShapeDtypeStruct(batch_dims + (basis.size(),), dtype),)
+        return (
+            jax.ShapeDtypeStruct(
+                (
+                    *batch_dims,
+                    basis.size(),
+                ),
+                dtype,
+            ),
+        )
 
     @classmethod
     def get_result_basis(

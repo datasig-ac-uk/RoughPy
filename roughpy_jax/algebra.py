@@ -254,7 +254,7 @@ def _check_basis_compat(first_basis: TensorBasis, *other_bases: TensorBasis):
 
 
 def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
-    for i, ft in enumerate([first_tensor] + list(other_tensors)):
+    for i, ft in enumerate((first_tensor, *list(other_tensors))):
         if ft.data.dtype != jnp.float32:
             if ft.data.dtype != jnp.float64:
                 raise ValueError(
@@ -952,7 +952,7 @@ def ft_fmexp_adjoint_derivative(
         multiplier.data, exponent.data, ct_result.data, core_dims=1
     )
 
-    tensor_type = type(multiplier)
+    # tensor_type = type(multiplier)
     ct_type = type(ct_result)
 
     basis = multiplier.basis

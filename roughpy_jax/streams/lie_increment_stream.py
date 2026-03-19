@@ -359,8 +359,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         lie_basis: LieBasis | None,
         interval_type=IntervalType.ClOpen,
         data_dtype: jnp.dtype | None = None,
-        time_dtype: jnp.dtype = jnp.dtype("float32"),
-        dyadic_integer_type: jnp.dtype = jnp.dtype("int32"),
+        time_dtype: jnp.dtype = jnp.float32.dtype,
+        dyadic_integer_type: jnp.dtype = jnp.int32.dtype,
         **kwargs,
     ) -> T:
 
@@ -403,7 +403,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         dtypes = [ds.dtype]
         for i, (ds, expected_dt) in enumerate(
-            zip(data_arrays[1:], time_lens[1:]), start=1
+            zip(data_arrays[1:], time_lens[1:], strict=True), start=1
         ):
             if ds.ndim < 2:
                 raise ValueError("data arrays must be at least 2D")

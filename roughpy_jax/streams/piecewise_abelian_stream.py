@@ -92,7 +92,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
         intervals = self._partition.to_intervals()
         all_tensors = [initial] + [
-            get_piece((x, p)) for x, p in zip(self._data, intervals)
+            get_piece((x, p)) for x, p in zip(self._data, intervals, strict=True)
         ]
 
         # Stack all tensors along a leading axis into a single batched FreeTensor.
