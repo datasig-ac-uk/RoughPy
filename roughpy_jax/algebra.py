@@ -340,9 +340,7 @@ def _ft_fma_vjp_fwd(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT):
     return result, (a, b, c)
 
 
-def _ft_fma_vjp_bwd(
-    residuals, ct_result_data
-) -> tuple[jax.Array, ...]:
+def _ft_fma_vjp_bwd(residuals, ct_result_data) -> tuple[jax.Array, ...]:
     a, b, c = residuals
 
     if isinstance(ct_result_data, jax.Array):
@@ -437,9 +435,7 @@ def _ft_mul_vjp_fwd(lhs: FreeTensorT, rhs: FreeTensorT):
     return result, (lhs, rhs)
 
 
-def _ft_mul_vjp_bwd(
-    residuals, ct_result_data
-) -> tuple[jax.Array, ...]:
+def _ft_mul_vjp_bwd(residuals, ct_result_data) -> tuple[jax.Array, ...]:
     lhs, rhs = residuals
 
     # TODO: Not sure if this can be all different array types (a la ft_log) or
@@ -582,7 +578,7 @@ def st_fma_derivative(
     t_b: ShuffleTensorT,
     t_c: ShuffleTensorT,
 ) -> ShuffleTensorT:
-    _check_basis_compat(a.basis, b.basis, c.basis, t_a.basis, t_b.basis, t_c.basis)
+    check_basis_compat(a.basis, b.basis, c.basis, t_a.basis, t_b.basis, t_c.basis)
     _get_and_check_batch_dims(
         a.data, b.data, c.data, t_a.data, t_b.data, t_c.data, core_dims=1
     )
@@ -596,7 +592,7 @@ def st_fma_adjoint_derivative(
     c: ShuffleTensorT,
     ct_result: FreeTensorT,
 ) -> tuple[FreeTensorT, FreeTensorT, FreeTensorT]:
-    _check_basis_compat(a.basis, b.basis, c.basis, ct_result.basis)
+    check_basis_compat(a.basis, b.basis, c.basis, ct_result.basis)
     _get_and_check_batch_dims(a.data, b.data, c.data, ct_result.data, core_dims=1)
 
     ct_a = ct_result  # TODO: Map explicitly to adjoint type
@@ -676,7 +672,7 @@ def st_mul_derivative(
     t_lhs: ShuffleTensorT,
     t_rhs: ShuffleTensorT,
 ) -> ShuffleTensorT:
-    _check_basis_compat(lhs.basis, rhs.basis, t_lhs.basis, t_rhs.basis)
+    check_basis_compat(lhs.basis, rhs.basis, t_lhs.basis, t_rhs.basis)
     _get_and_check_batch_dims(lhs.data, rhs.data, t_lhs.data, t_rhs.data)
 
     t_result = st_mul(lhs, t_rhs) + st_mul(t_lhs, rhs)
@@ -686,7 +682,7 @@ def st_mul_derivative(
 def st_mul_adjoint_derivative(
     lhs: ShuffleTensorT, rhs: ShuffleTensorT, ct_result: FreeTensorT
 ) -> tuple[FreeTensorT, FreeTensorT]:
-    _check_basis_compat(lhs.basis, rhs.basis, ct_result.basis)
+    check_basis_compat(lhs.basis, rhs.basis, ct_result.basis)
     _get_and_check_batch_dims(lhs.data, rhs.data, ct_result.data)
 
     ct_lhs = st_adjoint_mul(rhs, ct_result)
@@ -746,7 +742,7 @@ def ft_exp_derivative(
     t_x: FreeTensorT,
     out_basis: TensorBasis | None = None,
 ) -> FreeTensorT:
-    _check_basis_compat(x.basis, t_x.basis)
+    check_basis_compat(x.basis, t_x.basis)
     batch_dims = _get_and_check_batch_dims(x.data, t_x.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
 
@@ -782,7 +778,7 @@ def ft_exp_adjoint_derivative(
     ct_result: ShuffleTensorT,
     out_basis: TensorBasis | None = None,
 ) -> tuple[ShuffleTensorT]:
-    _check_basis_compat(x.basis, ct_result.basis)
+    check_basis_compat(x.basis, ct_result.basis)
     batch_dims = _get_and_check_batch_dims(x.data, ct_result.data, core_dims=1)
     dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
 
@@ -1367,7 +1363,7 @@ def ft_adjoint_left_mul_derivative(
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
 ) -> ShuffleTensorT:
-    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     _get_and_check_batch_dims(op.data, arg.data, t_op.data, t_arg.data, core_dims=1)
 
     t_result = ft_adjoint_left_mul(t_op, arg) + ft_adjoint_left_mul(op, t_arg)
@@ -1378,7 +1374,7 @@ def ft_adjoint_left_mul_derivative(
 def ft_adjoint_left_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
 ) -> tuple[ShuffleTensorT, FreeTensorT]:
-    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    check_basis_compat(op.basis, arg.basis, ct_result.basis)
     _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
 
     ct_op = ft_adjoint_right_mul(ct_result, arg)
@@ -1446,7 +1442,7 @@ def ft_adjoint_right_mul_derivative(
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
 ) -> ShuffleTensorT:
-    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
     t_result = ft_adjoint_right_mul(t_op, arg) + ft_adjoint_right_mul(op, t_arg)
@@ -1456,7 +1452,7 @@ def ft_adjoint_right_mul_derivative(
 def ft_adjoint_right_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: FreeTensorT
 ) -> tuple[ShuffleTensorT, FreeTensorT]:
-    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    check_basis_compat(op.basis, arg.basis, ct_result.basis)
     _get_and_check_batch_dims(op.data, arg.data, ct_result.data, core_dims=1)
 
     ct_op = ft_adjoint_left_mul(ct_result, arg)
@@ -1668,7 +1664,7 @@ def st_adjoint_mul(
     arg: FreeTensorT,
 ) -> FreeTensorT:
     dtype = jnp.result_type(op_arg.data.dtype, arg.data.dtype)
-    _check_basis_compat(op_arg.basis, arg.basis)
+    check_basis_compat(op_arg.basis, arg.basis)
     batch_dims = _get_and_check_batch_dims(op_arg.data, arg.data, core_dims=1)
 
     op_cls = Operation.get_operation("st_adj_mul", "dense")
@@ -1689,7 +1685,7 @@ def st_adjoint_mul(
 def st_adjoint_mul_derivative(
     op: ShuffleTensorT, arg: FreeTensorT, t_op: ShuffleTensorT, t_arg: FreeTensorT
 ) -> FreeTensorT:
-    _check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
+    check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
     t_result = st_adjoint_mul(op, t_arg) + st_adjoint_mul(t_op, arg)
@@ -1700,7 +1696,7 @@ def st_adjoint_mul_derivative(
 def st_adjoint_mul_adjoint_derivative(
     op: ShuffleTensorT, arg: FreeTensorT, ct_result: ShuffleTensorT
 ) -> tuple[FreeTensorT, ShuffleTensorT]:
-    _check_basis_compat(op.basis, arg.basis, ct_result.basis)
+    check_basis_compat(op.basis, arg.basis, ct_result.basis)
     _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
     ct_op = st_adjoint_mul(ct_result, arg)
