@@ -6,8 +6,8 @@ _rpy_compute_internals.TensorBasis class. They are duplicated regardless to
 confirm that both rpc and rpj tensor basis behave the same.
 """
 
-import pytest
 import numpy as np
+import pytest
 import roughpy_jax as rpj
 
 sample_width_depth_degree_begin = [

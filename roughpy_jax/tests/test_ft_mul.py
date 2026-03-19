@@ -1,17 +1,16 @@
 from functools import partial
 
-import pytest
 import jax
 import jax.numpy as jnp
-from jax import test_util as jtu
-
+import pytest
 import roughpy_jax as rpj
 from derivative_testing import (
     DerivativeTrialsHelper,
-    assert_is_linear,
-    assert_is_derivative,
     assert_is_adjoint_derivative,
+    assert_is_derivative,
+    assert_is_linear,
 )
+from jax import test_util as jtu
 
 
 def test_ft_mul(rpj_dtype, rpj_batch, rpj_no_acceleration):

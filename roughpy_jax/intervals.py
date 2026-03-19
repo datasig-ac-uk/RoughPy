@@ -2,12 +2,11 @@ import enum
 import math
 import numbers
 import typing
-from typing import Protocol, TypeVar, Self, Generic
 from dataclasses import dataclass
+from typing import Generic, Protocol, Self, TypeVar
 
-import jax.numpy as jnp
 import jax
-
+import jax.numpy as jnp
 
 RealT = TypeVar("RealT")
 
@@ -78,7 +77,7 @@ class Interval[RealT](Protocol):
     @property
     def length(self) -> RealT: ...
 
-    def intersection(self, other: Self) -> typing.Optional[Self]:
+    def intersection(self, other: Self) -> Self | None:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
@@ -115,7 +114,7 @@ class BaseInterval(Interval):
     def intersection(
         left_interval: Interval,
         right_interval: Interval,
-    ) -> typing.Optional[Interval]:
+    ) -> Interval | None:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
@@ -235,7 +234,7 @@ class DyadicInterval(Dyadic):
     def length(self) -> float:
         return BaseInterval.length(self)
 
-    def intersection(self, other: Self) -> typing.Optional[Interval]:
+    def intersection(self, other: Self) -> Interval | None:
         """
         Calculate the intersection of this dyadic interval with another dyadic interval.
         :param other: The other dyadic interval to intersect with.
@@ -293,7 +292,7 @@ class RealInterval(Generic[RealT]):
     def length(self) -> RealT:
         return BaseInterval.length(self)
 
-    def intersection(self, other: Self) -> typing.Optional[Self]:
+    def intersection(self, other: Self) -> Self | None:
         """
         Calculate the intersection of this real interval with another real interval.
         :param other: The other real interval to intersect with.
@@ -343,7 +342,7 @@ class Partition(Generic[RealT]):
             _interval_type=self._interval_type,
         )
 
-    def intersection(self, other: Interval) -> typing.Optional[Self]:
+    def intersection(self, other: Interval) -> Self | None:
         """
         Calculate the intersection of this partition with another Interval.
         :param other: The other interval to intersect with.

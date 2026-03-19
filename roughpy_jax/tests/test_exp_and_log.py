@@ -2,14 +2,13 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
-
-from jax import test_util as jtu
+import roughpy_jax as rpj
 from derivative_testing import (
     assert_is_adjoint_derivative,
     assert_is_derivative,
     assert_is_linear,
 )
-import roughpy_jax as rpj
+from jax import test_util as jtu
 
 
 def test_dense_ft_exp_zero(rpj_dtype, rpj_batch, rpj_no_acceleration):

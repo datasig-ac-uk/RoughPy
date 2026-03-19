@@ -1,13 +1,12 @@
-import typing
 import collections.abc as cabc
-
+import typing
+from collections.abc import Callable
 from functools import partial
-from typing import ClassVar, Callable, Any, Optional, TypedDict, TypeVar, Union
+from typing import Any, ClassVar, TypedDict, TypeVar
 
 import jax
 import jax.numpy as jnp
 import numpy as np
-
 from jax import Array
 
 from .compressed import csc_matvec
@@ -261,7 +260,7 @@ class Operation:
     @classmethod
     def get_operation(
         cls, fn_name: str, layout: str = "dense"
-    ) -> Optional[type[OperationT]]:
+    ) -> type[OperationT] | None:
         """
         Retrieves a registered operation class based on the function name and layout.
 
@@ -363,8 +362,8 @@ class Operation:
         bases,
         dtype,
         batch_dims,
-        ffi_call_args: Optional[dict[str, Any]] = None,
-        specific_basis: Optional[BasisLike] = None,
+        ffi_call_args: dict[str, Any] | None = None,
+        specific_basis: BasisLike | None = None,
         **kwargs,
     ):
         self.basis = basis = self.get_result_basis(bases, specific_basis)
@@ -904,7 +903,7 @@ class DenseLieToTensor(Operation, DenseOperation):
         l2t_indices: np.ndarray[np.int64]
         l2t_indptr: np.ndarray[np.int64]
         l2t_size: np.int64
-        scale_factor: Union[None, np.float64]
+        scale_factor: None | np.float64
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
         arg_basis = self.bases[0]
@@ -932,7 +931,7 @@ class DenseLieToTensor(Operation, DenseOperation):
         l2t_indices: np.ndarray[np.int64],
         l2t_indptr: np.ndarray[np.int64],
         l2t_size: np.int32,
-        scale_factor: Union[None, np.float64],
+        scale_factor: None | np.float64,
     ) -> tuple[Array]:
         result = csc_matvec(l2t_data, l2t_indices, l2t_indptr, l2t_size, arg_data)
         if scale_factor is not None:
@@ -945,11 +944,11 @@ class DenseTensorToLie(Operation, DenseOperation):
     fn_name = "tensor_to_lie"
 
     class StaticArgs(TypedDict):
-        t2l_data: np.ndarray[Union[np.float32, np.float64]]
+        t2l_data: np.ndarray[np.float32 | np.float64]
         t2l_indices: np.ndarray[np.int64]
         t2l_indptr: np.ndarray[np.int64]
         t2l_size: np.int64
-        scale_factor: Union[None, np.float64]
+        scale_factor: None | np.float64
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
         lie_basis = self.bases[1]
@@ -972,11 +971,11 @@ class DenseTensorToLie(Operation, DenseOperation):
         width: np.int32,
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
-        t2l_data: np.ndarray[Union[np.float32, np.float64]],
+        t2l_data: np.ndarray[np.float32 | np.float64],
         t2l_indices: np.ndarray[np.int64],
         t2l_indptr: np.ndarray[np.int64],
         t2l_size: np.int32,
-        scale_factor: Union[None, np.float64],
+        scale_factor: None | np.float64,
     ) -> tuple[Array]:
         result = csc_matvec(t2l_data, t2l_indices, t2l_indptr, t2l_size, arg_data)
         if scale_factor is not None:

@@ -1,8 +1,8 @@
 import typing
-from typing import Protocol, TypeVar, Self, Callable
+from collections.abc import Callable
+from typing import Protocol, Self, TypeVar
 
 from roughpy_jax.intervals import Interval
-
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")

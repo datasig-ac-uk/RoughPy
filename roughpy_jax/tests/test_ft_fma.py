@@ -1,16 +1,16 @@
 from functools import partial
+
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
-import jax.numpy as jnp
-from jax import test_util as jtu
-import jax
-
 import roughpy_jax as rpj
 from derivative_testing import (
     DerivativeTrialsHelper,
-    assert_is_derivative,
     assert_is_adjoint_derivative,
+    assert_is_derivative,
 )
+from jax import test_util as jtu
 
 
 def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):

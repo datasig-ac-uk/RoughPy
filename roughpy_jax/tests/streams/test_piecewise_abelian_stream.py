@@ -1,11 +1,9 @@
-import pytest
-
 import jax
 import jax.numpy as jnp
-
+import pytest
 import roughpy_jax as rpj
+from roughpy_jax.intervals import IntervalType, Partition, RealInterval
 from roughpy_jax.streams import PiecewiseAbelianStream
-from roughpy_jax.intervals import RealInterval, IntervalType, Partition
 
 
 class PASHelper:

@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import pytest
-
-from roughpy_jax.compressed import expand_indptr, csc_matvec, csr_matvec
+from roughpy_jax.compressed import csc_matvec, csr_matvec, expand_indptr
 
 
 def _indptr_from_outer_indices(cols):

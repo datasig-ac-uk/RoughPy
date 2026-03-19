@@ -1,20 +1,20 @@
 from dataclasses import dataclass
-from typing import Tuple
 
+import jax
 import jax.numpy as jnp
 from jax import lax
-import jax
 
-from .concepts import Stream, BasisLike, LieT, GroupT
-from roughpy_jax.intervals import RealInterval, Partition, Interval
 from roughpy_jax.algebra import (
     FreeTensor,
+    ft_exp,
+    ft_fmexp,
+    ft_log,
     lie_to_tensor,
     tensor_to_lie,
-    ft_fmexp,
-    ft_exp,
-    ft_log,
 )
+from roughpy_jax.intervals import Interval, Partition, RealInterval
+
+from .concepts import BasisLike, GroupT, LieT, Stream
 
 
 def _pas_dataclass(cls):
@@ -31,7 +31,7 @@ def _pas_dataclass(cls):
 class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     """A stream representing a piecewise abelian path."""
 
-    _data: Tuple[LieT, ...]
+    _data: tuple[LieT, ...]
     _partition: Partition
     _lie_basis: BasisLike
     _group_basis: BasisLike

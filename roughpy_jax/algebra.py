@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partialmethod
-from typing import TypeVar, Callable, Type, Any
+from typing import Any, TypeVar
 
 import jax
 import jax.numpy as jnp
 import numpy as np
-
 from roughpy import compute as rpc
+
 from roughpy_jax.ops import Operation
 
 from .compressed import csr_matvec
@@ -305,7 +306,7 @@ def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
 
 
 def _tensor_to_dual(
-    tensor: AlgebraT, new_cls: Type[T], new_basis: TensorBasis | None
+    tensor: AlgebraT, new_cls: type[T], new_basis: TensorBasis | None
 ) -> T:
     if new_basis is None:
         new_basis = tensor.basis

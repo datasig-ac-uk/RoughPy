@@ -1,4 +1,5 @@
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from typing import Any
 
 import jax
 import jax.numpy as jnp

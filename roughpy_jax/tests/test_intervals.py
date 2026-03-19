@@ -1,12 +1,11 @@
 import pytest
-
 from roughpy_jax.intervals import (
-    Interval,
-    IntervalType,
     Dyadic,
     DyadicInterval,
-    RealInterval,
+    Interval,
+    IntervalType,
     Partition,
+    RealInterval,
 )
 
 
@@ -29,7 +28,7 @@ def test_real_interval_basic_and_frozen():
 
     # Frozen dataclass should not allow mutation
     with pytest.raises(Exception):
-        setattr(ri, "_inf", 0.0)
+        ri._inf = 0.0
 
 
 def test_protocol_conformance_runtime_checkable():

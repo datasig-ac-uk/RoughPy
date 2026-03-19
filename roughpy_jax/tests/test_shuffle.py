@@ -1,7 +1,8 @@
-from typing import Callable
-import pytest
-import numpy as np
+from collections.abc import Callable
+
 import jax.numpy as jnp
+import numpy as np
+import pytest
 import roughpy_jax as rpj
 
 

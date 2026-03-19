@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
-
 from derivative_testing import (
     DerivativeTrialsHelper,
     assert_is_adjoint_derivative,
@@ -103,7 +102,6 @@ def test_l2t_adjoint_derivative(lt2_trials):
 
 
 def test_t2l_linear(lt2_trials):
-    lie_basis = lt2_trials.lie_basis
     x = lt2_trials.uniform_free_tensor()
     y = lt2_trials.uniform_free_tensor()
 
@@ -115,7 +113,6 @@ def test_t2l_linear(lt2_trials):
 
 
 def test_t2l_derivative(lt2_trials):
-    lie_basis = lt2_trials.lie_basis
     x = lt2_trials.uniform_free_tensor()
     tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
 
@@ -129,7 +126,6 @@ def test_t2l_derivative(lt2_trials):
 
 
 def test_t2l_adjoint_derivative(lt2_trials):
-    lie_basis = lt2_trials.lie_basis
     x = lt2_trials.uniform_free_tensor()
     tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
     cotangent = lt2_trials.uniform_lie()
@@ -150,14 +146,20 @@ def test_t2l_adjoint_derivative(lt2_trials):
 
 
 def test_l2t_t2l_l2t_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    """
+    Test to catch any issues, most likely in caching, which would cause the
+    second l2t to not be applied properly.
+    """
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
+    # Test round-trip property
     tensor_x = rpj.lie_to_tensor(x, tensor_basis)
     _ = rpj.tensor_to_lie(tensor_x, lie_basis)
+    # Test that applying l2t again gives the same result as the first time
     tensor_y = rpj.lie_to_tensor(x, tensor_basis)
 
     assert jnp.allclose(tensor_x.data, tensor_y.data, atol=1e-7)

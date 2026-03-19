@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
-
 from derivative_testing import (
     DerivativeTrialsHelper,
     assert_is_adjoint_derivative,
