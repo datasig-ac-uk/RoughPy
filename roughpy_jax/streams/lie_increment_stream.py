@@ -1,11 +1,8 @@
-import itertools
 import functools
-import typing
 import math
 
-from typing import Type, TypeVar, Optional, Callable, TypeAlias, Any, Union
+from typing import Type, TypeVar, Optional, Callable, TypeAlias
 
-import numpy as np
 import jax
 import jax.numpy as jnp
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import partial, partialmethod
+from functools import partialmethod
 from typing import TypeVar, Callable, Type, Any
 
 import jax
@@ -298,7 +298,7 @@ def _get_and_check_batch_dims(*arrays, core_dims=1):
 
 def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
     if not isinstance(tensor.basis, TensorBasis):
-        raise TypeError(f"object must be a tensor")
+        raise TypeError("object must be a tensor")
 
     new_data = tensor.data.at[..., 0].set(0)
     return type(tensor)(new_data, tensor.basis)

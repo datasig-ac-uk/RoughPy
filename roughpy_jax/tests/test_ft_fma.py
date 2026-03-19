@@ -8,7 +8,6 @@ import jax
 import roughpy_jax as rpj
 from derivative_testing import (
     DerivativeTrialsHelper,
-    assert_is_linear,
     assert_is_derivative,
     assert_is_adjoint_derivative,
 )

@@ -2,7 +2,7 @@ import enum
 import math
 import numbers
 import typing
-from typing import Protocol, TypeVar, TypeAlias, Self, Any, Generic
+from typing import Protocol, TypeVar, Self, Generic
 from dataclasses import dataclass
 
 import jax.numpy as jnp

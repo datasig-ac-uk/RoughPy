@@ -1,4 +1,3 @@
-import math
 import pytest
 
 from roughpy_jax.intervals import (

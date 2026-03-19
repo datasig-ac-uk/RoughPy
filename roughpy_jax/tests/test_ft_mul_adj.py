@@ -1,6 +1,5 @@
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 import roughpy_jax as rpj
 

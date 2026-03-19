@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
-import pytest
 
 from derivative_testing import (
     DerivativeTrialsHelper,
@@ -158,7 +157,7 @@ def test_l2t_t2l_l2t_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     x = rpj.Lie(x_data, lie_basis)
 
     tensor_x = rpj.lie_to_tensor(x, tensor_basis)
-    y = rpj.tensor_to_lie(tensor_x, lie_basis)
+    _ = rpj.tensor_to_lie(tensor_x, lie_basis)
     tensor_y = rpj.lie_to_tensor(x, tensor_basis)
 
     assert jnp.allclose(tensor_x.data, tensor_y.data, atol=1e-7)

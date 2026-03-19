@@ -1,6 +1,5 @@
 import typing
 from typing import Protocol, TypeVar, Self, Callable
-from dataclasses import dataclass
 
 from roughpy_jax.intervals import Interval
 
