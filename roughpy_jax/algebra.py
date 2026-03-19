@@ -1154,18 +1154,18 @@ def lie_to_tensor(
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
 
-    out_basis = tensor_basis or to_tensor_basis(arg.basis)
-
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
-        (arg.basis, out_basis),
+        (arg.basis,),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
     )
 
     out_data = op(arg.data)
-    return DenseFreeTensor(*out_data, tensor_basis)
+    out_basis = op.basis
+
+    return DenseFreeTensor(*out_data, out_basis)
 
 
 def lie_to_tensor_derivative(
@@ -1236,17 +1236,17 @@ def tensor_to_lie(
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
 
-    out_basis = lie_basis or to_lie_basis(arg.basis)
-
     op_cls = Operation.get_operation("tensor_to_lie", "dense")
     op = op_cls(
-        (arg.basis, out_basis),
+        (arg.basis,),
         dtype,
         arg.batch_shape,
         scale_factor=scale_factor,
     )
 
     out_data = op(arg.data)
+    out_basis = op.basis
+
     return DenseLie(*out_data, out_basis)
 
 

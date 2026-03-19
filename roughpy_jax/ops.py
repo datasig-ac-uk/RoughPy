@@ -10,7 +10,13 @@ import numpy as np
 
 from jax import Array
 
-from .bases import Basis, check_basis_compat, result_basis
+from .bases import (
+    Basis,
+    check_basis_compat,
+    result_basis,
+    to_lie_basis,
+    to_tensor_basis,
+)
 from .compressed import csc_matvec
 
 # Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
@@ -320,9 +326,7 @@ class Operation:
         return (jax.ShapeDtypeStruct(batch_dims + (basis.size(),), dtype),)
 
     @classmethod
-    def get_result_basis(
-        cls, bases: tuple[Basis, ...], preferred_basis
-    ) -> Basis:
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
         """
         Determines the appropriate basis from a list of bases, considering an optional
         preferred basis. The method ensures that all bases in the list have matching
@@ -861,7 +865,6 @@ class DenseSTMul(Operation, DenseOperation):
         rhs_min_deg: np.int32  # not required
 
 
-
 class DenseFTAdjLeftMul(Operation, DenseOperation):
     fn_name = "ft_adj_lmul"
 
@@ -945,23 +948,18 @@ class DenseLieToTensor(Operation, DenseOperation):
         scale_factor: Union[None, np.float64]
 
     @classmethod
-    def get_result_basis(
-        cls, bases: tuple[Basis, ...], preferred_basis
-    ) -> Basis:
-        arg_basis, tensor_basis = bases
-
-        check_basis_compat(arg_basis, tensor_basis)
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        result_basis = to_tensor_basis(bases[0])
 
         if preferred_basis is not None:
-            check_basis_compat(preferred_basis, arg_basis, tensor_basis)
-            check_basis_compat(preferred_basis, tensor_basis, same_type=True)
+            check_basis_compat(preferred_basis, result_basis, same_type=True)
             return preferred_basis
 
-        return tensor_basis
+        return result_basis
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
         arg_basis = self.bases[0]
-        tensor_basis = self.bases[1]
+        tensor_basis = self.basis
 
         l2t_data, l2t_indices, l2t_indptr = _get_lie_sparse_matrices(
             arg_basis, self.data_dtype
@@ -1005,22 +1003,18 @@ class DenseTensorToLie(Operation, DenseOperation):
         scale_factor: Union[None, np.float64]
 
     @classmethod
-    def get_result_basis(
-        cls, bases: tuple[Basis, ...], preferred_basis
-    ) -> Basis:
-        arg_basis, lie_basis = bases
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
 
-        check_basis_compat(arg_basis, lie_basis)
+        result_basis = to_lie_basis(bases[0])
 
         if preferred_basis is not None:
-            check_basis_compat(preferred_basis, arg_basis, lie_basis)
-            check_basis_compat(preferred_basis, lie_basis, same_type=True)
+            check_basis_compat(preferred_basis, result_basis, same_type=True)
             return preferred_basis
 
-        return lie_basis
+        return result_basis
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
-        lie_basis = self.bases[1]
+        lie_basis = self.basis
 
         t2l_data, t2l_indices, t2l_indptr = _get_lie_sparse_matrices(
             lie_basis, self.data_dtype
@@ -1230,7 +1224,6 @@ class DenseSTAdjMul(Operation, DenseOperation):
         arg_max_deg: np.int32
         op_min_deg: np.int32
         arg_min_deg: np.int32
-
 
 
 # Register all CPU implementations for dense operations
