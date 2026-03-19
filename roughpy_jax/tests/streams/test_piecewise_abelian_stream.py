@@ -46,7 +46,6 @@ def pas_data(rpj_batch, rpj_dtype):
 
 
 class TestPiecewiseAbelianStream:
-
     def test_construction(self, pas_data):
         """Test that the PiecewiseAbelianStream can be constructed without errors."""
         with pytest.raises(ValueError):

@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 
+
 def expand_indptr(indptr):
     """
     Reconstruct indices from start array
@@ -61,10 +62,10 @@ def csr_matvec(data, indices, indptr, n_cols, x):
     rows = expand_indptr(indptr)
 
     # Gather x values by column indices, preserving batch dims
-    x_by_col = x[..., indices]      # shape: (*batch_dims, nnz)
+    x_by_col = x[..., indices]  # shape: (*batch_dims, nnz)
 
     # Updates are all the sparse additions at every location in all tensors
-    updates = data * x_by_col       # broadcasting over batch dims
+    updates = data * x_by_col  # broadcasting over batch dims
 
     # Output array to receive stattered updated (*batch_dims, n_rows)
     batched_shape = x_by_col.shape[:-1]

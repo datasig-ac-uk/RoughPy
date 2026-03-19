@@ -395,9 +395,7 @@ def _ft_fma_vjp_fwd(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT):
     return result, (a, b, c)
 
 
-def _ft_fma_vjp_bwd(
-    residuals, ct_result_data
-) -> tuple[jax.Array, ...]:
+def _ft_fma_vjp_bwd(residuals, ct_result_data) -> tuple[jax.Array, ...]:
     a, b, c = residuals
 
     if isinstance(ct_result_data, jax.Array):
@@ -492,12 +490,10 @@ def _ft_mul_vjp_fwd(lhs: FreeTensorT, rhs: FreeTensorT):
     return result, (lhs, rhs)
 
 
-def _ft_mul_vjp_bwd(
-    residuals, ct_result_data
-) -> tuple[jax.Array, ...]:
+def _ft_mul_vjp_bwd(residuals, ct_result_data) -> tuple[jax.Array, ...]:
     lhs, rhs = residuals
 
-    # TODO: Not sure if this can be all different array types (a la ft_log) or 
+    # TODO: Not sure if this can be all different array types (a la ft_log) or
     # if it will always be DenseFreeTensor. If the latter, we can simplify this.
     if isinstance(ct_result_data, jax.Array):
         ct_result = DenseShuffleTensor(ct_result_data, lhs.basis)
@@ -1037,7 +1033,7 @@ def lie_to_tensor(
 
     _check_tensor_dtype(arg)
     dtype = arg.data.dtype
-    
+
     out_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
@@ -1422,7 +1418,7 @@ def _reshape_pairing_cotangent(
     ct_shape = ct_result.shape
     if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
         raise ValueError(
-            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
+            f"incompatible shapes: {ct_shape} and {batch_dims[: len(ct_shape)]}"
         )
 
     new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)

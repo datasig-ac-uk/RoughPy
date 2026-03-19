@@ -90,9 +90,14 @@ def test_tensor_pairing_linear_in_argument(pairing_trials):
 def test_tensor_pairing_derivative_wrt_functional(pairing_trials):
     functional = pairing_trials.uniform_shuffle_tensor()
     argument = pairing_trials.uniform_free_tensor()
-    tangent = pairing_trials.uniform_shuffle_tensor() * pairing_trials.cond_dtype(1e-3, 1e0)
+    tangent = pairing_trials.uniform_shuffle_tensor() * pairing_trials.cond_dtype(
+        1e-3, 1e0
+    )
     zero_t_argument = rpj.FreeTensor(
-        jnp.zeros(pairing_trials.batch_shape(pairing_trials.tensor_basis), pairing_trials.dtype),
+        jnp.zeros(
+            pairing_trials.batch_shape(pairing_trials.tensor_basis),
+            pairing_trials.dtype,
+        ),
         pairing_trials.tensor_basis,
     )
 
@@ -118,9 +123,14 @@ def test_tensor_pairing_derivative_wrt_functional(pairing_trials):
 def test_tensor_pairing_derivative_wrt_argument(pairing_trials):
     functional = pairing_trials.uniform_shuffle_tensor()
     argument = pairing_trials.uniform_free_tensor()
-    tangent = pairing_trials.uniform_free_tensor() * pairing_trials.cond_dtype(1e-3, 1e0)
+    tangent = pairing_trials.uniform_free_tensor() * pairing_trials.cond_dtype(
+        1e-3, 1e0
+    )
     zero_t_functional = rpj.ShuffleTensor(
-        jnp.zeros(pairing_trials.batch_shape(pairing_trials.tensor_basis), pairing_trials.dtype),
+        jnp.zeros(
+            pairing_trials.batch_shape(pairing_trials.tensor_basis),
+            pairing_trials.dtype,
+        ),
         pairing_trials.tensor_basis,
     )
 
@@ -146,14 +156,18 @@ def test_tensor_pairing_derivative_wrt_argument(pairing_trials):
 def test_tensor_pairing_adjoint_derivative_wrt_functional(pairing_trials):
     functional = pairing_trials.uniform_shuffle_tensor()
     argument = pairing_trials.uniform_free_tensor()
-    tangent = pairing_trials.uniform_shuffle_tensor() * pairing_trials.cond_dtype(1e-3, 1e0)
+    tangent = pairing_trials.uniform_shuffle_tensor() * pairing_trials.cond_dtype(
+        1e-3, 1e0
+    )
     cotangent = pairing_trials.uniform_data((pairing_trials.n_trials,))
 
     def fn(arg_functional):
         return rpj.tensor_pairing(arg_functional, argument)
 
     def fn_adj_deriv(arg_functional, ct_result):
-        return rpj.tensor_pairing_adjoint_derivative(arg_functional, argument, ct_result)[0]
+        return rpj.tensor_pairing_adjoint_derivative(
+            arg_functional, argument, ct_result
+        )[0]
 
     assert_is_adjoint_derivative(
         fn,
@@ -172,14 +186,18 @@ def test_tensor_pairing_adjoint_derivative_wrt_functional(pairing_trials):
 def test_tensor_pairing_adjoint_derivative_wrt_argument(pairing_trials):
     functional = pairing_trials.uniform_shuffle_tensor()
     argument = pairing_trials.uniform_free_tensor()
-    tangent = pairing_trials.uniform_free_tensor() * pairing_trials.cond_dtype(1e-3, 1e0)
+    tangent = pairing_trials.uniform_free_tensor() * pairing_trials.cond_dtype(
+        1e-3, 1e0
+    )
     cotangent = pairing_trials.uniform_data((pairing_trials.n_trials,))
 
     def fn(arg_argument):
         return rpj.tensor_pairing(functional, arg_argument)
 
     def fn_adj_deriv(arg_argument, ct_result):
-        return rpj.tensor_pairing_adjoint_derivative(functional, arg_argument, ct_result)[1]
+        return rpj.tensor_pairing_adjoint_derivative(
+            functional, arg_argument, ct_result
+        )[1]
 
     assert_is_adjoint_derivative(
         fn,

@@ -171,4 +171,3 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
                  stream.
         """
         ...
-

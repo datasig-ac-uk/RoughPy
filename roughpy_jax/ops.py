@@ -13,13 +13,16 @@ from jax import Array
 from .compressed import csc_matvec
 
 # Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
-# Potentially useful to have cached versions to the l2t and t2l matrices as JAX 
-# arrays, as these are used in many operations and converting from the C++ 
-# buffers to JAX arrays can be expensive. 
+# Potentially useful to have cached versions to the l2t and t2l matrices as JAX
+# arrays, as these are used in many operations and converting from the C++
+# buffers to JAX arrays can be expensive.
 global _lie_sparse_matrix_cache
 _lie_sparse_matrix_cache: dict[
-    tuple, tuple[tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
-                 tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]
+    tuple,
+    tuple[
+        tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+    ],
 ] = {}
 
 
@@ -33,14 +36,10 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
     if key not in _lie_sparse_matrix_cache:
         # Get l2t FIRST and convert to JAX arrays before t2l can overwrite the buffer
         l2t = lie_basis.get_l2t_matrix(dtype)
-        l2t_arrays = (
-            l2t.data, l2t.indices, l2t.indptr
-        )
+        l2t_arrays = (l2t.data, l2t.indices, l2t.indptr)
         # Now get t2l – this amay overwrite the C++ buffer, but l2t is already saved
         t2l = lie_basis.get_t2l_matrix(dtype)
-        t2l_arrays = (
-            t2l.data, t2l.indices, t2l.indptr
-        )
+        t2l_arrays = (t2l.data, t2l.indices, t2l.indptr)
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
     return _lie_sparse_matrix_cache[key]
 
