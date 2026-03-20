@@ -484,10 +484,10 @@ def antipode(a: AlgebraT) -> AlgebraT:
 
 def antipode_derivative(a: FreeTensorT, t_a: FreeTensorT) -> FreeTensorT:
     """
-    Antipode derivative of free tensor peterbation `t_a` at `a`
+    Antipode derivative of free tensor perturbation `t_a` at `a`
 
     This operation is linear, with the derivative being independent of
-    the argument, computated as the antipode of the tangent. This is
+    the argument, computed as the antipode of the tangent. This is
     because antipode is a generalisation of transpose, taking the
     equivalent of the transpose at each level, i.e. for level 1 it's
     simply flipping the sign, for level 2 it's a regular 2D transpose,
@@ -542,7 +542,6 @@ def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTe
 
     This function is equivalent to `b * c + a`.
     Supports float 32 or 64 but all data buffers must have matching type.
-    The result basis is taken from `a`.
 
     :param a: input and first operand
     :param b: left-hand operand
@@ -637,7 +636,6 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
 
     This function is equivalent to `lhs & rhs`.
     Supports float 32 or 64 but all data buffers must have matching type.
-    The result basis is taken from `lhs`.
 
     :param lhs: left-hand operand
     :param rhs: right-hand operand
