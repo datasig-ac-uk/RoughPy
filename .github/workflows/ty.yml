@@ -1,0 +1,45 @@
+name: ty
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "220-roughpy-jax"
+    paths: &ty_paths
+      - ".github/workflows/ty.yml"
+      - "ty.toml"
+      - "pyproject.toml"
+      - "roughpy_jax/**/*.py"
+      - "benchmarks/**/*.py"
+  pull_request:
+    branches: ["main", "220-roughpy-jax"]
+    paths: *ty_paths
+
+permissions:
+  contents: read
+
+jobs:
+  ty:
+    runs-on: ubuntu-latest
+    strategy:  
+      matrix:
+        python-version: ["3.11","3.12","3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dev dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Ty type check
+        shell: bash
+        run: ty check . --output-format=github

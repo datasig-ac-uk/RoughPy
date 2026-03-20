@@ -1,0 +1,29 @@
+[environment]
+python-version = "3.11"
+python-platform = "all"
+root = ["roughpy_jax"]
+
+[src]
+include = [
+    "roughpy_jax",
+]
+exclude = [
+    "roughpy_jax/tests/",
+]
+respect-ignore-files = true
+
+[analysis]
+respect-type-ignore-comments = true
+replace-imports-with-any = ["roughpy._roughpy"]
+
+[rules]
+all = "error"
+empty-body = "ignore"
+too-many-positional-arguments = "ignore"
+
+
+[[overrides]]
+include = ["tests/**", "benchmarks/**", "examples/**"]
+
+[overrides.rules]
+possibly-unresolved-reference = "warn"
