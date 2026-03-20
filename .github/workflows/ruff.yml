@@ -14,7 +14,7 @@ on:
       - "roughpy_jax/**/*.py"
       - "benchmarks/**/*.py"
       - "examples/**/*.py"
-  pull_request:
+  pull_request_target:
     branches: 
       - "main"
       - "220-roughpy-jax"
