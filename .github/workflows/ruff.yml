@@ -3,7 +3,9 @@ name: ruff
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches:
+      - "main"
+      - "220-roughpy-jax"
     paths: &ruff_paths
       - ".github/workflows/ruff.yml"
       - ".pre-commit-config.yaml"
@@ -13,7 +15,9 @@ on:
       - "benchmarks/**/*.py"
       - "examples/**/*.py"
   pull_request:
-    branches: ["main"]
+    branches: 
+      - "main"
+      - "220-roughpy-jax"
     paths: *ruff_paths
 
 permissions:
@@ -22,14 +26,16 @@ permissions:
 jobs:
   ruff:
     runs-on: ubuntu-latest
+    matrix:
+      python-version: ["3.11","3.12","3.13"]
 
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-          cache: pip
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
       - name: Install dev dependencies
         shell: bash
