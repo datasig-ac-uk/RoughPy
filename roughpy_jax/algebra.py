@@ -366,7 +366,6 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
 
     This function is equivalent to `a * b`.
     Supports float 32 or 64 but all data buffers must have matching type.
-    The basis is taken from `b`.
 
     :param a: left-hand multiply operand
     :param b: right-hand multiple operand
@@ -1134,9 +1133,9 @@ def lie_to_tensor(arg: LieT, scale_factor=None) -> FreeTensorT:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
 
-    :param arg: Lie to embed into the tensor algebra
-    :param tensor_basis: optional tensor basis to embed. Must have the same width as the Lie basis.
-    :return: new FreeTensor containing the embedding of "arg"
+    :param arg: Lie to embed into the tensor algebra.
+    :param scale_factor: Optional scalar multiplier applied to the embedded tensor.
+    :return: New FreeTensor containing the embedding of ``arg``.
     """
     if not isinstance(arg, Lie):
         raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
@@ -1212,9 +1211,9 @@ def tensor_to_lie(arg: FreeTensorT, scale_factor=None) -> LieT:
     """
     Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
 
-    :param arg:
-    :param lie_basis:
-    :return:
+    :param arg: Free tensor to project into the Lie algebra.
+    :param scale_factor: Optional scalar multiplier applied to the projected Lie element.
+    :return: New Lie containing the projection of ``arg``.
     """
     if not isinstance(arg, FreeTensor):
         raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")

@@ -1090,6 +1090,12 @@ class DenseFTFMExp(Operation, DenseOperation):
         mul_min_deg: np.int32
         exp_min_deg: np.int32
 
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        if preferred_basis is not None:
+            return result_basis(preferred_basis, *bases, strategy="first")
+        return result_basis(*bases, strategy="first")
+
     @staticmethod
     def fallback(
         multiplier: Array,
