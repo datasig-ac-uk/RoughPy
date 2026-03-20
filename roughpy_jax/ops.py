@@ -10,6 +10,13 @@ import numpy as np
 
 from jax import Array
 
+from .bases import (
+    Basis,
+    check_basis_compat,
+    result_basis,
+    to_lie_basis,
+    to_tensor_basis,
+)
 from .compressed import csc_matvec
 
 # Cache for l2t and t2l sparse matrices keyed by (width, depth, dtype_str).
@@ -42,14 +49,6 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
         t2l_arrays = (t2l.data, t2l.indices, t2l.indptr)
         _lie_sparse_matrix_cache[key] = (l2t_arrays, t2l_arrays)
     return _lie_sparse_matrix_cache[key]
-
-
-class BasisLike(typing.Protocol, cabc.Hashable):
-    width: np.int32
-    depth: np.int32
-    degree_begin: np.ndarray[np.int64.dtype]
-
-    def size(self) -> int: ...
 
 
 class EmptyStaticArgs(TypedDict): ...
@@ -159,7 +158,7 @@ class Operation:
     :type StaticArgs: ClassVar[type[TypedDict]]
 
     :ivar basis: The primary basis object associated with the operation.
-    :type basis: BasisLike
+    :type basis: Basis
 
     :ivar data_dtype: The data type for all input and output data for the operation.
     :type data_dtype: jnp.dtype
@@ -232,9 +231,9 @@ class Operation:
     ## select from available implementations and populate static arguments.
 
     # The primary basis associated with the operation
-    basis: BasisLike
+    basis: Basis
     # The bases for each argument
-    bases: tuple[BasisLike, ...]
+    bases: tuple[Basis, ...]
     # data type for all data inputs and outputs
     data_dtype: jnp.dtype
     # the configuration of batching
@@ -327,49 +326,28 @@ class Operation:
         return (jax.ShapeDtypeStruct(batch_dims + (basis.size(),), dtype),)
 
     @classmethod
-    def get_result_basis(
-        cls, bases: tuple[BasisLike, ...], preferred_basis
-    ) -> BasisLike:
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
         """
         Determines the appropriate basis from a list of bases, considering an optional
         preferred basis. The method ensures that all bases in the list have matching
         widths, and it selects the basis with the greatest depth if no preferred basis
         is provided. If a preferred basis is supplied and valid, it returns that basis.
 
-        :param bases: A tuple of BasisLike objects. These represent the candidate bases
+        :param bases: A tuple of Basis objects. These represent the candidate bases
                       to be considered. The method ensures all bases have the same width
                       and selects the deepest valid basis.
-        :param preferred_basis: An optional BasisLike object. If supplied and valid, this
+        :param preferred_basis: An optional Basis object. If supplied and valid, this
                                 basis will be returned instead of evaluating the others.
-        :return: The selected BasisLike object, either the preferred basis (if provided
+        :return: The selected Basis object, either the preferred basis (if provided
                  and valid) or the valid deepest basis from the `bases` tuple.
         :raises ValueError: If the `bases` tuple is empty or if any basis in the tuple
                             does not match the width of the first basis. Also raised if
                             the `preferred_basis` width does not match the base width.
         """
-        if not bases and preferred_basis is None:
-            raise ValueError("basis list should be non-empty")
-
-        choice, *other = bases
-
-        if preferred_basis is not None and choice.width != preferred_basis.width:
-            raise ValueError(
-                f"mismatched width on basis 0, expected {preferred_basis.width} but got {choice.width}"
-            )
-
-        for i, basis in enumerate(other, start=1):
-            if basis.width != choice.width:
-                raise ValueError(
-                    f"mismatched width on basis {i}, expected {choice.width} but got {basis.width}"
-                )
-
-            if basis.depth >= choice.depth:
-                choice = basis
-
         if preferred_basis is not None:
-            return preferred_basis
+            return result_basis(preferred_basis, *bases, strategy="first")
 
-        return choice
+        return result_basis(bases, strategy="max_depth")
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -390,7 +368,7 @@ class Operation:
         dtype,
         batch_dims,
         ffi_call_args: Optional[dict[str, Any]] = None,
-        specific_basis: Optional[BasisLike] = None,
+        specific_basis: Optional[Basis] = None,
         **kwargs,
     ):
         self.basis = basis = self.get_result_basis(bases, specific_basis)
@@ -764,6 +742,11 @@ class DenseFTFma(Operation, DenseOperation):
         b_min_deg: np.int32  # not required
         c_min_deg: np.int32  # not required
 
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        if preferred_basis is not None:
+            return result_basis(preferred_basis, *bases, strategy="first")
+        return result_basis(*bases, strategy="first")
+
     @staticmethod
     def fallback(
         a_data: Array,
@@ -796,7 +779,6 @@ class DenseFTMul(Operation, DenseOperation):
     fn_name = "ft_mul"
 
     class StaticArgs(TypedDict):
-        out_max_deg: np.int32
         lhs_max_deg: np.int32
         rhs_max_deg: np.int32
 
@@ -807,7 +789,6 @@ class DenseFTMul(Operation, DenseOperation):
         width: np.int32,
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
-        out_max_deg: np.int32,
         lhs_max_deg: np.int32,
         rhs_max_deg: np.int32,
         lhs_min_deg: np.int32 = 0,
@@ -819,7 +800,7 @@ class DenseFTMul(Operation, DenseOperation):
             degree_begin,
             lhs_max_degree=lhs_max_deg,
             rhs_max_degree=rhs_max_deg,
-            out_max_degree=out_max_deg,
+            out_max_degree=depth,
             lhs_min_degree=lhs_min_deg,
             rhs_min_degree=rhs_min_deg,
         )
@@ -858,6 +839,11 @@ class DenseSTFma(Operation, DenseOperation):
         b_min_deg: np.int32  # not required
         c_min_deg: np.int32  # not required
 
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        if preferred_basis is not None:
+            return result_basis(preferred_basis, *bases, strategy="first")
+        return result_basis(*bases, strategy="first")
+
     @staticmethod
     def fallback(
         a_data: Array,
@@ -885,7 +871,6 @@ class DenseSTMul(Operation, DenseOperation):
         rhs_max_deg: np.int32
         lhs_min_deg: np.int32  # not required
         rhs_min_deg: np.int32  # not required
-
 
 
 class DenseFTAdjLeftMul(Operation, DenseOperation):
@@ -970,9 +955,19 @@ class DenseLieToTensor(Operation, DenseOperation):
         l2t_size: np.int64
         scale_factor: Union[None, np.float64]
 
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        basis = to_tensor_basis(bases[0])
+
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, basis, same_type=True)
+            return preferred_basis
+
+        return basis
+
     def make_static_args(self, kwargs) -> type[TypedDict]:
         arg_basis = self.bases[0]
-        tensor_basis = self.bases[1]
+        tensor_basis = self.basis
 
         l2t_data, l2t_indices, l2t_indptr = _get_lie_sparse_matrices(
             arg_basis, self.data_dtype
@@ -1015,8 +1010,18 @@ class DenseTensorToLie(Operation, DenseOperation):
         t2l_size: np.int64
         scale_factor: Union[None, np.float64]
 
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        basis = to_lie_basis(bases[0])
+
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, basis, same_type=True)
+            return preferred_basis
+
+        return basis
+
     def make_static_args(self, kwargs) -> type[TypedDict]:
-        lie_basis = self.bases[1]
+        lie_basis = self.basis
 
         t2l_data, t2l_indices, t2l_indptr = _get_lie_sparse_matrices(
             lie_basis, self.data_dtype
@@ -1056,6 +1061,14 @@ class DenseFTExp(Operation, DenseOperation):
     class StaticArgs(TypedDict):
         arg_max_deg: np.int32
 
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        basis = bases[0]
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, basis, same_type=True)
+            return preferred_basis
+        return basis
+
     @staticmethod
     def fallback(
         arg_data: Array,
@@ -1072,11 +1085,16 @@ class DenseFTFMExp(Operation, DenseOperation):
     fn_name = "ft_fmexp"
 
     class StaticArgs(TypedDict):
-        out_max_deg: np.int32
         mul_max_deg: np.int32
         exp_max_deg: np.int32
         mul_min_deg: np.int32
         exp_min_deg: np.int32
+
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        if preferred_basis is not None:
+            return result_basis(preferred_basis, *bases, strategy="first")
+        return result_basis(*bases, strategy="first")
 
     @staticmethod
     def fallback(
@@ -1085,7 +1103,6 @@ class DenseFTFMExp(Operation, DenseOperation):
         width: np.int32,
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
-        out_max_deg: np.int32,
         mul_max_deg: np.int32,
         exp_max_deg: np.int32,
         mul_min_deg: np.int32,
@@ -1097,9 +1114,9 @@ class DenseFTFMExp(Operation, DenseOperation):
             multiplier,
             exp,
             degree_begin,
+            out_max_degree=depth,
             lhs_max_degree=mul_max_deg,
             rhs_max_degree=exp_max_deg,
-            out_max_degree=out_max_deg,
             lhs_min_degree=mul_min_deg,
             rhs_min_degree=exp_min_deg,
         )
@@ -1112,6 +1129,14 @@ class DenseFTLog(Operation, DenseOperation):
 
     class StaticArgs(TypedDict):
         arg_max_deg: np.int32
+
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        basis = bases[0]
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, basis, same_type=True)
+            return preferred_basis
+        return basis
 
     @staticmethod
     def fallback(
@@ -1226,7 +1251,6 @@ class DenseSTAdjMul(Operation, DenseOperation):
         arg_max_deg: np.int32
         op_min_deg: np.int32
         arg_min_deg: np.int32
-
 
 
 # Register all CPU implementations for dense operations
