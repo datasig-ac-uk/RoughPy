@@ -51,5 +51,10 @@ RUN git clone https://github.com/Microsoft/vcpkg.git /tools/vcpkg
 RUN /tools/vcpkg/bootstrap-vcpkg.sh
 ENV VCPKG_ROOT=/tools/vcpkg
 
+# Install pre-commit hooks
+WORKDIR /workspaces/RoughPy
+COPY ../.pre-commit-config.yaml /workspaces/RoughPy/.pre-commit-config.yaml
+RUN pre-commit install --install-hooks
+
 # This is required to be able to run pytest in the VSCode terminal
 ENV PYTHONPATH="/workspaces/RoughPy:$PYTHONPATH"
