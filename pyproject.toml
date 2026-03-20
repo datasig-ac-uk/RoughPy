@@ -59,6 +59,9 @@ build-backend = "scikit_build_core.build"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "extra: non-essential longer running tests, including jit tests"
+]
 
 
 [tool.scikit-build]
