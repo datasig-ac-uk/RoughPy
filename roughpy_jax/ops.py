@@ -742,6 +742,11 @@ class DenseFTFma(Operation, DenseOperation):
         b_min_deg: np.int32  # not required
         c_min_deg: np.int32  # not required
 
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        if preferred_basis is not None:
+            return result_basis(preferred_basis, *bases, strategy="first")
+        return result_basis(*bases, strategy="first")
+
     @staticmethod
     def fallback(
         a_data: Array,
@@ -835,6 +840,11 @@ class DenseSTFma(Operation, DenseOperation):
         c_max_deg: np.int32
         b_min_deg: np.int32  # not required
         c_min_deg: np.int32  # not required
+
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        if preferred_basis is not None:
+            return result_basis(preferred_basis, *bases, strategy="first")
+        return result_basis(*bases, strategy="first")
 
     @staticmethod
     def fallback(
@@ -949,13 +959,13 @@ class DenseLieToTensor(Operation, DenseOperation):
 
     @classmethod
     def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
-        result_basis = to_tensor_basis(bases[0])
+        basis = to_tensor_basis(bases[0])
 
         if preferred_basis is not None:
-            check_basis_compat(preferred_basis, result_basis, same_type=True)
+            check_basis_compat(preferred_basis, basis, same_type=True)
             return preferred_basis
 
-        return result_basis
+        return basis
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
         arg_basis = self.bases[0]
@@ -1004,14 +1014,13 @@ class DenseTensorToLie(Operation, DenseOperation):
 
     @classmethod
     def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
-
-        result_basis = to_lie_basis(bases[0])
+        basis = to_lie_basis(bases[0])
 
         if preferred_basis is not None:
-            check_basis_compat(preferred_basis, result_basis, same_type=True)
+            check_basis_compat(preferred_basis, basis, same_type=True)
             return preferred_basis
 
-        return result_basis
+        return basis
 
     def make_static_args(self, kwargs) -> type[TypedDict]:
         lie_basis = self.basis
@@ -1053,6 +1062,14 @@ class DenseFTExp(Operation, DenseOperation):
 
     class StaticArgs(TypedDict):
         arg_max_deg: np.int32
+
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        basis = bases[0]
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, basis, same_type=True)
+            return preferred_basis
+        return basis
 
     @staticmethod
     def fallback(
@@ -1110,6 +1127,14 @@ class DenseFTLog(Operation, DenseOperation):
 
     class StaticArgs(TypedDict):
         arg_max_deg: np.int32
+
+    @classmethod
+    def get_result_basis(cls, bases: tuple[Basis, ...], preferred_basis) -> Basis:
+        basis = bases[0]
+        if preferred_basis is not None:
+            check_basis_compat(preferred_basis, basis, same_type=True)
+            return preferred_basis
+        return basis
 
     @staticmethod
     def fallback(
