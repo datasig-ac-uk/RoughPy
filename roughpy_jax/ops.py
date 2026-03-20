@@ -1085,7 +1085,6 @@ class DenseFTFMExp(Operation, DenseOperation):
     fn_name = "ft_fmexp"
 
     class StaticArgs(TypedDict):
-        out_max_deg: np.int32
         mul_max_deg: np.int32
         exp_max_deg: np.int32
         mul_min_deg: np.int32
@@ -1098,7 +1097,6 @@ class DenseFTFMExp(Operation, DenseOperation):
         width: np.int32,
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
-        out_max_deg: np.int32,
         mul_max_deg: np.int32,
         exp_max_deg: np.int32,
         mul_min_deg: np.int32,
@@ -1110,9 +1108,9 @@ class DenseFTFMExp(Operation, DenseOperation):
             multiplier,
             exp,
             degree_begin,
+            out_max_degree=depth,
             lhs_max_degree=mul_max_deg,
             rhs_max_degree=exp_max_deg,
-            out_max_degree=out_max_deg,
             lhs_min_degree=mul_min_deg,
             rhs_min_degree=exp_min_deg,
         )
