@@ -779,7 +779,6 @@ class DenseFTMul(Operation, DenseOperation):
     fn_name = "ft_mul"
 
     class StaticArgs(TypedDict):
-        out_max_deg: np.int32
         lhs_max_deg: np.int32
         rhs_max_deg: np.int32
 
@@ -790,7 +789,6 @@ class DenseFTMul(Operation, DenseOperation):
         width: np.int32,
         depth: np.int32,
         degree_begin: np.ndarray[np.int64.dtype],
-        out_max_deg: np.int32,
         lhs_max_deg: np.int32,
         rhs_max_deg: np.int32,
         lhs_min_deg: np.int32 = 0,
@@ -802,7 +800,7 @@ class DenseFTMul(Operation, DenseOperation):
             degree_begin,
             lhs_max_degree=lhs_max_deg,
             rhs_max_degree=rhs_max_deg,
-            out_max_degree=out_max_deg,
+            out_max_degree=depth,
             lhs_min_degree=lhs_min_deg,
             rhs_min_degree=rhs_min_deg,
         )

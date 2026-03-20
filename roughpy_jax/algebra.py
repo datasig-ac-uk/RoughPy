@@ -382,7 +382,6 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
         (a.basis, b.basis),
         dtype,
         batch_dims,
-        out_max_deg=np.int32(a.basis.depth),
         lhs_max_deg=np.int32(min(a.basis.depth, a.basis.depth)),
         rhs_max_deg=np.int32(min(a.basis.depth, b.basis.depth)),
         lhs_min_deg=np.int32(0),

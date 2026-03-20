@@ -125,18 +125,16 @@ ffi::Error cpu_dense_ft_mul_impl(
         int32_t width,
         int32_t depth,
         ffi::Span<const int64_t> degree_begin,
-        int32_t out_max_deg,
         int32_t lhs_max_deg,
         int32_t rhs_max_deg,
         int32_t lhs_min_deg,
         int32_t rhs_min_deg
 )
 {
-    if (out_max_deg == -1 || out_max_deg > depth) { out_max_deg = depth; }
 
     DenseFTFmaStaticArgs static_args{
             TensorBasis{degree_begin.begin(), width, depth},
-            std::min(out_max_deg, lhs_max_deg + rhs_max_deg),
+            std::min(depth, lhs_max_deg + rhs_max_deg),
             lhs_max_deg,
             rhs_max_deg,
         lhs_min_deg,
@@ -145,7 +143,7 @@ ffi::Error cpu_dense_ft_mul_impl(
     };
 
     RPY_XLA_SUCCESS_OR_RETURN(
-            check_data_degree(out, static_args.basis, out_max_deg)
+            check_data_degree(out, static_args.basis, depth)
     );
     RPY_XLA_SUCCESS_OR_RETURN(
             check_data_degree(lhs, static_args.basis, lhs_max_deg)
@@ -194,7 +192,6 @@ XLA_FFI_DEFINE_HANDLER_SYMBOL(
                 .Attr<int32_t>("width")
                 .Attr<int32_t>("depth")
                 .Attr<xla::ffi::Span<const int64_t>>("degree_begin")
-                .Attr<int32_t>("out_max_deg")
                 .Attr<int32_t>("lhs_max_deg")
                 .Attr<int32_t>("rhs_max_deg")
                 .Attr<int32_t>("lhs_min_deg")
