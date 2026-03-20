@@ -13,7 +13,6 @@ namespace rpy::jax::cpu {
 
 struct DenseFTFMExpStaticArgs {
     TensorBasis basis;
-    int32_t out_max_degree;
     int32_t mul_max_degree;
     int32_t exp_max_degree;
     int32_t mul_min_degree;
@@ -37,7 +36,7 @@ struct DenseFTFMExpFunctor : DenseFTFMExpStaticArgs {
             const Scalar* exponent_data
     )
     {
-        DenseTensorView<Scalar*> result_view(out_data, basis, 0, out_max_degree);
+        DenseTensorView<Scalar*> result_view(out_data, basis);
         DenseTensorView<const Scalar*> multiplier_view(
                 multiplier_data,
                 basis,
@@ -73,7 +72,6 @@ ffi::Error cpu_dense_ft_fmexp_impl(
 {
     DenseFTFMExpStaticArgs static_args {
         TensorBasis {degree_begin.begin(), width, depth},
-        depth,
         mul_max_deg,
         exp_max_deg,
         mul_min_deg,
