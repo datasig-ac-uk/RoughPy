@@ -721,17 +721,16 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     _check_tensor_dtype(x)
     dtype = x.data.dtype
 
-    out_basis = out_basis or x.basis
-
     op_cls = Operation.get_operation("ft_exp", "dense")
     op = op_cls(
-        (out_basis, x.basis),
+        (x.basis,),
         dtype,
         x.batch_shape,
-        arg_max_deg=np.int32(out_basis.depth),
+        arg_max_deg=np.int32(x.basis.depth),
     )
 
     out_data = op(x.data)
+    out_basis = op.basis
 
     return DenseFreeTensor(*out_data, out_basis)
 
