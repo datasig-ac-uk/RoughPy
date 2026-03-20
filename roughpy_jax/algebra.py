@@ -993,7 +993,6 @@ def ft_fmexp(
     _check_tensor_dtype(multiplier, exponent)
     dtype = multiplier.data.dtype
 
-    out_basis = out_basis or multiplier.basis
     check_basis_compat(out_basis, multiplier.basis, exponent.basis)
 
     batch_dims = _get_and_check_batch_dims(multiplier.data, exponent.data, core_dims=1)
@@ -1004,9 +1003,10 @@ def ft_fmexp(
 
     op_cls = Operation.get_operation("ft_fmexp", "dense")
     op = op_cls(
-        (out_basis, multiplier.basis, exponent.basis),
+        (multiplier.basis, exponent.basis),
         dtype,
         batch_dims,
+        specific_basis=out_basis,
         out_max_deg=np.int32(out_depth),
         mul_max_deg=np.int32(mul_depth),
         exp_max_deg=np.int32(exp_depth),
