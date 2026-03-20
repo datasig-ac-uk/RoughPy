@@ -61,7 +61,7 @@ def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Arr
             tensor = ft_fmexp(
                 tensor, lie_to_tensor(previous[k2]), out_basis=tensor_basis
             )
-            lie = tensor_to_lie(ft_log(tensor), lie_basis=cache_basis)
+            lie = tensor_to_lie(ft_log(tensor))
             yield lie
 
     prev_size = 0
@@ -109,7 +109,7 @@ def _cbh(
         lie = Lie(jnp.take(data, k, axis=axis), data_basis)
         ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
 
-    result = tensor_to_lie(ft_log(acc), lie_basis=cache_basis)
+    result = tensor_to_lie(ft_log(acc))
     return result
 
 
@@ -589,5 +589,5 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         interval: Interval | None = None,
     ) -> FreeTensor:
         log_sig = self.log_signature(interval)
-        tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
+        tensor = lie_to_tensor(log_sig)
         return ft_exp(tensor, out_basis=self._group_basis)

@@ -1130,9 +1130,7 @@ ft_fmexp.defvjp(_ft_fmexp_vjp_fwd, _ft_fmexp_vjp_bwd)
 
 
 @jax.custom_vjp
-def lie_to_tensor(
-    arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
-) -> FreeTensorT:
+def lie_to_tensor(arg: LieT, scale_factor=None) -> FreeTensorT:
     """
     Compute the embedding of a Lie algebra element as a free tensor.
 
@@ -1168,7 +1166,7 @@ def lie_to_tensor_derivative(
     """
     Lie to tensor derivative of free tensor perturbation `t_arg` at `arg`
     """
-    return lie_to_tensor(t_arg, None, scale_factor)
+    return lie_to_tensor(t_arg, scale_factor)
 
 
 def lie_to_tensor_adjoint_derivative(
@@ -1188,10 +1186,8 @@ def lie_to_tensor_adjoint_derivative(
     return DenseLie(data, arg.basis)
 
 
-def _lie_to_tensor_vjp_fwd(
-    arg: LieT, tensor_basis: TensorBasis | None = None, scale_factor=None
-):
-    result = lie_to_tensor_derivative(arg, tensor_basis, scale_factor)
+def _lie_to_tensor_vjp_fwd(arg: LieT, scale_factor=None):
+    result = lie_to_tensor_derivative(arg, scale_factor)
     return result, (arg, scale_factor)
 
 
@@ -1212,9 +1208,7 @@ lie_to_tensor.defvjp(_lie_to_tensor_vjp_fwd, _lie_to_tensor_vjp_bwd)
 
 
 @jax.custom_vjp
-def tensor_to_lie(
-    arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None
-) -> LieT:
+def tensor_to_lie(arg: FreeTensorT, scale_factor=None) -> LieT:
     """
     Project a free tensor onto the embedding of the Lie algebra in the tensor algebra.
 
@@ -1245,7 +1239,6 @@ def tensor_to_lie(
 def tensor_to_lie_derivative(
     arg: FreeTensorT,
     t_arg: FreeTensorT,
-    lie_basis: LieBasis | None = None,
     scale_factor=None,
 ) -> LieT:
     """
@@ -1255,13 +1248,12 @@ def tensor_to_lie_derivative(
     independent of the position and is simply T2L applied to the
     tangent direction.
     """
-    return tensor_to_lie(t_arg, lie_basis, scale_factor)
+    return tensor_to_lie(t_arg, scale_factor)
 
 
 def tensor_to_lie_adjoint_derivative(
     arg: FreeTensorT,
     ct_result: LieT,
-    lie_basis: LieBasis | None = None,
     scale_factor=None,
 ) -> tuple[ShuffleTensorT]:
     """
@@ -1272,7 +1264,7 @@ def tensor_to_lie_adjoint_derivative(
     implicitly transposes the matrix.
     """
     # TODO: consider changing basis resolution logic
-    lie_basis = lie_basis or to_lie_basis(arg.basis)
+    lie_basis = to_lie_basis(arg.basis)
     t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
     t2l_size = arg.basis.size()
     data = csr_matvec(t2l.data, t2l.indices, t2l.indptr, t2l_size, ct_result.data)
@@ -1282,17 +1274,15 @@ def tensor_to_lie_adjoint_derivative(
     return DenseShuffleTensor(data, arg.basis)
 
 
-def _tensor_to_lie_vjp_fwd(
-    arg: FreeTensorT, lie_basis: LieBasis | None = None, scale_factor=None
-):
-    result = tensor_to_lie(arg, lie_basis, scale_factor)
-    return result, (arg, lie_basis, scale_factor)
+def _tensor_to_lie_vjp_fwd(arg: FreeTensorT, scale_factor=None):
+    result = tensor_to_lie(arg, scale_factor)
+    return result, (arg, scale_factor)
 
 
 def _tensor_to_lie_vjp_bwd(
     residuals, ct_result_data: jax.Array
 ) -> tuple[jax.Array, ...]:
-    arg, lie_basis, scale_factor = residuals
+    arg, scale_factor = residuals
 
     if isinstance(ct_result_data, DenseLie):
         ct_result = ct_result_data
@@ -1302,10 +1292,10 @@ def _tensor_to_lie_vjp_bwd(
         ct_result = DenseLie(ct_result_data.data, ct_result_data.basis)
 
     ct_t2l_adjoint_deriv = tensor_to_lie_adjoint_derivative(
-        arg, ct_result, lie_basis, scale_factor
+        arg, ct_result, scale_factor
     )
 
-    return (ct_t2l_adjoint_deriv.data, None, None)
+    return (ct_t2l_adjoint_deriv.data, None)
 
 
 tensor_to_lie.defvjp(_tensor_to_lie_vjp_fwd, _tensor_to_lie_vjp_bwd)
