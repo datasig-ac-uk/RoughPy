@@ -722,6 +722,7 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
         (x.basis,),
         dtype,
         x.batch_shape,
+        specific_basis=out_basis,
         arg_max_deg=np.int32(x.basis.depth),
     )
 
@@ -865,7 +866,7 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
         (x.basis,),
         dtype,
         x.batch_shape,
-        preferred_basis=out_basis,
+        specific_basis=out_basis,
         arg_max_deg=np.int32(x.basis.depth),
     )
 
@@ -1324,10 +1325,6 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     :return: The result of the adjoint action as a ShuffleTensor.
     """
     dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
-
-    out_basis = arg.basis
-    check_basis_compat(out_basis, op.basis)
-
     batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
     op_max_deg = op.basis.depth
@@ -1335,15 +1332,15 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
 
     op_cls = Operation.get_operation("ft_adj_lmul", "dense")
     op_call = op_cls(
-        (out_basis, op.basis),
+        (op.basis,),
         dtype,
         batch_dims,
-        degree_begin=out_basis.degree_begin,
         op_max_deg=np.int32(op_max_deg),
         arg_max_deg=np.int32(arg_max_deg),
     )
 
     out_data = op_call(op.data, arg.data)
+    out_basis = op.basis
 
     return DenseShuffleTensor(*out_data, out_basis)
 
@@ -1404,9 +1401,6 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     """
     dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
 
-    out_basis = arg.basis
-    check_basis_compat(out_basis, op.basis)
-
     batch_dims = _get_and_check_batch_dims(op.data, arg.data, core_dims=1)
 
     op_max_deg = op.basis.depth
@@ -1414,15 +1408,15 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
 
     op_cls = Operation.get_operation("ft_adj_rmul", "dense")
     op_call = op_cls(
-        (out_basis, op.basis),
+        (op.basis,),
         dtype,
         batch_dims,
-        degree_begin=out_basis.degree_begin,
         op_max_deg=np.int32(op_max_deg),
         arg_max_deg=np.int32(arg_max_deg),
     )
 
     out_data = op_call(op.data, arg.data)
+    out_basis = op.basis
 
     return DenseShuffleTensor(*out_data, out_basis)
 
@@ -1487,8 +1481,6 @@ def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Arr
     :return: A `jax.Array` containing the result of the tensor pairing operation.
     """
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
-
-    check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     op_cls = Operation.get_operation("tensor_pairing", "dense")
@@ -1582,8 +1574,6 @@ def lie_pairing(functional: LieT, argument: LieT) -> jax.Array:
     :return: Pairing of ``functional`` and ``argument``.
     """
     dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
-
-    check_basis_compat(functional.basis, argument.basis)
     batch_dims = _get_and_check_batch_dims(functional.data, argument.data, core_dims=1)
 
     op_cls = Operation.get_operation("lie_pairing", "dense")
