@@ -645,15 +645,13 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     batch_dims = _get_and_check_batch_dims(lhs.data, rhs.data, core_dims=1)
 
     op_cls = Operation.get_operation("st_mul", "dense")
-    out_max_deg = lhs.basis.depth
 
     op = op_cls(
         (lhs.basis, rhs.basis),
         dtype,
         batch_dims,
-        out_max_deg=np.int32(out_max_deg),
-        lhs_max_deg=np.int32(min(out_max_deg, lhs.basis.depth)),
-        rhs_max_deg=np.int32(min(out_max_deg, rhs.basis.depth)),
+        lhs_max_deg=np.int32(lhs.basis.depth),
+        rhs_max_deg=np.int32(rhs.basis.depth),
         lhs_min_deg=np.int32(0),
         rhs_min_deg=np.int32(0),
     )
