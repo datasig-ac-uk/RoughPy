@@ -466,18 +466,18 @@ def antipode(a: AlgebraT) -> AlgebraT:
     op_cls = Operation.get_operation("ft_antipode", "dense")
     batch_dims = _get_and_check_batch_dims(a.data, core_dims=1)
 
-    out_class = a.__class__
-    out_basis = a.basis
+    out_class = type(a)
 
     op = op_cls(
-        (out_basis,),
+        (a.basis,),
         a.data.dtype,
         batch_dims,
-        arg_max_deg=np.int32(out_basis.depth),
+        arg_max_deg=np.int32(a.basis.depth),
         no_sign=False,
     )
 
     out_data = op(a.data)
+    out_basis = op.basis
 
     return out_class(*out_data, out_basis)
 
