@@ -991,7 +991,6 @@ def ft_fmexp(
 
     batch_dims = _get_and_check_batch_dims(multiplier.data, exponent.data, core_dims=1)
 
-    out_depth = multiplier.basis.depth
     mul_depth = multiplier.basis.depth
     exp_depth = exponent.basis.depth
 
