@@ -19,12 +19,8 @@ def get_include() -> str:
     """
     package_root = _Path(__file__).resolve().parent
     installed_include = package_root / "include"
-    if installed_include.is_dir():
-        return str(installed_include)
-
-    source_include = package_root.parent
-    if (source_include / "roughpy_compute").is_dir():
-        return str(source_include)
+    if not installed_include.is_dir():
+        raise RuntimeError(f"RoughPy include directory not found: {installed_include}")
 
     return str(installed_include)
 
