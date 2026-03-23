@@ -182,7 +182,7 @@ def ft_fma(a: FreeTensorT, b: FreeTensorT, c: FreeTensorT) -> FreeTensorT:
     :param c: right-hand multiple operand
     :return: result
     """
-    dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
+    dtype = jnp.result_type(a.dtype, b.dtype, c.dtype)
     batch_dims = get_common_batch_shape(a, b, c)
 
     a_max_deg = a.basis.depth
@@ -275,7 +275,7 @@ def ft_mul(a: FreeTensorT, b: FreeTensorT) -> FreeTensorT:
     :param b: right-hand multiple operand
     :return: result
     """
-    dtype = jnp.result_type(a.data.dtype, b.data.dtype)
+    dtype = jnp.result_type(a.dtype, b.dtype)
     batch_dims = get_common_batch_shape(a, b)
 
     # Use same basis convention as ft_mul in roughpy/compute
@@ -366,7 +366,7 @@ def antipode(a: AlgebraT) -> AlgebraT:
 
     op = op_cls(
         (a.basis,),
-        a.data.dtype,
+        a.dtype,
         batch_dims,
         arg_max_deg=np.int32(a.basis.depth),
         no_sign=False,
@@ -443,7 +443,7 @@ def st_fma(a: ShuffleTensorT, b: ShuffleTensorT, c: ShuffleTensorT) -> ShuffleTe
     :return: shuffle fused multiply-add
     """
     batch_dims = get_common_batch_shape(a, b, c)
-    dtype = jnp.result_type(a.data.dtype, b.data.dtype, c.data.dtype)
+    dtype = jnp.result_type(a.dtype, b.dtype, c.dtype)
 
     op_cls = Operation.get_operation("st_fma", "dense")
 
@@ -524,7 +524,7 @@ def st_mul(lhs: ShuffleTensorT, rhs: ShuffleTensorT) -> ShuffleTensorT:
     :param rhs: right-hand operand
     :return: the shuffle product of lhs and rhs
     """
-    dtype = jnp.result_type(lhs.data.dtype, rhs.data.dtype)
+    dtype = jnp.result_type(lhs.dtype, rhs.dtype)
     batch_dims = get_common_batch_shape(lhs, rhs)
 
     op_cls = Operation.get_operation("st_mul", "dense")
@@ -600,7 +600,7 @@ def ft_exp(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     :param out_basis: optional output basis.
     :return: tensor exponential of `x`
     """
-    dtype = x.data.dtype
+    dtype = x.dtype
 
     op_cls = Operation.get_operation("ft_exp", "dense")
     op = op_cls(
@@ -624,7 +624,7 @@ def ft_exp_derivative(
 ) -> FreeTensorT:
     check_basis_compat(x.basis, t_x.basis)
     batch_dims = get_common_batch_shape(x, t_x)
-    dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
+    dtype = jnp.result_type(x.dtype, t_x.dtype)
 
     x = _remove_unit_term(x)
 
@@ -662,7 +662,7 @@ def ft_exp_adjoint_derivative(
     ct_result = from_jax_cotangent(type(x), ct_result, ct_basis)
     check_basis_compat(x.basis, ct_result.basis)
     batch_dims = get_common_batch_shape(x, ct_result)
-    dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
+    dtype = jnp.result_type(x.dtype, ct_result.dtype)
 
     x = _remove_unit_term(x)
 
@@ -735,7 +735,7 @@ def ft_log(x: FreeTensorT, out_basis: TensorBasis | None = None) -> FreeTensorT:
     :param out_basis: optional output basis.
     :return: tensor logarithm of `x`
     """
-    dtype = x.data.dtype
+    dtype = x.dtype
 
     op_cls = Operation.get_operation("ft_log", "dense")
     op = op_cls(
@@ -758,7 +758,7 @@ def ft_log_derivative(
 ) -> FreeTensorT:
     check_basis_compat(x.basis, t_x.basis)
     batch_dims = get_common_batch_shape(x, t_x)
-    dtype = jnp.result_type(x.data.dtype, t_x.data.dtype)
+    dtype = jnp.result_type(x.dtype, t_x.dtype)
 
     x = _remove_unit_term(x)
     t_x = _remove_unit_term(t_x)
@@ -789,7 +789,7 @@ def ft_log_adjoint_derivative(
     ct_result = from_jax_cotangent(type(x), ct_result, x.basis)
     check_basis_compat(x.basis, ct_result.basis)
     batch_dims = get_common_batch_shape(x, ct_result)
-    dtype = jnp.result_type(x.data.dtype, ct_result.data.dtype)
+    dtype = jnp.result_type(x.dtype, ct_result.dtype)
 
     x = _remove_unit_term(x)
 
@@ -998,7 +998,7 @@ def lie_to_tensor(arg: LieT, scale_factor=None) -> FreeTensorT:
     if not isinstance(arg, Lie):
         raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
 
-    dtype = arg.data.dtype
+    dtype = arg.dtype
 
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
@@ -1034,7 +1034,7 @@ def lie_to_tensor_adjoint_derivative(
     Lie to tensor derivative of free tensor `ct_result` at `arg`
     """
     ct_result = from_jax_cotangent(FreeTensor, ct_result, to_tensor_basis(arg.basis))
-    l2t = arg.basis.get_l2t_matrix(arg.data.dtype)
+    l2t = arg.basis.get_l2t_matrix(arg.dtype)
     l2t_size = arg.basis.size()
     data = csr_matvec(l2t.data, l2t.indices, l2t.indptr, l2t_size, ct_result.data)
     if scale_factor:
@@ -1075,7 +1075,7 @@ def tensor_to_lie(arg: FreeTensorT, scale_factor=None) -> LieT:
     if not isinstance(arg, FreeTensor):
         raise ValueError(f"Invalid lie_to_tensor arg type {type(arg)}")
 
-    dtype = arg.data.dtype
+    dtype = arg.dtype
 
     op_cls = Operation.get_operation("tensor_to_lie", "dense")
     op = op_cls(
@@ -1121,7 +1121,7 @@ def tensor_to_lie_adjoint_derivative(
     ct_result = from_jax_cotangent(Lie, ct_result, to_lie_basis(arg.basis))
     # TODO: consider changing basis resolution logic
     lie_basis = to_lie_basis(arg.basis)
-    t2l = lie_basis.get_t2l_matrix(arg.data.dtype)
+    t2l = lie_basis.get_t2l_matrix(arg.dtype)
     t2l_size = arg.basis.size()
     data = csr_matvec(t2l.data, t2l.indices, t2l.indptr, t2l_size, ct_result.data)
     if scale_factor:
@@ -1163,7 +1163,7 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
     :param arg: The ShuffleTensor to be acted upon.
     :return: The result of the adjoint action as a ShuffleTensor.
     """
-    dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
+    dtype = jnp.result_type(op.dtype, arg.dtype)
 
     batch_dims = get_common_batch_shape(op, arg)
 
@@ -1243,7 +1243,7 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
     :param arg: The ShuffleTensor to be acted upon.
     :return: The result of the adjoint action as a ShuffleTensor.
     """
-    dtype = jnp.result_type(op.data.dtype, arg.data.dtype)
+    dtype = jnp.result_type(op.dtype, arg.dtype)
 
     batch_dims = get_common_batch_shape(op, arg)
 
@@ -1328,7 +1328,7 @@ def tensor_pairing(functional: ShuffleTensorT, argument: FreeTensorT) -> jax.Arr
         paired with the functional tensor.
     :return: A `jax.Array` containing the result of the tensor pairing operation.
     """
-    dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
+    dtype = jnp.result_type(functional.dtype, argument.dtype)
     batch_dims = get_common_batch_shape(functional, argument)
 
     op_cls = Operation.get_operation("tensor_pairing", "dense")
@@ -1423,7 +1423,7 @@ def lie_pairing(functional: LieT, argument: LieT) -> jax.Array:
     :param argument: Right-hand Lie element.
     :return: Pairing of ``functional`` and ``argument``.
     """
-    dtype = jnp.result_type(functional.data.dtype, argument.data.dtype)
+    dtype = jnp.result_type(functional.dtype, argument.dtype)
     batch_dims = get_common_batch_shape(functional, argument)
 
     op_cls = Operation.get_operation("lie_pairing", "dense")
@@ -1495,7 +1495,7 @@ def st_adjoint_mul(
     op_arg: ShuffleTensorT,
     arg: FreeTensorT,
 ) -> FreeTensorT:
-    dtype = jnp.result_type(op_arg.data.dtype, arg.data.dtype)
+    dtype = jnp.result_type(op_arg.dtype, arg.dtype)
     check_basis_compat(op_arg.basis, arg.basis)
     batch_dims = get_common_batch_shape(op_arg, arg)
 
