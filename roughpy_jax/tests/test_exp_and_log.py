@@ -177,17 +177,14 @@ def test_ft_exp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
     tangent = _scaled_free_tensor(exp_trials, scale=0.2)
     cotangent = exp_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return jnp.sum(lhs.data * rhs.data)
-
     assert_is_adjoint_derivative(
         rpj.ft_exp,
         _ft_exp_adjoint_derivative,
         x,
         tangent,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
@@ -344,9 +341,6 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
     tangent_exponent = _scaled_exponent_tensor(exp_trials, scale=0.05)
     cotangent = exp_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return rpj.tensor_pairing(lhs, rhs)
-
     def fn_multiplier(arg_multiplier):
         return rpj.ft_fmexp(arg_multiplier, exponent)
 
@@ -365,8 +359,8 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
         x_multiplier,
         tangent_multiplier,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
@@ -377,8 +371,8 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
         x_exponent,
         tangent_exponent,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
@@ -428,17 +422,14 @@ def test_ft_log_adjoint_derivative_satisfies_derivative_condition(exp_trials):
     tangent = _scaled_free_tensor(exp_trials, scale=0.05)
     cotangent = exp_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return rpj.tensor_pairing(lhs, rhs)
-
     assert_is_adjoint_derivative(
         rpj.ft_log,
         lambda arg, ct_result: rpj.ft_log_adjoint_derivative(arg, ct_result)[0],
         x,
         tangent,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 5.0e-2),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 5.0e-2),

@@ -96,7 +96,9 @@ def test_adjoint_ft_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_accelerat
 
 
 def _dot_pairing(lhs, rhs):
-    return jnp.sum(lhs.data * rhs.data)
+    if isinstance(lhs, rpj.FreeTensor):
+        return rpj.tensor_pairing(rpj.to_dual(lhs), rhs)
+    return rpj.tensor_pairing(lhs, rpj.to_dual(rhs))
 
 
 def _fd_eps():
