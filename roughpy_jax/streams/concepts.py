@@ -3,14 +3,12 @@ from typing import Protocol, TypeVar, Self, Callable
 from dataclasses import dataclass
 
 from roughpy_jax.intervals import Interval
+from roughpy_jax.bases import Basis
 
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
 StreamValueT = TypeVar("StreamValueT")
-
-BasisLike = TypeVar("BasisLike")  ## TODO: replace with version from ops branch
-
 
 @typing.runtime_checkable
 class Stream(Protocol[LieT, GroupT]):
@@ -37,14 +35,14 @@ class Stream(Protocol[LieT, GroupT]):
     """
 
     @property
-    def lie_basis(self) -> BasisLike:
+    def lie_basis(self) -> Basis:
         """
         A basis of the Lie algebra into which the stream is developed.
         """
         ...
 
     @property
-    def group_basis(self) -> BasisLike:
+    def group_basis(self) -> Basis:
         """
         A basis of the group into which the stream is developed.
         """
@@ -172,4 +170,3 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
                  stream.
         """
         ...
-

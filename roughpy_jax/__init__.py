@@ -1,3 +1,12 @@
+from .bases import (
+    LieBasis,
+    TensorBasis,
+    check_basis_compat,
+    result_basis,
+    to_tensor_basis,
+    to_lie_basis,
+)
+
 import roughpy_jax.ops
 
 from .dense_algebra import (
@@ -9,8 +18,6 @@ from .dense_algebra import (
 )
 
 from roughpy_jax.algebra import (
-    TensorBasis,
-    LieBasis,
     DenseFreeTensor,
     DenseShuffleTensor,
     DenseLie,
@@ -18,8 +25,14 @@ from roughpy_jax.algebra import (
     ShuffleTensor,
     Lie,
     ft_fma,
+    ft_fma_derivative,
+    ft_fma_adjoint_derivative,
     ft_mul,
+    ft_mul_derivative,
+    ft_mul_adjoint_derivative,
     ft_exp,
+    ft_exp_derivative,
+    ft_exp_adjoint_derivative,
     ft_log,
     ft_log_derivative,
     ft_log_adjoint_derivative,
@@ -27,9 +40,17 @@ from roughpy_jax.algebra import (
     ft_fmexp_derivative,
     ft_fmexp_adjoint_derivative,
     st_fma,
+    st_fma_derivative,
+    st_fma_adjoint_derivative,
     st_mul,
+    st_mul_derivative,
+    st_mul_adjoint_derivative,
     ft_adjoint_right_mul,
+    ft_adjoint_right_mul_derivative,
+    ft_adjoint_right_mul_adjoint_derivative,
     ft_adjoint_left_mul,
+    ft_adjoint_left_mul_derivative,
+    ft_adjoint_left_mul_adjoint_derivative,
     antipode,
     antipode_derivative,
     antipode_adjoint_derivative,
@@ -40,6 +61,9 @@ from roughpy_jax.algebra import (
     tensor_to_lie_derivative,
     tensor_to_lie_adjoint_derivative,
     tensor_pairing,
+    st_adjoint_mul,
+    st_adjoint_mul_derivative,
+    st_adjoint_mul_adjoint_derivative,
     tensor_pairing_derivative,
     tensor_pairing_adjoint_derivative,
     lie_pairing,
