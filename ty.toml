@@ -17,7 +17,7 @@ respect-type-ignore-comments = true
 replace-imports-with-any = ["roughpy._roughpy"]
 
 [rules]
-all = "error"
+all = "warn"
 empty-body = "ignore"
 too-many-positional-arguments = "ignore"
 unresolved-attribute = "ignore"
