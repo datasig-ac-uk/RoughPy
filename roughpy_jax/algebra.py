@@ -1553,3 +1553,68 @@ def _st_adjoint_mul_vjp_bwd(residuals, ct_result):
 
 
 st_adjoint_mul.defvjp(_st_adjoint_mul_vjp_fwd, _st_adjoint_mul_vjp_bwd)
+
+
+def cbh(*lie_pieces: LieT, lie_basis: LieBasis | None = None) -> LieT:
+    """
+    Compute the Campbell-Baker-Hausdorff combination of Lie elements.
+
+    This returns the Lie element whose exponential is the product of the
+    exponentials of the input pieces, in the given order. Concretely, the
+    implementation maps the inputs into the tensor algebra, forms the product
+    ``exp(x_1) ... exp(x_n)``, and then applies the tensor logarithm before
+    converting back to a Lie element.
+
+    The inputs must have compatible Lie bases and a common batch shape. If
+    ``lie_basis`` is not provided, the output basis is selected from the input
+    bases using ``result_basis(..., strategy="max_depth")``. If ``lie_basis``
+    is provided, that basis is used for the result after compatibility checks.
+    For a single input, the function returns that element changed to the chosen
+    output depth.
+
+    :param lie_pieces: Lie elements to combine.
+    :param lie_basis: Optional basis for the output Lie element.
+    :return: The Campbell-Baker-Hausdorff combination of the inputs.
+    :raises ValueError: If no Lie elements are provided.
+    """
+    if not lie_pieces:
+        raise ValueError("no lie elements provided")
+
+    bases = [lie.basis for lie in lie_pieces]
+    if lie_basis is not None:
+        bases = [lie_basis] + bases
+
+    basis = result_basis(bases, strategy="max_depth" if lie_basis is None else "first")
+    dtype = jnp.result_type(*(lie.dtype for lie in lie_pieces))
+    batch_dims = get_common_batch_shape(*lie_pieces)
+
+    if len(lie_pieces) == 1:
+        return lie_pieces[0].change_depth(basis.depth)
+
+    tensor_basis = to_tensor_basis(basis)
+    result = DenseFreeTensor.identity(tensor_basis, dtype, batch_dims)
+
+    for lie in lie_pieces:
+        result = ft_fmexp(result, lie_to_tensor(lie), tensor_basis)
+
+    log_result = ft_log(result)
+    return tensor_to_lie(log_result, lie_basis=lie_basis)
+
+
+def to_signature(
+    log_signature: LieT, tensor_basis: TensorBasis | None = None
+) -> FreeTensorT:
+    """
+    Convert a log-signature in the Lie algebra to its signature.
+
+    The Lie element is first embedded into the tensor algebra and then
+    exponentiated there. If ``tensor_basis`` is provided, the tensor result is
+    represented in that basis; otherwise the tensor basis associated with the
+    input Lie basis is used.
+
+    :param log_signature: Log-signature represented as a Lie element.
+    :param tensor_basis: Optional tensor basis for the output signature.
+    :return: The corresponding signature as a free tensor.
+    """
+    tensor = lie_to_tensor(log_signature, tensor_basis=tensor_basis)
+    return ft_exp(tensor, out_basis=tensor_basis)
