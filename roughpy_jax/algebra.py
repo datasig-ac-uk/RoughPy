@@ -1615,7 +1615,7 @@ def cbh(*lie_pieces: LieT, lie_basis: LieBasis | None = None) -> LieT:
         result = ft_fmexp(result, lie_to_tensor(lie), tensor_basis)
 
     log_result = ft_log(result)
-    return tensor_to_lie(log_result, lie_basis=lie_basis)
+    return tensor_to_lie(log_result)
 
 
 def to_signature(
@@ -1633,5 +1633,5 @@ def to_signature(
     :param tensor_basis: Optional tensor basis for the output signature.
     :return: The corresponding signature as a free tensor.
     """
-    tensor = lie_to_tensor(log_signature, tensor_basis=tensor_basis)
+    tensor = lie_to_tensor(log_signature)
     return ft_exp(tensor, out_basis=tensor_basis)
