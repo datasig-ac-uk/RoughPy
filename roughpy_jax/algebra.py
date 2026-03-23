@@ -183,18 +183,6 @@ ShuffleTensor = DenseShuffleTensor
 Lie = DenseLie
 
 
-def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
-    for i, ft in enumerate([first_tensor] + list(other_tensors)):
-        if ft.data.dtype != jnp.float32:
-            if ft.data.dtype != jnp.float64:
-                raise ValueError(
-                    f"Expecting jnp.float32 or jnp.float64 array for tensor {i}"
-                )
-
-    for i, tensor in enumerate(other_tensors):
-        if tensor.data.dtype != first_tensor.data.dtype:
-            raise ValueError(f"Incompatible dtype between tensor 0 and tensor {i + 1}")
-
 
 def _get_and_check_batch_dims(*arrays, core_dims=1):
     if not arrays:
@@ -967,9 +955,7 @@ def ft_fmexp(
     :param out_basis: Optional output basis. If not specified, the same basis as `multiplier` is used.
     :return: Resulting fused multiply-exponential of `multiplier` and `exponent`
     """
-    _check_tensor_dtype(multiplier, exponent)
-    dtype = multiplier.data.dtype
-
+    dtype = jnp.result_type(multiplier.dtype, exponent.dtype)
     batch_dims = get_common_batch_shape(multiplier, exponent)
 
     mul_depth = multiplier.basis.depth
