@@ -4,7 +4,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from roughpy_jax.bases import BasisT
+from roughpy_jax.bases import BasisT, TensorBasis
 
 AlgebraT = TypeVar("AlgebraT")
 _T = TypeVar("_T")
@@ -334,7 +334,7 @@ DenseAlgebra.DualVector = DenseAlgebra
 
 
 @jax.tree_util.register_pytree_node_class
-class DenseTensor(DenseAlgebra["TensorBasis"]):
+class DenseTensor(DenseAlgebra[TensorBasis]):
     """
     Dense tensor algebra element.
 
@@ -345,7 +345,7 @@ class DenseTensor(DenseAlgebra["TensorBasis"]):
     @classmethod
     def identity(
         cls: Type[_T],
-        basis: "TensorBasis",
+        basis: TensorBasis,
         dtype: jax.typing.DTypeLike = jnp.dtype("float32"),
         batch_dims: tuple[int, ...] = tuple(),
     ) -> _T:
