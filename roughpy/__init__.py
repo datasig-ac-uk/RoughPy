@@ -10,6 +10,21 @@ except _ilm.PackageNotFoundError:
     __version__ = "0.0.0"
 
 
+def get_include() -> str:
+    """Return the include root for downstream builds using RoughPy headers.
+
+    This is primarily intended for extension modules that need to compile
+    against the headers shipped with the RoughPy wheel, including the staged
+    ``roughpy_compute`` header tree.
+    """
+    package_root = _Path(__file__).resolve().parent
+    installed_include = package_root / "include"
+    if not installed_include.is_dir():
+        raise RuntimeError(f"RoughPy include directory not found: {installed_include}")
+
+    return str(installed_include)
+
+
 def _add_dynload_location(path: _Path):
     if platform.system() == "Windows":
         os.add_dll_directory(str(path))
@@ -35,4 +50,3 @@ import roughpy._roughpy
 from roughpy._roughpy import *
 
 from . import tensor_functions
-

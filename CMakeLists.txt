@@ -314,6 +314,7 @@ target_include_directories(RoughPy_Compute INTERFACE
 
 
 
+
 if (ROUGHPY_BUILD_PYLIB)
     add_library(PythonCAPICompat INTERFACE)
     set_target_properties(PythonCAPICompat PROPERTIES
@@ -353,6 +354,14 @@ if (ROUGHPY_BUILD_PYLIB)
             COMPONENT Development
             FRAMEWORK DESTINATION roughpy
             EXCLUDE_FROM_ALL
+    )
+
+    install(
+            DIRECTORY roughpy_compute
+            DESTINATION roughpy/include
+            COMPONENT Development
+            FILES_MATCHING
+            PATTERN "*.hpp"
     )
 
     install(DIRECTORY roughpy
@@ -396,5 +405,4 @@ install(TARGETS
         FRAMEWORK DESTINATION roughpy
     EXCLUDE_FROM_ALL
 )
-
 
