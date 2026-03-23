@@ -30,17 +30,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
-          cache: pip
+          version: "0.10.12"
+          enable-cache: true
 
-      - name: Install dev dependencies
+      - name: Install typecheck dependencies
         shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+        run: uv sync --extra typecheck --no-install-project
 
       - name: Ty type check
         shell: bash
-        run: ty check . --output-format=github
+        run: uv run ty check . --output-format=github
