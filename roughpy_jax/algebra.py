@@ -470,6 +470,7 @@ def st_fma_derivative(
     t_b: ShuffleTensorT,
     t_c: ShuffleTensorT,
 ) -> ShuffleTensorT:
+    """Compute the derivative of `st_fma` in the supplied tangent direction."""
     check_basis_compat(a.basis, b.basis, c.basis, t_a.basis, t_b.basis, t_c.basis)
     get_common_batch_shape(a, b, c, t_a, t_b, t_c)
 
@@ -482,6 +483,7 @@ def st_fma_adjoint_derivative(
     c: ShuffleTensorT,
     ct_result: DenseAlgebra | jax.Array,
 ) -> tuple[ShuffleTensorT, ShuffleTensorT, ShuffleTensorT]:
+    """Compute the JAX-facing cotangents for `st_fma`."""
     ct_result = from_jax_cotangent(type(a), ct_result, a.basis)
     check_basis_compat(a.basis, b.basis, c.basis, ct_result.basis)
     get_common_batch_shape(a, b, c, ct_result)
@@ -550,6 +552,7 @@ def st_mul_derivative(
     t_lhs: ShuffleTensorT,
     t_rhs: ShuffleTensorT,
 ) -> ShuffleTensorT:
+    """Compute the derivative of `st_mul` in the supplied tangent direction."""
     check_basis_compat(lhs.basis, rhs.basis, t_lhs.basis, t_rhs.basis)
     get_common_batch_shape(lhs, rhs, t_lhs, t_rhs)
 
@@ -560,6 +563,7 @@ def st_mul_derivative(
 def st_mul_adjoint_derivative(
     lhs: ShuffleTensorT, rhs: ShuffleTensorT, ct_result: DenseAlgebra | jax.Array
 ) -> tuple[ShuffleTensorT, ShuffleTensorT]:
+    """Compute the JAX-facing cotangents for `st_mul`."""
     ct_result = from_jax_cotangent(type(lhs), ct_result, lhs.basis)
     check_basis_compat(lhs.basis, rhs.basis, ct_result.basis)
     get_common_batch_shape(lhs, rhs, ct_result)
@@ -622,6 +626,7 @@ def ft_exp_derivative(
     t_x: FreeTensorT,
     out_basis: TensorBasis | None = None,
 ) -> FreeTensorT:
+    """Compute the derivative of `ft_exp` in the supplied tangent direction."""
     check_basis_compat(x.basis, t_x.basis)
     batch_dims = get_common_batch_shape(x, t_x)
     dtype = jnp.result_type(x.dtype, t_x.dtype)
@@ -658,6 +663,7 @@ def ft_exp_adjoint_derivative(
     ct_result: DenseAlgebra | jax.Array,
     out_basis: TensorBasis | None = None,
 ) -> tuple[FreeTensorT]:
+    """Compute the JAX-facing cotangent for `ft_exp`."""
     ct_basis = out_basis or x.basis
     ct_result = from_jax_cotangent(type(x), ct_result, ct_basis)
     check_basis_compat(x.basis, ct_result.basis)
@@ -756,6 +762,7 @@ def ft_log_derivative(
     x: FreeTensorT,
     t_x: FreeTensorT,
 ) -> FreeTensorT:
+    """Compute the derivative of `ft_log` in the supplied tangent direction."""
     check_basis_compat(x.basis, t_x.basis)
     batch_dims = get_common_batch_shape(x, t_x)
     dtype = jnp.result_type(x.dtype, t_x.dtype)
@@ -786,6 +793,7 @@ def ft_log_adjoint_derivative(
     x: FreeTensorT,
     ct_result: DenseAlgebra | jax.Array,
 ) -> tuple[FreeTensorT]:
+    """Compute the JAX-facing cotangent for `ft_log`."""
     ct_result = from_jax_cotangent(type(x), ct_result, x.basis)
     check_basis_compat(x.basis, ct_result.basis)
     batch_dims = get_common_batch_shape(x, ct_result)
@@ -884,6 +892,7 @@ def ft_fmexp_derivative(
     t_multiplier: FreeTensorT,
     t_exponent: FreeTensorT,
 ) -> FreeTensorT:
+    """Compute the derivative of `ft_fmexp` in the supplied tangent direction."""
     check_basis_compat(
         multiplier.basis, exponent.basis, t_multiplier.basis, t_exponent.basis
     )
@@ -916,6 +925,7 @@ def ft_fmexp_adjoint_derivative(
     exponent: FreeTensorT,
     ct_result: DenseAlgebra | jax.Array,
 ) -> tuple[FreeTensorT, FreeTensorT]:
+    """Compute the JAX-facing cotangents for `ft_fmexp`."""
     ct_result = from_jax_cotangent(type(multiplier), ct_result, multiplier.basis)
     check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
     get_common_batch_shape(multiplier, exponent, ct_result)
@@ -1191,6 +1201,7 @@ def ft_adjoint_left_mul_derivative(
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
 ) -> ShuffleTensorT:
+    """Compute the derivative of `ft_adjoint_left_mul`."""
     check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     get_common_batch_shape(op, arg, t_op, t_arg)
 
@@ -1202,6 +1213,7 @@ def ft_adjoint_left_mul_derivative(
 def ft_adjoint_left_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: DenseAlgebra | jax.Array
 ) -> tuple[FreeTensorT, ShuffleTensorT]:
+    """Compute the JAX-facing cotangents for `ft_adjoint_left_mul`."""
     ct_result = from_jax_cotangent(type(arg), ct_result, op.basis)
     check_basis_compat(op.basis, arg.basis, ct_result.basis)
     get_common_batch_shape(op, arg, ct_result)
@@ -1271,6 +1283,7 @@ def ft_adjoint_right_mul_derivative(
     t_op: FreeTensorT,
     t_arg: ShuffleTensorT,
 ) -> ShuffleTensorT:
+    """Compute the derivative of `ft_adjoint_right_mul`."""
     check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     get_common_batch_shape(op, arg, t_op, t_arg)
 
@@ -1281,6 +1294,7 @@ def ft_adjoint_right_mul_derivative(
 def ft_adjoint_right_mul_adjoint_derivative(
     op: FreeTensorT, arg: ShuffleTensorT, ct_result: DenseAlgebra | jax.Array
 ) -> tuple[FreeTensorT, ShuffleTensorT]:
+    """Compute the JAX-facing cotangents for `ft_adjoint_right_mul`."""
     ct_result = from_jax_cotangent(type(arg), ct_result, op.basis)
     check_basis_compat(op.basis, arg.basis, ct_result.basis)
     get_common_batch_shape(op, arg, ct_result)
@@ -1352,6 +1366,7 @@ def tensor_pairing_derivative(
     t_functional: ShuffleTensorT,
     t_argument: FreeTensorT,
 ) -> jax.Array:
+    """Compute the derivative of `tensor_pairing`."""
     check_basis_compat(
         functional.basis, argument.basis, t_functional.basis, t_argument.basis
     )
@@ -1380,6 +1395,7 @@ def tensor_pairing_adjoint_derivative(
     argument: FreeTensorT,
     ct_result: jax.Array,
 ) -> tuple[ShuffleTensorT, FreeTensorT]:
+    """Compute the JAX-facing cotangents for `tensor_pairing`."""
     check_basis_compat(functional.basis, argument.basis)
     batch_dims = get_common_batch_shape(functional, argument)
 
@@ -1446,6 +1462,7 @@ def lie_pairing_derivative(
     t_functional: LieT,
     t_argument: LieT,
 ) -> jax.Array:
+    """Compute the derivative of `lie_pairing`."""
     check_basis_compat(
         functional.basis, argument.basis, t_functional.basis, t_argument.basis
     )
@@ -1459,6 +1476,7 @@ def lie_pairing_derivative(
 def lie_pairing_adjoint_derivative(
     functional: LieT, argument: LieT, ct_result: jax.Array
 ) -> tuple[LieT, LieT]:
+    """Compute the JAX-facing cotangents for `lie_pairing`."""
     check_basis_compat(functional.basis, argument.basis)
     batch_dims = get_common_batch_shape(functional, argument)
 
@@ -1517,6 +1535,7 @@ def st_adjoint_mul(
 def st_adjoint_mul_derivative(
     op: ShuffleTensorT, arg: FreeTensorT, t_op: ShuffleTensorT, t_arg: FreeTensorT
 ) -> FreeTensorT:
+    """Compute the derivative of `st_adjoint_mul`."""
     check_basis_compat(op.basis, arg.basis, t_op.basis, t_arg.basis)
     get_common_batch_shape(op, arg, t_op, t_arg)
 
@@ -1528,6 +1547,7 @@ def st_adjoint_mul_derivative(
 def st_adjoint_mul_adjoint_derivative(
     op: ShuffleTensorT, arg: FreeTensorT, ct_result: DenseAlgebra | jax.Array
 ) -> tuple[ShuffleTensorT, FreeTensorT]:
+    """Compute the JAX-facing cotangents for `st_adjoint_mul`."""
     ct_result = from_jax_cotangent(type(arg), ct_result, arg.basis)
     check_basis_compat(op.basis, arg.basis, ct_result.basis)
     get_common_batch_shape(op, arg, ct_result)
