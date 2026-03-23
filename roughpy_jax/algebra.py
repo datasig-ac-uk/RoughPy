@@ -76,12 +76,97 @@ def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
     return type(tensor)(new_data, tensor.basis)
 
 
-def _tensor_to_dual(
-    tensor: AlgebraT, new_cls: Type[T], new_basis: TensorBasis | None
-) -> T:
-    if new_basis is None:
-        new_basis = tensor.basis
-    return new_cls(_redepth_data(tensor.data, new_basis.size()), new_basis)
+def as_free_tensor(tensor: FreeTensor | ShuffleTensor) -> FreeTensor:
+    """
+    Converts a given tensor to a FreeTensor instance if it is not already of that type.
+
+    :param tensor: The tensor to be converted. It can either be a FreeTensor or
+        a ShuffleTensor.
+    :return: A FreeTensor object derived from the input tensor.
+    """
+    if isinstance(tensor, FreeTensor):
+        return tensor
+    return FreeTensor(tensor.data, tensor.basis)
+
+
+def as_shuffle_tensor(tensor: FreeTensor | ShuffleTensor) -> ShuffleTensor:
+    """
+    Convert a tensor into a ShuffleTensor instance if it is not already of that type.
+
+    This function ensures that a given tensor is returned as a `ShuffleTensor`
+    object. If the input tensor is already a `ShuffleTensor`, it is returned
+    directly. Otherwise, a new `ShuffleTensor` is created using the data and basis
+    of the input tensor.
+
+    :param tensor: The input tensor to be converted. Can be an instance of either
+        `FreeTensor` or `ShuffleTensor`.
+    :return: An instance of `ShuffleTensor`. If the input was already a
+        `ShuffleTensor`, it returns the same object. Otherwise, it constructs and
+        returns a new `ShuffleTensor`.
+    """
+    if isinstance(tensor, ShuffleTensor):
+        return tensor
+    return ShuffleTensor(tensor.data, tensor.basis)
+
+
+def to_jax_cotangent(
+    primal_cls: type[DenseAlgebra], cotangent: DenseAlgebra
+) -> DenseAlgebra:
+    """
+    Convert a mathematical cotangent into the pytree representation expected by JAX.
+
+    JAX's ``custom_vjp`` interface does not model cotangents as arbitrary dual-space
+    objects. Instead, a backward rule must return cotangents whose pytree structure
+    matches the corresponding primal argument. For these algebra types that is not,
+    in general, the same thing as the mathematically correct cotangent object:
+    the cotangent of a free tensor is naturally a shuffle tensor, and vice versa.
+
+    This helper makes that mismatch explicit. It takes a cotangent expressed in the
+    mathematically correct dual algebra and re-encodes it using the concrete pytree
+    type JAX expects for ``primal``. The returned object is therefore a JAX-facing
+    cotangent representation, not a statement that the cotangent space is actually
+    the same algebra as the primal.
+
+    :param primal_cls: The concrete primal algebra type whose pytree structure
+        JAX expects in the backward return value.
+    :param cotangent: The cotangent expressed in the mathematically appropriate
+        dual algebra.
+    :return: A cotangent encoded using ``primal_cls`` and the basis already
+        attached to ``cotangent`` so that it matches the pytree structure
+        required by JAX.
+    """
+    return primal_cls(cotangent.data, cotangent.basis)
+
+
+def from_jax_cotangent(
+    primal_cls: type[DenseAlgebra], cotangent: DenseAlgebra | jax.Array, basis
+) -> DenseAlgebra:
+    """
+    Convert a JAX cotangent representation back into the mathematically correct type.
+
+    When JAX invokes a custom VJP backward rule, the cotangent argument may be
+    reconstructed using the primal pytree structure rather than the true dual
+    algebra type. This helper reverses the representation coercion performed by
+    :func:`to_jax_cotangent`, recovering the cotangent algebra associated with
+    ``primal`` before the backward rule performs any algebraic operations.
+
+    For roughpy-jax's truncated algebras this means:
+    ``FreeTensor -> ShuffleTensor``, ``ShuffleTensor -> FreeTensor``, and
+    ``Lie -> Lie``.
+
+    :param primal_cls: The concrete primal algebra type whose dual-space
+        cotangent type is required.
+    :param cotangent: The cotangent value as reconstructed by JAX, either as a raw
+        array leaf or as an algebra object with primal-shaped pytree structure.
+    :param basis: Basis metadata to attach to the recovered cotangent.
+    :return: The cotangent reinterpreted in the mathematically correct dual algebra.
+    """
+    if isinstance(cotangent, DenseAlgebra):
+        data = cotangent.data
+    else:
+        data = cotangent
+
+    return primal_cls.DualVector(data, basis)
 
 
 @jax.custom_vjp
