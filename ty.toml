@@ -20,6 +20,8 @@ replace-imports-with-any = ["roughpy._roughpy"]
 all = "error"
 empty-body = "ignore"
 too-many-positional-arguments = "ignore"
+unresolved-attribute = "ignore"
+unknown-argument = "ignore"
 
 
 [[overrides]]
