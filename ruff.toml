@@ -1,7 +1,7 @@
 line-length = 88
 indent-width = 4
 target-version = "py311"
-src = ["roughpy_jax", "benchmarks", "examples"]
+src = ["roughpy_jax", "benchmarks",]
 force-exclude = true
 extend-exclude = [
     ".asv",
@@ -11,6 +11,7 @@ extend-exclude = [
     "tests",
     "vendored",
     "tools",
+    "examples"
 ]
 
 [lint]
