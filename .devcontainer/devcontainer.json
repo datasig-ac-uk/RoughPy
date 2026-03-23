@@ -4,7 +4,9 @@
     "name": "RoughPy",
 
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        "target": "roughpy-devcontainer:latest"
     },
 
     "customizations": {
@@ -28,12 +30,10 @@
             }
         }
     },
+    // mount ssh folder for git access
     "mounts": [
-        "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind"
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
     ],
-    "remoteEnv": {
-        "SSH_AUTH_SOCK": "/ssh-agent"
-    },
 
     // Enable debugging in container
     "capAdd": [
@@ -41,6 +41,7 @@
     ],
 
     // Run args for CUDA in devcontainer
+    // NOTE: This is required for gpu access when running with podman
     "runArgs": [
         "--hooks-dir=/usr/share/containers/oci/hooks.d",
         "--device", "/dev/nvidia0",
