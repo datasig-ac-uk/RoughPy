@@ -31,7 +31,7 @@ struct DenseFTExpFunctor : DenseFTExpStaticArgs
     ffi::Error operator()(Scalar* out_data, const Scalar* arg_data)
     {
         DenseTensorView<Scalar*>
-                result_view(out_data, basis, 0, arg_max_degree);
+                result_view(out_data, basis);
         DenseTensorView<const Scalar*>
                 arg_view(arg_data, basis, 0, arg_max_degree);
 
