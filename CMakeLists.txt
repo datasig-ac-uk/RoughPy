@@ -355,6 +355,15 @@ if (ROUGHPY_BUILD_PYLIB)
             EXCLUDE_FROM_ALL
     )
 
+    install(DIRECTORY roughpy_compute
+            DESTINATION roughpy/include
+            FILES_MATCHING
+            PATTERN "*.h"
+            PATTERN "*.hpp"
+            PATTERN "*.hh"
+            PATTERN "*.hxx"
+    )
+
     install(DIRECTORY roughpy
             DESTINATION .
             FILES_MATCHING
@@ -396,5 +405,4 @@ install(TARGETS
         FRAMEWORK DESTINATION roughpy
     EXCLUDE_FROM_ALL
 )
-
 
