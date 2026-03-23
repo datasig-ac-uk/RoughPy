@@ -7,6 +7,7 @@ RoughPy is a package for working with streaming data as rough paths, and working
 
 This library is currently in an alpha stage, and as such many features are still incomplete or not fully implemented. Please bear this in mind when looking at the source code.
 
+
 Please refer to the [documentation](https://roughpy.org) and to
 the [examples folder](examples/) for details on how to use RoughPy. If you want
 to implement more complex functions built on top of RoughPy, you may also want
@@ -14,6 +15,11 @@ to check out the [roughpy/tensor_functions.py](roughpy/tensor_functions.py) file
 to see how the "LOG"
 function is implemented for free tensor objects.
 
+### Important
+This release is expected to be one of the last minor releases before a major overhaul of RoughPy.
+We expect the next major release to introduce substantial interface changes as the library evolves.
+If you are building new code against RoughPy today, please be aware that some APIs and usage patterns are likely to change significantly in the forthcoming major version.
+ 
 ## Installation
 RoughPy can be installed from PyPI using `pip` on Windows, Linux, and MacOS (Intel based Mac only, sorry not Apple Silicon support yet). Simply run
 ```
