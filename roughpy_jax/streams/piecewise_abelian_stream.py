@@ -12,9 +12,10 @@ from roughpy_jax.algebra import (
     lie_to_tensor,
     tensor_to_lie,
 )
+from roughpy_jax.bases import Basis
 from roughpy_jax.intervals import Interval, Partition, RealInterval
 
-from .concepts import BasisLike, GroupT, LieT, Stream
+from .concepts import GroupT, LieT, Stream
 
 
 def _pas_dataclass(cls):
@@ -33,8 +34,8 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
     _data: tuple[LieT, ...]
     _partition: Partition
-    _lie_basis: BasisLike
-    _group_basis: BasisLike
+    _lie_basis: Basis
+    _group_basis: Basis
 
     def __post_init__(self):
         """Validate the piecewise abelian stream."""
@@ -45,12 +46,12 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             )
 
     @property
-    def lie_basis(self) -> BasisLike:
+    def lie_basis(self) -> Basis:
         """Return the Lie basis."""
         return self._lie_basis
 
     @property
-    def group_basis(self) -> BasisLike:
+    def group_basis(self) -> Basis:
         """Return the group basis."""
         return self._group_basis
 
@@ -83,9 +84,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             scale_factor = intersection_length / p.length
             return jax.lax.cond(
                 intersection_length > 0,
-                lambda: lie_to_tensor(
-                    x, tensor_basis=self._group_basis, scale_factor=scale_factor
-                ),
+                lambda: lie_to_tensor(x, scale_factor=scale_factor),
                 # TODO: #303 replace this with the function on basis when it exists
                 lambda: self._get_identity(dtype=x.data.dtype),
             )
@@ -105,7 +104,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
         # Take the last prefix (the full product over all selected pieces).
         result = jax.tree.map(lambda x: x[-1], result_batched)
-        return tensor_to_lie(ft_log(result), lie_basis=self.lie_basis)
+        return tensor_to_lie(ft_log(result))
 
     def _get_identity(self, dtype) -> FreeTensor:
         """Return the identity element of the group."""
@@ -122,7 +121,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     def signature(self, interval: Interval) -> GroupT:
         """Compute the signature over an interval."""
         log_sig = self.log_signature(interval)
-        tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
+        tensor = lie_to_tensor(log_sig)
         return ft_exp(tensor, self._group_basis)
 
 

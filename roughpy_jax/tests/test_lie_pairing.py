@@ -94,12 +94,7 @@ def test_lie_pairing_derivative_wrt_functional(pairing_trials):
     functional = pairing_trials.uniform_lie()
     argument = pairing_trials.uniform_lie()
     tangent = pairing_trials.uniform_lie() * pairing_trials.cond_dtype(1e-3, 1e0)
-    zero_t_argument = rpj.Lie(
-        jnp.zeros(
-            pairing_trials.batch_shape(pairing_trials.lie_basis), pairing_trials.dtype
-        ),
-        pairing_trials.lie_basis,
-    )
+    zero_t_argument = pairing_trials.zero_lie()
 
     def fn(arg_functional):
         return rpj.lie_pairing(arg_functional, argument)
@@ -124,12 +119,7 @@ def test_lie_pairing_derivative_wrt_argument(pairing_trials):
     functional = pairing_trials.uniform_lie()
     argument = pairing_trials.uniform_lie()
     tangent = pairing_trials.uniform_lie() * pairing_trials.cond_dtype(1e-3, 1e0)
-    zero_t_functional = rpj.Lie(
-        jnp.zeros(
-            pairing_trials.batch_shape(pairing_trials.lie_basis), pairing_trials.dtype
-        ),
-        pairing_trials.lie_basis,
-    )
+    zero_t_functional = pairing_trials.zero_lie()
 
     def fn(arg_argument):
         return rpj.lie_pairing(functional, arg_argument)

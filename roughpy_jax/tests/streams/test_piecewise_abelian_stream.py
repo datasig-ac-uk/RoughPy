@@ -98,12 +98,10 @@ class TestPiecewiseAbelianStream:
         # Compute the expected log signature using the CBH formula
         for l in (pas_data.l1, pas_data.l2):
             l_half = rpj.Lie(l.data * 0.5, l.basis)
-            t = rpj.lie_to_tensor(l_half, tensor_basis=pas_data.tensor_basis)
+            t = rpj.lie_to_tensor(l_half)
             acc = rpj.ft_fmexp(acc, t, pas_data.tensor_basis)
 
-        expected_log_sig = rpj.tensor_to_lie(
-            rpj.ft_log(acc), lie_basis=pas_data.lie_basis
-        )
+        expected_log_sig = rpj.tensor_to_lie(rpj.ft_log(acc))
 
         assert jnp.allclose(log_sig.data, expected_log_sig.data, atol=1e-6)
 

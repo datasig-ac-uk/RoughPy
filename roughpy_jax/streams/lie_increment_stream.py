@@ -18,6 +18,7 @@ from roughpy_jax.algebra import (
     lie_to_tensor,
     tensor_to_lie,
 )
+from roughpy_jax.bases import to_tensor_basis
 from roughpy_jax.intervals import DyadicInterval, Interval, IntervalType, RealInterval
 
 from .concepts import Stream
@@ -55,7 +56,7 @@ def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Arr
             tensor = ft_fmexp(
                 tensor, lie_to_tensor(previous[k2]), out_basis=tensor_basis
             )
-            lie = tensor_to_lie(ft_log(tensor), lie_basis=cache_basis)
+            lie = tensor_to_lie(ft_log(tensor))
             yield lie
 
     prev_size = 0
@@ -94,9 +95,7 @@ def _cbh(
     tensor_basis: TensorBasis | None = None,
     axis: int = 0,
 ) -> Lie:
-    tensor_basis = tensor_basis or TensorBasis(
-        width=cache_basis.width, depth=cache_basis.depth
-    )
+    tensor_basis = tensor_basis or to_tensor_basis(cache_basis)
 
     batch_shape = data.shape[:axis] + data.shape[axis + 1 :]
     acc = _ft_identity(tensor_basis, batch_shape, data.dtype)
@@ -105,7 +104,7 @@ def _cbh(
         lie = Lie(jnp.take(data, k, axis=axis), data_basis)
         ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
 
-    result = tensor_to_lie(ft_log(acc), lie_basis=cache_basis)
+    result = tensor_to_lie(ft_log(acc))
     return result
 
 
@@ -290,7 +289,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         self._cache = cache
         self._lie_basis = lie_basis
-        self._group_basis = group_basis or TensorBasis(lie_basis.width, lie_basis.depth)
+        self._group_basis = group_basis or to_tensor_basis(lie_basis)
         self._support = support or RealInterval(0.0, 1.0, IntervalType.ClOpen)
         self._resolution = int(resolution)
         self._interval_type = interval_type
@@ -464,7 +463,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             _, exp = jnp.frexp(min_diff)
             resolution = int(1 - exp)
 
-        tensor_basis = TensorBasis(width=lie_basis.width, depth=lie_basis.depth)
+        tensor_basis = to_tensor_basis(lie_basis)
 
         rounder = jnp.floor if interval_type == IntervalType.ClOpen else jnp.ceil
         k_arrays = [
@@ -585,5 +584,5 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         interval: Interval | None = None,
     ) -> FreeTensor:
         log_sig = self.log_signature(interval)
-        tensor = lie_to_tensor(log_sig, tensor_basis=self._group_basis)
+        tensor = lie_to_tensor(log_sig)
         return ft_exp(tensor, out_basis=self._group_basis)
