@@ -1119,8 +1119,6 @@ def lie_to_tensor(arg: LieT, scale_factor=None) -> FreeTensorT:
 
     dtype = arg.data.dtype
 
-    out_basis = tensor_basis or TensorBasis(arg.basis.width, arg.basis.depth)
-
     op_cls = Operation.get_operation("lie_to_tensor", "dense")
     op = op_cls(
         (arg.basis,),
