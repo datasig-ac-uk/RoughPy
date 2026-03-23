@@ -97,8 +97,8 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install build deps on MacOs
-        if: runner.os == 'macOs'
+      - name: Install build deps on macOS
+        if: runner.os == 'macOS'
         run:  brew install autoconf automake libtool m4 ninja
 
       - name: Build and test
@@ -161,5 +161,4 @@ jobs:
           
     
          
-
 

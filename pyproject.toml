@@ -23,9 +23,6 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -34,6 +31,7 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS"
 ]
+requires-python = ">=3.11"
 dependencies = [
     "numpy >= 1.23.5"
 ]
@@ -65,7 +63,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 cmake.version = ">=3.26"
 ninja.version = ">=1.11"
 wheel.packages = []
-cmake.verbose = true
+build.verbose = true
 logging.level = "INFO"
 cmake.build-type = "Release"
 experimental=true
@@ -111,8 +109,7 @@ skip = [
     "pp*",
     "*linux_i686",
     "*universal2",
-    "cp3{6,7,8}-*",
-    "cp3{9}-macos*"
+    "cp3{6,7,8,9,10}-*"
 ]
 build-verbosity=1
 
@@ -137,4 +134,3 @@ environment-pass = [
 
 [tool.cibuildwheel.macos]
 repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}"
-
