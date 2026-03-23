@@ -43,4 +43,4 @@ jobs:
 
       - name: Ty type check
         shell: bash
-        run: uv run ty check . --output-format=github
+        run: uv run --no-sync ty check . --output-format=github 

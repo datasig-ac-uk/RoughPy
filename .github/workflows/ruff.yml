@@ -48,8 +48,8 @@ jobs:
 
       - name: Ruff lint
         shell: bash
-        run: uv run ruff check . --output-format=github
+        run: uv run --no-sync ruff check . --output-format=github
 
       - name: Ruff format check
         shell: bash
-        run: uv run ruff format . --check
+        run: uv run --no-sync ruff format . --check
