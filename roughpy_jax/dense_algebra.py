@@ -4,8 +4,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-# from roughpy_jax.bases import BasisT
-BasisT = TypeVar("BasisT")  ## TODO: replace when basis utilities is merged
+from roughpy_jax.bases import BasisT
 
 AlgebraT = TypeVar("AlgebraT")
 _T = TypeVar("_T")
