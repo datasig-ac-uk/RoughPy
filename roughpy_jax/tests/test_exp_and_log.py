@@ -2,6 +2,7 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
+from jax import test_util as jtu
 import pytest
 import roughpy_jax as rpj
 from derivative_testing import (
