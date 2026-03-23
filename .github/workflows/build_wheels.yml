@@ -73,7 +73,6 @@ jobs:
         os:
           - ubuntu-latest
           - windows-2022
-          - macos-13 # Uses x64
           - macos-14 # Uses Apple Silicon
 
     steps:
@@ -161,4 +160,3 @@ jobs:
           
     
          
-
