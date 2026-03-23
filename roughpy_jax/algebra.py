@@ -6,6 +6,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from roughpy_jax.bases import (
+    TensorBasis,
+    LieBasis,
+    result_basis,
+    check_basis_compat,
+    to_lie_basis,
+    to_tensor_basis,
+)
 from roughpy_jax.ops import Operation
 from roughpy_jax.dense_algebra import (
     DenseAlgebra,
@@ -16,13 +24,6 @@ from roughpy_jax.dense_algebra import (
     identity_like,
 )
 
-from .bases import (
-    TensorBasis,
-    LieBasis,
-    check_basis_compat,
-    to_lie_basis,
-    to_tensor_basis,
-)
 from .compressed import csr_matvec
 
 T = TypeVar("T")
@@ -55,14 +56,10 @@ class DenseLie(DenseAlgebra[LieBasis]):
     pass
 
 
-"""
-Tensor aliases. Tensors are assumed to be dense without prefix
+DenseFreeTensor.DualVector = DenseShuffleTensor
+DenseShuffleTensor.DualVector = DenseFreeTensor
+DenseLie.DualVector = DenseLie
 
-TODO: These should be replaced by type aliases later, and we should
-      look at the types of the inputs to determine the correct type
-      for the output in each case. For now, we assume everything is
-      dense, but we should nonetheless do this replacement soon.
-"""
 FreeTensor: TypeAlias = DenseFreeTensor
 ShuffleTensor: TypeAlias = DenseShuffleTensor
 Lie: TypeAlias = DenseLie
