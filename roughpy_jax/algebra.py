@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial, partialmethod
-from typing import TypeVar, Callable, Type, Any
+from typing import TypeVar, Callable, Type, Any, TypeAlias
 
 import jax
 import jax.numpy as jnp
@@ -32,142 +32,27 @@ ShuffleTensorT = TypeVar("ShuffleTensorT")
 LieT = TypeVar("LieT")
 
 
-def _algebra_add(
-    a: AlgebraT, b: AlgebraT, *, impl: Callable[[jax.Array, ...], jax.Array]
-) -> AlgebraT:
-    cls = type(a)
+@jax.tree_util.register_pytree_node_class
+class DenseFreeTensor(DenseTensor):
 
-    if not issubclass(type(b), cls):
+    def __matmul__(self, other):
+        if isinstance(other, FreeTensor):
+            return ft_mul(self, other)
         return NotImplemented
 
-    basis = a.basis
-    # TODO: check basis and batching dims etc for better messages or adjusting truncation depth
 
-    result_data = impl(a.data, b.data)
+@jax.tree_util.register_pytree_node_class
+class DenseShuffleTensor(DenseTensor):
 
-    return cls(result_data, basis)
-
-
-def _algebra_scalar_multiply(a: AlgebraT, s: jax.typing.ArrayLike) -> AlgebraT:
-    cls = type(a)
-    basis = a.basis
-
-    scalar = jnp.asarray(s)
-    ext_scalar = broadcast_to_batch_shape(scalar, a.batch_shape)
-
-    result_data = jnp.multiply(a.data, ext_scalar)
-
-    return cls(result_data, basis)
-
-
-def _algebra___array__(self, dtype=None, copy=None) -> np.ndarray:
-    return self.data.__array__(dtype=dtype, copy=copy)
-
-
-def _redepth_data(data: jax.Array, new_alg_dim: int) -> jax.Array:
-    shape = data.shape
-
-    if new_alg_dim < shape[-1]:
-        return data[..., :new_alg_dim]
-
-    pad_dims = [(0, 0)] * (len(shape) - 1) + [(0, new_alg_dim - shape[-1])]
-    return jnp.pad(data, pad_dims)
-
-
-def _algebra_change_depth(algebra: AlgebraT, new_depth: int) -> AlgebraT:
-    if new_depth == algebra.basis.depth:
-        return algebra
-
-    algebra_cls = type(algebra)
-    basis_cls = type(algebra.basis)
-
-    new_basis = basis_cls(algebra.basis.width, new_depth)
-
-    new_size = new_basis.size()
-
-    return algebra_cls(_redepth_data(algebra.data, new_size), new_basis)
-
-
-def _tensor_dataclass(cls):
-    """
-    Combined decorator for roughpy_jax tensor objects
-
-    Registers dataclass and JAX data class with dynamic data and static basis
-    """
-    cls = dataclass(cls)
-
-    cls.__array__ = _algebra___array__
-
-    cls.__add__ = partialmethod(_algebra_add, impl=jnp.add)
-    cls.__sub__ = partialmethod(_algebra_add, impl=jnp.subtract)
-
-    cls.__radd__ = lambda x, y: _algebra_add(y, x, impl=jnp.add)
-    cls.__rsub__ = lambda x, y: _algebra_add(x, y, impl=jnp.subtract)
-
-    def _mul_impl(self, other):
-        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
-            return _algebra_scalar_multiply(self, other)
+    def __matmul__(self, other):
+        if isinstance(other, ShuffleTensor):
+            return st_mul(self, other)
         return NotImplemented
 
-    cls.__mul__ = _mul_impl
 
-    def _rmul_impl(self, other):
-        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
-            return _algebra_scalar_multiply(self, other)
-        return NotImplemented
-
-    cls.__rmul__ = _rmul_impl
-
-    def _div_impl(self, other):
-        if isinstance(other, (jax.Array, np.ndarray, np.generic, float, int)):
-            return _algebra_scalar_multiply(self, 1.0 / other)
-        return NotImplemented
-
-    cls.__truediv__ = _div_impl
-
-    cls.change_depth = _algebra_change_depth
-
-    return jax.tree_util.register_dataclass(
-        cls, data_fields=["data"], meta_fields=["basis"]
-    )
-
-
-@_tensor_dataclass
-class DenseFreeTensor:
-    """
-    Dense free tensor class built from basis and associated ndarray of data.
-    """
-
-    data: jnp.ndarray
-    basis: TensorBasis
-
-    @property
-    def batch_shape(self):
-        return self.data.shape[:-1]
-
-
-@_tensor_dataclass
-class DenseShuffleTensor:
-    """
-    Dense shuffle tensor class built from basis and associated ndarray of data.
-    """
-
-    data: jnp.ndarray
-    basis: TensorBasis
-
-    @property
-    def batch_shape(self):
-        return self.data.shape[:-1]
-
-
-@_tensor_dataclass
-class DenseLie:
-    data: jnp.ndarray
-    basis: LieBasis
-
-    @property
-    def batch_shape(self):
-        return self.data.shape[:-1]
+@jax.tree_util.register_pytree_node_class
+class DenseLie(DenseAlgebra[LieBasis]):
+    pass
 
 
 """
@@ -178,41 +63,9 @@ TODO: These should be replaced by type aliases later, and we should
       for the output in each case. For now, we assume everything is
       dense, but we should nonetheless do this replacement soon.
 """
-FreeTensor = DenseFreeTensor
-ShuffleTensor = DenseShuffleTensor
-Lie = DenseLie
-
-
-
-def _get_and_check_batch_dims(*arrays, core_dims=1):
-    if not arrays:
-        raise ValueError("expected at least one array")
-
-    first, *rem = arrays
-
-    n_dims = len(first.shape)
-    if n_dims < core_dims:
-        raise ValueError(
-            f"array at index 0 has wrong number of dimensions, expected at least {core_dims}"
-        )
-
-    batch_dims = first.shape[:-core_dims]
-    n_batch_dims = len(batch_dims)
-
-    for i, arr in enumerate(rem, start=1):
-        if len(arr.shape) != n_dims:
-            raise ValueError(
-                f"mismatched number of dimensions at index {i}: "
-                f"expected {n_dims} but got {len(arr.shape)}"
-            )
-
-        if arr.shape[:n_batch_dims] != batch_dims:
-            raise ValueError(
-                f"incompatible shape in argument at index {i}:"
-                f"expected batch shape {batch_dims} but got {arr.shape[:n_batch_dims]}"
-            )
-
-    return batch_dims
+FreeTensor: TypeAlias = DenseFreeTensor
+ShuffleTensor: TypeAlias = DenseShuffleTensor
+Lie: TypeAlias = DenseLie
 
 
 def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
