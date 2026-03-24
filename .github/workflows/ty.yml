@@ -41,6 +41,30 @@ jobs:
         shell: bash
         run: uv sync --extra typecheck --no-install-project
 
+      - name: Setup gha caching for vcpkg
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Checkout vcpkg
+        shell: bash
+        run: git clone --depth=1 https://github.com/Microsoft/vcpkg.git tools/vcpkg
+
+      - name: Configure CMake
+        run: |
+          cmake -B "${{ github.workspace }}/build" \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DROUGHPY_BUILD_TESTS=ON \
+            -DROUGHPY_JAX=ON
+        env:
+          CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
+
+      - name: Build
+        run: cmake --build "${{ github.workspace }}/build" --config "${{ env.BUILD_TYPE }}"
+
       - name: Ty type check
         shell: bash
-        run: uv run --no-sync ty check . --output-format=github 
+        run: uv run ty check . --output-format=github 

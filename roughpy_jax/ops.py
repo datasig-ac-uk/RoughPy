@@ -1,7 +1,7 @@
 import collections.abc as cabc
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from functools import partial
-from typing import Any, ClassVar, TypedDict, TypeVar
+from typing import Any, ClassVar, TypedDict
 
 import jax
 import jax.numpy as jnp
@@ -21,7 +21,6 @@ from .compressed import csc_matvec
 # Potentially useful to have cached versions to the l2t and t2l matrices as JAX
 # arrays, as these are used in many operations and converting from the C++
 # buffers to JAX arrays can be expensive.
-global _lie_sparse_matrix_cache
 _lie_sparse_matrix_cache: dict[
     tuple,
     tuple[
@@ -50,9 +49,6 @@ def _get_lie_sparse_matrices(lie_basis, dtype):
 
 
 class EmptyStaticArgs(TypedDict): ...
-
-
-OperationT = TypeVar("OperationT")
 
 
 def _batched_fallback_wrapper(single_tensor_fn):
@@ -188,7 +184,7 @@ class Operation:
     # when deriving from this class.
     #
     # Users should not interact with this directly
-    __all_operations: ClassVar[dict[tuple[str, str], type[OperationT]]] = {}
+    __all_operations: ClassVar[dict[tuple[str, str], type["Operation"]]] = {}
 
     # The supported layout for data for algebra objects. At the moment all
     # operations only support densely represented objects. In the future,
@@ -223,7 +219,7 @@ class Operation:
     # of all the required and optional arguments. This will be passed to the
     # FFI calls by ** unpacking. Using a TypedDict gives some level of
     # argument checking
-    StaticArgs: ClassVar[type[TypedDict]]
+    StaticArgs: ClassVar[type[Mapping[str, object]]]
 
     ## The following instance attributes are used by the class upon call to
     ## select from available implementations and populate static arguments.
@@ -237,7 +233,7 @@ class Operation:
     # the configuration of batching
     batch_dims: tuple[int, ...]
     # dictionary of static arguments
-    static_args: type[TypedDict]
+    static_args: Mapping[str, object]
 
     # For FFI calls, the shape of the output array(s)
     result_shape_dtypes: tuple[jax.ShapeDtypeStruct, ...]
@@ -284,7 +280,7 @@ class Operation:
     @classmethod
     def get_operation(
         cls, fn_name: str, layout: str = "dense"
-    ) -> type[OperationT] | None:
+    ) -> type["Operation"] | None:
         """
         Retrieves a registered operation class based on the function name and layout.
 
@@ -353,7 +349,7 @@ class Operation:
         if preferred_basis is not None:
             return result_basis(preferred_basis, *bases, strategy="first")
 
-        return result_basis(bases, strategy="max_depth")
+        return result_basis(*bases, strategy="max_depth")
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -386,7 +382,7 @@ class Operation:
         self.ffi_call_args = self.default_ffi_call_args | (ffi_call_args or {})
         self.static_args = self.make_static_args(kwargs)
 
-    def make_static_args(self, kwargs) -> type[TypedDict]:
+    def make_static_args(self, kwargs) -> Mapping[str, object]:
         """
         Construct static args from class kwargs.
 
@@ -971,7 +967,7 @@ class DenseLieToTensor(Operation, DenseOperation):
 
         return basis
 
-    def make_static_args(self, kwargs) -> type[TypedDict]:
+    def make_static_args(self, kwargs) -> Mapping[str, object]:
         arg_basis = self.bases[0]
         tensor_basis = self.basis
 
@@ -1026,7 +1022,7 @@ class DenseTensorToLie(Operation, DenseOperation):
 
         return basis
 
-    def make_static_args(self, kwargs) -> type[TypedDict]:
+    def make_static_args(self, kwargs) -> Mapping[str, object]:
         lie_basis = self.basis
 
         t2l_data, t2l_indices, t2l_indptr = _get_lie_sparse_matrices(
