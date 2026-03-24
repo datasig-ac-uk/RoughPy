@@ -1174,16 +1174,13 @@ def ft_adjoint_left_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT:
 
     batch_dims = get_common_batch_shape(op, arg)
 
-    op_max_deg = op.basis.depth
-    arg_max_deg = arg.basis.depth
-
     op_cls = Operation.get_operation("ft_adj_lmul", "dense")
     op_call = op_cls(
         (op.basis,),
         dtype,
         batch_dims,
-        op_max_deg=np.int32(op_max_deg),
-        arg_max_deg=np.int32(arg_max_deg),
+        op_max_deg=np.int32(op.basis.depth),
+        arg_max_deg=np.int32(arg.basis.depth),
     )
 
     out_data = op_call(op.data, arg.data)
@@ -1256,16 +1253,13 @@ def ft_adjoint_right_mul(op: FreeTensorT, arg: ShuffleTensorT) -> ShuffleTensorT
 
     batch_dims = get_common_batch_shape(op, arg)
 
-    op_max_deg = op.basis.depth
-    arg_max_deg = arg.basis.depth
-
     op_cls = Operation.get_operation("ft_adj_rmul", "dense")
     op_call = op_cls(
         (op.basis,),
         dtype,
         batch_dims,
-        op_max_deg=np.int32(op_max_deg),
-        arg_max_deg=np.int32(arg_max_deg),
+        op_max_deg=np.int32(op.basis.depth),
+        arg_max_deg=np.int32(arg.basis.depth),
     )
 
     out_data = op_call(op.data, arg.data)
@@ -1608,8 +1602,8 @@ def to_log_signature(signature: FreeTensorT, lie_basis: LieBasis | None = None) 
     """
     basis = signature.basis
     if lie_basis is not None:
-        check_basis_compat(basis, lie_basis, same_type=True)
-        basis = lie_basis
+        check_basis_compat(basis, lie_basis)
+        basis = to_tensor_basis(lie_basis)
 
     log_sig_tensor = ft_log(signature, out_basis=basis)
     return tensor_to_lie(log_sig_tensor)
