@@ -1657,4 +1657,5 @@ def cbh(*lie_pieces: LieT, lie_basis: LieBasis | None = None) -> LieT:
     for lie in lie_pieces:
         result = ft_fmexp(result, lie_to_tensor(lie), tensor_basis)
 
-    return to_log_signature(result, basis)
+    # The basis should already match the desired output basis
+    return to_log_signature(result)

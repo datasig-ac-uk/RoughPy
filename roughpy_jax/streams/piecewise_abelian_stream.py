@@ -17,6 +17,7 @@ from roughpy_jax.algebra import (
     ft_fmexp,
     ft_exp,
     ft_log,
+    to_log_signature,
 )
 
 
@@ -106,7 +107,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
         # Take the last prefix (the full product over all selected pieces).
         result = jax.tree.map(lambda x: x[-1], result_batched)
-        return tensor_to_lie(ft_log(result))
+        return to_log_signature(result)
 
     def _get_identity(self, dtype) -> FreeTensor:
         """Return the identity element of the group."""
