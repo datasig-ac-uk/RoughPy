@@ -1,27 +1,32 @@
 import typing
-from collections.abc import Hashable, Iterable
-from typing import Literal, TypeVar
+from collections.abc import Iterable
+from typing import Literal, Protocol, TypeVar
 
 import jax
 import numpy as np
+from numpy.typing import NDArray
 from roughpy import compute as rpc
 
 
 @typing.runtime_checkable
-class Basis(typing.Protocol, Hashable):
+class Basis(Protocol):
     """
     Structural protocol shared by basis objects used in ``roughpy_jax``.
 
     Any object implementing this protocol provides the width, truncation depth,
     and degree offsets needed to construct compatible tensor or Lie bases.
+
+    Note that this protocol is supposed to be hashable, hence the presence of
+    __hash__ and __eq__.
     """
 
-    width: np.int32
-    depth: np.int32
-    degree_begin: np.ndarray[np.int64.dtype]
+    width: int
+    depth: int
+    degree_begin: NDArray[np.int64]
 
     def size(self) -> int: ...
     def __eq__(self, other: object) -> bool: ...
+    def __hash__(self) -> int: ...
 
 
 BasisT = TypeVar("BasisT", bound=Basis)
