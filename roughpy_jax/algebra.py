@@ -1572,6 +1572,49 @@ def _st_adjoint_mul_vjp_bwd(residuals, ct_result):
 st_adjoint_mul.defvjp(_st_adjoint_mul_vjp_fwd, _st_adjoint_mul_vjp_bwd)
 
 
+def to_signature(
+    log_signature: LieT, tensor_basis: TensorBasis | None = None
+) -> FreeTensorT:
+    """
+    Convert a log-signature in the Lie algebra to its signature.
+
+    The Lie element is first embedded into the tensor algebra and then
+    exponentiated there. If ``tensor_basis`` is provided, the tensor result is
+    represented in that basis; otherwise the tensor basis associated with the
+    input Lie basis is used.
+
+    :param log_signature: Log-signature represented as a Lie element.
+    :param tensor_basis: Optional tensor basis for the output signature.
+    :return: The corresponding signature as a free tensor.
+    """
+    tensor = lie_to_tensor(log_signature)
+    return ft_exp(tensor, out_basis=tensor_basis)
+
+
+def to_log_signature(signature: FreeTensorT, lie_basis: LieBasis | None = None) -> LieT:
+    """
+    Convert a signature in the tensor algebra to its log-signature.
+
+    This is the inverse process of :func:`to_signature`: the input free tensor is
+    first mapped through the tensor logarithm and the result is then projected
+    back into the Lie algebra. If ``lie_basis`` is provided, the intermediate
+    tensor logarithm is expressed in the tensor basis compatible with that Lie
+    basis before the projection is applied; otherwise the Lie basis associated
+    with the signature basis is used.
+
+    :param signature: Signature represented as a free tensor.
+    :param lie_basis: Optional Lie basis for the output log-signature.
+    :return: The corresponding log-signature as a Lie element.
+    """
+    basis = signature.basis
+    if lie_basis is not None:
+        check_basis_compat(basis, lie_basis, same_type=True)
+        basis = lie_basis
+
+    log_sig_tensor = ft_log(signature, out_basis=basis)
+    return tensor_to_lie(log_sig_tensor)
+
+
 def cbh(*lie_pieces: LieT, lie_basis: LieBasis | None = None) -> LieT:
     """
     Compute the Campbell-Baker-Hausdorff combination of Lie elements.
@@ -1614,24 +1657,4 @@ def cbh(*lie_pieces: LieT, lie_basis: LieBasis | None = None) -> LieT:
     for lie in lie_pieces:
         result = ft_fmexp(result, lie_to_tensor(lie), tensor_basis)
 
-    log_result = ft_log(result)
-    return tensor_to_lie(log_result)
-
-
-def to_signature(
-    log_signature: LieT, tensor_basis: TensorBasis | None = None
-) -> FreeTensorT:
-    """
-    Convert a log-signature in the Lie algebra to its signature.
-
-    The Lie element is first embedded into the tensor algebra and then
-    exponentiated there. If ``tensor_basis`` is provided, the tensor result is
-    represented in that basis; otherwise the tensor basis associated with the
-    input Lie basis is used.
-
-    :param log_signature: Log-signature represented as a Lie element.
-    :param tensor_basis: Optional tensor basis for the output signature.
-    :return: The corresponding signature as a free tensor.
-    """
-    tensor = lie_to_tensor(log_signature)
-    return ft_exp(tensor, out_basis=tensor_basis)
+    return to_log_signature(result, basis)

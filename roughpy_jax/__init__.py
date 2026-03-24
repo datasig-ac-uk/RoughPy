@@ -67,6 +67,7 @@ from roughpy_jax.algebra import (
     tensor_pairing,
     tensor_pairing_adjoint_derivative,
     tensor_pairing_derivative,
+    to_log_signature,
     to_signature,
     tensor_to_lie,
     tensor_to_lie_adjoint_derivative,
@@ -137,5 +138,6 @@ __all__ = [
     "tensor_to_lie",
     "tensor_to_lie_adjoint_derivative",
     "tensor_to_lie_derivative",
+    "to_log_signature",
     "to_signature",
 ]

@@ -35,6 +35,18 @@ def test_to_signature_respects_explicit_basis(rpj_dtype, rpj_batch):
     assert jnp.allclose(result.data, expected.data, atol=_atol(rpj_dtype))
 
 
+def test_to_signature_to_log_signature_roundtrip(rpj_dtype, rpj_batch):
+    lie_basis = rpj.LieBasis(2, 3)
+
+    data = rpj_batch.rng_uniform(-0.2, 0.2, lie_basis.size(), rpj_dtype)
+    log_signature = rpj.Lie(data, lie_basis)
+
+    result = rpj.to_log_signature(rpj.to_signature(log_signature))
+
+    assert result.basis == log_signature.basis
+    assert jnp.allclose(result.data, log_signature.data, atol=_atol(rpj_dtype))
+
+
 def test_cbh_single_argument_returns_input_up_to_depth_change(rpj_dtype, rpj_batch):
     lie_basis = rpj.LieBasis(2, 3)
 
