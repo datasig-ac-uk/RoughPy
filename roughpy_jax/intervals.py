@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import enum
 import math
 import numbers
 import typing
 from dataclasses import dataclass
-from typing import Generic, Protocol, Self, TypeVar
+from typing import Any, Generic, Protocol, Self, TypeVar, cast
 
 import jax
 import jax.numpy as jnp
@@ -14,32 +16,6 @@ RealT = TypeVar("RealT")
 class IntervalType(enum.IntEnum):
     ClOpen = 0
     OpenCl = 1
-
-
-def _interval_dataclass(cls):
-    """
-    Combined decorator for roughpy_jax interval objects
-
-    Registers dataclass and JAX data class with dynamic inf and sup and static
-    interval_type
-    """
-    cls = dataclass(cls, frozen=True)
-    return jax.tree_util.register_dataclass(
-        cls, data_fields=["_inf", "_sup"], meta_fields=["_interval_type"]
-    )
-
-
-def _partition_dataclass(cls):
-    """
-    Combined decorator for roughpy_jax partition objects
-
-    Registers dataclass and JAX data class with dynamic endpoints and
-    interval_type
-    """
-    cls = dataclass(cls, frozen=True)
-    return jax.tree_util.register_dataclass(
-        cls, data_fields=["_endpoints"], meta_fields=["_interval_type"]
-    )
 
 
 @typing.runtime_checkable
@@ -77,7 +53,7 @@ class Interval(Protocol[RealT]):
     @property
     def length(self) -> RealT: ...
 
-    def intersection(self, other: Self) -> Self | None:
+    def intersection(self, other: Interval[RealT]) -> Interval[RealT] | None:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
@@ -88,13 +64,13 @@ class Interval(Protocol[RealT]):
         ...
 
 
-class BaseInterval(Interval):
+class BaseInterval:
     # TODO: These don't need to be in a class, just have module-level functions for str, length, and intersection that
     # take Intervals as arguments. The only reason to have these in a class is if we want to use inheritance to share
     # code between different Interval implementations.
 
     @staticmethod
-    def __str__(interval) -> str:
+    def to_string(interval: Any) -> str:
         reprs = {
             IntervalType.ClOpen: "[{}, {})",
             IntervalType.OpenCl: "({}, {}]",
@@ -102,19 +78,19 @@ class BaseInterval(Interval):
         return reprs[interval.interval_type].format(interval.inf, interval.sup)
 
     @staticmethod
-    def length(interval: Interval) -> RealT:
+    def length(interval: Any) -> Any:
         """
         Calculate the length of the interval.
         :return: The length of the interval, calculated as sup - inf.
         :rtype: float
         """
-        return jnp.maximum(0.0, interval.sup - interval.inf)
+        return jnp.maximum(0.0, jnp.asarray(interval.sup) - jnp.asarray(interval.inf))
 
     @staticmethod
     def intersection(
-        left_interval: Interval,
-        right_interval: Interval,
-    ) -> Interval | None:
+        left_interval: Any,
+        right_interval: Any,
+    ) -> Interval[Any] | None:
         """
         Calculate the intersection of this interval with another interval.
         :param other: The other interval to intersect with.
@@ -140,14 +116,14 @@ class BaseInterval(Interval):
         # if new_inf >= new_sup:
         #     return None  # No intersection
 
-        IntervalType = left_interval.__class__
+        IntervalT: type = type(left_interval)
         interval_type = left_interval.interval_type
 
         # Intersections are defined by bounds, but not every Interval implementation
         # can be constructed from (inf, sup, interval_type) (e.g. DyadicInterval).
         # Use a canonical RealInterval result to avoid incorrect reconstruction.
         # NOTE: Do NOT call float() here — new_inf/new_sup may be JAX tracers during JIT.
-        return IntervalType(_inf=new_inf, _sup=new_sup, _interval_type=interval_type)
+        return IntervalT(_inf=new_inf, _sup=new_sup, _interval_type=interval_type)
 
 
 @dataclass(frozen=True)
@@ -234,7 +210,7 @@ class DyadicInterval(Dyadic):
     def length(self) -> float:
         return BaseInterval.length(self)
 
-    def intersection(self, other: Self) -> Interval | None:
+    def intersection(self, other: Self) -> RealInterval[float] | None:
         """
         Calculate the intersection of this dyadic interval with another dyadic interval.
         :param other: The other dyadic interval to intersect with.
@@ -254,7 +230,7 @@ class DyadicInterval(Dyadic):
         )
 
 
-@_interval_dataclass
+@dataclass(frozen=True)
 class RealInterval(Generic[RealT]):
     """
     Represents a real interval with specified bounds and interval type.
@@ -274,7 +250,7 @@ class RealInterval(Generic[RealT]):
     _interval_type: IntervalType
 
     def __str__(self) -> str:
-        return BaseInterval.__str__(self)
+        return BaseInterval.to_string(self)
 
     @property
     def interval_type(self) -> IntervalType:
@@ -289,10 +265,10 @@ class RealInterval(Generic[RealT]):
         return self._sup
 
     @property
-    def length(self) -> RealT:
+    def length(self) -> Any:
         return BaseInterval.length(self)
 
-    def intersection(self, other: Self) -> Self | None:
+    def intersection(self, other: Interval[Any]) -> RealInterval[RealT] | None:
         """
         Calculate the intersection of this real interval with another real interval.
         :param other: The other real interval to intersect with.
@@ -300,10 +276,17 @@ class RealInterval(Generic[RealT]):
         :return: A new RealInterval representing the intersection, or None if there is no intersection.
         :rtype: typing.Optional[RealInterval]
         """
-        return BaseInterval.intersection(self, other)
+        return cast(RealInterval[RealT] | None, BaseInterval.intersection(self, other))
 
 
-@_partition_dataclass
+RealInterval = jax.tree_util.register_dataclass(
+    RealInterval,
+    data_fields=["_inf", "_sup"],
+    meta_fields=["_interval_type"],
+)
+
+
+@dataclass(frozen=True)
 class Partition(Generic[RealT]):
     _endpoints: list[RealT]
     _interval_type: IntervalType
@@ -312,22 +295,22 @@ class Partition(Generic[RealT]):
         return len(self._endpoints) - 1
 
     def __str__(self) -> str:
-        return BaseInterval.__str__(self)
+        return BaseInterval.to_string(self)
 
     @property
     def interval_type(self) -> IntervalType:
         return self._interval_type
 
     @property
-    def inf(self) -> RealT:
+    def inf(self) -> Any:
         return jnp.asarray(self._endpoints[0])
 
     @property
-    def sup(self) -> RealT:
+    def sup(self) -> Any:
         return jnp.asarray(self._endpoints[-1])
 
     @property
-    def length(self) -> RealT:
+    def length(self) -> Any:
         return BaseInterval.length(self)
 
     def to_real_interval(self) -> RealInterval[RealT]:
@@ -342,7 +325,7 @@ class Partition(Generic[RealT]):
             _interval_type=self._interval_type,
         )
 
-    def intersection(self, other: Interval) -> Self | None:
+    def intersection(self, other: Interval[RealT]) -> Partition[RealT] | None:
         """
         Calculate the intersection of this partition with another Interval.
         :param other: The other interval to intersect with.
@@ -358,7 +341,12 @@ class Partition(Generic[RealT]):
 
         # Here we convert to RealInterval to perform the intersection logic
         intermediate_itvl = self.to_real_interval()
-        intersect_itvl = intermediate_itvl.intersection(other)
+        other_interval = RealInterval(
+            _inf=other.inf,
+            _sup=other.sup,
+            _interval_type=other.interval_type,
+        )
+        intersect_itvl = intermediate_itvl.intersection(other_interval)
         if intersect_itvl is None:
             return None
 
@@ -368,7 +356,9 @@ class Partition(Generic[RealT]):
             new_endpoints.append(intersect_itvl.inf)
         # 2) Include all inner points
         for ep in self._endpoints:
-            if intersect_itvl.inf <= ep <= intersect_itvl.sup:
+            if bool(
+                jnp.logical_and(intersect_itvl.inf <= ep, ep <= intersect_itvl.sup)
+            ):
                 new_endpoints.append(ep)
         # 3) Add new sup if within bounds of old interval
         if intersect_itvl.sup < self.sup:
@@ -379,7 +369,7 @@ class Partition(Generic[RealT]):
             _interval_type=self.interval_type,
         )
 
-    def to_intervals(self) -> list[Interval[RealT]]:
+    def to_intervals(self) -> list[RealInterval[RealT]]:
         """
         Convert the partition into a list of RealIntervals corresponding to
         the subintervals defined by the partition.
@@ -397,3 +387,10 @@ class Partition(Generic[RealT]):
             )
             for i in range(len(self._endpoints) - 1)
         ]
+
+
+Partition = jax.tree_util.register_dataclass(
+    Partition,
+    data_fields=["_endpoints"],
+    meta_fields=["_interval_type"],
+)
