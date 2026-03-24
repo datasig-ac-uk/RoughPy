@@ -387,7 +387,12 @@ class Operation:
         Defaults to struct of args. Can be overridden by operations where static
         data needs pre-processing before work is handed over to FFI or fallback.
         """
-        return self.StaticArgs(**kwargs)
+        max_degree = np.int32(self.basis.depth)
+        static_args = dict(kwargs)
+        for name, value in static_args.items():
+            if name.endswith("_deg") or name.endswith("_degree"):
+                static_args[name] = np.int32(min(value, max_degree))
+        return self.StaticArgs(**static_args)
 
     def get_min_supported_cpu_dtype(
         self, target_dtype: jnp.dtype
