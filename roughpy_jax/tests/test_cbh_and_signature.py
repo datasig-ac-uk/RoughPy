@@ -9,7 +9,7 @@ def _atol(dtype):
 
 def test_to_signature_matches_manual_exp(rpj_dtype, rpj_batch):
     lie_basis = rpj.LieBasis(2, 3)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
+    tensor_basis = rpj.to_tensor_basis(lie_basis)
 
     data = rpj_batch.rng_uniform(-0.2, 0.2, lie_basis.size(), rpj_dtype)
     log_signature = rpj.Lie(data, lie_basis)

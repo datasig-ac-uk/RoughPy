@@ -26,7 +26,7 @@ class DerivativeTrialsHelper:
         self.width = width
         self.depth = depth
         self.lie_basis = rpj.LieBasis(width, depth)
-        self.tensor_basis = rpj.TensorBasis(width, depth)
+        self.tensor_basis = rpj.to_tensor_basis(self.lie_basis)
         self.default_tensor_type = default_tensor_type
         self.n_trials = n_trials
         self.rng_key = jax.random.key(12345)
@@ -75,21 +75,24 @@ class DerivativeTrialsHelper:
         )
 
     def zero_free_tensor(self):
-        return rpj.FreeTensor(
-            jnp.zeros(self.batch_shape(self.tensor_basis), dtype=self.dtype),
+        return rpj.FreeTensor.zero(
             self.tensor_basis,
+            dtype=self.dtype,
+            batch_dims=(self.n_trials,),
         )
 
     def zero_shuffle_tensor(self):
-        return rpj.ShuffleTensor(
-            jnp.zeros(self.batch_shape(self.tensor_basis), dtype=self.dtype),
+        return rpj.ShuffleTensor.zero(
             self.tensor_basis,
+            dtype=self.dtype,
+            batch_dims=(self.n_trials,),
         )
 
     def zero_lie(self):
-        return rpj.Lie(
-            jnp.zeros(self.batch_shape(self.lie_basis), dtype=self.dtype),
+        return rpj.Lie.zero(
             self.lie_basis,
+            dtype=self.dtype,
+            batch_dims=(self.n_trials,),
         )
 
     def cond_dtype(self, val_f32, val_f64):

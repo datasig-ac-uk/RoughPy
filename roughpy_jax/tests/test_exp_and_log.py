@@ -21,13 +21,12 @@ def exp_trials(request):
 
 def test_dense_ft_exp_zero(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(2, 2)
-    data = rpj_batch.zeros(basis.size(), rpj_dtype)
-    a = rpj.FreeTensor(data, basis)
+    a = rpj.FreeTensor.zero(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
 
     exp_a = rpj.ft_exp(a)
 
-    expected = rpj_batch.identity_zero_data(basis, rpj_dtype)
-    assert jnp.allclose(exp_a.data, expected)
+    expected = rpj.FreeTensor.identity(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
+    assert jnp.allclose(exp_a.data, expected.data)
 
 
 def test_dense_ft_exp_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -50,8 +49,8 @@ def test_dense_ft_log_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     log_a = rpj.ft_log(a)
 
-    expected = rpj_batch.zeros(basis.size(), rpj_dtype)
-    assert jnp.allclose(log_a.data, expected)
+    expected = rpj.FreeTensor.zero(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
+    assert jnp.allclose(log_a.data, expected.data)
 
 
 def test_dense_ft_exp_log_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -228,8 +227,7 @@ def _scaled_exponent_tensor(trials, scale=1.0):
 
 
 def _zero_free_tensor(trials):
-    data = jnp.zeros(trials.batch_shape(trials.tensor_basis), dtype=trials.dtype)
-    return rpj.FreeTensor(data, trials.tensor_basis)
+    return trials.zero_free_tensor()
 
 
 def test_ft_fmexp_derivative_linear_in_t_multiplier(exp_trials):

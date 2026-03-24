@@ -36,11 +36,10 @@ def test_dense_ft_mul_array_mismatch(rpj_test_fixture_type_mismatch):
 
 def test_dense_ft_fma(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(2, 2)
-    a_data = rpj_batch.zeros(basis.size(), rpj_dtype)
     b_data = rpj_batch.repeat(jnp.array([2, 1, 3, 0.5, -1, 2, 0], dtype=rpj_dtype))
     c_data = rpj_batch.repeat(jnp.array([-1, 4, 0, 1, 1, 0, 2], dtype=rpj_dtype))
 
-    a = rpj.FreeTensor(a_data, basis)
+    a = rpj.FreeTensor.zero(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
     b = rpj.FreeTensor(b_data, basis)
     c = rpj.FreeTensor(c_data, basis)
 

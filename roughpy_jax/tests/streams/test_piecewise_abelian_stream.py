@@ -17,7 +17,7 @@ class PASHelper:
 
         # Make some Lie elements for the stream (we can just use random data for this test)
         self.lie_basis = rpj.LieBasis(2, 2)
-        self.tensor_basis = rpj.TensorBasis(self.lie_basis.width, self.lie_basis.depth)
+        self.tensor_basis = rpj.to_tensor_basis(self.lie_basis)
 
         self.l1_data = rpj_batch.rng_uniform(-1, 1, self.lie_basis.size(), rpj_dtype)
         self.l1 = rpj.Lie(self.l1_data, self.lie_basis)
@@ -29,7 +29,7 @@ class PASHelper:
             _data=(self.l1, self.l2),
             _partition=self.partition,
             _lie_basis=self.lie_basis,
-            _group_basis=rpj.TensorBasis(self.lie_basis.width, self.lie_basis.depth),
+            _group_basis=rpj.to_tensor_basis(self.lie_basis),
         )
 
     @property
@@ -54,9 +54,7 @@ class TestPiecewiseAbelianStream:
                 _data=(pas_data.l1,),  # Incorrect length of data
                 _partition=pas_data.partition,
                 _lie_basis=pas_data.lie_basis,
-                _group_basis=rpj.TensorBasis(
-                    pas_data.lie_basis.width, pas_data.lie_basis.depth
-                ),
+                _group_basis=rpj.to_tensor_basis(pas_data.lie_basis),
             )
 
     def test_log_signature(self, pas_data):
@@ -100,7 +98,7 @@ class TestPiecewiseAbelianStream:
 
         # Compute the expected log signature using the CBH formula
         for l in (pas_data.l1, pas_data.l2):
-            l_half = rpj.Lie(l.data * 0.5, l.basis)
+            l_half = 0.5 * l
             t = rpj.lie_to_tensor(l_half)
             acc = rpj.ft_fmexp(acc, t, pas_data.tensor_basis)
 
