@@ -63,11 +63,24 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             _interval_type=self._partition.interval_type,
         )
 
+    @property
+    def dtype(self):
+        """Return the coefficient dtype of the stream values."""
+        return self._data[0].data.dtype
+
+    @property
+    def batch_dims(self) -> tuple[int, ...]:
+        """Return the leading batch dimensions of the stream values."""
+        return self._data[0].data.shape[:-1]
+
     @jax.jit
     def log_signature(self, interval: Interval) -> LieT:
         """Compute the log signature over an interval."""
-        # TODO: #303 replace this with the convenience function when it exists
-        initial = self._get_identity(dtype=self._data[0].data.dtype)
+        initial = FreeTensor.identity(
+            self._group_basis,
+            dtype=self.dtype,
+            batch_dims=self.batch_dims,
+        )
 
         def get_piece(x_and_interval):
             """
@@ -84,8 +97,11 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             return jax.lax.cond(
                 intersection_length > 0,
                 lambda: lie_to_tensor(x, scale_factor=scale_factor),
-                # TODO: #303 replace this with the function on basis when it exists
-                lambda: self._get_identity(dtype=x.data.dtype),
+                lambda: FreeTensor.identity(
+                    self._group_basis,
+                    dtype=x.data.dtype,
+                    batch_dims=self.batch_dims,
+                ),
             )
 
         intervals = self._partition.to_intervals()
@@ -104,17 +120,6 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         # Take the last prefix (the full product over all selected pieces).
         result = jax.tree.map(lambda x: x[-1], result_batched)
         return to_log_signature(result)
-
-    def _get_identity(self, dtype) -> FreeTensor:
-        """Return the identity element of the group."""
-        identity_data = (
-            jnp.zeros(
-                (*self._data[0].data.shape[:-1], self._group_basis.size()), dtype=dtype
-            )
-            .at[..., 0]
-            .set(1)
-        )
-        return FreeTensor(identity_data, self._group_basis)
 
     @jax.jit
     def signature(self, interval: Interval) -> GroupT:

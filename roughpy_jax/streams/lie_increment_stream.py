@@ -506,6 +506,14 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return self._support
 
     @property
+    def dtype(self):
+        return self._cache.dtype
+
+    @property
+    def batch_dims(self) -> tuple[int, ...]:
+        return self._cache.shape[1:-1]
+
+    @property
     def resolution(self) -> int:
         return self._resolution
 
