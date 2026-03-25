@@ -1,9 +1,8 @@
 import jax.numpy as jnp
 import pytest
-
+import roughpy_jax.streams.lie_increment_stream as lis_mod
 from roughpy_jax.algebra import LieBasis, TensorBasis
 from roughpy_jax.intervals import IntervalType, RealInterval
-import roughpy_jax.streams.lie_increment_stream as lis_mod
 from roughpy_jax.streams.lie_increment_stream import LieIncrementStream
 
 

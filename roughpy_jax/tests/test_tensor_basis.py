@@ -5,8 +5,9 @@ Many of these tests are moot because rpj.TensorBasis derives from the same
 _rpy_compute_internals.TensorBasis class. They are duplicated regardless to
 confirm that both rpc and rpj tensor basis behave the same.
 """
-import pytest
+
 import numpy as np
+import pytest
 import roughpy_jax as rpj
 
 sample_width_depth_degree_begin = [
@@ -18,16 +19,17 @@ sample_width_depth_degree_begin = [
     (3, 2, [0, 1, 4, 13]),
     (1, 3, [0, 1, 2, 3, 4]),
     (2, 3, [0, 1, 3, 7, 15]),
-    (3, 3, [0, 1, 4, 13, 40])
+    (3, 3, [0, 1, 4, 13, 40]),
 ]
+
+
 @pytest.mark.parametrize("width,depth,expected", sample_width_depth_degree_begin)
 def test_tensor_basis_degree_begin(width, depth, expected):
     tensor_basis = rpj.TensorBasis(width=width, depth=depth)
 
     # Absolute check that the degree begin matches sample
     np.testing.assert_array_equal(
-        tensor_basis.degree_begin,
-        np.array(expected, dtype=np.int32)
+        tensor_basis.degree_begin, np.array(expected, dtype=np.int32)
     )
 
     # Defensive check that generated degree begin array has right size
@@ -49,11 +51,11 @@ def test_created_degree_begins():
     basis = rpj.TensorBasis(width, depth)
     db = getattr(basis, "degree_begin", None)
     assert isinstance(db, np.ndarray)
-    assert db.shape == (depth+2, )
+    assert db.shape == (depth + 2,)
     assert db[0] == 0
 
     size = 1
-    for d in range(1, depth+2):
+    for d in range(1, depth + 2):
         assert db[d] == size
         size = 1 + size * width
 
@@ -119,7 +121,7 @@ def test_tensor_basis_hashable():
     basis_dict = {
         basis1: "first",
         basis2: "second",  # This should overwrite "first"
-        basis3: "third"
+        basis3: "third",
     }
     assert len(basis_dict) == 2
     assert basis_dict[basis1] == "second"  # Overwritten by basis2

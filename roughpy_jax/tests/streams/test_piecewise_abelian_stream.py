@@ -1,11 +1,9 @@
-import pytest
-
 import jax
 import jax.numpy as jnp
-
+import pytest
 import roughpy_jax as rpj
+from roughpy_jax.intervals import IntervalType, Partition, RealInterval
 from roughpy_jax.streams import PiecewiseAbelianStream
-from roughpy_jax.intervals import RealInterval, IntervalType, Partition
 
 
 class PASHelper:
@@ -46,7 +44,6 @@ def pas_data(rpj_batch, rpj_dtype):
 
 
 class TestPiecewiseAbelianStream:
-
     def test_construction(self, pas_data):
         """Test that the PiecewiseAbelianStream can be constructed without errors."""
         with pytest.raises(ValueError):
@@ -83,12 +80,12 @@ class TestPiecewiseAbelianStream:
     )
     def test_log_signature_various_intervals(self, pas_data, query_interval):
         """Test log signature over various query intervals."""
-        log_sig = pas_data.stream.log_signature(query_interval)
+        pas_data.stream.log_signature(query_interval)
 
     def test_signature(self, pas_data):
-        """Test that the signature of the stream over [0, 1] is exp(L1)."""
+        """Test that the signature of the stream over [0, 1]."""
         query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
-        sig = pas_data.stream.signature(query_interval)
+        pas_data.stream.signature(query_interval)
 
     def test_log_signature_cbh(self, pas_data):
         """Test that the log signature of the stream over [0.5, 1.5] is CBH(0.5*L1, 0.5*L2)."""

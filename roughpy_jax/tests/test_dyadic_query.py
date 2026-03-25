@@ -2,7 +2,6 @@ import math
 from collections import deque
 
 import pytest
-
 from roughpy_jax.intervals import IntervalType, RealInterval
 from roughpy_jax.streams.lie_increment_stream import dyadic_query
 

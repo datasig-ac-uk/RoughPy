@@ -1,30 +1,25 @@
-import itertools
 import functools
-import typing
 import math
+from collections.abc import Callable
+from typing import TypeAlias, TypeVar
 
-from typing import Type, TypeVar, Optional, Callable, TypeAlias, Any, Union
-
-import numpy as np
 import jax
 import jax.numpy as jnp
-
 from jax.typing import ArrayLike
 
-from roughpy_jax.bases import to_tensor_basis, to_lie_basis
-
 from roughpy_jax.algebra import (
+    FreeTensor,
     Lie,
     LieBasis,
     TensorBasis,
-    FreeTensor,
-    lie_to_tensor,
     ft_exp,
     ft_fmexp,
     ft_log,
+    lie_to_tensor,
     tensor_to_lie,
 )
-from roughpy_jax.intervals import Interval, IntervalType, RealInterval, DyadicInterval
+from roughpy_jax.bases import to_tensor_basis
+from roughpy_jax.intervals import DyadicInterval, Interval, IntervalType, RealInterval
 
 from .concepts import Stream
 
@@ -327,7 +322,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return _extend_cache_from_base(lies, resolution, stream.lie_basis)
 
     @classmethod
-    def from_stream(cls: Type[T], stream: Stream, resolution: int) -> T:
+    def from_stream(cls: type[T], stream: Stream, resolution: int) -> T:
         lie_basis = stream.lie_basis
         group_basis = stream.group_basis
         support = stream.support
@@ -354,17 +349,17 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
     @classmethod
     def from_increments(
-        cls: Type[T],
+        cls: type[T],
         timestamps: ArrayLike | list[ArrayLike],
         data: ArrayLike | list[ArrayLike],
         *,
-        resolution: Optional[int],
-        input_data_basis: Optional[LieBasis],
-        lie_basis: Optional[LieBasis],
+        resolution: int | None,
+        input_data_basis: LieBasis | None,
+        lie_basis: LieBasis | None,
         interval_type=IntervalType.ClOpen,
-        data_dtype: Optional[jnp.dtype] = None,
-        time_dtype: jnp.dtype = jnp.dtype("float32"),
-        dyadic_integer_type: jnp.dtype = jnp.dtype("int32"),
+        data_dtype: jnp.dtype | None = None,
+        time_dtype: jnp.dtype = jnp.float32.dtype,
+        dyadic_integer_type: jnp.dtype = jnp.int32.dtype,
         **kwargs,
     ) -> T:
 
@@ -407,7 +402,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
 
         dtypes = [ds.dtype]
         for i, (ds, expected_dt) in enumerate(
-            zip(data_arrays[1:], time_lens[1:]), start=1
+            zip(data_arrays[1:], time_lens[1:], strict=True), start=1
         ):
             if ds.ndim < 2:
                 raise ValueError("data arrays must be at least 2D")

@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import partial, partialmethod
-from typing import TypeVar, Callable, Type, Any
+from functools import partialmethod
+from typing import Any, TypeVar
 
 import jax
 import jax.numpy as jnp
@@ -9,11 +10,10 @@ import numpy as np
 from roughpy_jax.ops import Operation
 
 from .bases import (
-    TensorBasis,
     LieBasis,
+    TensorBasis,
     check_basis_compat,
     to_lie_basis,
-    to_tensor_basis,
 )
 from .compressed import csr_matvec
 
@@ -198,7 +198,7 @@ Lie = DenseLie
 
 
 def _check_tensor_dtype(first_tensor: FreeTensor, *other_tensors: FreeTensor):
-    for i, ft in enumerate([first_tensor] + list(other_tensors)):
+    for i, ft in enumerate((first_tensor, *list(other_tensors))):
         if ft.data.dtype != jnp.float32:
             if ft.data.dtype != jnp.float64:
                 raise ValueError(
@@ -243,14 +243,14 @@ def _get_and_check_batch_dims(*arrays, core_dims=1):
 
 def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
     if not isinstance(tensor.basis, TensorBasis):
-        raise TypeError(f"object must be a tensor")
+        raise TypeError("object must be a tensor")
 
     new_data = tensor.data.at[..., 0].set(0)
     return type(tensor)(new_data, tensor.basis)
 
 
 def _tensor_to_dual(
-    tensor: AlgebraT, new_cls: Type[T], new_basis: TensorBasis | None
+    tensor: AlgebraT, new_cls: type[T], new_basis: TensorBasis | None
 ) -> T:
     if new_basis is None:
         new_basis = tensor.basis
@@ -1057,7 +1057,7 @@ def ft_fmexp_adjoint_derivative(
         multiplier.data, exponent.data, ct_result.data, core_dims=1
     )
 
-    tensor_type = type(multiplier)
+    # tensor_type = type(multiplier)
     ct_type = type(ct_result)
 
     basis = multiplier.basis
@@ -1510,7 +1510,7 @@ def _reshape_pairing_cotangent(
     ct_shape = ct_result.shape
     if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
         raise ValueError(
-            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
+            f"incompatible shapes: {ct_shape} and {batch_dims[: len(ct_shape)]}"
         )
 
     new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)

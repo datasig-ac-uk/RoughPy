@@ -1,8 +1,6 @@
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
-import pytest
-
 from derivative_testing import (
     DerivativeTrialsHelper,
     assert_is_adjoint_derivative,
@@ -104,7 +102,6 @@ def test_l2t_adjoint_derivative(lt2_trials):
 
 
 def test_t2l_linear(lt2_trials):
-    lie_basis = lt2_trials.lie_basis
     x = lt2_trials.uniform_free_tensor()
     y = lt2_trials.uniform_free_tensor()
 
@@ -116,10 +113,9 @@ def test_t2l_linear(lt2_trials):
 
 
 def test_t2l_derivative(lt2_trials):
-    lie_basis = lt2_trials.lie_basis
     x = lt2_trials.uniform_free_tensor()
     tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
-    
+
     assert_is_derivative(
         rpj.tensor_to_lie,
         rpj.tensor_to_lie_derivative,
@@ -130,14 +126,13 @@ def test_t2l_derivative(lt2_trials):
 
 
 def test_t2l_adjoint_derivative(lt2_trials):
-    lie_basis = lt2_trials.lie_basis
     x = lt2_trials.uniform_free_tensor()
     tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
     cotangent = lt2_trials.uniform_lie()
 
     def pairing(lhs, rhs):
         return jnp.sum(lhs.data * rhs.data)
-    
+
     assert_is_adjoint_derivative(
         rpj.tensor_to_lie,
         rpj.tensor_to_lie_adjoint_derivative,
@@ -148,17 +143,23 @@ def test_t2l_adjoint_derivative(lt2_trials):
         codomain_pairing=pairing,
         abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
     )
-    
-    
+
+
 def test_l2t_t2l_l2t_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
+    """
+    Test to catch any issues, most likely in caching, which would cause the
+    second l2t to not be applied properly.
+    """
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
 
+    # Test round-trip property
     tensor_x = rpj.lie_to_tensor(x)
-    y = rpj.tensor_to_lie(tensor_x)
+    _ = rpj.tensor_to_lie(tensor_x)
+    # Test that applying l2t again gives the same result as the first time
     tensor_y = rpj.lie_to_tensor(x)
 
     assert jnp.allclose(tensor_x.data, tensor_y.data, atol=1e-7)
@@ -166,22 +167,22 @@ def test_l2t_t2l_l2t_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
 @pytest.mark.parametrize("scale_factor", [0.0, 0.5, 1.0, 2.0])
 def test_l2t_scale_factor(rpj_batch, rpj_dtype, rpj_no_acceleration, scale_factor):
-    # NOTE: the 0.0 scale factor should actually result in an identity tensor, 
-    # but this test is still useful to check that the scaling is applied correctly. 
-    
+    # NOTE: the 0.0 scale factor should actually result in an identity tensor,
+    # but this test is still useful to check that the scaling is applied correctly.
+
     """Test that a Lie is correctly scaled by the intersection length."""
     lie_basis = rpj.LieBasis(4, 4)
     tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
-    
+
     l_prescaled = rpj.Lie(x.data * scale_factor, x.basis)
     t_prescaled = rpj.lie_to_tensor(l_prescaled)
     t_postscaled = rpj.lie_to_tensor(x, scale_factor=scale_factor)
     assert jnp.allclose(t_prescaled.data, t_postscaled.data, atol=1e-6)
-    
-    
+
+
 @pytest.mark.parametrize("scale_factor", [0.0, 0.5, 1.0, 2.0])
 def test_t2l_scale_factor(rpj_batch, rpj_dtype, rpj_no_acceleration, scale_factor):
     """Test that a Tensor is correctly scaled by the intersection length."""
@@ -190,7 +191,7 @@ def test_t2l_scale_factor(rpj_batch, rpj_dtype, rpj_no_acceleration, scale_facto
 
     x_data = rpj_batch.rng_uniform(-1, 1, tensor_basis.size(), rpj_dtype)
     x = rpj.FreeTensor(x_data, tensor_basis)
-    
+
     t = rpj.FreeTensor(x.data * scale_factor, tensor_basis)
     l_prescaled = rpj.tensor_to_lie(t)
     l_postscaled = rpj.tensor_to_lie(x, scale_factor=scale_factor)
