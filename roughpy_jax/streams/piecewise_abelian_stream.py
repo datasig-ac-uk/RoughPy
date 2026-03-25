@@ -6,9 +6,9 @@ from jax import lax
 
 from roughpy_jax.algebra import (
     FreeTensor,
-    ft_exp,
     ft_fmexp,
     lie_to_tensor,
+    to_signature,
     to_log_signature,
 )
 from roughpy_jax.bases import Basis
@@ -125,8 +125,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     def signature(self, interval: Interval) -> GroupT:
         """Compute the signature over an interval."""
         log_sig = self.log_signature(interval)
-        tensor = lie_to_tensor(log_sig)
-        return ft_exp(tensor, self._group_basis)
+        return to_signature(log_sig, tensor_basis=self._group_basis)
 
 
 def to_piecewise_abelian(
