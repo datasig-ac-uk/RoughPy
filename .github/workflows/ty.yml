@@ -3,10 +3,8 @@ name: ty
 on:
   workflow_dispatch:
   push:
-    branches:
+    branches: &ty_branches
       - "main"
-      - "220-roughpy-jax"
-      - "335-typecheck-ruff"
     paths: &ty_paths
       - ".github/workflows/ty.yml"
       - "ty.toml"
@@ -14,7 +12,7 @@ on:
       - "roughpy_jax/**/*.py"
       - "benchmarks/**/*.py"
   pull_request:
-    branches: ["main", "220-roughpy-jax", "335-typecheck-ruff"]
+    branches: *ty_branches
     paths: *ty_paths
 
 permissions:
