@@ -95,17 +95,14 @@ def test_antipode_adjoint_derivative(trials):
     tangent = trials.uniform_tensor() * trials.cond_dtype(1e-3, 1e0)
     cotangent = trials.uniform_tensor()
 
-    def pairing(lhs, rhs):
-        return jnp.sum(lhs.data * rhs.data)
-
     assert_is_adjoint_derivative(
         rpj.antipode,
         rpj.antipode_adjoint_derivative,
         x,
         tangent,
         cotangent,
-        domain_pairing=pairing,
-        codomain_pairing=pairing,
+        domain_pairing=lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        codomain_pairing=lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
         abs_tol=trials.cond_dtype(1e-2, 1e-6),
     )
 

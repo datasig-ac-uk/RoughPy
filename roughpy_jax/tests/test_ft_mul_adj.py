@@ -25,8 +25,7 @@ def test_adjoint_ft_mul_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
     rng = jax.random.key(12345)
     basis = rpj.TensorBasis(2, 2)
 
-    a_data = rpj_batch.repeat(jnp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], rpj_dtype))
-    a = rpj.DenseFreeTensor(a_data, basis)
+    a = rpj.DenseFreeTensor.identity(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
 
     s = _random_shuffle_tensor(
         rng, basis, rpj_dtype, rpj_batch.tensor_batch_shape(basis)
@@ -92,7 +91,9 @@ def test_adjoint_ft_mul_random_equivalent(rpj_dtype, rpj_batch, rpj_no_accelerat
 
 
 def _dot_pairing(lhs, rhs):
-    return jnp.sum(lhs.data * rhs.data)
+    if isinstance(lhs, rpj.FreeTensor):
+        return rpj.tensor_pairing(rpj.to_dual(lhs), rhs)
+    return rpj.tensor_pairing(lhs, rpj.to_dual(rhs))
 
 
 def _fd_eps():

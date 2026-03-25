@@ -21,13 +21,12 @@ def exp_trials(request):
 
 def test_dense_ft_exp_zero(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(2, 2)
-    data = rpj_batch.zeros(basis.size(), rpj_dtype)
-    a = rpj.FreeTensor(data, basis)
+    a = rpj.FreeTensor.zero(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
 
     exp_a = rpj.ft_exp(a)
 
-    expected = rpj_batch.identity_zero_data(basis, rpj_dtype)
-    assert jnp.allclose(exp_a.data, expected)
+    expected = rpj.FreeTensor.identity(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
+    assert jnp.allclose(exp_a.data, expected.data)
 
 
 def test_dense_ft_exp_letter(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -50,8 +49,8 @@ def test_dense_ft_log_identity(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     log_a = rpj.ft_log(a)
 
-    expected = rpj_batch.zeros(basis.size(), rpj_dtype)
-    assert jnp.allclose(log_a.data, expected)
+    expected = rpj.FreeTensor.zero(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
+    assert jnp.allclose(log_a.data, expected.data)
 
 
 def test_dense_ft_exp_log_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
@@ -177,17 +176,14 @@ def test_ft_exp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
     tangent = _scaled_free_tensor(exp_trials, scale=0.2)
     cotangent = exp_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return jnp.sum(lhs.data * rhs.data)
-
     assert_is_adjoint_derivative(
         rpj.ft_exp,
         _ft_exp_adjoint_derivative,
         x,
         tangent,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
@@ -231,8 +227,7 @@ def _scaled_exponent_tensor(trials, scale=1.0):
 
 
 def _zero_free_tensor(trials):
-    data = jnp.zeros(trials.batch_shape(trials.tensor_basis), dtype=trials.dtype)
-    return rpj.FreeTensor(data, trials.tensor_basis)
+    return trials.zero_free_tensor()
 
 
 def test_ft_fmexp_derivative_linear_in_t_multiplier(exp_trials):
@@ -344,9 +339,6 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
     tangent_exponent = _scaled_exponent_tensor(exp_trials, scale=0.05)
     cotangent = exp_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return rpj.tensor_pairing(lhs, rhs)
-
     def fn_multiplier(arg_multiplier):
         return rpj.ft_fmexp(arg_multiplier, exponent)
 
@@ -365,8 +357,8 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
         x_multiplier,
         tangent_multiplier,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
@@ -377,8 +369,8 @@ def test_ft_fmexp_adjoint_derivative_satisfies_derivative_condition(exp_trials):
         x_exponent,
         tangent_exponent,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 1.0e-6),
@@ -428,17 +420,14 @@ def test_ft_log_adjoint_derivative_satisfies_derivative_condition(exp_trials):
     tangent = _scaled_free_tensor(exp_trials, scale=0.05)
     cotangent = exp_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return rpj.tensor_pairing(lhs, rhs)
-
     assert_is_adjoint_derivative(
         rpj.ft_log,
         lambda arg, ct_result: rpj.ft_log_adjoint_derivative(arg, ct_result)[0],
         x,
         tangent,
         cotangent,
-        pairing,
-        pairing,
+        lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        rpj.tensor_pairing,
         eps_factors=(1.0e-2, 3.0e-3, 1.0e-3),
         abs_tol=exp_trials.cond_dtype(5.0e-2, 5.0e-2),
         rel_tol=exp_trials.cond_dtype(5.0e-2, 5.0e-2),

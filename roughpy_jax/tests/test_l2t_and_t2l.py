@@ -17,7 +17,6 @@ def lt2_trials(request):
 
 def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
@@ -31,7 +30,6 @@ def test_l2t_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
 def test_l2t_scaled_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
@@ -45,7 +43,6 @@ def test_l2t_scaled_t2l_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
 def test_l2t_t2l_scaled_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
@@ -86,17 +83,14 @@ def test_l2t_adjoint_derivative(lt2_trials):
     tangent = lt2_trials.uniform_lie() * lt2_trials.cond_dtype(1e-3, 1e0)
     cotangent = lt2_trials.uniform_shuffle_tensor()
 
-    def pairing(lhs, rhs):
-        return jnp.sum(lhs.data * rhs.data)
-
     assert_is_adjoint_derivative(
         rpj.lie_to_tensor,
         rpj.lie_to_tensor_adjoint_derivative,
         x,
         tangent,
         cotangent,
-        domain_pairing=pairing,
-        codomain_pairing=pairing,
+        domain_pairing=rpj.lie_pairing,
+        codomain_pairing=rpj.tensor_pairing,
         abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
     )
 
@@ -129,18 +123,14 @@ def test_t2l_adjoint_derivative(lt2_trials):
     x = lt2_trials.uniform_free_tensor()
     tangent = lt2_trials.uniform_free_tensor() * lt2_trials.cond_dtype(1e-3, 1e0)
     cotangent = lt2_trials.uniform_lie()
-
-    def pairing(lhs, rhs):
-        return jnp.sum(lhs.data * rhs.data)
-
     assert_is_adjoint_derivative(
         rpj.tensor_to_lie,
         rpj.tensor_to_lie_adjoint_derivative,
         x,
         tangent,
         cotangent,
-        domain_pairing=pairing,
-        codomain_pairing=pairing,
+        domain_pairing=lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
+        codomain_pairing=rpj.lie_pairing,
         abs_tol=lt2_trials.cond_dtype(5e-2, 1e-6),
     )
 
@@ -151,7 +141,6 @@ def test_l2t_t2l_l2t_roundtrip(rpj_dtype, rpj_batch, rpj_no_acceleration):
     second l2t to not be applied properly.
     """
     lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
@@ -172,12 +161,10 @@ def test_l2t_scale_factor(rpj_batch, rpj_dtype, rpj_no_acceleration, scale_facto
 
     """Test that a Lie is correctly scaled by the intersection length."""
     lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
 
     x_data = rpj_batch.rng_uniform(-1, 1, lie_basis.size(), rpj_dtype)
     x = rpj.Lie(x_data, lie_basis)
-
-    l_prescaled = rpj.Lie(x.data * scale_factor, x.basis)
+    l_prescaled = scale_factor * x
     t_prescaled = rpj.lie_to_tensor(l_prescaled)
     t_postscaled = rpj.lie_to_tensor(x, scale_factor=scale_factor)
     assert jnp.allclose(t_prescaled.data, t_postscaled.data, atol=1e-6)
@@ -187,13 +174,12 @@ def test_l2t_scale_factor(rpj_batch, rpj_dtype, rpj_no_acceleration, scale_facto
 def test_t2l_scale_factor(rpj_batch, rpj_dtype, rpj_no_acceleration, scale_factor):
     """Test that a Tensor is correctly scaled by the intersection length."""
     lie_basis = rpj.LieBasis(4, 4)
-    tensor_basis = rpj.TensorBasis(lie_basis.width, lie_basis.depth)
+    tensor_basis = rpj.to_tensor_basis(lie_basis)
 
     x_data = rpj_batch.rng_uniform(-1, 1, tensor_basis.size(), rpj_dtype)
     x = rpj.FreeTensor(x_data, tensor_basis)
-
-    t = rpj.FreeTensor(x.data * scale_factor, tensor_basis)
+    t = scale_factor * x
     l_prescaled = rpj.tensor_to_lie(t)
     l_postscaled = rpj.tensor_to_lie(x, scale_factor=scale_factor)
-    
+
     assert jnp.allclose(l_prescaled.data, l_postscaled.data, atol=1e-6)

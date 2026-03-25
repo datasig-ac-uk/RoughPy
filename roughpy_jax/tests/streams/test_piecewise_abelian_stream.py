@@ -15,7 +15,7 @@ class PASHelper:
 
         # Make some Lie elements for the stream (we can just use random data for this test)
         self.lie_basis = rpj.LieBasis(2, 2)
-        self.tensor_basis = rpj.TensorBasis(self.lie_basis.width, self.lie_basis.depth)
+        self.tensor_basis = rpj.to_tensor_basis(self.lie_basis)
 
         self.l1_data = rpj_batch.rng_uniform(-1, 1, self.lie_basis.size(), rpj_dtype)
         self.l1 = rpj.Lie(self.l1_data, self.lie_basis)
@@ -27,7 +27,7 @@ class PASHelper:
             _data=(self.l1, self.l2),
             _partition=self.partition,
             _lie_basis=self.lie_basis,
-            _group_basis=rpj.TensorBasis(self.lie_basis.width, self.lie_basis.depth),
+            _group_basis=rpj.to_tensor_basis(self.lie_basis),
         )
 
     @property
@@ -51,9 +51,7 @@ class TestPiecewiseAbelianStream:
                 _data=(pas_data.l1,),  # Incorrect length of data
                 _partition=pas_data.partition,
                 _lie_basis=pas_data.lie_basis,
-                _group_basis=rpj.TensorBasis(
-                    pas_data.lie_basis.width, pas_data.lie_basis.depth
-                ),
+                _group_basis=rpj.to_tensor_basis(pas_data.lie_basis),
             )
 
     def test_log_signature(self, pas_data):
@@ -93,27 +91,14 @@ class TestPiecewiseAbelianStream:
         query_interval = RealInterval(0.5, 1.5, IntervalType.ClOpen)
         log_sig = pas_data.stream.log_signature(query_interval)
 
-        acc = pas_data.stream._get_identity(dtype=pas_data.dtype)
-
-        # Compute the expected log signature using the CBH formula
-        for l in (pas_data.l1, pas_data.l2):
-            l_half = rpj.Lie(l.data * 0.5, l.basis)
-            t = rpj.lie_to_tensor(l_half)
-            acc = rpj.ft_fmexp(acc, t, pas_data.tensor_basis)
-
-        expected_log_sig = rpj.tensor_to_lie(rpj.ft_log(acc))
+        expected_log_sig = rpj.cbh(0.5 * pas_data.l1, 0.5 * pas_data.l2)
 
         assert jnp.allclose(log_sig.data, expected_log_sig.data, atol=1e-6)
 
-    def test_get_identity_batch(self, pas_data):
-        """Test that the identity element has the correct shape and properties."""
-        identity = pas_data.stream._get_identity(dtype=pas_data.dtype)
-
-        assert identity.data.shape[-1] == pas_data.tensor_basis.size()
-        assert identity.data.shape == (
-            *pas_data.batch_shape(),
-            pas_data.tensor_basis.size(),
-        )
+    def test_stream_metadata(self, pas_data):
+        """Test that the stream exposes dtype and batch metadata."""
+        assert pas_data.stream.dtype == pas_data.dtype
+        assert pas_data.stream.batch_dims == pas_data.batch_shape()
 
     def test_support(self, pas_data):
         """Test that the support interval is correct."""

@@ -17,6 +17,7 @@ from roughpy_jax.algebra import (
     ft_log,
     lie_to_tensor,
     tensor_to_lie,
+    to_log_signature,
 )
 from roughpy_jax.bases import to_tensor_basis
 from roughpy_jax.intervals import DyadicInterval, Interval, IntervalType, RealInterval
@@ -56,7 +57,7 @@ def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Arr
             tensor = ft_fmexp(
                 tensor, lie_to_tensor(previous[k2]), out_basis=tensor_basis
             )
-            lie = tensor_to_lie(ft_log(tensor))
+            lie = to_log_signature(tensor)
             yield lie
 
     prev_size = 0
@@ -104,7 +105,7 @@ def _cbh(
         lie = Lie(jnp.take(data, k, axis=axis), data_basis)
         ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
 
-    result = tensor_to_lie(ft_log(acc))
+    result = to_log_signature(acc)
     return result
 
 
@@ -505,6 +506,14 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return self._support
 
     @property
+    def dtype(self):
+        return self._cache.dtype
+
+    @property
+    def batch_dims(self) -> tuple[int, ...]:
+        return self._cache.shape[1:-1]
+
+    @property
     def resolution(self) -> int:
         return self._resolution
 
@@ -555,7 +564,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         ft_result = ft_fmexp(ft_result, lie_to_tensor(acc))
         ft_result = ft_fmexp(ft_result, lie_to_tensor(right))
 
-        return tensor_to_lie(ft_log(ft_result))
+        return to_log_signature(ft_result)
 
     def log_signature(self, interval: Interval | None = None) -> Lie:
         if interval is None:

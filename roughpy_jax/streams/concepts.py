@@ -57,6 +57,20 @@ class Stream(Protocol[LieT, GroupT]):
         """
         ...
 
+    @property
+    def dtype(self):
+        """
+        Data type of the coefficients returned by the stream.
+        """
+        ...
+
+    @property
+    def batch_dims(self) -> tuple[int, ...]:
+        """
+        Leading batch dimensions of the values returned by the stream.
+        """
+        ...
+
     def log_signature(self, interval: Interval) -> LieT:
         """
         Query the stream for the log signature over an interval.
