@@ -95,15 +95,10 @@ class TestPiecewiseAbelianStream:
 
         assert jnp.allclose(log_sig.data, expected_log_sig.data, atol=1e-6)
 
-    def test_get_identity_batch(self, pas_data):
-        """Test that the identity element has the correct shape and properties."""
-        identity = pas_data.stream._get_identity(dtype=pas_data.dtype)
-
-        assert identity.data.shape[-1] == pas_data.tensor_basis.size()
-        assert identity.data.shape == (
-            *pas_data.batch_shape(),
-            pas_data.tensor_basis.size(),
-        )
+    def test_stream_metadata(self, pas_data):
+        """Test that the stream exposes dtype and batch metadata."""
+        assert pas_data.stream.dtype == pas_data.dtype
+        assert pas_data.stream.batch_dims == pas_data.batch_shape()
 
     def test_support(self, pas_data):
         """Test that the support interval is correct."""
