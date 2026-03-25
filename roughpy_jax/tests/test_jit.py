@@ -1,7 +1,9 @@
+import time
+
 import jax
 import jax.numpy as jnp
+import pytest
 import roughpy_jax as rpj
-import time
 
 
 # Arbitrary combination of ft_fma for comparison and timing
@@ -14,11 +16,13 @@ def _combined_fma(a, b, c):
     return h
 
 
+@pytest.mark.extra
 def test_jit_compilation(rpj_dtype, rpj_batch, rpj_no_acceleration):
     # Minimal test JIT-ing CPU and fallback code to detect tracer issues
     _combined_fma_jit = jax.jit(_combined_fma)
 
 
+@pytest.mark.extra
 def test_jit_equivalence(rpj_dtype, rpj_small_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(3, 3)
     data = rpj_small_batch.rng_uniform(-1, 1, basis.size(), rpj_dtype)

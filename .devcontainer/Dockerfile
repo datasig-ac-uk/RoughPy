@@ -5,6 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/GMT apt-get update && apt-get install 
     python3-venv \
     python3-pip \
     git \
+    openssh-client \
     gdb \
     curl \
     zip \
@@ -34,7 +35,10 @@ RUN pip install \
     pytest \
     pytest-cov \ 
     pytest-benchmark \
-    asv
+    asv \
+    pre-commit \ 
+    ruff \ 
+    ty
 
 # Use system tools for vcpkg when building aarch64 (Linux on MacOS)
 ENV VCPKG_FORCE_SYSTEM_BINARIES=0
@@ -47,6 +51,11 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
 RUN git clone https://github.com/Microsoft/vcpkg.git /tools/vcpkg
 RUN /tools/vcpkg/bootstrap-vcpkg.sh
 ENV VCPKG_ROOT=/tools/vcpkg
+
+# Install pre-commit hooks, need to have a repository to do so, so we copy the code first
+WORKDIR /workspaces/RoughPy
+COPY . .
+RUN pre-commit install --install-hooks
 
 # This is required to be able to run pytest in the VSCode terminal
 ENV PYTHONPATH="/workspaces/RoughPy:$PYTHONPATH"

@@ -3,7 +3,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 import roughpy_jax as rpj
-
 from roughpy_jax.ops import Operation
 
 # Running both f32 and f64 tests requires enabling JAX 64 bit mode
@@ -19,35 +18,31 @@ def rpj_test_fixture_type_mismatch():
     Unit test fixture for generating dummy arrays of given type. Reduces code
     duplication when writing type mismatch tests.
     """
+
     class BasisFixture:
-        def __init__(self):
-            self.zeros_f32 = jnp.zeros(100, dtype=jnp.float32)
-            self.zeros_f64 = jnp.zeros(100, dtype=jnp.float64)
-            self.zeros_i32 = jnp.zeros(100, dtype=jnp.int32)
-
-        def ft_f32(self, basis_width: int=2, basis_depth: int=2):
+        def ft_f32(self, basis_width: int = 2, basis_depth: int = 2):
             basis = rpj.TensorBasis(basis_width, basis_depth)
-            return rpj.FreeTensor(self.zeros_f32, basis)
+            return rpj.FreeTensor.zero(basis, dtype=jnp.float32)
 
-        def ft_f64(self, basis_width: int=2, basis_depth: int=2):
+        def ft_f64(self, basis_width: int = 2, basis_depth: int = 2):
             basis = rpj.TensorBasis(basis_width, basis_depth)
-            return rpj.FreeTensor(self.zeros_f64, basis)
+            return rpj.FreeTensor.zero(basis, dtype=jnp.float64)
 
-        def ft_i32(self, basis_width: int=2, basis_depth: int=2):
+        def ft_i32(self, basis_width: int = 2, basis_depth: int = 2):
             basis = rpj.TensorBasis(basis_width, basis_depth)
-            return rpj.FreeTensor(self.zeros_i32, basis)
+            return rpj.FreeTensor.zero(basis, dtype=jnp.int32)
 
-        def st_f32(self, basis_width: int=2, basis_depth: int=2):
+        def st_f32(self, basis_width: int = 2, basis_depth: int = 2):
             basis = rpj.TensorBasis(basis_width, basis_depth)
-            return rpj.ShuffleTensor(self.zeros_f32, basis)
+            return rpj.ShuffleTensor.zero(basis, dtype=jnp.float32)
 
-        def st_f64(self, basis_width: int=2, basis_depth: int=2):
+        def st_f64(self, basis_width: int = 2, basis_depth: int = 2):
             basis = rpj.TensorBasis(basis_width, basis_depth)
-            return rpj.ShuffleTensor(self.zeros_f64, basis)
+            return rpj.ShuffleTensor.zero(basis, dtype=jnp.float64)
 
-        def st_i32(self, basis_width: int=2, basis_depth: int=2):
+        def st_i32(self, basis_width: int = 2, basis_depth: int = 2):
             basis = rpj.TensorBasis(basis_width, basis_depth)
-            return rpj.ShuffleTensor(self.zeros_i32, basis)
+            return rpj.ShuffleTensor.zero(basis, dtype=jnp.int32)
 
     return BasisFixture()
 
@@ -56,7 +51,7 @@ class BatchFixtureHelper:
     """
     This is parameterised by rpj_batch to provide helper methods to tests working
     with batched tensors. batch_shape is the prefix to the actual tensor shape; a
-    null batch_shape () represents a single tensor. For example, given an 
+    null batch_shape () represents a single tensor. For example, given an
     rpj.TensorBasis with width 2, depth 2 (resulting in a data size of 7) and a
     null batch_shape of () then tensor_batch_shape would be (7,), but given a 2D
     batch_shape of (3,2) then tensor_batch_shape would be (3,2,7).
@@ -68,9 +63,16 @@ class BatchFixtureHelper:
             batched_data = rpj_batch.repeat(data)
             assert batched_data.shape[:-1] == rpj_batch.shape
     """
+
     def __init__(self, batch_shape):
         self.rng = np.random.default_rng(1234)
         self.shape = batch_shape
+
+    def __repr__(self):
+        return str(self.shape)
+
+    def __str__(self):
+        return str(self.shape)
 
     def tensor_batch_shape(self, basis):
         return (*self.shape, basis.size())
@@ -93,7 +95,9 @@ class BatchFixtureHelper:
         """
         # Built using np not jnp for easy mutability
         data = np.zeros(self.tensor_batch_shape(basis), dtype)
-        data[...,1:basis.width + 1] = self.rng.normal(size=(*self.shape, basis.width))
+        data[..., 1 : basis.width + 1] = self.rng.normal(
+            size=(*self.shape, basis.width)
+        )
         return rpj.FreeTensor(data, basis)
 
     def rng_shuffle_tensor(self, basis, dtype):
@@ -101,32 +105,45 @@ class BatchFixtureHelper:
         return rpj.ShuffleTensor(data, basis)
 
     def identity_zero_data(self, basis, dtype):
-        # Built using np not jnp for easy mutability
-        data = np.zeros(self.tensor_batch_shape(basis), dtype)
-        data[...,0] = 1.0
-        return data
+        return rpj.FreeTensor.identity(basis, dtype=dtype, batch_dims=self.shape).data
+
+
+@pytest.fixture()
+def rpj_nobatch():
+    """
+    Fixture for tests that do not require batching. Provides helper methods for
+    creating non-batched tensors.
+    """
+    return BatchFixtureHelper(())
 
 
 # Batching test fixture returns helper class for common operations
-@pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)])
+@pytest.fixture(params=[(), (2,), (3, 2), (2, 2, 2)], ids=str)
 def rpj_batch(request):
     return BatchFixtureHelper(request.param)
 
 
 # Minimised batch sizes for slower tests; test non-batched and small 2D batch
-@pytest.fixture(params=[(), (2,2)])
+@pytest.fixture(params=[(), (2, 2)])
 def rpj_small_batch(request):
     return BatchFixtureHelper(request.param)
 
 
 # Data type test fixture
-@pytest.fixture(params=[jnp.float32, jnp.float64])
+@pytest.fixture(
+    params=[pytest.param(jnp.float32, marks=pytest.mark.extra), jnp.float64]
+)
 def rpj_dtype(request):
     return request.param
 
 
 # Toggle operation between running with and without acceleration for testing CPU vs fallback code
-@pytest.fixture(params=[False, True])
+@pytest.fixture(
+    params=[
+        pytest.param(False, id="default accel"),
+        pytest.param(True, marks=pytest.mark.extra, id="no accel"),
+    ]
+)
 def rpj_no_acceleration(request):
     old_setting = Operation.no_acceleration
     Operation.no_acceleration = request.param

@@ -59,6 +59,9 @@ build-backend = "scikit_build_core.build"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "extra: non-essential longer running tests, including jit tests"
+]
 
 
 [tool.scikit-build]
@@ -140,7 +143,19 @@ repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} --ignore
 
 [project.optional-dependencies]
 dev = [
-    "jax"
+    "jax",
+    "pytest-benchmark",
+    "ruff", 
+    "pre-commit",
+    "ty",
+]
+lint = [
+    "ruff",
+    "pre-commit",
+]
+typecheck = [
+    "jax",
+    "ty",
 ]
 jax = [
     "jax>=0.4.0",

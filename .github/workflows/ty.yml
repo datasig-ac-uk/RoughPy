@@ -1,0 +1,44 @@
+name: ty
+
+on:
+  workflow_dispatch:
+  push:
+    branches: &ty_branches
+      - "main"
+    paths: &ty_paths
+      - ".github/workflows/ty.yml"
+      - "ty.toml"
+      - "pyproject.toml"
+      - "roughpy_jax/**/*.py"
+      - "benchmarks/**/*.py"
+  pull_request:
+    branches: *ty_branches
+    paths: *ty_paths
+
+permissions:
+  contents: read
+
+jobs:
+  ty:
+    runs-on: ubuntu-latest
+    strategy:  
+      matrix:
+        python-version: ["3.11","3.12","3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          version: "0.10.12"
+          enable-cache: true
+
+      - name: Install typecheck dependencies
+        shell: bash
+        run: uv sync --extra typecheck --no-install-project
+
+      - name: Ty type check
+        shell: bash
+        run: uv run --no-sync ty check . --output-format=github 

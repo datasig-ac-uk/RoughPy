@@ -1,15 +1,13 @@
 import typing
+from collections.abc import Callable
+from typing import Protocol, Self, TypeVar
 
-from typing import Protocol, TypeVar, Callable
-
-
+from roughpy_jax.bases import Basis
 from roughpy_jax.intervals import Interval
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
 StreamValueT = TypeVar("StreamValueT")
-
-BasisLike = TypeVar("BasisLike")  ## TODO: replace with version from ops branch
 
 
 @typing.runtime_checkable
@@ -37,14 +35,14 @@ class Stream(Protocol[LieT, GroupT]):
     """
 
     @property
-    def lie_basis(self) -> BasisLike:
+    def lie_basis(self) -> Basis:
         """
         A basis of the Lie algebra into which the stream is developed.
         """
         ...
 
     @property
-    def group_basis(self) -> BasisLike:
+    def group_basis(self) -> Basis:
         """
         A basis of the group into which the stream is developed.
         """
@@ -56,6 +54,20 @@ class Stream(Protocol[LieT, GroupT]):
         The support interval for the stream.
 
         Outside of this interval, the signature should return the identity element.
+        """
+        ...
+
+    @property
+    def dtype(self):
+        """
+        Data type of the coefficients returned by the stream.
+        """
+        ...
+
+    @property
+    def batch_dims(self) -> tuple[int, ...]:
+        """
+        Leading batch dimensions of the values returned by the stream.
         """
         ...
 
@@ -111,8 +123,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
     at any given parameter t is obtained by propagating the base value using the
     signature over from t_0 up to t.
 
-    A very basic version of a ValueStream is a tensor-valued stream, where the
-    value type is a free tensor and the propagation operation is left multiplication
+    A very basic version of a ValueStream is a tensor-valued stream, where the value type is a free tensor and the propagation operation is left multiplication
     by the signature. More generally, this might involve the action of a linear
     projection of the signature.
 
@@ -157,7 +168,7 @@ class ValueStream(Protocol[LieT, GroupT, StreamValueT]):
         """
         ...
 
-    def query(self, interval: Interval) -> ValueStream:
+    def query(self, interval: Interval) -> Self:
         """
         Query the value stream over an interval.
 

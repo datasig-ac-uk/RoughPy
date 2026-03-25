@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import pytest
-
-from roughpy_jax.compressed import expand_indptr, csc_matvec, csr_matvec
+from roughpy_jax.compressed import csc_matvec, csr_matvec, expand_indptr
 
 
 def _indptr_from_outer_indices(cols):
@@ -16,8 +15,8 @@ def _indptr_from_outer_indices(cols):
 class SampleMatrixFixture:
     def __init__(self):
         # COO Sparse representation of
-        #   | 1   0   0 | 
-        #   | 0   3   0 | 
+        #   | 1   0   0 |
+        #   | 0   3   0 |
         #   | 0   2  -1 |
         self.rows = jnp.array([0, 1, 2, 2], dtype=jnp.int32)
         self.cols = jnp.array([0, 1, 1, 2], dtype=jnp.int32)
@@ -39,12 +38,12 @@ class SampleMatrixFixture:
         self.csc_indptr = _indptr_from_outer_indices(self.cols)
 
     def matvec_args(self, fmt):
-        is_csr = (fmt == "csr")
+        is_csr = fmt == "csr"
         return [
             self.data,
             self.csr_indices if is_csr else self.csc_indices,
             self.csr_indptr if is_csr else self.csc_indptr,
-            self.n_cols if is_csr else self.n_rows
+            self.n_cols if is_csr else self.n_rows,
         ]
 
 
@@ -84,7 +83,7 @@ def test_sparse_csr_matvec_roundtrip(sample_matrix, fmt):
     matvec_args = sample_matrix.matvec_args(fmt)
     matvec_fn = csr_matvec if fmt == "csr" else csc_matvec
 
-    x = jnp.array([10., 20., 30.])
+    x = jnp.array([10.0, 20.0, 30.0])
     y = matvec_fn(*matvec_args, x)
     assert jnp.allclose(y, sample_matrix.dense @ x)
 
