@@ -1,9 +1,9 @@
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from typing import Any
 
 import jax
 import jax.numpy as jnp
 import roughpy_jax as rpj
-import numpy as np
 from numpy.testing import assert_allclose
 
 

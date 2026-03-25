@@ -1,9 +1,9 @@
-import jax
-import jax.numpy as jnp
-import roughpy_jax as rpj
 import time
 
+import jax
+import jax.numpy as jnp
 import pytest
+import roughpy_jax as rpj
 
 
 # Arbitrary combination of ft_fma for comparison and timing

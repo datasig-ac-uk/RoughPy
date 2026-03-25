@@ -3,7 +3,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 import roughpy_jax as rpj
-
 from roughpy_jax.ops import Operation
 
 # Running both f32 and f64 tests requires enabling JAX 64 bit mode

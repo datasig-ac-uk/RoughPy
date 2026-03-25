@@ -1,17 +1,16 @@
 from functools import partial
+
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
-import jax.numpy as jnp
-from jax import test_util as jtu
-import jax
-
 import roughpy_jax as rpj
 from derivative_testing import (
     DerivativeTrialsHelper,
-    assert_is_linear,
-    assert_is_derivative,
     assert_is_adjoint_derivative,
+    assert_is_derivative,
 )
+from jax import test_util as jtu
 
 
 def test_dense_ft_fma_array_mismatch(rpj_test_fixture_type_mismatch):
@@ -45,7 +44,9 @@ def test_dense_ft_fma(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     d = rpj.ft_fma(a, b, c)
 
-    expected_data = rpj_batch.repeat(jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=rpj_dtype))
+    expected_data = rpj_batch.repeat(
+        jnp.array([-2, 7, -3, 5.5, 3, 10, 4], dtype=rpj_dtype)
+    )
     assert jnp.allclose(d.data, expected_data)
 
 
@@ -78,11 +79,7 @@ def test_dense_ft_fma_construction(rpj_dtype, rpj_batch, rpj_no_acceleration):
         expected[1:3] += b[0] * c[1:3] + c[0] * b[1:3]
 
         # second order term
-        expected[3:] += (
-            b[0] * c[3:]
-            + c[0] * b[3:]
-            + np.outer(b[1:3], c[1:3]).flatten()
-        )
+        expected[3:] += b[0] * c[3:] + c[0] * b[3:] + np.outer(b[1:3], c[1:3]).flatten()
 
         assert jnp.allclose(d, expected)
 
@@ -91,7 +88,7 @@ class TestFtFmaDerivative:
     @pytest.fixture(params=[jnp.float32, jnp.float64])
     def ft_fma_trials(self, request):
         yield DerivativeTrialsHelper(request.param, width=3, depth=3)
-        
+
     def test_ft_fma_check_vjp(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
@@ -102,7 +99,7 @@ class TestFtFmaDerivative:
             b.data = jnp.asarray(b.data)
             c.data = jnp.asarray(c.data)
             return rpj.ft_fma(a, b, c)
-        
+
         jtu.check_vjp(
             fma_,
             partial(jax.vjp, fma_),
@@ -110,7 +107,7 @@ class TestFtFmaDerivative:
             atol=5e-2,
             rtol=5e-2,
         )
-        
+
     def test_ft_fma_derivative_wrt_a(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
@@ -120,7 +117,7 @@ class TestFtFmaDerivative:
 
         def fn(arg_a):
             return rpj.ft_fma(arg_a, b, c)
-        
+
         def fn_derivative(arg_a, arg_t_a):
             return rpj.ft_fma_derivative(arg_a, b, c, arg_t_a, zero_ct, zero_ct)
 
@@ -133,7 +130,7 @@ class TestFtFmaDerivative:
             abs_tol=5e-2,
             rel_tol=5e-2,
         )
-        
+
     def test_ft_fma_derivative_wrt_b(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
@@ -143,7 +140,7 @@ class TestFtFmaDerivative:
 
         def fn(arg_b):
             return rpj.ft_fma(a, arg_b, c)
-        
+
         def fn_derivative(arg_b, arg_t_b):
             return rpj.ft_fma_derivative(a, arg_b, c, zero_ct, arg_t_b, zero_ct)
 
@@ -156,7 +153,7 @@ class TestFtFmaDerivative:
             abs_tol=5e-2,
             rel_tol=5e-2,
         )
-        
+
     def test_ft_fma_derivative_wrt_c(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
@@ -166,7 +163,7 @@ class TestFtFmaDerivative:
 
         def fn(arg_c):
             return rpj.ft_fma(a, b, arg_c)
-        
+
         def fn_derivative(arg_c, arg_t_c):
             return rpj.ft_fma_derivative(a, b, arg_c, zero_ct, zero_ct, arg_t_c)
 
@@ -179,17 +176,19 @@ class TestFtFmaDerivative:
             abs_tol=5e-2,
             rel_tol=5e-2,
         )
-        
+
     def test_ft_fma_adjoint_derivative_wrt_a(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
         c = ft_fma_trials.uniform_free_tensor()
-        tangent = ft_fma_trials.uniform_free_tensor() * ft_fma_trials.cond_dtype(1e-3, 1e0)
+        tangent = ft_fma_trials.uniform_free_tensor() * ft_fma_trials.cond_dtype(
+            1e-3, 1e0
+        )
         cotangent = ft_fma_trials.uniform_shuffle_tensor()
 
         def fn(arg_a):
             return rpj.ft_fma(arg_a, b, c)
-        
+
         def fn_adjoint_derivative(arg_a, ct_result):
             return rpj.ft_fma_adjoint_derivative(arg_a, b, c, ct_result)[0]
 
@@ -205,17 +204,19 @@ class TestFtFmaDerivative:
             abs_tol=ft_fma_trials.cond_dtype(5e-2, 1e-6),
             rel_tol=ft_fma_trials.cond_dtype(5e-2, 1e-6),
         )
-        
+
     def test_ft_fma_adjoint_derivative_wrt_b(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
         c = ft_fma_trials.uniform_free_tensor()
-        tangent = ft_fma_trials.uniform_free_tensor() * ft_fma_trials.cond_dtype(1e-3, 1e0)
+        tangent = ft_fma_trials.uniform_free_tensor() * ft_fma_trials.cond_dtype(
+            1e-3, 1e0
+        )
         cotangent = ft_fma_trials.uniform_shuffle_tensor()
 
         def fn(arg_b):
             return rpj.ft_fma(a, arg_b, c)
-        
+
         def fn_adjoint_derivative(arg_b, ct_result):
             return rpj.ft_fma_adjoint_derivative(a, arg_b, c, ct_result)[1]
 
@@ -231,12 +232,14 @@ class TestFtFmaDerivative:
             abs_tol=ft_fma_trials.cond_dtype(5e-2, 1e-6),
             rel_tol=ft_fma_trials.cond_dtype(5e-2, 1e-6),
         )
-        
+
     def test_ft_fma_adjoint_derivative_wrt_c(self, ft_fma_trials):
         a = ft_fma_trials.uniform_free_tensor()
         b = ft_fma_trials.uniform_free_tensor()
         c = ft_fma_trials.uniform_free_tensor()
-        tangent = ft_fma_trials.uniform_free_tensor() * ft_fma_trials.cond_dtype(1e-3, 1e0)
+        tangent = ft_fma_trials.uniform_free_tensor() * ft_fma_trials.cond_dtype(
+            1e-3, 1e0
+        )
         cotangent = ft_fma_trials.uniform_shuffle_tensor()
 
         def fn(arg_c):

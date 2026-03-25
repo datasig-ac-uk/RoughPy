@@ -1,12 +1,9 @@
 import typing
-
-from collections.abc import Iterable, Hashable
-from typing import TypeVar, Literal
+from collections.abc import Hashable, Iterable
+from typing import Literal, TypeVar
 
 import jax
-import jax.numpy as jnp
 import numpy as np
-
 from roughpy import compute as rpc
 
 

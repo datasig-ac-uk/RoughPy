@@ -1,29 +1,25 @@
-from dataclasses import dataclass
-from functools import partial, partialmethod
-from typing import TypeVar, Callable, Type, Any, TypeAlias
+from typing import Any, TypeAlias, TypeVar
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
-from roughpy_jax.bases import (
-    TensorBasis,
-    LieBasis,
-    result_basis,
-    check_basis_compat,
-    to_lie_basis,
-    to_tensor_basis,
-)
-from roughpy_jax.ops import Operation
 from roughpy_jax.dense_algebra import (
     DenseAlgebra,
     DenseTensor,
-    get_common_batch_shape,
     broadcast_to_batch_shape,
-    zero_like,
-    identity_like,
+    get_common_batch_shape,
 )
+from roughpy_jax.ops import Operation
 
+from .bases import (
+    LieBasis,
+    TensorBasis,
+    check_basis_compat,
+    result_basis,
+    to_lie_basis,
+    to_tensor_basis,
+)
 from .compressed import csr_matvec
 
 T = TypeVar("T")
@@ -35,7 +31,6 @@ LieT = TypeVar("LieT")
 
 @jax.tree_util.register_pytree_node_class
 class DenseFreeTensor(DenseTensor):
-
     def __matmul__(self, other):
         if isinstance(other, FreeTensor):
             return ft_mul(self, other)
@@ -44,7 +39,6 @@ class DenseFreeTensor(DenseTensor):
 
 @jax.tree_util.register_pytree_node_class
 class DenseShuffleTensor(DenseTensor):
-
     def __matmul__(self, other):
         if isinstance(other, ShuffleTensor):
             return st_mul(self, other)
@@ -67,7 +61,7 @@ Lie: TypeAlias = DenseLie
 
 def _remove_unit_term(tensor: AlgebraT) -> AlgebraT:
     if not isinstance(tensor.basis, TensorBasis):
-        raise TypeError(f"object must be a tensor")
+        raise TypeError("object must be a tensor")
 
     new_data = tensor.data.at[..., 0].set(0)
     return type(tensor)(new_data, tensor.basis)
@@ -927,7 +921,7 @@ def ft_fmexp_adjoint_derivative(
     check_basis_compat(multiplier.basis, exponent.basis, ct_result.basis)
     get_common_batch_shape(multiplier, exponent, ct_result)
 
-    tensor_type = type(multiplier)
+    # tensor_type = type(multiplier)
     ct_type = type(ct_result)
 
     basis = multiplier.basis
@@ -1374,7 +1368,7 @@ def _reshape_pairing_cotangent(
     ct_shape = ct_result.shape
     if len(ct_shape) > len(batch_dims) or ct_shape != batch_dims[: len(ct_shape)]:
         raise ValueError(
-            f"incompatible shapes: {ct_shape} and {batch_dims[:len(ct_shape)]}"
+            f"incompatible shapes: {ct_shape} and {batch_dims[: len(ct_shape)]}"
         )
 
     new_shape = ct_shape + (1,) * (len(batch_dims) - len(ct_shape)) + (1,)
@@ -1636,7 +1630,7 @@ def cbh(*lie_pieces: LieT, lie_basis: LieBasis | None = None) -> LieT:
 
     bases = [lie.basis for lie in lie_pieces]
     if lie_basis is not None:
-        bases = [lie_basis] + bases
+        bases = [lie_basis, *bases]
 
     basis = result_basis(bases, strategy="max_depth" if lie_basis is None else "first")
     dtype = jnp.result_type(*(lie.dtype for lie in lie_pieces))

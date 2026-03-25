@@ -2,7 +2,6 @@ import jax
 import jax.numpy as jnp
 import pytest
 import roughpy_jax as rpj
-
 from derivative_testing import (
     DerivativeTrialsHelper,
     assert_is_adjoint_derivative,
@@ -23,7 +22,7 @@ def trials(request):
 @jax.jit
 def _antipode_on_signature(x):
     sig = rpj.ft_exp(x)
-    asig =  rpj.antipode(sig)
+    asig = rpj.antipode(sig)
     product = rpj.ft_mul(asig, sig)
     return product
 
@@ -87,7 +86,7 @@ def test_antipode_derivative(trials):
         rpj.antipode_derivative,
         x,
         tangent,
-        abs_tol=trials.cond_dtype(1e-3, 1e-6)
+        abs_tol=trials.cond_dtype(1e-3, 1e-6),
     )
 
 
@@ -104,7 +103,7 @@ def test_antipode_adjoint_derivative(trials):
         cotangent,
         domain_pairing=lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
         codomain_pairing=lambda lhs, rhs: rpj.tensor_pairing(rpj.to_dual(lhs), rhs),
-        abs_tol=trials.cond_dtype(1e-2, 1e-6)
+        abs_tol=trials.cond_dtype(1e-2, 1e-6),
     )
 
 
@@ -140,5 +139,5 @@ def test_antipode_check_vjp(trials):
         lambda x: jax.vjp(rpj.antipode, x),
         (x,),
         atol=trials.cond_dtype(2e-3, 1e-6),
-        rtol=trials.cond_dtype(2e-3, 1e-6)
+        rtol=trials.cond_dtype(2e-3, 1e-6),
     )

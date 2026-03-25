@@ -1,12 +1,11 @@
+import numpy as np
 import pytest
 from derivative_testing import (
     assert_is_adjoint,
-    assert_is_derivative,
     assert_is_adjoint_derivative,
+    assert_is_derivative,
     assert_is_linear,
 )
-
-import numpy as np
 
 
 def test_assert_is_linear():

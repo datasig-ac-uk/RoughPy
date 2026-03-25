@@ -1,0 +1,30 @@
+line-length = 88
+indent-width = 4
+target-version = "py311"
+src = ["roughpy_jax", "benchmarks",]
+force-exclude = true
+extend-exclude = [
+    ".asv",
+    "build",
+    "docs",
+    "roughpy",
+    "tests",
+    "vendored",
+    "tools",
+    "examples"
+]
+
+[lint]
+select = ["E", "F", "W", "B", "I", "UP", "RUF"]
+ignore = ["E501", "E741"]
+fixable = ["ALL"]
+
+[lint.per-file-ignores]
+"**/__init__.py" = ["F401"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false

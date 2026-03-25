@@ -2,9 +2,9 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
-import pytest
-
 from jax import test_util as jtu
+import pytest
+import roughpy_jax as rpj
 from derivative_testing import (
     DerivativeTrialsHelper,
     assert_is_adjoint_derivative,

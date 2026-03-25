@@ -1,22 +1,4 @@
-from .bases import (
-    LieBasis,
-    TensorBasis,
-    check_basis_compat,
-    result_basis,
-    to_lie_basis,
-    to_tensor_basis,
-)
-
 import roughpy_jax.ops
-
-from .dense_algebra import (
-    broadcast_to_batch_shape,
-    get_common_batch_shape,
-    identity_like,
-    to_dual,
-    zero_like,
-)
-
 from roughpy_jax.algebra import (
     DenseFreeTensor,
     DenseLie,
@@ -67,35 +49,44 @@ from roughpy_jax.algebra import (
     tensor_pairing,
     tensor_pairing_adjoint_derivative,
     tensor_pairing_derivative,
-    to_log_signature,
-    to_signature,
     tensor_to_lie,
     tensor_to_lie_adjoint_derivative,
     tensor_to_lie_derivative,
+    to_log_signature,
+    to_signature,
+)
+
+from .bases import (
+    LieBasis,
+    TensorBasis,
+    check_basis_compat,
+    result_basis,
+    to_lie_basis,
+    to_tensor_basis,
+)
+from .dense_algebra import (
+    broadcast_to_batch_shape,
+    get_common_batch_shape,
+    identity_like,
+    to_dual,
+    zero_like,
 )
 
 __all__ = [
-    "LieBasis",
-    "TensorBasis",
-    "check_basis_compat",
-    "result_basis",
-    "to_lie_basis",
-    "to_tensor_basis",
-    "broadcast_to_batch_shape",
-    "get_common_batch_shape",
-    "identity_like",
-    "to_dual",
-    "zero_like",
     "DenseFreeTensor",
     "DenseLie",
     "DenseShuffleTensor",
     "FreeTensor",
     "Lie",
+    "LieBasis",
     "ShuffleTensor",
+    "TensorBasis",
     "antipode",
     "antipode_adjoint_derivative",
     "antipode_derivative",
+    "broadcast_to_batch_shape",
     "cbh",
+    "check_basis_compat",
     "ft_adjoint_left_mul",
     "ft_adjoint_left_mul_adjoint_derivative",
     "ft_adjoint_left_mul_derivative",
@@ -117,12 +108,15 @@ __all__ = [
     "ft_mul",
     "ft_mul_adjoint_derivative",
     "ft_mul_derivative",
+    "get_common_batch_shape",
+    "identity_like",
     "lie_pairing",
     "lie_pairing_adjoint_derivative",
     "lie_pairing_derivative",
     "lie_to_tensor",
     "lie_to_tensor_adjoint_derivative",
     "lie_to_tensor_derivative",
+    "result_basis",
     "st_adjoint_mul",
     "st_adjoint_mul_adjoint_derivative",
     "st_adjoint_mul_derivative",
@@ -138,6 +132,10 @@ __all__ = [
     "tensor_to_lie",
     "tensor_to_lie_adjoint_derivative",
     "tensor_to_lie_derivative",
+    "to_dual",
+    "to_lie_basis",
     "to_log_signature",
     "to_signature",
+    "to_tensor_basis",
+    "zero_like",
 ]

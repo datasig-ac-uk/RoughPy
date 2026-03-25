@@ -1,14 +1,14 @@
 import typing
-from typing import Protocol, TypeVar, Self, Callable
-from dataclasses import dataclass
+from collections.abc import Callable
+from typing import Protocol, Self, TypeVar
 
-from roughpy_jax.intervals import Interval
 from roughpy_jax.bases import Basis
-
+from roughpy_jax.intervals import Interval
 
 LieT = TypeVar("LieT")
 GroupT = TypeVar("GroupT")
 StreamValueT = TypeVar("StreamValueT")
+
 
 @typing.runtime_checkable
 class Stream(Protocol[LieT, GroupT]):
