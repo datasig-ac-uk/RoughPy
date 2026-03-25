@@ -91,15 +91,7 @@ class TestPiecewiseAbelianStream:
         query_interval = RealInterval(0.5, 1.5, IntervalType.ClOpen)
         log_sig = pas_data.stream.log_signature(query_interval)
 
-        acc = pas_data.stream._get_identity(dtype=pas_data.dtype)
-
-        # Compute the expected log signature using the CBH formula
-        for l in (pas_data.l1, pas_data.l2):
-            l_half = 0.5 * l
-            t = rpj.lie_to_tensor(l_half)
-            acc = rpj.ft_fmexp(acc, t, pas_data.tensor_basis)
-
-        expected_log_sig = rpj.tensor_to_lie(rpj.ft_log(acc))
+        expected_log_sig = rpj.cbh(0.5 * pas_data.l1, 0.5 * pas_data.l2)
 
         assert jnp.allclose(log_sig.data, expected_log_sig.data, atol=1e-6)
 
