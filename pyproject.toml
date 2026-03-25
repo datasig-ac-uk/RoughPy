@@ -156,6 +156,7 @@ lint = [
 typecheck = [
     "jax",
     "ty",
+    "pybind11<3.0.0",
 ]
 jax = [
     "jax>=0.4.0",

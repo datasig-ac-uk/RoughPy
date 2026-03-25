@@ -18,17 +18,7 @@ from roughpy_jax.intervals import Interval, Partition, RealInterval
 from .concepts import GroupT, LieT, Stream
 
 
-def _pas_dataclass(cls):
-    """Helper to apply the dataclass and register_dataclass decorators in the correct order."""
-    cls = dataclass(cls, frozen=True)
-    return jax.tree_util.register_dataclass(
-        cls,
-        data_fields=["_data", "_partition"],
-        meta_fields=["_lie_basis", "_group_basis"],
-    )
-
-
-@_pas_dataclass
+@dataclass(frozen=True)
 class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     """A stream representing a piecewise abelian path."""
 
@@ -123,6 +113,13 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
         log_sig = self.log_signature(interval)
         tensor = lie_to_tensor(log_sig)
         return ft_exp(tensor, self._group_basis)
+
+
+PiecewiseAbelianStream = jax.tree_util.register_dataclass(
+    PiecewiseAbelianStream,
+    data_fields=["_data", "_partition"],
+    meta_fields=["_lie_basis", "_group_basis"],
+)
 
 
 def to_piecewise_abelian(

@@ -280,6 +280,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             )
 
         cache_length = int(cache.shape[0])
+        if resolution is None:
+            raise ValueError("resolution must be provided")
         expected_length = self._cache_length_from_resolution(resolution)
         if cache_length != expected_length:
             raise ValueError(
@@ -291,7 +293,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         self._lie_basis = lie_basis
         self._group_basis = group_basis or to_tensor_basis(lie_basis)
         self._support = support or RealInterval(0.0, 1.0, IntervalType.ClOpen)
-        self._resolution = int(resolution)
+        self._resolution = resolution
         self._interval_type = interval_type
         self._zero_index = cache_length - 1
 
