@@ -5,6 +5,8 @@ from roughpy_jax.dense_algebra import broadcast_to_batch_shape
 
 
 def test_broadcast_to_batch_shape_scalar():
+    # A scalar multiplier is reshaped so it can act uniformly across every
+    # batch level of an algebra object, from the outermost batch axis inward.
     data = jnp.asarray(2.0, dtype=jnp.float32)
 
     result = broadcast_to_batch_shape(data, (3, 2))
@@ -14,6 +16,8 @@ def test_broadcast_to_batch_shape_scalar():
 
 
 def test_broadcast_to_batch_shape_prefix_batch():
+    # A partially batched scalar multiplier keeps its existing outer batch axis
+    # and gains singleton axes so multiplication still broadcasts from the outside in.
     data = jnp.arange(3, dtype=jnp.float32)
 
     result = broadcast_to_batch_shape(data, (3, 2))
@@ -24,6 +28,8 @@ def test_broadcast_to_batch_shape_prefix_batch():
 
 
 def test_broadcast_to_batch_shape_accepts_existing_core_singletons():
+    # If a scalar multiplier is already shaped for the target batch structure,
+    # the helper should leave it unchanged.
     data = jnp.ones((3, 2, 1), dtype=jnp.float32)
 
     result = broadcast_to_batch_shape(data, (3, 2))
