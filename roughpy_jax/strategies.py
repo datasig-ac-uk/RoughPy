@@ -21,7 +21,6 @@ def lie_increment(draw, min_width=1, max_width=6, min_depth=1, max_depth=4):
     width = draw(st.integers(min_value=min_width, max_value=max_width))
     depth = draw(st.integers(min_value=min_depth, max_value=max_depth))
     basis = LieBasis(width, depth)
-    tensor_basis = TensorBasis(width, depth)
     data = jnp.array(
         draw(
             hnp.arrays(
@@ -29,10 +28,7 @@ def lie_increment(draw, min_width=1, max_width=6, min_depth=1, max_depth=4):
             )
         )
     )
-    tensor = lie_to_tensor(Lie(data, basis), tensor_basis=tensor_basis)  # type: ignore
-    # workaround: patch basis to use TensorBasis, instead of LieBasis
-    tensor.basis = tensor_basis
-    return tensor
+    return lie_to_tensor(Lie(data, basis))  # type: ignore
 
 
 @st.composite
