@@ -56,9 +56,7 @@ def test_shuffle_product_unit(rpj_dtype, rpj_batch, rpj_no_acceleration):
     basis = rpj.TensorBasis(4, 3)
     lhs = rpj_batch.rng_shuffle_tensor(basis, rpj_dtype)
 
-    unit_data = np.zeros_like(lhs.data)
-    unit_data[..., 0] = 1.0
-    unit = rpj.ShuffleTensor(unit_data, lhs.basis)
+    unit = rpj.ShuffleTensor.identity(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
 
     result1 = rpj.st_mul(lhs, unit)
     result2 = rpj.st_mul(unit, lhs)

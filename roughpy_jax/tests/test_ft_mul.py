@@ -21,7 +21,7 @@ def test_ft_mul(rpj_dtype, rpj_batch, rpj_no_acceleration):
 
     result = rpj.ft_mul(a, b)
 
-    z = rpj.FreeTensor(rpj_batch.zeros(basis.size(), rpj_dtype), basis)
+    z = rpj.FreeTensor.zero(basis, dtype=rpj_dtype, batch_dims=rpj_batch.shape)
     expected = rpj.ft_fma(z, a, b)
 
     assert jnp.allclose(result.data, expected.data)
