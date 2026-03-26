@@ -1216,8 +1216,8 @@ def ft_adjoint_left_mul_adjoint_derivative(
 
 
 def _ft_adjoint_left_mul_vjp_fwd(op: FreeTensorT, arg: ShuffleTensorT):
-    ct_result = ft_adjoint_left_mul_adjoint_derivative(op, arg)
-    return ct_result, (op, arg)
+    result = ft_adjoint_left_mul(op, arg)
+    return result, (op, arg)
 
 
 def _ft_adjoint_left_mul_vjp_bwd(residuals, ct_result):
