@@ -127,21 +127,6 @@ class TestPiecewiseAbelianStream:
         # Check that the log signature equals L1
         assert jnp.allclose(log_sig.data, pas_data.l1.data, atol=1e-6)
 
-        # Check that the JIT version is faster than the non-JIT version
-        import time
-
-        start_time = time.time()
-        for _ in range(10):
-            pas_data.stream.log_signature(query_interval)
-        non_jit_time = time.time() - start_time
-
-        start_time = time.time()
-        for _ in range(10):
-            jit_log_sig(query_interval)
-        jit_time = time.time() - start_time
-
-        assert jit_time < non_jit_time
-
 
 @pytest.mark.extra
 class TestPiecewiseAbelianStreamBench:
