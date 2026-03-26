@@ -554,7 +554,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             interval = self._support
 
         query_interval = intersection(interval, self.support)
-        if len(query_interval) == 0:
+        if jnp.all(query_interval.length == 0):
             return self._zero_log_signature()
 
         reparam_query = self._reparamterise(query_interval)
