@@ -81,13 +81,21 @@ class BaseInterval:
 def intersection(
     left_interval: Interval,
     right_interval: Interval,
-) -> RealInterval:
+) -> RealInterval | DyadicInterval | Partition:
     """
-    Calculate the intersection of this interval with another interval.
-    :param other: The other interval to intersect with.
-    :type other: Interval
-    :return: A new Interval representing the intersection, or None if there is no intersection.
-    :rtype: typing.Optional[RealInterval]
+    Calculate the intersection of two intervals, dispatching to the
+    appropriate implementation based on the types of the arguments.
+
+    - Two DyadicIntervals: delegates to DyadicInterval.intersection.
+    - Two RealIntervals (or other plain Intervals): computes the
+      intersection by bounds.
+    - One Partition and one Interval: delegates to Partition.truncate.
+    - Two Partitions: converts both to RealIntervals and computes the
+      intersection by bounds.
+
+    :param left_interval: The left interval.
+    :param right_interval: The right interval.
+    :return: The intersection.
     """
     if not isinstance(left_interval, Interval) or not isinstance(
         right_interval, Interval
@@ -97,14 +105,24 @@ def intersection(
     if left_interval.interval_type != right_interval.interval_type:
         raise TypeError("Both intervals must be of the same IntervalType")
 
-    new_inf = jnp.maximum(left_interval.inf, right_interval.inf)
-    new_sup = jnp.minimum(left_interval.sup, right_interval.sup)
-    interval_type = left_interval.interval_type
+    # Two dyadics → dyadic class method
+    if isinstance(left_interval, DyadicInterval) and isinstance(
+        right_interval, DyadicInterval
+    ):
+        return DyadicInterval.intersection(left_interval, right_interval)
 
-    # Intersections are defined by bounds, but not every Interval implementation
-    # can be constructed from (inf, sup, interval_type) (e.g. DyadicInterval).
-    # Use a canonical RealInterval result to avoid incorrect reconstruction.
-    return RealInterval(_inf=new_inf, _sup=new_sup, _interval_type=interval_type)
+    # Two partitions → real interval intersection
+    if isinstance(left_interval, Partition) and isinstance(right_interval, Partition):
+        return RealInterval.intersection(left_interval, right_interval)
+
+    # One partition + one interval → Partition.truncate
+    if isinstance(left_interval, Partition):
+        return Partition.truncate(left_interval, right_interval)
+    if isinstance(right_interval, Partition):
+        return Partition.truncate(right_interval, left_interval)
+
+    # Default: real interval intersection
+    return RealInterval.intersection(left_interval, right_interval)
 
 
 @dataclass(frozen=True)
@@ -191,6 +209,12 @@ class DyadicInterval(Dyadic):
     def length(self) -> Array:
         return BaseInterval.length(self)
 
+    @classmethod
+    def intersection(
+        cls, left: DyadicInterval, right: DyadicInterval
+    ) -> DyadicInterval:
+        raise NotImplementedError("DyadicInterval intersection is not implemented yet")
+
 
 @dataclass(frozen=True)
 class RealInterval:
@@ -229,6 +253,15 @@ class RealInterval:
     @property
     def length(self) -> float | Array:
         return BaseInterval.length(self)
+
+    @classmethod
+    def intersection(cls, left: Interval, right: Interval) -> RealInterval:
+        """Compute the intersection of two intervals as a RealInterval."""
+        new_inf = jnp.maximum(left.inf, right.inf)
+        new_sup = jnp.minimum(left.sup, right.sup)
+        return RealInterval(
+            _inf=new_inf, _sup=new_sup, _interval_type=left.interval_type
+        )
 
 
 RealInterval = jax.tree_util.register_dataclass(
@@ -282,6 +315,78 @@ class Partition:
             )
             for i in range(len(self._endpoints) - 1)
         ]
+
+    @staticmethod
+    def to_real_interval(partition: Partition) -> RealInterval[RealT]:
+        """
+        Convert the partition to a RealInterval.
+        :return: A RealInterval representing the partition.
+        :rtype: RealInterval
+        """
+        return RealInterval(
+            _inf=partition.inf,
+            _sup=partition.sup,
+            _interval_type=partition.interval_type,
+        )
+
+    @classmethod
+    def truncate(
+        cls, partition: Partition, other: Interval
+    ) -> Partition | RealInterval:
+        """
+        Calculate the intersection of this partition with another Interval.
+        :param other: The other interval to intersect with.
+        :type other: RealInterval
+        :return: A new Partition representing the intersection, or a degenerate
+        interval if there is no intersection.
+        :rtype: Partition | RealInterval
+        """
+        # Here we convert to RealInterval to perform the intersection logic
+        intermediate_itvl = cls.to_real_interval(partition)
+        intersect_itvl = RealInterval.intersection(intermediate_itvl, other)
+        if intersect_itvl.length == 0:
+            return intersect_itvl  # Return the degenerate interval representing the empty intersection
+
+        new_endpoints = []
+        # 1) Add new inf if it is within bounds of old interval
+        if partition.inf < intersect_itvl.inf:
+            new_endpoints.append(intersect_itvl.inf)
+        # 2) Include all inner points
+        for ep in partition._endpoints:
+            if intersect_itvl.inf <= ep <= intersect_itvl.sup:
+                new_endpoints.append(ep)
+        # 3) Add new sup if within bounds of old interval
+        if intersect_itvl.sup < partition.sup:
+            new_endpoints.append(intersect_itvl.sup)
+
+        return cls(
+            _endpoints=new_endpoints,
+            _interval_type=partition.interval_type,
+        )
+
+    @classmethod
+    def merge(cls, left: Partition, right: Partition) -> Partition | RealInterval:
+        """
+        Merge this partition with another Partition.
+        :param other: The other partition to merge with.
+        :type other: Partition
+        :return: A new Partition representing the merged partitions.
+        :rtype: Partition
+        """
+        if left.interval_type != right.interval_type:
+            raise TypeError("Both partitions must be of the same IntervalType")
+
+        left_itvl = cls.to_real_interval(left)
+        right_itvl = cls.to_real_interval(right)
+        inters = RealInterval.intersection(left_itvl, right_itvl)
+        if inters.length == 0:
+            return inters  # Return the degenerate interval representing the empty intersection
+
+        new_endpoints = sorted(set(left._endpoints) | set(right._endpoints))
+        return cls(
+            _endpoints=new_endpoints,
+            _interval_type=left.interval_type,
+        )
 
 
 Partition = jax.tree_util.register_dataclass(
