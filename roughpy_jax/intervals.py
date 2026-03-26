@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from abc import ABC as AbstractBaseClass
 import enum
 import math
 import numbers
 import typing
 from dataclasses import dataclass
-from typing import Generic, Protocol, Self, TypeVar
+from typing import Protocol, TypeVar
 
 import jax
-from jax import Array
-from jax.typing import ArrayLike
 import jax.numpy as jnp
+from jax import Array
 
 RealT = TypeVar("RealT")
 
@@ -57,7 +55,7 @@ class Interval(Protocol):
     def length(self) -> Array: ...
 
 
-class BaseInterval(AbstractBaseClass):
+class BaseInterval:
     # TODO: These don't need to be in a class, just have module-level functions for str, length, and intersection that
     # take Intervals as arguments. The only reason to have these in a class is if we want to use inheritance to share
     # code between different Interval implementations.

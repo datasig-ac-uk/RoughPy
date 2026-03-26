@@ -20,10 +20,10 @@ from roughpy_jax.algebra import (
 )
 from roughpy_jax.bases import to_tensor_basis
 from roughpy_jax.intervals import (
-    DyadicInterval, 
-    Interval, 
-    IntervalType, 
-    RealInterval, 
+    DyadicInterval,
+    Interval,
+    IntervalType,
+    RealInterval,
     intersection,
 )
 
