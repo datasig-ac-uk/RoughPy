@@ -58,7 +58,10 @@ class TestDyadic:
         d3 = Dyadic(k=5, n=2.0)
         assert float(d3) == 1.25
         
-    
+    def test_dyadic_negative_n(self):
+        with pytest.raises(ValueError):
+            Dyadic(k=1, n=-1)
+
 class TestDyadicInterval:
     def test_dyadic_interval_clopen(self):
         di = DyadicInterval(k=3, n=1, _interval_type=IntervalType.ClOpen)
