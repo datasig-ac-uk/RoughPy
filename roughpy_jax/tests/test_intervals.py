@@ -235,8 +235,9 @@ class TestIntersection:
         right_interval = DyadicInterval(k=3, n=1, _interval_type=IntervalType.ClOpen)
 
         # TODO: This is a bit of an odd case - we could potentially support this by converting the DyadicInterval to a 
-        # RealInterval, but for now we just want to make sure it raises an error.
-        intersection(left_interval, right_interval)
+        # RealInterval.
+        with pytest.raises(ValueError):
+            intersection(left_interval, right_interval)
     
     def test_intersection_invalid_types(self, interval_type) -> None:
         left_interval = RealInterval(_inf=1.0, _sup=0.0, _interval_type=interval_type)
@@ -281,3 +282,74 @@ class TestPartition:
         
         p2 = Partition(_endpoints=[0.0, 1.0], _interval_type=IntervalType.OpenCl)
         assert str(p2) == "(0.0, 1.0]"
+        
+class TestPartitionMergeAndTruncate:
+    def test_partition_merge_aligned(self, partition, interval_type):
+        p1 = partition
+        p2 = Partition(_endpoints=[0.5, 1.0], _interval_type=interval_type)
+        merged = Partition.merge(p1, p2)
+        assert isinstance(merged, Partition)
+        assert merged.inf == pytest.approx(0.0)
+        assert merged.sup == pytest.approx(1.0)
+        assert len(merged) == 2
+        assert merged.interval_type is interval_type
+        
+    def test_partition_merge_unaligned(self, partition, interval_type):
+        p1 = partition
+        p2 = Partition(_endpoints=[0.25, 0.75], _interval_type=interval_type)
+        merged = Partition.merge(p1, p2)
+        assert isinstance(merged, Partition)
+        assert merged.inf == pytest.approx(0.0)
+        assert merged.sup == pytest.approx(1.0)
+        assert len(merged) == 4
+        assert merged.interval_type is interval_type
+        
+    def test_partition_truncate(self, partition, interval_type):
+        p = partition
+        ri = RealInterval(_inf=0.25, _sup=0.75, _interval_type=interval_type)
+        truncated = Partition.truncate(p, ri)
+        assert isinstance(truncated, Partition)
+        assert truncated.inf == pytest.approx(0.25)
+        assert truncated.sup == pytest.approx(0.75)
+        assert len(truncated) == 2
+        assert truncated.interval_type is interval_type
+
+class TestPartitionIntersection:
+    def test_partition_intersection_interval(self, interval_type):
+        p1 = Partition(
+            _endpoints=[0.0, 0.5, 1.0], _interval_type=interval_type
+        )
+        p2 = RealInterval(
+            _inf=-0.25, _sup=0.75, _interval_type=interval_type
+        )
+
+        inters = intersection(p1, p2)
+        assert inters.length > 0.0
+        assert inters.inf == pytest.approx(0.0)
+        assert inters.sup == pytest.approx(0.75)
+        assert len(inters) == 2
+
+    def test_partition_intersection_no_overlap(self, interval_type):
+        p1 = Partition(
+            _endpoints=[0.0, 0.5, 1.0], _interval_type=interval_type
+        )
+        p2 = RealInterval(_inf=1.5, _sup=2.0, _interval_type=interval_type)
+
+        inters = intersection(p1, p2)
+        # A no-intersection no longer returns None.
+        assert inters is not None
+        assert inters.length == 0.0
+
+    def test_partition_intersection_subinterval(self, interval_type):
+        p1 = Partition(
+            _endpoints=[0.0, 0.5, 1.0], _interval_type=interval_type
+        )
+        p2 = RealInterval(
+            _inf=0.25, _sup=0.75, _interval_type=interval_type
+        )
+
+        inters = intersection(p1, p2)
+        assert inters.length > 0.0
+        assert inters.inf == pytest.approx(0.25)
+        assert inters.sup == pytest.approx(0.75)
+        assert len(inters) == 2

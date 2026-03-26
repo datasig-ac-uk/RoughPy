@@ -110,6 +110,10 @@ def intersection(
         right_interval, DyadicInterval
     ):
         return DyadicInterval.intersection(left_interval, right_interval)
+    elif isinstance(left_interval, DyadicInterval) or isinstance(
+        right_interval, DyadicInterval
+    ):
+        raise ValueError("Cannot intersect a DyadicInterval with a non-DyadicInterval")
 
     # Two partitions → real interval intersection
     if isinstance(left_interval, Partition) and isinstance(right_interval, Partition):
