@@ -8,150 +8,273 @@ from roughpy_jax.intervals import (
     IntervalType,
     Partition,
     RealInterval,
+    intersection,
 )
 
 
-def test_dyadic_float_conversion_basic():
-    d1 = Dyadic(k=3, n=1)
-    assert float(d1) == 1.5
-
-    d2 = Dyadic(k=-1, n=2)
-    assert float(d2) == -0.25
-
-    d3 = Dyadic(k=5, n=0)
-    assert float(d3) == 5.0
-
-
-def test_real_interval_basic_and_frozen():
-    ri = RealInterval[float](_inf=0.1, _sup=0.2, _interval_type=IntervalType.ClOpen)
-    assert ri.interval_type is IntervalType.ClOpen
-    assert ri.inf == pytest.approx(0.1)
-    assert ri.sup == pytest.approx(0.2)
-
-    # Frozen dataclass should not allow mutation
-    with pytest.raises(dataclasses.FrozenInstanceError):
-        ri._inf = 0.0
-
-
-def test_protocol_conformance_runtime_checkable():
+@pytest.mark.parametrize(
+    "interval_type",
+    (IntervalType.ClOpen, IntervalType.OpenCl)
+)
+def test_protocol_conformance_runtime_checkable(interval_type):
     # All three concrete types should be instances of the Interval protocol
-    di = DyadicInterval(k=2, n=1, _interval_type=IntervalType.ClOpen)
-    ri = RealInterval[float](_inf=1.0, _sup=2.0, _interval_type=IntervalType.OpenCl)
-    p = Partition[float](_endpoints=[0.0, 1.0], _interval_type=IntervalType.ClOpen)
+    di = DyadicInterval(k=2, n=1, _interval_type=interval_type)
+    ri = RealInterval(_inf=1.0, _sup=2.0, _interval_type=interval_type)
+    p = Partition(_endpoints=[0.0, 1.0], _interval_type=interval_type)
 
     assert isinstance(di, Interval)
     assert isinstance(ri, Interval)
     assert isinstance(p, Interval)
 
 
+class TestDyadic:
+    def test_dyadic_float_conversion_default(self):
+        d1 = Dyadic(k=3, n=1)
+        assert float(d1) == 1.5
+
+        d2 = Dyadic(k=-1, n=2)
+        assert float(d2) == -0.25
+
+        d3 = Dyadic(k=5, n=0)
+        assert float(d3) == 5.0
+        
+    def test_dyadic_float_conversion_with_float_inputs(self):
+        d1 = Dyadic(k=3.0, n=1.0)
+        assert float(d1) == 1.5
+
+        d2 = Dyadic(k=-1.0, n=2.0)
+        assert float(d2) == -0.25
+
+        d3 = Dyadic(k=5.0, n=0.0)
+        assert float(d3) == 5.0
+        
+    def test_dyadic_float_conversion_with_mixed_inputs(self):
+        d1 = Dyadic(k=3, n=2.0)
+        assert float(d1) == 0.75
+
+        d2 = Dyadic(k=-1.0, n=3)
+        assert float(d2) == -0.125
+
+        d3 = Dyadic(k=5, n=2.0)
+        assert float(d3) == 1.25
+        
+    
+class TestDyadicInterval:
+    def test_dyadic_interval_clopen(self):
+        di = DyadicInterval(k=3, n=1, _interval_type=IntervalType.ClOpen)
+        assert di.inf == pytest.approx(1.5)
+        assert di.sup == pytest.approx(2.0)
+        assert di.length == pytest.approx(0.5)
+        
+    def test_dyadic_interval_opencl(self):
+        di = DyadicInterval(k=3, n=1, _interval_type=IntervalType.OpenCl)
+        assert di.inf == pytest.approx(1.0)
+        assert di.sup == pytest.approx(1.5)
+        assert di.length == pytest.approx(0.5)
+
+
+class TestRealInterval:
+    def test_real_interval_basic_and_frozen(self):
+        ri = RealInterval(_inf=0.1, _sup=0.2, _interval_type=IntervalType.ClOpen)
+        assert ri.interval_type is IntervalType.ClOpen
+        assert ri.inf == pytest.approx(0.1)
+        assert ri.sup == pytest.approx(0.2)
+
+        # Frozen dataclass should not allow mutation
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            ri._inf = 0.0
+            
+    def test_real_interval_length(self):
+        ri = RealInterval(_inf=0.1, _sup=0.2, _interval_type=IntervalType.ClOpen)
+        assert ri.length == pytest.approx(0.1)
+        
+    def test_real_interval_length_zero(self):
+        ri = RealInterval(_inf=0.1, _sup=0.1, _interval_type=IntervalType.ClOpen)
+        assert ri.length == pytest.approx(0.0)
+    
+    def test_real_interval_length_negative(self):
+        # This is the principal edge case - the interval is invalid and length 
+        # should be zero as that's how we determine no-overlap in intersection. 
+        ri = RealInterval(_inf=0.2, _sup=0.1, _interval_type=IntervalType.ClOpen)
+        assert ri.length == pytest.approx(0.0)
+    
+    def test_to_string(self):
+        ri = RealInterval(_inf=0.1, _sup=0.2, _interval_type=IntervalType.ClOpen)
+        assert str(ri) == "[0.1, 0.2)"
+        ri2 = RealInterval(_inf=0.1, _sup=0.2, _interval_type=IntervalType.OpenCl)
+        assert str(ri2) == "(0.1, 0.2]"
+
+
 def test_partition_with_dyadic_endpoints_uses_float_conversion():
+    # NOTE: Note sure this is actually a use-case we want to support, but it is 
+    # currently supported and should be tested.
     endpoints = [Dyadic(k=0, n=0), Dyadic(k=1, n=0)]
-    p = Partition[Dyadic](_endpoints=endpoints, _interval_type=IntervalType.ClOpen)
+    p = Partition(_endpoints=endpoints, _interval_type=IntervalType.ClOpen)
     assert p.inf == pytest.approx(0.0)
     assert p.sup == pytest.approx(1.0)
+    
+
+@pytest.fixture(params=[
+    pytest.param(IntervalType.ClOpen, id="ClOpen"),
+    pytest.param(IntervalType.OpenCl, id="OpenCl")
+])
+def interval_type(request) -> IntervalType:
+    return request.param
 
 
-@pytest.mark.parametrize(
-    "left_interval,right_interval,expected_inf,expected_sup",
-    [
-        (
-            RealInterval[float](_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen),
-            RealInterval[float](_inf=0.5, _sup=1.5, _interval_type=IntervalType.ClOpen),
-            0.5,
-            1.0,
-        ),
-        # (
-        #     DyadicInterval(k=0, n=0, _interval_type=IntervalType.ClOpen),
-        #     DyadicInterval(k=1, n=0, _interval_type=IntervalType.ClOpen),
-        #     0.5, 1.0
-        # ),
-        (
-            Partition[float](_endpoints=[0.0, 1.0], _interval_type=IntervalType.ClOpen),
-            Partition[float](_endpoints=[0.5, 1.5], _interval_type=IntervalType.ClOpen),
-            0.5,
-            1.0,
-        ),
-    ],
-)
-def test_intersection(left_interval, right_interval, expected_inf, expected_sup):
-    intersection = left_interval.intersection(right_interval)
-    assert intersection is not None
-    assert intersection.inf == expected_inf
-    assert intersection.sup == expected_sup
+@pytest.fixture()
+def real_intervals(interval_type) -> tuple[RealInterval, RealInterval]:
+    ri1 = RealInterval(_inf=0.0, _sup=1.0, _interval_type=interval_type)
+    ri2 = RealInterval(_inf=0.5, _sup=1.5, _interval_type=interval_type)
+    return ri1, ri2
 
 
-def test_intersection_no_overlap():
-    left_interval = RealInterval[float](
-        _inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen
+class TestIntersection:
+    """
+    Tests for the intersection function, which computes the intersection of two 
+    intervals. This has been pruned back to only work on RealInterval, as it's 
+    the only type of interval we currently support intersection for.
+    """
+    
+    @pytest.mark.parametrize(
+        "left_interval,right_interval,expected_inf,expected_sup",
+        [
+            (
+                RealInterval(_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen),
+                RealInterval(_inf=0.5, _sup=1.5, _interval_type=IntervalType.ClOpen),
+                0.5,
+                1.0,
+            ),
+            (
+                RealInterval(_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen),
+                RealInterval(_inf=1.5, _sup=2.0, _interval_type=IntervalType.ClOpen),
+                1.5,
+                1.0,
+            ),
+            (
+                RealInterval(_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen),
+                RealInterval(_inf=-0.5, _sup=0.5, _interval_type=IntervalType.ClOpen),
+                0.0,
+                0.5,
+            ),
+        ],
     )
-    right_interval = RealInterval[float](
-        _inf=1.5, _sup=2.0, _interval_type=IntervalType.ClOpen
-    )
+    def test_intersection(
+        self, 
+        left_interval, 
+        right_interval, 
+        expected_inf, 
+        expected_sup
+    ) -> None:
+        inters = intersection(left_interval, right_interval)
+        assert inters is not None
+        assert inters.inf == expected_inf
+        assert inters.sup == expected_sup
+        
+    def test_interval_commutativity(self, real_intervals) -> None:
+        left_interval, right_interval = real_intervals
+        
+        inters_1 = intersection(left_interval, right_interval)
+        inters_2 = intersection(right_interval, left_interval)
+        assert inters_1.inf == inters_2.inf
+        assert inters_1.sup == inters_2.sup
+        assert inters_1.interval_type == inters_2.interval_type
+        assert inters_1.length == inters_2.length
 
-    intersection = left_interval.intersection(right_interval)
-    assert intersection is not None
-    assert intersection.length == 0.0
-    assert intersection.inf == pytest.approx(1.5)
-    assert intersection.sup == pytest.approx(1.0)
+    def test_intersection_no_overlap(self, interval_type) -> None:
+        left_interval = RealInterval(_inf=0.0, _sup=1.0, _interval_type=interval_type)
+        right_interval = RealInterval(_inf=1.5, _sup=2.0, _interval_type=interval_type)
+
+        inters = intersection(left_interval, right_interval)
+        assert inters.length == 0.0
+        assert inters.inf == pytest.approx(1.5)
+        assert inters.sup == pytest.approx(1.0)
+        assert inters.interval_type == interval_type
+        
+    def test_intersection_full_overlap(self, interval_type) -> None:
+        left_interval = RealInterval(_inf=0.0, _sup=1.0, _interval_type=interval_type)
+        right_interval = RealInterval(_inf=0.0, _sup=1.0, _interval_type=interval_type)
+
+        inters = intersection(left_interval, right_interval)
+        assert inters.length == 1.0
+        assert inters.inf == pytest.approx(0.0)
+        assert inters.sup == pytest.approx(1.0)
+        assert inters.interval_type == interval_type
+        
+    def test_intersection_point_overlap(self, interval_type) -> None:
+        left_interval = RealInterval(_inf=0.0, _sup=1.0, _interval_type=interval_type)
+        right_interval = RealInterval(_inf=1.0, _sup=2.0, _interval_type=interval_type)
+
+        inters = intersection(left_interval, right_interval)
+        assert inters.length == 0.0
+        assert inters.inf == pytest.approx(1.0)
+        assert inters.sup == pytest.approx(1.0)
+        assert inters.interval_type == interval_type
+    
+    def test_intersection_different_types(self) -> None:
+        left_interval = RealInterval(_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen)
+        right_interval = RealInterval(_inf=0.5, _sup=1.5, _interval_type=IntervalType.OpenCl)
+
+        with pytest.raises(TypeError):
+            intersection(left_interval, right_interval)
+    
+    def test_intersection_mixed_intervals(self, interval_type) -> None:
+        left_partition = Partition(_endpoints=[0.0, 1.0], _interval_type=interval_type)
+        right_interval = RealInterval(_inf=0.5, _sup=1.5, _interval_type=interval_type)
+        inters = intersection(left_partition, right_interval)
+        assert inters.length == 0.5
+        assert inters.inf == pytest.approx(0.5)
+        assert inters.sup == pytest.approx(1.0)
+        assert inters.interval_type == interval_type
+            
+    def test_intersection_mixed_intervals_2(self) -> None:
+        left_interval = RealInterval(_inf=0.0, _sup=1.0, _interval_type=IntervalType.ClOpen)
+        right_interval = DyadicInterval(k=3, n=1, _interval_type=IntervalType.ClOpen)
+
+        # TODO: This is a bit of an odd case - we could potentially support this by converting the DyadicInterval to a 
+        # RealInterval, but for now we just want to make sure it raises an error.
+        intersection(left_interval, right_interval)
+    
+    def test_intersection_invalid_types(self, interval_type) -> None:
+        left_interval = RealInterval(_inf=1.0, _sup=0.0, _interval_type=interval_type)
+
+        with pytest.raises(TypeError):
+            intersection(left_interval, 0.5)
+
+
+@pytest.fixture()
+def partition(interval_type) -> Partition:
+    return Partition(_endpoints=[0.0, 0.5, 1.0], _interval_type=interval_type)
 
 
 class TestPartition:
-    def test_partition_endpoints_and_type(self):
-        p = Partition[float](
-            _endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl
-        )
-        assert p.interval_type is IntervalType.OpenCl
+    def test_partition_endpoints_and_type(self, partition, interval_type):
+        p = partition
+        assert p.interval_type is interval_type
         assert p.inf == pytest.approx(0.0)
         assert p.sup == pytest.approx(1.0)
         assert len(p) == 2
+        assert p.length == pytest.approx(1.0)
 
-    def test_partition_intersection_interval(self):
-        p1 = Partition[float](
-            _endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl
-        )
-        p2 = RealInterval[float](
-            _inf=-0.1, _sup=0.75, _interval_type=IntervalType.OpenCl
-        )
-
-        intersection = p1.intersection(p2)
-        assert intersection.length > 0.0
-        assert intersection.inf == pytest.approx(0.0)
-        assert intersection.sup == pytest.approx(0.75)
-        assert len(intersection) == 2
-
-    def test_partition_intersection_no_overlap(self):
-        p1 = Partition[float](
-            _endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl
-        )
-        p2 = RealInterval[float](_inf=1.5, _sup=2.0, _interval_type=IntervalType.OpenCl)
-
-        intersection = p1.intersection(p2)
-        # A no-intersection no longer returns None.
-        assert intersection is not None
-        assert intersection.length == 0.0
-        assert len(intersection) == 0
-
-    def test_partition_intersection_subinterval(self):
-        p1 = Partition[float](
-            _endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl
-        )
-        p2 = RealInterval[float](
-            _inf=0.25, _sup=0.75, _interval_type=IntervalType.OpenCl
-        )
-
-        intersection = p1.intersection(p2)
-        assert intersection.length > 0.0
-        assert intersection.inf == pytest.approx(0.25)
-        assert intersection.sup == pytest.approx(0.75)
-        assert len(intersection) == 2
-
-    def test_partition_to_intervals(self):
-        p = Partition[float](
-            _endpoints=[0.0, 0.5, 1.0], _interval_type=IntervalType.OpenCl
-        )
+    def test_partition_to_intervals(self, partition, interval_type):
+        p = partition
         intervals = p.to_intervals()
         assert len(intervals) == 2
         assert intervals[0].inf == pytest.approx(0.0)
         assert intervals[0].sup == pytest.approx(0.5)
         assert intervals[1].inf == pytest.approx(0.5)
         assert intervals[1].sup == pytest.approx(1.0)
+        assert intervals[0].interval_type is interval_type
+        assert intervals[1].interval_type is interval_type
+        
+    def test_partition_short_length(self, interval_type):
+        p = Partition(_endpoints=[0.0], _interval_type=interval_type)
+        assert len(p) == 0
+        assert p.length == pytest.approx(0.0)
+        
+    def test_partition_to_string(self, partition):
+        p = Partition(_endpoints=[0.0, 1.0], _interval_type=IntervalType.ClOpen)
+        assert str(p) == "[0.0, 1.0)"
+        
+        p2 = Partition(_endpoints=[0.0, 1.0], _interval_type=IntervalType.OpenCl)
+        assert str(p2) == "(0.0, 1.0]"

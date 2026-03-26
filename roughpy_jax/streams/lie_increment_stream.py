@@ -19,25 +19,17 @@ from roughpy_jax.algebra import (
     tensor_to_lie,
 )
 from roughpy_jax.bases import to_tensor_basis
-from roughpy_jax.intervals import DyadicInterval, Interval, IntervalType, RealInterval
+from roughpy_jax.intervals import (
+    DyadicInterval, 
+    Interval, 
+    IntervalType, 
+    RealInterval, 
+    intersection,
+)
 
 from .concepts import Stream
 
 T = TypeVar("T")
-
-
-# TODO: replace this with a standardised version imported from intervals
-def intersection(ivl1: Interval, ivl2: Interval) -> RealInterval:
-    if ivl1.interval_type != ivl2.interval_type:
-        raise ValueError(
-            "intersection between intervals of different types is not supported"
-        )
-
-    return RealInterval(
-        max(ivl1.inf, ivl2.inf),
-        min(ivl1.sup, ivl2.sup),
-        ivl1.interval_type,
-    )
 
 
 def _zero_lie(basis: LieBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype) -> Lie:
@@ -562,7 +554,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
             interval = self._support
 
         query_interval = intersection(interval, self.support)
-        if query_interval.sup <= query_interval.inf:
+        if len(query_interval) == 0:
             return self._zero_log_signature()
 
         reparam_query = self._reparamterise(query_interval)
