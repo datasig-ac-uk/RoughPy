@@ -8,11 +8,11 @@ from roughpy_jax.algebra import (
     FreeTensor,
     ft_fmexp,
     lie_to_tensor,
-    to_signature,
     to_log_signature,
+    to_signature,
 )
 from roughpy_jax.bases import Basis
-from roughpy_jax.intervals import Interval, Partition, RealInterval
+from roughpy_jax.intervals import Interval, Partition, RealInterval, intersection
 
 from .concepts import GroupT, LieT, Stream
 
@@ -92,7 +92,7 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
             # UPDATE: Tried and it wasn't faster, and made the code more
             # complicated, so leaving it as is for now.
             x, p = x_and_interval
-            intersection_length = p.intersection(interval).length
+            intersection_length = intersection(p, interval).length
             scale_factor = intersection_length / p.length
             return jax.lax.cond(
                 intersection_length > 0,
