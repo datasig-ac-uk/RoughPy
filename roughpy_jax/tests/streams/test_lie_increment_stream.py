@@ -141,6 +141,58 @@ def test_from_stream_constructs_equivalent_lie_increment_stream():
         assert jnp.allclose(actual_sig.data, expected_sig.data, atol=1e-6)
 
 
+def test_log_signature_accepts_singleton_array_interval_endpoints():
+    lie_basis = LieBasis(width=2, depth=2)
+    group_basis = rpj.to_tensor_basis(lie_basis)
+    partition = Partition([0.0, 1.0, 2.0], IntervalType.ClOpen)
+
+    l1 = rpj.Lie(jnp.array([0.0, 0.3, -0.2], dtype=jnp.float64), lie_basis)
+    l2 = rpj.Lie(jnp.array([0.0, -0.1, 0.4], dtype=jnp.float64), lie_basis)
+    src = PiecewiseAbelianStream(
+        _data=(l1, l2),
+        _partition=partition,
+        _lie_basis=lie_basis,
+        _group_basis=group_basis,
+    )
+    stream = LieIncrementStream.from_stream(src, resolution=3)
+
+    query = RealInterval(
+        jnp.array([0.5], dtype=jnp.float64),
+        jnp.array([1.5], dtype=jnp.float64),
+        IntervalType.ClOpen,
+    )
+
+    actual_log = stream.log_signature(query)
+    actual_sig = stream.signature(query)
+
+    expected_query = RealInterval(0.5, 1.5, IntervalType.ClOpen)
+    expected_log = stream.log_signature(expected_query)
+    expected_sig = stream.signature(expected_query)
+
+    assert jnp.allclose(actual_log.data, expected_log.data, atol=1e-6)
+    assert jnp.allclose(actual_sig.data, expected_sig.data, atol=1e-6)
+
+
+def test_log_signature_rejects_nonsingleton_array_interval_endpoints():
+    lie_basis = LieBasis(width=1, depth=1)
+    cache = jnp.zeros((4, lie_basis.size()), dtype=jnp.float32)
+    stream = LieIncrementStream(
+        cache,
+        lie_basis,
+        support=RealInterval(0.0, 1.0, IntervalType.ClOpen),
+        resolution=1,
+    )
+
+    query = RealInterval(
+        jnp.array([0.25, 0.5], dtype=jnp.float32),
+        jnp.array([0.75, 0.5], dtype=jnp.float32),
+        IntervalType.ClOpen,
+    )
+
+    with pytest.raises(ValueError, match="single-element endpoint arrays"):
+        stream.log_signature(query)
+
+
 def test_from_increments_wires_builder_and_cache_extension(monkeypatch):
     captured = {"ks": []}
 

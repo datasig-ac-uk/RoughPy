@@ -85,6 +85,30 @@ class TestPiecewiseAbelianStream:
         query_interval = RealInterval(0.0, 1.0, IntervalType.ClOpen)
         pas_data.stream.signature(query_interval)
 
+    def test_log_signature_accepts_singleton_array_interval_endpoints(self, pas_data):
+        query_interval = RealInterval(
+            jnp.array([0.5], dtype=pas_data.dtype),
+            jnp.array([1.5], dtype=pas_data.dtype),
+            IntervalType.ClOpen,
+        )
+
+        log_sig = pas_data.stream.log_signature(query_interval)
+        expected_log_sig = pas_data.stream.log_signature(
+            RealInterval(0.5, 1.5, IntervalType.ClOpen)
+        )
+
+        assert jnp.allclose(log_sig.data, expected_log_sig.data, atol=1e-6)
+
+    def test_log_signature_rejects_nonsingleton_array_interval_endpoints(self, pas_data):
+        query_interval = RealInterval(
+            jnp.array([0.25, 0.5], dtype=pas_data.dtype),
+            jnp.array([0.75, 1.5], dtype=pas_data.dtype),
+            IntervalType.ClOpen,
+        )
+
+        with pytest.raises(ValueError, match="single-element endpoint arrays"):
+            pas_data.stream.log_signature(query_interval)
+
     def test_log_signature_cbh(self, pas_data):
         """Test that the log signature of the stream over [0.5, 1.5] is CBH(0.5*L1, 0.5*L2)."""
 

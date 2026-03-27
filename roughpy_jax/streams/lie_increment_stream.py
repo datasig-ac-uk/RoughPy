@@ -553,6 +553,16 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         if interval is None:
             interval = self._support
 
+        inf = jnp.asarray(interval.inf)
+        sup = jnp.asarray(interval.sup)
+        if inf.size != 1 or sup.size != 1:
+            raise ValueError(
+                "LieIncrementStream only supports scalar interval endpoints "
+                "or single-element endpoint arrays"
+            )
+        if inf.shape or sup.shape:
+            interval = RealInterval(inf.reshape(()), sup.reshape(()), interval.interval_type)
+
         query_interval = intersection(interval, self.support)
         if jnp.all(query_interval.length == 0):
             return self._zero_log_signature()

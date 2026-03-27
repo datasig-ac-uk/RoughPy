@@ -76,6 +76,16 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
     @jax.jit
     def log_signature(self, interval: Interval) -> LieT:
         """Compute the log signature over an interval."""
+        inf = jnp.asarray(interval.inf)
+        sup = jnp.asarray(interval.sup)
+        if inf.size != 1 or sup.size != 1:
+            raise ValueError(
+                "PiecewiseAbelianStream only supports scalar interval endpoints "
+                "or single-element endpoint arrays"
+            )
+        if inf.shape or sup.shape:
+            interval = RealInterval(inf.reshape(()), sup.reshape(()), interval.interval_type)
+
         initial = FreeTensor.identity(
             self._group_basis,
             dtype=self.dtype,
