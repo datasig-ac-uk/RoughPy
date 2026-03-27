@@ -550,6 +550,14 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return to_log_signature(ft_result)
 
     def log_signature(self, interval: Interval | None = None) -> Lie:
+        """
+        Compute the log signature over an interval.
+
+        Whilst intervals do support batching as arrays, and lie increment
+        streams may be amenable to batched log-signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by this method. This may change in a future release.
+        """
         if interval is None:
             interval = self._support
 
@@ -585,6 +593,14 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         self,
         interval: Interval | None = None,
     ) -> FreeTensor:
+        """
+        Compute the signature over an interval.
+
+        Whilst intervals do support batching as arrays, and lie increment
+        streams may be amenable to batched signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by this method. This may change in a future release.
+        """
         log_sig = self.log_signature(interval)
         tensor = lie_to_tensor(log_sig)
         return ft_exp(tensor, out_basis=self._group_basis)
