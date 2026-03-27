@@ -1,8 +1,11 @@
 import jax.numpy as jnp
 import pytest
-import roughpy_jax.streams.lie_increment_stream as lis_mod
+
+import roughpy_jax as rpj
 from roughpy_jax.algebra import LieBasis, TensorBasis
-from roughpy_jax.intervals import IntervalType, RealInterval
+from roughpy_jax.intervals import IntervalType, Partition, RealInterval
+from roughpy_jax.streams import PiecewiseAbelianStream
+import roughpy_jax.streams.lie_increment_stream as lis_mod
 from roughpy_jax.streams.lie_increment_stream import LieIncrementStream
 
 
@@ -50,6 +53,12 @@ def test_from_stream_uses_stream_dyadic_cache_provider():
     assert result.group_basis == src.group_basis
     assert result.__base_stream__ is src
 
+    log_sig = result.log_signature(src.support)
+    sig = result.signature(src.support)
+
+    assert jnp.allclose(log_sig.data, rpj.Lie.zero(src.lie_basis).data)
+    assert jnp.allclose(sig.data, rpj.FreeTensor.identity(src.group_basis).data)
+
 
 def test_from_stream_falls_back_to_stream_to_cache(monkeypatch):
     class DummyStream:
@@ -85,6 +94,103 @@ def test_from_stream_falls_back_to_stream_to_cache(monkeypatch):
     assert captured["stream"] is src
     assert captured["resolution"] == 3
     assert captured["interval_type"] == IntervalType.ClOpen
+
+    log_sig = result.log_signature(src.support)
+    sig = result.signature(src.support)
+
+    assert jnp.allclose(log_sig.data, rpj.Lie.zero(src.lie_basis).data)
+    assert jnp.allclose(sig.data, rpj.FreeTensor.identity(src.group_basis).data)
+
+
+def test_from_stream_constructs_equivalent_lie_increment_stream():
+    lie_basis = LieBasis(width=2, depth=2)
+    group_basis = rpj.to_tensor_basis(lie_basis)
+    partition = Partition([0.0, 1.0, 2.0], IntervalType.ClOpen)
+
+    l1 = rpj.Lie(jnp.array([0.0, 0.3, -0.2], dtype=jnp.float64), lie_basis)
+    l2 = rpj.Lie(jnp.array([0.0, -0.1, 0.4], dtype=jnp.float64), lie_basis)
+    src = PiecewiseAbelianStream(
+        _data=(l1, l2),
+        _partition=partition,
+        _lie_basis=lie_basis,
+        _group_basis=group_basis,
+    )
+
+    result = LieIncrementStream.from_stream(src, resolution=3)
+
+    assert isinstance(result, LieIncrementStream)
+    assert result.resolution == 3
+    assert result.support == src.support
+    assert result.lie_basis == src.lie_basis
+    assert result.group_basis == src.group_basis
+    assert result.__base_stream__ is src
+
+    intervals = [
+        RealInterval(0.0, 1.0, IntervalType.ClOpen),
+        RealInterval(1.0, 2.0, IntervalType.ClOpen),
+        RealInterval(0.5, 1.5, IntervalType.ClOpen),
+        RealInterval(0.0, 2.0, IntervalType.ClOpen),
+    ]
+    for interval in intervals:
+        expected = src.log_signature(interval)
+        actual = result.log_signature(interval)
+        assert jnp.allclose(actual.data, expected.data, atol=1e-6)
+
+        expected_sig = src.signature(interval)
+        actual_sig = result.signature(interval)
+        assert jnp.allclose(actual_sig.data, expected_sig.data, atol=1e-6)
+
+
+def test_log_signature_accepts_singleton_array_interval_endpoints():
+    lie_basis = LieBasis(width=2, depth=2)
+    group_basis = rpj.to_tensor_basis(lie_basis)
+    partition = Partition([0.0, 1.0, 2.0], IntervalType.ClOpen)
+
+    l1 = rpj.Lie(jnp.array([0.0, 0.3, -0.2], dtype=jnp.float64), lie_basis)
+    l2 = rpj.Lie(jnp.array([0.0, -0.1, 0.4], dtype=jnp.float64), lie_basis)
+    src = PiecewiseAbelianStream(
+        _data=(l1, l2),
+        _partition=partition,
+        _lie_basis=lie_basis,
+        _group_basis=group_basis,
+    )
+    stream = LieIncrementStream.from_stream(src, resolution=3)
+
+    query = RealInterval(
+        jnp.array([0.5], dtype=jnp.float64),
+        jnp.array([1.5], dtype=jnp.float64),
+        IntervalType.ClOpen,
+    )
+
+    actual_log = stream.log_signature(query)
+    actual_sig = stream.signature(query)
+
+    expected_query = RealInterval(0.5, 1.5, IntervalType.ClOpen)
+    expected_log = stream.log_signature(expected_query)
+    expected_sig = stream.signature(expected_query)
+
+    assert jnp.allclose(actual_log.data, expected_log.data, atol=1e-6)
+    assert jnp.allclose(actual_sig.data, expected_sig.data, atol=1e-6)
+
+
+def test_log_signature_rejects_nonsingleton_array_interval_endpoints():
+    lie_basis = LieBasis(width=1, depth=1)
+    cache = jnp.zeros((4, lie_basis.size()), dtype=jnp.float32)
+    stream = LieIncrementStream(
+        cache,
+        lie_basis,
+        support=RealInterval(0.0, 1.0, IntervalType.ClOpen),
+        resolution=1,
+    )
+
+    query = RealInterval(
+        jnp.array([0.25, 0.5], dtype=jnp.float32),
+        jnp.array([0.75, 0.5], dtype=jnp.float32),
+        IntervalType.ClOpen,
+    )
+
+    with pytest.raises(ValueError, match="single-element endpoint arrays"):
+        stream.log_signature(query)
 
 
 def test_from_increments_wires_builder_and_cache_extension(monkeypatch):
@@ -135,3 +241,192 @@ def test_from_increments_wires_builder_and_cache_extension(monkeypatch):
     assert captured["resolution"] == 2
     assert len(captured["k_arrays"]) == 1
     assert captured["k_arrays"][0].dtype == jnp.dtype("int32")
+
+    log_sig = stream.log_signature(stream.support)
+    sig = stream.signature(stream.support)
+
+    assert jnp.allclose(log_sig.data, rpj.Lie.zero(stream.lie_basis).data)
+    assert jnp.allclose(sig.data, rpj.FreeTensor.identity(stream.group_basis).data)
+
+
+def test_from_increments_with_list_inputs_hits_batch_dimension_validation():
+    timestamps = [
+        jnp.array([0.0, 0.5, 1.0], dtype=jnp.float32),
+        jnp.array([0.25, 0.75, 1.25], dtype=jnp.float32),
+    ]
+    data = [
+        jnp.array([[1.0], [2.0], [3.0]], dtype=jnp.float32),
+        jnp.array([[4.0], [5.0], [6.0]], dtype=jnp.float32),
+    ]
+
+    with pytest.raises(ValueError, match="Batch dimension mismatch at index 1"):
+        LieIncrementStream.from_increments(
+            timestamps=timestamps,
+            data=data,
+            resolution=2,
+            input_data_basis=None,
+            lie_basis=LieBasis(width=1, depth=2),
+            interval_type=IntervalType.ClOpen,
+        )
+
+
+def test_from_increments_infers_resolution_from_timestamp_spacing(monkeypatch):
+    captured = {"ks": []}
+
+    def fake_build_base_entry(
+        k,
+        k_arrays,
+        data,
+        data_basis,
+        cache_basis,
+        tensor_basis,
+    ):
+        captured["ks"].append(k)
+        captured["k_arrays"] = k_arrays
+        return k
+
+    def fake_extend_cache_from_base(base, resolution, cache_basis):
+        captured["base"] = list(base)
+        captured["resolution"] = resolution
+        return jnp.zeros((1 << (resolution + 1), cache_basis.size()), dtype=jnp.float32)
+
+    monkeypatch.setattr(lis_mod, "_build_base_entry", fake_build_base_entry)
+    monkeypatch.setattr(lis_mod, "_extend_cache_from_base", fake_extend_cache_from_base)
+
+    timestamps = jnp.array([0.0, 0.125, 1.0], dtype=jnp.float32)
+    data = jnp.array([[1.0], [2.0], [3.0]], dtype=jnp.float32)
+
+    stream = LieIncrementStream.from_increments(
+        timestamps=timestamps,
+        data=data,
+        resolution=None,
+        input_data_basis=None,
+        lie_basis=LieBasis(width=1, depth=2),
+        interval_type=IntervalType.ClOpen,
+    )
+
+    assert isinstance(stream, LieIncrementStream)
+    assert stream.resolution == 3
+    assert captured["resolution"] == 3
+    assert captured["ks"] == list(range(1 << 3))
+    assert captured["base"] == list(range(1 << 3))
+    assert captured["k_arrays"][0].dtype == jnp.dtype("int32")
+
+
+def test_log_signature_without_interval_uses_support(monkeypatch):
+    lie_basis = LieBasis(width=1, depth=1)
+    cache = jnp.zeros((4, lie_basis.size()), dtype=jnp.float32)
+    support = RealInterval(1.0, 3.0, IntervalType.ClOpen)
+    stream = LieIncrementStream(cache, lie_basis, support=support, resolution=1)
+    captured = {}
+
+    def fake_reparamterise(interval):
+        captured["interval"] = interval
+        return RealInterval(0.0, 0.0, IntervalType.ClOpen)
+
+    monkeypatch.setattr(stream, "_reparamterise", fake_reparamterise)
+
+    result = stream.log_signature()
+
+    assert captured["interval"] == support
+    assert jnp.allclose(result.data, rpj.Lie.zero(lie_basis).data)
+
+
+def test_log_signature_of_empty_interval_returns_zero_without_query(monkeypatch):
+    lie_basis = LieBasis(width=1, depth=1)
+    cache = jnp.array([[1.0], [2.0], [3.0], [0.0]], dtype=jnp.float32)
+    stream = LieIncrementStream(
+        cache,
+        lie_basis,
+        support=RealInterval(0.0, 1.0, IntervalType.ClOpen),
+        resolution=1,
+    )
+
+    def fail_reparamterise(_interval):
+        raise AssertionError("empty intervals should return before reparametrisation")
+
+    monkeypatch.setattr(stream, "_reparamterise", fail_reparamterise)
+
+    result = stream.log_signature(RealInterval(0.5, 0.5, IntervalType.ClOpen))
+
+    assert jnp.allclose(result.data, rpj.Lie.zero(lie_basis).data)
+
+
+def test_build_base_entry_combines_multiple_increments_in_same_leaf():
+    data_basis = LieBasis(width=2, depth=1)
+    cache_basis = LieBasis(width=2, depth=2)
+    tensor_basis = rpj.to_tensor_basis(cache_basis)
+
+    data = [
+        jnp.array(
+            [
+                [0.2, -0.1],
+                [0.3, 0.4],
+                [-0.5, 0.1],
+            ],
+            dtype=jnp.float32,
+        )
+    ]
+    k_arrays = [jnp.array([0, 0, 1], dtype=jnp.int32)]
+
+    result = lis_mod._build_base_entry(
+        0,
+        k_arrays,
+        data,
+        data_basis,
+        cache_basis,
+        tensor_basis,
+    )
+
+    x0 = rpj.Lie(data[0][0], data_basis)
+    x1 = rpj.Lie(data[0][1], data_basis)
+    expected = rpj.cbh(x0, x1, lie_basis=cache_basis)
+
+    assert jnp.allclose(result.data, expected.data, atol=1e-6)
+
+
+def test_build_base_entry_flattens_multiple_components():
+    data_basis = LieBasis(width=2, depth=1)
+    cache_basis = LieBasis(width=2, depth=2)
+    tensor_basis = rpj.to_tensor_basis(cache_basis)
+
+    data = [
+        jnp.array(
+            [
+                [0.2, -0.1],
+                [0.3, 0.4],
+            ],
+            dtype=jnp.float32,
+        ),
+        jnp.array(
+            [
+                [0.1, 0.2],
+                [-0.4, 0.5],
+            ],
+            dtype=jnp.float32,
+        ),
+    ]
+    k_arrays = [
+        jnp.array([0, 0], dtype=jnp.int32),
+        jnp.array([1, 1], dtype=jnp.int32),
+    ]
+
+    result = lis_mod._build_base_entry(
+        0,
+        k_arrays,
+        data,
+        data_basis,
+        cache_basis,
+        tensor_basis,
+    )
+
+    expected_first = rpj.cbh(
+        rpj.Lie(data[0][0], data_basis),
+        rpj.Lie(data[0][1], data_basis),
+        lie_basis=cache_basis,
+    )
+    expected_second = rpj.Lie.zero(cache_basis, dtype=data[1].dtype)
+
+    assert result.data.shape == (2, cache_basis.size())
+    assert jnp.allclose(result.data[0], expected_first.data, atol=1e-6)
+    assert jnp.allclose(result.data[1], expected_second.data, atol=1e-6)

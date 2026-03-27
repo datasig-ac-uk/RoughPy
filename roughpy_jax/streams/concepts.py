@@ -88,6 +88,12 @@ class Stream(Protocol[LieT, GroupT]):
         log signature is zero. (This includes the case where the query is outside
         the support of the stream.)
 
+        Whilst intervals do support batching as arrays, and the specific stream
+        types might be amenable to batched log-signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by the log_signature methods. This may change in a
+        future release.
+
         :param interval: Query interval
         :return: A Lie element describing the stream over the interval.
         """

@@ -75,7 +75,24 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
     @jax.jit
     def log_signature(self, interval: Interval) -> LieT:
-        """Compute the log signature over an interval."""
+        """
+        Compute the log signature over an interval.
+
+        Whilst intervals do support batching as arrays, and piecewise abelian
+        streams may be amenable to batched log-signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by this method. This may change in a future release.
+        """
+        inf = jnp.asarray(interval.inf)
+        sup = jnp.asarray(interval.sup)
+        if inf.size != 1 or sup.size != 1:
+            raise ValueError(
+                "PiecewiseAbelianStream only supports scalar interval endpoints "
+                "or single-element endpoint arrays"
+            )
+        if inf.shape or sup.shape:
+            interval = RealInterval(inf.reshape(()), sup.reshape(()), interval.interval_type)
+
         initial = FreeTensor.identity(
             self._group_basis,
             dtype=self.dtype,
@@ -123,7 +140,14 @@ class PiecewiseAbelianStream(Stream[LieT, GroupT]):
 
     @jax.jit
     def signature(self, interval: Interval) -> GroupT:
-        """Compute the signature over an interval."""
+        """
+        Compute the signature over an interval.
+
+        Whilst intervals do support batching as arrays, and piecewise abelian
+        streams may be amenable to batched signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by this method. This may change in a future release.
+        """
         log_sig = self.log_signature(interval)
         return to_signature(log_sig, tensor_basis=self._group_basis)
 

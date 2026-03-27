@@ -58,20 +58,11 @@ def _extend_cache_from_base(base: list[Lie], resolution, cache_basis) -> jax.Arr
 
     batch_dims = base[0].data.shape[:-1]
     dtype = base[0].data.dtype
-    zero = _zero_lie(cache_basis, batch_dims, dtype)
+    zero = Lie.zero(cache_basis, dtype=dtype, batch_dims=batch_dims)
     base.append(zero)
 
     cache = jnp.stack([lie.data for lie in base], axis=0)
     return cache
-
-
-def _ft_identity(
-    basis: TensorBasis, batch_dims: tuple[int, ...], dtype: jnp.dtype
-) -> FreeTensor:
-    data = jnp.zeros((*batch_dims, basis.size()), dtype=dtype)
-    data[..., 0] = 1
-
-    return FreeTensor(data, basis)
 
 
 def _flatten(lies: list[Lie]) -> Lie:
@@ -88,12 +79,12 @@ def _cbh(
 ) -> Lie:
     tensor_basis = tensor_basis or to_tensor_basis(cache_basis)
 
-    batch_shape = data.shape[:axis] + data.shape[axis + 1 :]
-    acc = _ft_identity(tensor_basis, batch_shape, data.dtype)
+    batch_shape = data.shape[:axis] + data.shape[axis + 1 : -1]
+    acc = FreeTensor.identity(tensor_basis, dtype=data.dtype, batch_dims=batch_shape)
 
     for k in range(data.shape[axis]):
         lie = Lie(jnp.take(data, k, axis=axis), data_basis)
-        ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
+        acc = ft_fmexp(acc, lie_to_tensor(lie), out_basis=tensor_basis)
 
     result = to_log_signature(acc)
     return result
@@ -111,7 +102,7 @@ def _build_base_entry(
     def inner(ks, ds):
         mask = ks == k
         if not jnp.any(mask):
-            return _zero_lie(cache_basis, ds.shape[:-1], ds.dtype)
+            return Lie.zero(cache_basis, dtype=ds.dtype, batch_dims=ds.shape[1:-1])
 
         return _cbh(ds[mask, ...], data_basis, cache_basis, tensor_basis)
 
@@ -450,7 +441,7 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         time_arrays = [sf * ts.astype(time_dtype) - shift for ts in time_arrays]
 
         if resolution is None:
-            min_diff = min(*(jnp.min(jnp.diff(ts, axis=-1)) for ts in time_arrays))
+            min_diff = min(jnp.min(jnp.diff(ts, axis=-1)) for ts in time_arrays)
             _, exp = jnp.frexp(min_diff)
             resolution = int(1 - exp)
 
@@ -510,7 +501,9 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
     def _zero_log_signature(self) -> Lie:
         return Lie(self._cache[-1, ...], self._lie_basis)
 
-    def _query_dyadic(self, k: int, n: int) -> Lie: ...
+    def _query_dyadic(self, k: int, n: int) -> Lie:
+        level_start = (1 << (self._resolution + 1)) - (1 << (n + 1))
+        return Lie(self._cache[level_start + k, ...], self._lie_basis)
 
     def _query_cache(self, query: RealInterval) -> Lie:
         """
@@ -546,8 +539,8 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return self._query_dyadic(k, n)
 
     def _query_combine(self, left: Lie, acc: Lie, right: Lie) -> Lie:
-        ft_result = _ft_identity(
-            self._group_basis, self._cache.shape[1:-1], acc.data.dtype
+        ft_result = FreeTensor.identity(
+            self._group_basis, dtype=acc.data.dtype, batch_dims=self._cache.shape[1:-1]
         )
 
         ft_result = ft_fmexp(ft_result, lie_to_tensor(left))
@@ -557,11 +550,29 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         return to_log_signature(ft_result)
 
     def log_signature(self, interval: Interval | None = None) -> Lie:
+        """
+        Compute the log signature over an interval.
+
+        Whilst intervals do support batching as arrays, and lie increment
+        streams may be amenable to batched log-signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by this method. This may change in a future release.
+        """
         if interval is None:
             interval = self._support
 
+        inf = jnp.asarray(interval.inf)
+        sup = jnp.asarray(interval.sup)
+        if inf.size != 1 or sup.size != 1:
+            raise ValueError(
+                "LieIncrementStream only supports scalar interval endpoints "
+                "or single-element endpoint arrays"
+            )
+        if inf.shape or sup.shape:
+            interval = RealInterval(inf.reshape(()), sup.reshape(()), interval.interval_type)
+
         query_interval = intersection(interval, self.support)
-        if len(query_interval) == 0:
+        if jnp.all(query_interval.length == 0):
             return self._zero_log_signature()
 
         reparam_query = self._reparamterise(query_interval)
@@ -582,6 +593,14 @@ class LieIncrementStream(Stream[Lie, FreeTensor]):
         self,
         interval: Interval | None = None,
     ) -> FreeTensor:
+        """
+        Compute the signature over an interval.
+
+        Whilst intervals do support batching as arrays, and lie increment
+        streams may be amenable to batched signature calculation, this
+        functionality is not yet enabled. For now, only single intervals
+        will be accepted by this method. This may change in a future release.
+        """
         log_sig = self.log_signature(interval)
         tensor = lie_to_tensor(log_sig)
         return ft_exp(tensor, out_basis=self._group_basis)
