@@ -19,10 +19,18 @@ This installs:
 ### Running Benchmarks
 
 #### Initial Setup
-```bash
-# Navigate to benchmarks directory
-cd benchmarks
 
+Open `asv.conf.json` and set your branch name, i.e. replace with result of `git branch --show-current`:
+
+```json
+    "branches": [
+        "<asv.conf set your branch name>"
+    ],
+```
+
+Then in the shell:
+
+```bash
 # Initialize ASV (first time only)
 asv machine --yes
 
@@ -32,8 +40,6 @@ asv run --launch-method spawn
 
 #### Continuous Use
 ```bash
-# From benchmarks directory:
-
 # Run benchmarks for specific commits
 asv run main^..HEAD
 
@@ -47,8 +53,6 @@ asv preview
 
 #### Development Testing
 ```bash
-# From benchmarks directory:
-
 # Quick test of benchmark validity
 asv dev
 
