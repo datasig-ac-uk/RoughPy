@@ -131,7 +131,13 @@ void python::RPyTickConstructionHelper::add_tick(
     } else if (data.is_none()) {
         fail_data_none();
     } else {
-        if (m_reference_time.is_none()) { m_reference_time = timestamp; }
+        if (m_reference_time.is_none()) {
+            if (py::isinstance<py::float_>(timestamp)) {
+                m_reference_time = py::float_(0.0);
+            } else {
+                m_reference_time = timestamp;
+            }
+        }
         const auto param = python::convert_delta_from_datetimes(
                 timestamp, m_reference_time, m_time_conversion_options
         );
