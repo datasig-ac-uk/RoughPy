@@ -172,7 +172,9 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
                 lie_elt[key]
                         += python::py_to_scalar(pmd.scalar_type, tick.data);
                 break;
-            case streams::ChannelType::Value:
+            case streams::ChannelType::Value: {
+                const auto tick_scalar
+                        = python::py_to_scalar(pmd.scalar_type, tick.data);
                 if (channel->is_lead_lag()) {
                     auto lag_key = key + 1;
                     const auto& prev_lead = previous_values[idx];
@@ -181,10 +183,8 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
                     auto lead = pmd.ctx->zero_lie(meta.cached_vector_type);
                     auto lag = pmd.ctx->zero_lie(meta.cached_vector_type);
 
-                    lead[key]
-                            += python::py_to_scalar(pmd.scalar_type, tick.data);
-                    lead[lag_key]
-                            += python::py_to_scalar(pmd.scalar_type, tick.data);
+                    lead[key] += tick_scalar;
+                    lag[lag_key] += tick_scalar;
 
                     lie_elt = pmd.ctx->cbh(
                             lead.sub(prev_lead), lag.sub(prev_lag),
@@ -199,14 +199,14 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
                     const auto& prev_val = previous_values[idx];
                     auto new_val = pmd.ctx->zero_lie(meta.cached_vector_type);
 
-                    new_val[key]
-                            += python::py_to_scalar(pmd.scalar_type, tick.data);
+                    new_val[key] += tick_scalar;
 
                     lie_elt = new_val.sub(prev_val);
                     previous_values[idx] = std::move(new_val);
 
                     break;
                 }
+            }
             case streams::ChannelType::Categorical: {
                 lie_elt[key] += scalars::Scalar(1);
                 break;
