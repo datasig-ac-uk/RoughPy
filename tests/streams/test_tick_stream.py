@@ -30,6 +30,7 @@
 
 import pytest
 
+import roughpy as rp
 from roughpy import DPReal, Lie, RealInterval, TickStream
 
 DATA_FORMATS = [
@@ -135,3 +136,58 @@ def test_zero_data_at_zero_timestamp():
     sig = stream.signature(RealInterval(0.0, 2.0))
 
     assert sig is not None
+
+
+def test_tick_stream_lead_lag():
+    # Data from the bug report
+    data = [
+        (0.0, "s1", "value", 1.0),
+        (1.0, "s1", "value", 2.0),
+        (2.0, "s1", "value", 3.0),
+        (3.0, "s1", "value", 2.0),
+    ]
+
+    # Manual implementation (known correct)
+    ll_data = []
+    for i in range(len(data)):
+        t_curr, _, _, v_curr = data[i]
+
+        if i == 0:
+            ll_data.append((t_curr, "lead", "value", v_curr))
+            ll_data.append((t_curr, "lag", "value", v_curr))
+        else:
+            t_prev, _, _, v_prev = data[i - 1]
+
+            ll_data.append((t_curr, "lead", "value", v_curr))
+            ll_data.append((t_curr, "lag", "value", v_prev))
+
+            ll_data.append((t_curr, "lead", "value", v_curr))
+            ll_data.append((t_curr, "lag", "value", v_curr))
+
+    ctx = rp.get_context(2, 2, rp.DPReal)
+    schema_manual = [("lead", "value", {}), ("lag", "value", {})]
+
+    s_manual = rp.TickStream.from_data(
+        ll_data,
+        schema=schema_manual,
+        ctx=ctx,
+        support=rp.RealInterval(0, 4),
+    )
+
+    sig_manual = s_manual.signature(
+        rp.RealInterval(1.0, 3.0001), ctx=ctx, resolution=10
+    )
+
+    # Native implementation
+    s_native = rp.TickStream.from_data(
+        data,
+        schema=[("s1", "value", {"lead_lag": True})],
+        ctx=ctx,
+        support=rp.RealInterval(0, 4),
+    )
+    sig_native = s_native.signature(
+        rp.RealInterval(1.0, 3.0001), ctx=ctx, resolution=10
+    )
+
+    # They should match
+    assert str(sig_native) == str(sig_manual)
