@@ -47,7 +47,7 @@ jobs:
         working-directory: "${{ github.workspace }}/docs"
 
       - name: upload docs to GH Pages
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/build/html/
 
