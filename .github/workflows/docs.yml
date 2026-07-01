@@ -22,10 +22,10 @@ jobs:
           merge-multiple: true
 
       - name: clone repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Clone application notebooks
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: 'datasig-ac-uk/signature_applications'
           ref: 'c4cc8303eb9eae88a5a25c50696d27b502d2217f'

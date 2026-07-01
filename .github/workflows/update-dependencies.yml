@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: setup-vcpkg
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: Microsoft/vcpkg
           path: tools/vcpkg
